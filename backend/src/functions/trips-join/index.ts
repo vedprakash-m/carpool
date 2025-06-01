@@ -25,17 +25,11 @@ import {
   extractPathParam,
 } from "../../middleware/validation.middleware";
 import { trackExecutionTime } from "../../utils/monitoring";
-import { z } from "zod";
 
 interface ExtendedRequest extends AuthenticatedRequest {
   validatedBody?: JoinTripRequest;
   validatedParams?: { tripId: string };
 }
-
-const joinTripSchema = z.object({
-  tripId: z.string().min(1, "Trip ID is required"),
-  message: z.string().optional(),
-});
 
 async function joinTripHandler(
   request: ExtendedRequest,
@@ -52,7 +46,7 @@ async function joinTripHandler(
 
   // Get validated path and body params
   const tripId = request.validatedParams?.tripId;
-  const { pickupLocation, message } = request.validatedBody || {};
+  const { pickupLocation } = request.validatedBody || {};
 
   if (!pickupLocation || pickupLocation.trim().length === 0) {
     logger.warn("Missing pickup location in request");
@@ -154,7 +148,6 @@ async function joinTripHandler(
       firstName: user.firstName,
       lastName: user.lastName,
       joinedAt: new Date(),
-      message: message || "",
     };
 
     const updatedTrip = await trackExecutionTime(
@@ -177,7 +170,7 @@ async function joinTripHandler(
         driver.firstName,
         `${user.firstName} ${user.lastName}`,
         {
-          date: trip.date,
+          date: trip.date.toISOString(),
           departureTime: trip.departureTime,
           destination: trip.destination,
         }
@@ -189,7 +182,7 @@ async function joinTripHandler(
         user.firstName,
         `${driver.firstName} ${driver.lastName}`,
         {
-          date: trip.date,
+          date: trip.date.toISOString(),
           departureTime: trip.departureTime,
           destination: trip.destination,
         }
@@ -224,11 +217,12 @@ async function joinTripHandler(
 app.http("trips-join", {
   methods: ["POST"],
   authLevel: "anonymous",
-  route: "trips/join",
+  route: "trips/{tripId}/join",
   handler: compose(
     cors,
     errorHandler,
     authenticate,
-    validateBody(joinTripSchema)
+    validatePathParams(tripIdParamSchema, extractPathParam("tripId")),
+    validateBody(joinTripParamSchema)
   )(joinTripHandler),
 });

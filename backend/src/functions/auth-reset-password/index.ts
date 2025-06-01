@@ -10,7 +10,7 @@ import { compose, cors, errorHandler, validateBody } from "../../middleware";
 import { container } from "../../container";
 import { UserService } from "../../services/user.service";
 import { AuthService } from "../../services/auth.service";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, "Reset token is required"),
