@@ -24,7 +24,15 @@ jobs:
       
       - name: Run custom secret detection
         run: |
+          # Ensure scripts directory exists and script is executable
+          if [ ! -f "scripts/check-secrets.sh" ]; then
+            echo "❌ scripts/check-secrets.sh not found"
+            ls -la scripts/ || echo "scripts directory not found"
+            exit 1
+          fi
+          
           chmod +x scripts/check-secrets.sh
+          echo "✅ Running custom secret detection..."
           ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" | head -20)
 
   dependency-check:
