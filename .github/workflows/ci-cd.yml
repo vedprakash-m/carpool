@@ -303,9 +303,62 @@ jobs:
           path: ${{ env.FRONTEND_WORKING_DIR }}/frontend-artifacts
           if-no-files-found: error
 
+  # Security checks
+  security-checks:
+    needs: [shared-build, backend-build, frontend-build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for better secret detection
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run secret detection
+        run: |
+          # Ensure scripts directory exists and script is executable
+          if [ ! -f "scripts/check-secrets.sh" ]; then
+            echo "❌ scripts/check-secrets.sh not found"
+            ls -la scripts/ || echo "scripts directory not found"
+            exit 1
+          fi
+          
+          chmod +x scripts/check-secrets.sh
+          echo "✅ Running custom secret detection..."
+          ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" | head -20)
+      
+      - name: Run dependency audit
+        run: |
+          echo "## NPM Audit Results" >> $GITHUB_STEP_SUMMARY
+          npm audit --audit-level=moderate --production 2>&1 | tee audit-results.txt || true
+          
+          if grep -q "found.*vulnerabilities" audit-results.txt; then
+            echo "⚠️ Vulnerabilities found in dependencies" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            cat audit-results.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Security summary
+        run: |
+          echo "## 🔒 Security Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Secret detection completed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Dependency audit completed" >> $GITHUB_STEP_SUMMARY
+          echo "📋 Review any security alerts in the Security tab" >> $GITHUB_STEP_SUMMARY
+
   # Deploy infrastructure
   infrastructure-deploy:
-    needs: [setup, shared-build, backend-build, frontend-build]
+    needs: [setup, shared-build, backend-build, frontend-build, security-checks]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: ${{ needs.setup.outputs.environment }}
