@@ -409,6 +409,8 @@ Azure Functions optimization features:
 
 ## 🤝 Contributing
 
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information on how to contribute to this project.
+
 ### Development Workflow
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -440,10 +442,6 @@ npm run test:security
 # Performance testing
 npm run test:performance
 ```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
@@ -478,4 +476,55 @@ This application represents a comprehensive, enterprise-grade carpool management
 - **Infrastructure Management**: Intelligent resource management and optimization
 
 The enhanced monitoring, security, and performance features make this suitable for production environments with enterprise-level requirements for reliability, security, and observability.
-# Updated Azure Static Web App deployment token
+
+---
+
+## 📄 License
+
+**Copyright (C) 2025 Vedprakash Mishra**
+
+This project is licensed under the **GNU Affero General Public License version 3 (AGPLv3)**.
+
+### Key License Terms
+
+- **Free Software**: You can redistribute and/or modify this software under the terms of the AGPLv3
+- **Network Copyleft**: If you run this software on a server and provide it as a service to users over a network, you must make the source code available to those users
+- **No Warranty**: This software is provided "as is" without warranty of any kind
+- **Commercial Use**: Allowed under AGPLv3 terms, but source code disclosure requirements still apply
+
+### Quick Summary
+
+- ✅ **Use** - for any purpose, including commercial
+- ✅ **Modify** - create derivative works
+- ✅ **Distribute** - share the software
+- ✅ **Private Use** - use privately without disclosure
+- ❗ **Network Use** - must provide source code to users of network services
+- ❗ **License and Copyright Notice** - must include license and copyright
+- ❗ **Same License** - derivative works must use AGPLv3
+- ❗ **State Changes** - must document modifications
+
+### Important Notice for Service Providers
+
+The AGPLv3 license includes specific provisions for software used to provide network services. If you:
+
+- Run this software on a server
+- Allow users to interact with it over a network (web, API, etc.)
+- Have made modifications to the code
+
+**Then you must provide the source code** (including your modifications) to the users of your service.
+
+### Files
+
+- **Full License Text**: [LICENSE](LICENSE)
+- **License Summary**: [NOTICE](NOTICE)
+- **Contributing Guidelines**: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+For questions about licensing or commercial use, please contact the copyright holder.
+
+### Why AGPLv3?
+
+This project uses AGPLv3 to ensure that improvements to the software remain available to the community, even when the software is used to provide services over a network. This promotes collaboration and prevents proprietary forks that don't contribute back to the open source community.
+
+---
+
+**⚖️ License Compliance**: By using, modifying, or distributing this software, you agree to comply with the terms of the GNU Affero General Public License version 3.
