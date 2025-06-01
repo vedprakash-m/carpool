@@ -3,15 +3,21 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
 
+// Determine if we need static export
+const isStaticExport = process.env.NEXT_EXPORT === 'true' || process.env.NODE_ENV === 'production'
+
 const nextConfig = {
+  // Enable static export when needed
+  ...(isStaticExport && { output: 'export' }),
+  
   // Environment variables
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7071/api',
   },
   
-  // Enable image optimization but allow disabling for static export
+  // Configure images for static export compatibility
   images: {
-    unoptimized: process.env.NODE_ENV === 'production',
+    unoptimized: isStaticExport,
     domains: [],
     remotePatterns: [
       {
@@ -23,6 +29,14 @@ const nextConfig = {
   
   // Add trailing slash for better static hosting compatibility
   trailingSlash: true,
+  
+  // Disable server-side features for static export
+  ...(isStaticExport && {
+    // Disable image optimization for static export
+    images: {
+      unoptimized: true,
+    },
+  }),
   
   // Optimize module imports
   modularizeImports: {

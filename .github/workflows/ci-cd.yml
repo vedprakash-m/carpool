@@ -155,7 +155,7 @@ jobs:
           echo "NEXT_EXPORT=${NEXT_EXPORT}"
           echo "NODE_ENV=${NODE_ENV}"
           
-          # Run the build and capture any errors
+          # Run the build with static export
           if npm run build:static; then
             echo "✅ Build completed successfully"
           else
@@ -252,15 +252,20 @@ jobs:
           # Create a consistent artifacts directory
           mkdir -p frontend-artifacts
           
-          # Check for static export output first
+          # With Next.js 14+ static export, files should be in 'out' directory
           if [ -d "out" ]; then
             echo "✅ Using static export from 'out' directory"
             cp -r out/* frontend-artifacts/
             echo "artifact_source=static-export" >> $GITHUB_ENV
           elif [ -d ".next" ]; then
-            echo "⚠️ Using Next.js build output from '.next' directory"
-            # For Azure Static Web Apps, we need static files
-            # Copy the static assets and any standalone build
+            echo "⚠️ Static export may have failed, checking .next directory"
+            # Check if it's a regular build instead of static export
+            if [ -f ".next/BUILD_ID" ]; then
+              echo "❌ Regular Next.js build detected, not static export"
+              echo "This suggests the static export configuration didn't work properly"
+              exit 1
+            fi
+            # Fallback: copy .next contents (shouldn't happen with proper static export)
             if [ -d ".next/static" ]; then
               mkdir -p frontend-artifacts/_next/static
               cp -r .next/static/* frontend-artifacts/_next/static/
@@ -270,7 +275,7 @@ jobs:
             fi
             # Copy any HTML files
             find .next -name "*.html" -exec cp {} frontend-artifacts/ \; 2>/dev/null || true
-            echo "artifact_source=next-build" >> $GITHUB_ENV
+            echo "artifact_source=next-build-fallback" >> $GITHUB_ENV
           else
             echo "❌ No build output found"
             exit 1
@@ -279,6 +284,13 @@ jobs:
           echo "=== Final artifacts directory ==="
           ls -la frontend-artifacts/
           echo "Total artifact files: $(find frontend-artifacts -type f | wc -l)"
+          
+          # Verify we have an index.html for static hosting
+          if [ ! -f "frontend-artifacts/index.html" ]; then
+            echo "⚠️ Warning: No index.html found in artifacts"
+            # List all HTML files to understand the structure
+            find frontend-artifacts -name "*.html" | head -10
+          fi
       
       - name: Upload frontend artifacts
         uses: actions/upload-artifact@v4

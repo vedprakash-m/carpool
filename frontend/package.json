@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:static": "next build && next export",
+    "build:static": "NEXT_EXPORT=true next build",
     "start": "next start",
-    "export": "next export",
+    "export": "echo 'Export is now handled via output: export in next.config.js'",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "analyze": "ANALYZE=true next build",
