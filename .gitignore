@@ -1,9 +1,10 @@
 # Dependencies
 node_modules/
+*/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+lerna-debug.log*
 
 # Runtime data
 pids
@@ -14,10 +15,27 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
-.nyc_output/
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
 
 # Dependency directories
 jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
 
 # Optional npm cache directory
 .npm
@@ -25,53 +43,50 @@ jspm_packages/
 # Optional eslint cache
 .eslintcache
 
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
 # Output of 'npm pack'
 *.tgz
 
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
-.env*
-!.env.example
-
-# Next.js
+# Next.js build output
 .next/
 out/
-build/
 
-# Nuxt.js
+# Nuxt.js build / generate output
 .nuxt
-dist/
+dist
 
 # Gatsby files
 .cache/
-public/
+public
 
-# Storybook build outputs
-.out
-.storybook-out
+# Vuepress build output
+.vuepress/dist
 
-# Temporary folders
-tmp/
-temp/
+# Serverless directories
+.serverless/
 
-# Logs
-logs/
-*.log
+# FuseBox cache
+.fusebox/
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
+# DynamoDB Local files
+.dynamodb/
 
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
 
 # OS generated files
 .DS_Store
@@ -82,68 +97,205 @@ pids/
 ehthumbs.db
 Thumbs.db
 
-# Azure Functions
-bin/
-obj/
-appsettings.json
-local.settings.json
-*.azurefunctions
+# ============================================================================
+# SECURITY: Environment Files & Secrets
+# ============================================================================
 
-# TypeScript
-*.tsbuildinfo
-
-# Build outputs
-dist/
-build/
-
-# Test results
-test-results/
-playwright-report/
-test-results-*
-
-# Azure Static Web Apps
-.azure/
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-
-# Local development
+# Environment files
+.env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.development
+.env.test
+.env.production
+.environment
+.local
 
-# Package manager lock files (keep package-lock.json but ignore others)
-yarn.lock
-pnpm-lock.yaml
+# Local settings files
+local.settings.json
+local.settings.*.json
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+
+# Azure Functions settings
+.azure/
+.azurefunctions/
+
+# Cloud provider credentials
+.aws/
+.azure/
+gcp-key.json
+service-account.json
+*-credentials.json
+*-service-account.json
+
+# SSH Keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cert
+*.cer
+*.der
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+known_hosts
+
+# Database files and dumps
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql
+
+# ============================================================================
+# SECURITY: Backup & Temporary Files
+# ============================================================================
 
 # Backup files
 *.backup
 *.bak
-*.orig
+*.tmp
+*.temp
+*~
+.#*
+#*#
 
-# Large binary files that exceed GitHub's file size limits
-*.node
-*.so
-*.dll
-*.dylib
-*.wasm
+# Archive files that might contain secrets
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
 
-# Security files (never commit these)
-*.pem
-*.key
-*.cert
-*.csr
-*.crt
-secrets/
+# Log files that might contain sensitive data
+logs/
+*.log
+*.log.*
 
-# Database files
-*.db
-*.sqlite
-*.sqlite3
+# ============================================================================
+# SECURITY: Development & Testing Files
+# ============================================================================
 
-# Cache files
-.cache/
-*.cache
+# Test files that might contain real data
+test-data/
+test-files/
+fixtures/real-*
+**/test-data/
+**/fixtures/real-*
+
+# Configuration files that might contain secrets
+config/local.js
+config/local.json
+config/development.json
+config/production.json
+config/secrets.json
+
+# Docker files that might contain secrets
+docker-compose.override.yml
+docker-compose.local.yml
+.dockerignore.local
+
+# Kubernetes secrets
+*secret*.yaml
+*secret*.yml
+k8s-secrets/
+
+# ============================================================================
+# SECURITY: IDE & Editor Files
+# ============================================================================
+
+# VSCode settings that might contain paths or tokens
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# IntelliJ/WebStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ============================================================================
+# SECURITY: Monitoring & Analytics
+# ============================================================================
+
+# Monitoring configuration files
+monitoring/
+alerts/
+dashboards/local-*
+
+# Analytics and tracking files
+analytics/
+tracking/
+metrics/local-*
+
+# ============================================================================
+# SECURITY: Additional Protection Patterns
+# ============================================================================
+
+# Files with common secret indicators
+*password*
+*secret*
+*private*
+*credential*
+*token*
+*api-key*
+*auth*
+
+# Exclude above patterns from specific safe directories
+!docs/*password*
+!docs/*secret*
+!README*
+!**/README*
+!**/*.md
+!src/**/*.example.*
+!examples/
+!demo/
+
+# Ignore any file ending with common secret extensions
+*.secret
+*.private
+*.credential
+*.token
+
+# Ignore temporary files from various tools
+.terraform/
+terraform.tfstate*
+.vagrant/
+
+# ============================================================================
+# PROJECT SPECIFIC
+# ============================================================================
+
+# Build outputs
+build/
+dist/
+out/
+
+# Test outputs
+coverage/
+test-results/
+playwright-report/
+
+# Package manager files
+package-lock.json.backup

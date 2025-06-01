@@ -1,0 +1,67 @@
+# Pre-commit hooks to prevent secrets and sensitive data from being committed
+repos:
+  # Detect secrets before they're committed
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: package-lock.json
+
+  # Check for common security issues
+  - repo: https://github.com/gitguardian/ggshield
+    rev: v1.25.0
+    hooks:
+      - id: ggshield
+        language: python
+        stages: [commit]
+
+  # Prevent large files that might contain secrets
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+
+  # Check for private keys
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: detect-private-key
+
+  # Security linting for JavaScript/TypeScript
+  - repo: https://github.com/awebdeveloper/pre-commit-eslint
+    rev: v0.1.0
+    hooks:
+      - id: eslint
+        files: \.(js|ts|tsx)$
+        types: [file]
+        additional_dependencies:
+          - "@typescript-eslint/eslint-plugin@5.59.0"
+          - "@typescript-eslint/parser@5.59.0"
+          - "eslint-plugin-security@1.7.1"
+
+  # Custom script to check for common leak patterns
+  - repo: local
+    hooks:
+      - id: check-secrets-patterns
+        name: Check for secret patterns
+        entry: scripts/check-secrets.sh
+        language: script
+        files: \.(js|ts|tsx|json|yaml|yml|env)$
+
+  # Validate environment files don't contain real secrets
+  - repo: local
+    hooks:
+      - id: validate-env-files
+        name: Validate .env files
+        entry: scripts/validate-env-files.sh
+        language: script
+        files: \.env.*$
