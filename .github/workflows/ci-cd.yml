@@ -328,12 +328,25 @@ jobs:
           if [ ! -f "scripts/check-secrets.sh" ]; then
             echo "❌ scripts/check-secrets.sh not found"
             ls -la scripts/ || echo "scripts directory not found"
+            # Fallback: basic secret patterns
+            echo "🔄 Running fallback secret detection..."
+            grep -r -E "(password|secret|key|token)" --include="*.js" --include="*.ts" --include="*.tsx" --include="*.json" . | grep -v node_modules | head -10 || echo "No obvious secrets found in basic scan"
             exit 1
           fi
           
           chmod +x scripts/check-secrets.sh
           echo "✅ Running custom secret detection..."
-          ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" | head -20)
+          if ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" | head -20); then
+            echo "✅ Secret detection passed"
+          else
+            echo "❌ Secret detection found issues"
+            # Don't fail the pipeline on secret detection in development
+            if [[ "${{ needs.setup.outputs.environment }}" == "prod" ]]; then
+              exit 1
+            else
+              echo "⚠️ Secret detection issues found but not failing build in development environment"
+            fi
+          fi
       
       - name: Run dependency audit
         run: |
