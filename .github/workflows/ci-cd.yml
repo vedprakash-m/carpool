@@ -39,14 +39,17 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "resource-group=vcarpool-rg-dev" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "environment=prod" >> $GITHUB_OUTPUT
+            echo "resource-group=vcarpool-rg-dev" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
             echo "environment=test" >> $GITHUB_OUTPUT
+            echo "resource-group=vcarpool-rg-dev" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
+            echo "resource-group=vcarpool-rg-dev" >> $GITHUB_OUTPUT
           fi
-          echo "resource-group=vcarpool-rg-${{ steps.env.outputs.environment || 'dev' }}" >> $GITHUB_OUTPUT
 
   # Build and test shared library
   shared-build:
