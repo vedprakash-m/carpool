@@ -149,21 +149,32 @@ jobs:
         working-directory: ./ # Install from root for workspace
       - name: Lint frontend code
         run: npm run lint
-      - name: Build frontend
-        run: npm run build
+      - name: Build frontend for static export
+        run: npm run build:static
+        env:
+          NODE_ENV: production
+          NEXT_EXPORT: true
       - name: Debug - List build output
         run: |
           echo "=== Contents of frontend directory after build ==="
           ls -la
+          echo "=== Checking for out directory (static export) ==="
+          if [ -d "out" ]; then
+            echo "✅ out directory exists (static export)"
+            ls -la out/ | head -20
+            echo "Total files in out: $(find out -type f | wc -l)"
+          else
+            echo "❌ out directory not found"
+          fi
           echo "=== Checking for .next directory ==="
           if [ -d ".next" ]; then
             echo "✅ .next directory exists"
-            ls -la .next/ | head -20
+            ls -la .next/ | head -10
           else
             echo "❌ .next directory not found"
           fi
-          echo "=== Checking for other build outputs ==="
-          find . -maxdepth 2 -name "*build*" -o -name "*dist*" -o -name "*out*" 2>/dev/null || echo "No build directories found"
+          echo "=== All directories in frontend ==="
+          find . -maxdepth 2 -type d | sort
       - name: Run Jest unit tests # Clarified name
         run: npm test
         working-directory: ${{ env.FRONTEND_WORKING_DIR }}
@@ -218,8 +229,8 @@ jobs:
         if: always()
         with:
           name: frontend-dist
-          path: .next
-          if-no-files-found: ignore
+          path: ${{ env.FRONTEND_WORKING_DIR }}/out
+          if-no-files-found: error
 
   # Deploy infrastructure
   infrastructure-deploy:
@@ -378,7 +389,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
-          path: ${{ env.FRONTEND_WORKING_DIR }}/.next
+          path: static-files
+      
+      - name: Verify static files
+        run: |
+          echo "=== Downloaded static files ==="
+          ls -la static-files/
+          echo "=== Total files downloaded ==="
+          find static-files -type f | wc -l
+          echo "=== Sample files ==="
+          find static-files -name "*.html" | head -5
+          find static-files -name "*.js" | head -3
       
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
@@ -386,11 +407,10 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: ${{ env.FRONTEND_WORKING_DIR }}
-          app_artifact_location: ".next"
+          app_location: "static-files"
+          app_artifact_location: "."
           skip_app_build: true
           skip_api_build: true
-          config_file_location: ${{ env.FRONTEND_WORKING_DIR }}
 
   # Post-deployment tests
   integration-tests:

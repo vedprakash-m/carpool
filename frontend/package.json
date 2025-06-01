@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:static": "NEXT_EXPORT=true next build",
     "start": "next start",
+    "export": "next export",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "analyze": "ANALYZE=true next build",

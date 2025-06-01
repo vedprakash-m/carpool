@@ -9,6 +9,17 @@ import { useTripStore } from '../../../../store/trip.store';
 import DashboardLayout from '../../../../components/DashboardLayout';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
+// Generate static params for dynamic routes during static export
+export async function generateStaticParams() {
+  // For static export, we'll generate a placeholder set of common trip IDs
+  // In a real scenario, you might fetch this from your API during build time
+  const commonTripIds = ['new', 'template', 'example'];
+  
+  return commonTripIds.map((id) => ({
+    id: id,
+  }));
+}
+
 export default function EditTripPage() {
   const router = useRouter();
   const params = useParams();
