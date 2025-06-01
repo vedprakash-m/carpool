@@ -123,11 +123,11 @@ for file in $FILES; do
     # Check for production-like JWT secrets
     if grep -qi "jwt.*secret.*=" "$file" 2>/dev/null; then
         secret_line=$(grep -i "jwt.*secret.*=" "$file" | head -1)
-        # Skip if it's clearly a placeholder or in documentation
-        if echo "$secret_line" | grep -qv -E "(your-|example|placeholder|test|demo|<.*>|\[.*\]|README|docs|template)"; then
+        # Skip if it's clearly a placeholder, in documentation, or dynamically generated
+        if echo "$secret_line" | grep -qv -E "(your-|example|placeholder|test|demo|<.*>|\[.*\]|README|docs|template|\$\(openssl|\$\(uuidgen|\$\(head|random|rand)"; then
             secret_value=$(echo "$secret_line" | cut -d'=' -f2 | tr -d '"' | tr -d "'" | xargs)
-            # Also check if the file itself is documentation
-            if [[ "$file" != *"README"* ]] && [[ "$file" != *"docs/"* ]] && [[ "$file" != *".md" ]] && [[ ${#secret_value} -gt 20 ]]; then
+            # Also check if the file itself is documentation or contains generation commands
+            if [[ "$file" != *"README"* ]] && [[ "$file" != *"docs/"* ]] && [[ "$file" != *".md" ]] && [[ ${#secret_value} -gt 20 ]] && ! echo "$secret_line" | grep -q "\$("; then
                 echo -e "${RED}❌ Found potentially real JWT secret in $file${NC}"
                 FOUND_ISSUES=1
             fi
