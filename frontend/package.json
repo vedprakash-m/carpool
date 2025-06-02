@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "npm run prebuild && next build",
+    "build:swa": "npm run prebuild && next build",
     "prebuild": "npm run prepare:shared",
     "prepare:shared": "mkdir -p node_modules/@vcarpool && cp -r ../shared/dist/* node_modules/@vcarpool/ && cp ../shared/package.json node_modules/@vcarpool/ || true",
     "build:static": "NEXT_EXPORT=true next build",

@@ -463,6 +463,25 @@ jobs:
 
           echo "Workspace preparation completed"
 
+      - name: Verify build configuration for Azure SWA
+        working-directory: ${{ env.FRONTEND_WORKING_DIR }}
+        run: |
+          echo "Verifying Next.js configuration for Azure SWA..."
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+
+          # Test build to ensure it works
+          echo "Testing Next.js build process..."
+          npm run build
+
+          # List build output for debugging
+          echo "Build output structure:"
+          ls -la .next/ || echo "No .next directory found"
+          ls -la out/ || echo "No out directory found (expected for hybrid mode)"
+
+          echo "Package.json scripts:"
+          cat package.json | grep -A 10 '"scripts"'
+
       - name: Deploy to Azure Static Web Apps (Hybrid Next.js)
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -471,7 +490,7 @@ jobs:
           action: "upload"
           app_location: "frontend"
           api_location: ""
-          output_location: "out"
+          output_location: ""
           skip_app_build: false
           skip_api_build: true
         env:
