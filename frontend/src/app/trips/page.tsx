@@ -21,6 +21,8 @@ import {
   MapPinIcon as MapPinOutlineIcon,
   CurrencyDollarIcon,
   PlusIcon as PlusOutlineIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
 } from "@heroicons/react/24/outline";
 
 type TabType = "my-trips" | "available" | "driving";
@@ -174,6 +176,35 @@ const TripsPage = withPerformanceMonitoring(() => {
     clearError,
   } = useTripStore();
   const [activeTab, setActiveTab] = useState<TabType>("my-trips");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "cost" | "destination">("date");
+  const [filterStatus, setFilterStatus] = useState<TripStatus | "all">("all");
+
+  // Filter and sort trips based on search criteria
+  const filteredTrips = trips
+    .filter((trip) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        trip.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        trip.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesStatus =
+        filterStatus === "all" || trip.status === filterStatus;
+
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "date":
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case "cost":
+          return (a.cost || 0) - (b.cost || 0);
+        case "destination":
+          return a.destination.localeCompare(b.destination);
+        default:
+          return 0;
+      }
+    });
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -267,6 +298,87 @@ const TripsPage = withPerformanceMonitoring(() => {
           </nav>
         </div>
 
+        {/* Search and Filter Bar */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
+            {/* Search */}
+            <div className="flex-1 w-full sm:w-auto">
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search destinations or notes..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex gap-3 w-full sm:w-auto">
+              {/* Sort By */}
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Sort by:
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) =>
+                    setSortBy(e.target.value as "date" | "cost" | "destination")
+                  }
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="date">Date</option>
+                  <option value="destination">Destination</option>
+                  <option value="cost">Cost</option>
+                </select>
+              </div>
+
+              {/* Filter Status */}
+              <div className="flex items-center space-x-2">
+                <FunnelIcon className="h-4 w-4 text-gray-400" />
+                <select
+                  value={filterStatus}
+                  onChange={(e) =>
+                    setFilterStatus(e.target.value as TripStatus | "all")
+                  }
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="planned">Planned</option>
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Results Count */}
+          {(searchQuery || filterStatus !== "all") && (
+            <div className="mt-3 text-sm text-gray-600">
+              Showing {filteredTrips.length} of {trips.length} trips
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="ml-2 text-primary-600 hover:text-primary-500 underline"
+                >
+                  Clear search
+                </button>
+              )}
+              {filterStatus !== "all" && (
+                <button
+                  onClick={() => setFilterStatus("all")}
+                  className="ml-2 text-primary-600 hover:text-primary-500 underline"
+                >
+                  Clear filter
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
@@ -287,18 +399,24 @@ const TripsPage = withPerformanceMonitoring(() => {
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
-        ) : trips.length === 0 ? (
+        ) : filteredTrips.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
             <CarIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">
-              {activeTab === "my-trips" ? "No trips yet" : "No available trips"}
+              {trips.length === 0
+                ? activeTab === "my-trips"
+                  ? "No trips yet"
+                  : "No available trips"
+                : "No trips match your search"}
             </h3>
             <p className="mt-2 text-sm text-gray-500">
-              {activeTab === "my-trips"
-                ? "Get started by creating your first trip."
-                : "Check back later for available rides."}
+              {trips.length === 0
+                ? activeTab === "my-trips"
+                  ? "Get started by creating your first trip."
+                  : "Check back later for available rides."
+                : "Try adjusting your search criteria or filters."}
             </p>
-            {activeTab === "my-trips" && (
+            {activeTab === "my-trips" && trips.length === 0 && (
               <div className="mt-6">
                 <button
                   onClick={() => router.push("/trips/create")}
@@ -312,10 +430,10 @@ const TripsPage = withPerformanceMonitoring(() => {
           </div>
         ) : (
           <div className="relative">
-            {trips.length > 10 ? (
+            {filteredTrips.length > 10 ? (
               // Use virtualized list for better performance with many trips
               <VirtualizedList
-                items={trips}
+                items={filteredTrips}
                 itemHeight={200}
                 containerHeight={600}
                 className="space-y-4"
@@ -333,7 +451,7 @@ const TripsPage = withPerformanceMonitoring(() => {
             ) : (
               // Use regular grid for smaller lists
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {trips.map((trip) => (
+                {filteredTrips.map((trip) => (
                   <TripCard
                     key={trip.id}
                     trip={trip}
