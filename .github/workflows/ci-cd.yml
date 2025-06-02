@@ -127,7 +127,7 @@ jobs:
           path: ${{ env.BACKEND_WORKING_DIR }}/dist
 
   # Build and test frontend
-  frontend-build:
+  frontend-test:
     needs: shared-build
     runs-on: ubuntu-latest
     defaults:
@@ -152,52 +152,21 @@ jobs:
         working-directory: ./ # Install from root for workspace
       - name: Lint frontend code
         run: npm run lint
-      - name: Build frontend for Azure Static Web Apps
+      - name: Build frontend for testing
         run: |
-          echo "Starting Next.js build for Azure Static Web Apps..."
+          echo "Building Next.js for testing..."
           echo "NODE_ENV=${NODE_ENV}"
           
-          # Use regular Next.js build for Azure Static Web Apps (supports hybrid static/SSR)
+          # Build to ensure the code compiles without errors
           if npm run build; then
             echo "✅ Build completed successfully"
           else
-            echo "❌ Build failed, checking for partial output..."
+            echo "❌ Build failed"
             exit 1
           fi
         env:
           NODE_ENV: production
-      - name: Debug - List build output
-        run: |
-          echo "=== Contents of frontend directory after build ==="
-          ls -la
-          echo "=== Checking for out directory (static export) ==="
-          if [ -d "out" ]; then
-            echo "✅ out directory exists (static export)"
-            ls -la out/ | head -20
-            echo "Total files in out: $(find out -type f | wc -l)"
-          else
-            echo "❌ out directory not found"
-          fi
-          echo "=== Checking for .next directory ==="
-          if [ -d ".next" ]; then
-            echo "✅ .next directory exists"
-            ls -la .next/ | head -10
-            if [ -d ".next/standalone" ]; then
-              echo "Found .next/standalone directory"
-              ls -la .next/standalone/ | head -10
-            fi
-            if [ -d ".next/static" ]; then
-              echo "Found .next/static directory"
-              ls -la .next/static/ | head -5
-            fi
-          else
-            echo "❌ .next directory not found"
-          fi
-          echo "=== All directories in frontend ==="
-          find . -maxdepth 2 -type d | sort
-          echo "=== Looking for any HTML files ==="
-          find . -name "*.html" -type f | head -10
-      - name: Run Jest unit tests # Clarified name
+      - name: Run Jest unit tests
         run: npm test
         working-directory: ${{ env.FRONTEND_WORKING_DIR }}
       - name: Install Playwright Browsers
@@ -246,46 +215,10 @@ jobs:
           name: playwright-report
           path: ${{ env.FRONTEND_WORKING_DIR }}/playwright-report/
           retention-days: 30
-      - name: Prepare artifacts for upload
-        run: |
-          echo "Preparing frontend artifacts..."
-          
-          # Create a consistent artifacts directory
-          mkdir -p frontend-artifacts
-          
-          # For Azure Static Web Apps, use the standard Next.js build output
-          if [ -d ".next" ]; then
-            echo "✅ Using Next.js build output from '.next' directory"
-            # Azure Static Web Apps expects the entire .next directory for hybrid apps
-            cp -r .next frontend-artifacts/
-            # Also copy other necessary files
-            cp package.json frontend-artifacts/ 2>/dev/null || true
-            cp next.config.js frontend-artifacts/ 2>/dev/null || true
-            # Copy public assets
-            if [ -d "public" ]; then
-              cp -r public frontend-artifacts/
-            fi
-            echo "artifact_source=next-build" >> $GITHUB_ENV
-          else
-            echo "❌ No .next build output found"
-            exit 1
-          fi
-          
-          echo "=== Final artifacts directory ==="
-          ls -la frontend-artifacts/
-          echo "Total artifact files: $(find frontend-artifacts -type f | wc -l)"
-      
-      - name: Upload frontend artifacts
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: frontend-dist
-          path: ${{ env.FRONTEND_WORKING_DIR }}/frontend-artifacts
-          if-no-files-found: error
 
   # Security checks
   security-checks:
-    needs: [shared-build, backend-build, frontend-build]
+    needs: [shared-build, backend-build, frontend-test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -351,7 +284,7 @@ jobs:
 
   # Deploy infrastructure
   infrastructure-deploy:
-    needs: [setup, shared-build, backend-build, frontend-build, security-checks]
+    needs: [setup, shared-build, backend-build, frontend-test, security-checks]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: ${{ needs.setup.outputs.environment }}
