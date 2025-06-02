@@ -101,6 +101,8 @@ self.addEventListener('install', (event) => {
 // Azure Static Web Apps PWA optimization
 ```
 
+_See [PWA-APP-STORE-DISTRIBUTION.md](PWA-APP-STORE-DISTRIBUTION.md) for detailed app store submission processes and requirements._
+
 ### **PWA Capabilities**
 
 - ✅ **Offline Access**: View trip history, cached data
