@@ -438,10 +438,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      # Note: Azure Static Web Apps supports Node.js 12, 14, 16, 18, 20 (not 22 yet)
+      # Backend Azure Functions supports Node.js 22
+      - name: Set up Node.js for Azure SWA
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: "20.x"
           cache: "npm"
           cache-dependency-path: package-lock.json
 
@@ -494,7 +496,7 @@ jobs:
           skip_app_build: false
           skip_api_build: true
         env:
-          NODE_VERSION: ${{ env.NODE_VERSION }}
+          NODE_VERSION: "20.x"
           NEXT_PUBLIC_API_URL: ${{ needs.infrastructure-deploy.outputs.functionAppEndpoint }}/api
 
   # Post-deployment tests

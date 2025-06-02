@@ -62,10 +62,13 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 
 ### Prerequisites
 
-- Node.js 22+ (LTS recommended)
-- npm 10+ or yarn
-- Azure Account (for deployment)
-- Azure Functions Core Tools
+- **Node.js**: Version requirements depend on deployment target:
+  - **Development & Backend**: Node.js 22+ (LTS recommended)
+  - **Frontend (Azure SWA)**: Node.js 20+ (Azure SWA limitation)
+  - **Compatibility**: The codebase is compatible with Node.js 20-22
+- **npm**: 10+ or yarn
+- **Azure Account**: For deployment
+- **Azure Functions Core Tools**: For local backend development
 
 ### Installation
 
