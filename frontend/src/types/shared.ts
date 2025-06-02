@@ -2,10 +2,31 @@
 import { z } from "zod";
 
 // User roles
-export type UserRole = "student" | "parent" | "driver" | "admin";
+export type UserRole = "student" | "parent" | "admin" | "faculty" | "staff";
 
 // Trip status
 export type TripStatus = "planned" | "active" | "completed" | "cancelled";
+
+// Notification settings interface
+export interface NotificationSettings {
+  email: boolean;
+  sms: boolean;
+  tripReminders: boolean;
+  swapRequests: boolean;
+  scheduleChanges: boolean;
+}
+
+// User preferences
+export interface UserPreferences {
+  pickupLocation: string;
+  dropoffLocation: string;
+  preferredTime: string;
+  isDriver: boolean;
+  maxPassengers?: number;
+  smokingAllowed: boolean;
+  musicPreference?: string;
+  notifications: NotificationSettings;
+}
 
 // User interface
 export interface User {
@@ -13,29 +34,15 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: UserRole;
-  phone?: string;
-  grade?: string;
+  phoneNumber?: string;
+  department?: string;
   emergencyContact?: string;
-  preferences?: UserPreferences;
+  phone?: string; // Alias for phoneNumber
+  grade?: string;
+  role?: UserRole;
+  preferences: UserPreferences;
   createdAt: Date;
   updatedAt: Date;
-}
-
-// User preferences
-export interface UserPreferences {
-  pickupLocation?: string;
-  dropoffLocation?: string;
-  preferredTime?: string;
-  isDriver?: boolean;
-  smokingAllowed?: boolean;
-  notifications?: {
-    email?: boolean;
-    sms?: boolean;
-    tripReminders?: boolean;
-    swapRequests?: boolean;
-    scheduleChanges?: boolean;
-  };
 }
 
 // Trip interface
@@ -85,6 +92,15 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
   message?: string;
+}
+
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 // Authentication types
