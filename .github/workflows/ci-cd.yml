@@ -404,8 +404,11 @@ jobs:
         working-directory: ${{ env.BACKEND_WORKING_DIR }}
         run: |
           npm ci --production
+          # Create directory structure for shared library
+          mkdir -p ./node_modules/@vcarpool/
           # Copy shared library
-          cp -r ../${{ env.SHARED_WORKING_DIR }}/dist ./node_modules/@vcarpool/
+          cp -r ../${{ env.SHARED_WORKING_DIR }}/dist/* ./node_modules/@vcarpool/
+          cp ../${{ env.SHARED_WORKING_DIR }}/package.json ./node_modules/@vcarpool/
 
       - name: Azure CLI Login
         uses: azure/login@v1
@@ -453,7 +456,7 @@ jobs:
           echo "Installing workspace dependencies..."
           npm ci
 
-          echo "Copying shared package to frontend node_modules..."
+          echo "Preparing shared package for frontend..."
           mkdir -p frontend/node_modules/@vcarpool
           cp -r shared/dist/* frontend/node_modules/@vcarpool/
           cp shared/package.json frontend/node_modules/@vcarpool/
@@ -471,7 +474,6 @@ jobs:
           output_location: "out"
           skip_app_build: false
           skip_api_build: true
-          build_timeout_in_minutes: 20
         env:
           NODE_VERSION: ${{ env.NODE_VERSION }}
           NEXT_PUBLIC_API_URL: ${{ needs.infrastructure-deploy.outputs.functionAppEndpoint }}/api
