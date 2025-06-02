@@ -152,14 +152,13 @@ jobs:
         working-directory: ./ # Install from root for workspace
       - name: Lint frontend code
         run: npm run lint
-      - name: Build frontend for static export
+      - name: Build frontend for Azure Static Web Apps
         run: |
-          echo "Starting Next.js build with static export..."
-          echo "NEXT_EXPORT=${NEXT_EXPORT}"
+          echo "Starting Next.js build for Azure Static Web Apps..."
           echo "NODE_ENV=${NODE_ENV}"
           
-          # Run the build with static export
-          if npm run build:static; then
+          # Use regular Next.js build for Azure Static Web Apps (supports hybrid static/SSR)
+          if npm run build; then
             echo "✅ Build completed successfully"
           else
             echo "❌ Build failed, checking for partial output..."
@@ -167,7 +166,6 @@ jobs:
           fi
         env:
           NODE_ENV: production
-          NEXT_EXPORT: true
       - name: Debug - List build output
         run: |
           echo "=== Contents of frontend directory after build ==="
@@ -255,45 +253,27 @@ jobs:
           # Create a consistent artifacts directory
           mkdir -p frontend-artifacts
           
-          # With Next.js 14+ static export, files should be in 'out' directory
-          if [ -d "out" ]; then
-            echo "✅ Using static export from 'out' directory"
-            cp -r out/* frontend-artifacts/
-            echo "artifact_source=static-export" >> $GITHUB_ENV
-          elif [ -d ".next" ]; then
-            echo "⚠️ Static export may have failed, checking .next directory"
-            # Check if it's a regular build instead of static export
-            if [ -f ".next/BUILD_ID" ]; then
-              echo "❌ Regular Next.js build detected, not static export"
-              echo "This suggests the static export configuration didn't work properly"
-              exit 1
+          # For Azure Static Web Apps, use the standard Next.js build output
+          if [ -d ".next" ]; then
+            echo "✅ Using Next.js build output from '.next' directory"
+            # Azure Static Web Apps expects the entire .next directory for hybrid apps
+            cp -r .next frontend-artifacts/
+            # Also copy other necessary files
+            cp package.json frontend-artifacts/ 2>/dev/null || true
+            cp next.config.js frontend-artifacts/ 2>/dev/null || true
+            # Copy public assets
+            if [ -d "public" ]; then
+              cp -r public frontend-artifacts/
             fi
-            # Fallback: copy .next contents (shouldn't happen with proper static export)
-            if [ -d ".next/static" ]; then
-              mkdir -p frontend-artifacts/_next/static
-              cp -r .next/static/* frontend-artifacts/_next/static/
-            fi
-            if [ -d ".next/standalone" ]; then
-              cp -r .next/standalone/* frontend-artifacts/
-            fi
-            # Copy any HTML files
-            find .next -name "*.html" -exec cp {} frontend-artifacts/ \; 2>/dev/null || true
-            echo "artifact_source=next-build-fallback" >> $GITHUB_ENV
+            echo "artifact_source=next-build" >> $GITHUB_ENV
           else
-            echo "❌ No build output found"
+            echo "❌ No .next build output found"
             exit 1
           fi
           
           echo "=== Final artifacts directory ==="
           ls -la frontend-artifacts/
           echo "Total artifact files: $(find frontend-artifacts -type f | wc -l)"
-          
-          # Verify we have an index.html for static hosting
-          if [ ! -f "frontend-artifacts/index.html" ]; then
-            echo "⚠️ Warning: No index.html found in artifacts"
-            # List all HTML files to understand the structure
-            find frontend-artifacts -name "*.html" | head -10
-          fi
       
       - name: Upload frontend artifacts
         uses: actions/upload-artifact@v4
@@ -515,39 +495,27 @@ jobs:
 
   # Deploy frontend to Azure Static Web Apps
   frontend-deploy:
-    needs: [setup, infrastructure-deploy, frontend-build]
+    needs: [setup, infrastructure-deploy]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: ${{ needs.setup.outputs.environment }}
     steps:
       - uses: actions/checkout@v4
       
-      - name: Download frontend artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: static-files
-      
-      - name: Verify static files
-        run: |
-          echo "=== Downloaded static files ==="
-          ls -la static-files/
-          echo "=== Total files downloaded ==="
-          find static-files -type f | wc -l
-          echo "=== Sample files ==="
-          find static-files -name "*.html" | head -5
-          find static-files -name "*.js" | head -3
-      
-      - name: Deploy to Azure Static Web Apps
+      - name: Deploy to Azure Static Web Apps (Hybrid Next.js)
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "static-files"
-          app_artifact_location: "."
-          skip_app_build: true
+          app_location: "frontend"
+          api_location: ""
+          output_location: ""
+          skip_app_build: false
           skip_api_build: true
+        env:
+          NODE_VERSION: ${{ env.NODE_VERSION }}
+          NEXT_PUBLIC_API_URL: ${{ needs.infrastructure-deploy.outputs.functionAppEndpoint }}/api
 
   # Post-deployment tests
   integration-tests:
@@ -566,6 +534,11 @@ jobs:
       - name: Install test dependencies
         working-directory: ${{ env.BACKEND_WORKING_DIR }}
         run: npm ci
+      
+      - name: Wait for deployments to be ready
+        run: |
+          echo "Waiting for services to be fully deployed..."
+          sleep 60
       
       - name: Run integration tests
         working-directory: ${{ env.BACKEND_WORKING_DIR }}

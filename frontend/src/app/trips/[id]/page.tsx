@@ -360,21 +360,12 @@ export default function TripDetailPage() {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">
-                    {currentTrip.driver?.name || "Driver"}
+                    Driver ID: {currentTrip.driverId}
                   </p>
                   <div className="flex items-center space-x-4 mt-1">
-                    {currentTrip.driver?.email && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <EnvelopeIcon className="h-4 w-4 mr-1" />
-                        {currentTrip.driver.email}
-                      </div>
-                    )}
-                    {currentTrip.driver?.phone && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <PhoneIcon className="h-4 w-4 mr-1" />
-                        {currentTrip.driver.phone}
-                      </div>
-                    )}
+                    <div className="text-sm text-gray-600">
+                      Contact driver for more details
+                    </div>
                   </div>
                 </div>
               </div>
