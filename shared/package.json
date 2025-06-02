@@ -4,6 +4,10 @@
   "description": "Shared types and utilities for vcarpool application",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

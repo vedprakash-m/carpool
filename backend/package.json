@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Azure Functions backend for vcarpool application",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "npm run build && func start",

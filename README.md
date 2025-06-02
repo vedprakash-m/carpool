@@ -25,7 +25,7 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 
 ### Backend (Azure Functions + TypeScript)
 
-- **Runtime**: Node.js 18+ with TypeScript
+- **Runtime**: Node.js 22+ with TypeScript
 - **Database**: Azure Cosmos DB with query optimization
 - **Authentication**: JWT-based auth with refresh tokens and role-based access control
 - **Email**: Nodemailer for notifications
@@ -62,8 +62,8 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or yarn
+- Node.js 22+ (LTS recommended)
+- npm 10+ or yarn
 - Azure Account (for deployment)
 - Azure Functions Core Tools
 

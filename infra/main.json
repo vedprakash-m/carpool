@@ -26,11 +26,7 @@
     "environmentName": {
       "type": "string",
       "defaultValue": "dev",
-      "allowedValues": [
-        "dev",
-        "test",
-        "prod"
-      ],
+      "allowedValues": ["dev", "test", "prod"],
       "metadata": {
         "description": "Environment name (dev, test, prod)"
       }
@@ -170,7 +166,7 @@
             },
             {
               "name": "WEBSITE_NODE_DEFAULT_VERSION",
-              "value": "~18"
+              "value": "~22"
             },
             {
               "name": "WEBSITE_RUN_FROM_PACKAGE",
@@ -271,9 +267,7 @@
         "resource": {
           "id": "users",
           "partitionKey": {
-            "paths": [
-              "/id"
-            ],
+            "paths": ["/id"],
             "kind": "Hash"
           },
           "indexingPolicy": {
@@ -304,9 +298,7 @@
         "resource": {
           "id": "trips",
           "partitionKey": {
-            "paths": [
-              "/driverId"
-            ],
+            "paths": ["/driverId"],
             "kind": "Hash"
           },
           "indexingPolicy": {
@@ -337,9 +329,7 @@
         "resource": {
           "id": "schedules",
           "partitionKey": {
-            "paths": [
-              "/userId"
-            ],
+            "paths": ["/userId"],
             "kind": "Hash"
           }
         }
@@ -356,9 +346,7 @@
         "resource": {
           "id": "swap-requests",
           "partitionKey": {
-            "paths": [
-              "/requesterId"
-            ],
+            "paths": ["/requesterId"],
             "kind": "Hash"
           }
         }
@@ -375,9 +363,7 @@
         "resource": {
           "id": "email-templates",
           "partitionKey": {
-            "paths": [
-              "/id"
-            ],
+            "paths": ["/id"],
             "kind": "Hash"
           }
         }
@@ -413,10 +399,7 @@
             "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2021-03-01', 'full').identity.principalId]",
             "tenantId": "[subscription().tenantId]",
             "permissions": {
-              "secrets": [
-                "get",
-                "list"
-              ]
+              "secrets": ["get", "list"]
             }
           }
         ]

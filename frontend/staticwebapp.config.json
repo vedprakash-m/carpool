@@ -30,13 +30,29 @@
       "rewrite": "https://${API_ENDPOINT}/api/$1"
     },
     {
+      "route": "/_next/static/*",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
       "route": "/*",
       "allowedRoles": ["authenticated"]
     }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*", "/css/*", "/js/*", "/*.ico", "/*.json", "/*.svg"]
+    "exclude": [
+      "/images/*",
+      "/css/*",
+      "/js/*",
+      "/_next/*",
+      "/favicon.ico",
+      "/*.json",
+      "/*.xml",
+      "/*.txt",
+      "/*.svg"
+    ]
   },
   "responseOverrides": {
     "401": {

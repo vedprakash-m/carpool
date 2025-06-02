@@ -3,22 +3,19 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
-// Only use static export for specific build scenarios, not for dynamic routes
+// Only use static export for specific build scenarios, not for Azure SWA
 const isStaticExport = process.env.FORCE_STATIC_EXPORT === "true";
 
 const nextConfig = {
-  // Only enable static export when explicitly forced
-  ...(isStaticExport && { output: "export" }),
-
   // Environment variables
   env: {
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:7071/api",
   },
 
-  // Configure images for static export compatibility
+  // Configure images for better compatibility
   images: {
-    unoptimized: isStaticExport,
+    unoptimized: false,
     domains: [],
     remotePatterns: [
       {
@@ -28,15 +25,16 @@ const nextConfig = {
     ],
   },
 
-  // Add trailing slash for better static hosting compatibility
-  trailingSlash: true,
+  // Better compatibility with Azure Static Web Apps
+  trailingSlash: false,
 
-  // Disable server-side features for static export only when needed
+  // Only apply static export settings when explicitly requested (not for Azure SWA)
   ...(isStaticExport && {
-    // Disable image optimization for static export
+    output: "export",
     images: {
       unoptimized: true,
     },
+    trailingSlash: true,
   }),
 
   // Optimize module imports

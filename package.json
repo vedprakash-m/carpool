@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Carpool management application with TypeScript backend and Next.js frontend",
   "main": "index.js",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "workspaces": [
     "backend",
     "frontend",
@@ -23,7 +27,9 @@
     "test:e2e": "cd frontend && npm run test:e2e",
     "deploy": "cd backend && npm run deploy",
     "start": "cd backend && npm start",
-    "analyze": "cd backend && node -e \"const CodeOrganizationManager = require('./dist/src/utils/code-organization.js').default; const manager = new CodeOrganizationManager('.'); manager.analyzeArchitecture().then(report => console.log(JSON.stringify(report, null, 2)));\""
+    "analyze": "cd backend && node -e \"const CodeOrganizationManager = require('./dist/src/utils/code-organization.js').default; const manager = new CodeOrganizationManager('.'); manager.analyzeArchitecture().then(report => console.log(JSON.stringify(report, null, 2)));\"",
+    "verify-deployment": "chmod +x scripts/deploy-verification.sh && ./scripts/deploy-verification.sh",
+    "monitor-performance": "node scripts/performance-monitor.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

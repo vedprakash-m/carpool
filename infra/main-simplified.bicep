@@ -128,7 +128,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~18'
+          value: '~22'
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
@@ -172,7 +172,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       }
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
-      nodeVersion: '~18'
+      nodeVersion: '~22'
     }
     httpsOnly: true
   }
