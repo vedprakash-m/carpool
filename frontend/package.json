@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run prebuild && next build",
+    "prebuild": "npm run prepare:shared",
+    "prepare:shared": "mkdir -p node_modules/@vcarpool && cp -r ../shared/dist/* node_modules/@vcarpool/ && cp ../shared/package.json node_modules/@vcarpool/ || true",
     "build:static": "NEXT_EXPORT=true next build",
     "start": "next start",
     "export": "echo 'Export is now handled via output: export in next.config.js'",
@@ -15,15 +17,14 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:ci": "playwright test --reporter=list,html,json,github"
+    "test:e2e:ci": "playwright test --reporter=github",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.3.2",
-    "@vcarpool/shared": "file:../shared",
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.2",
     "date-fns": "^2.30.0",

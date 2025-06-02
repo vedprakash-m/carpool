@@ -428,12 +428,37 @@ jobs:
 
   # Deploy frontend to Azure Static Web Apps
   frontend-deploy:
-    needs: [setup, infrastructure-deploy]
+    needs: [setup, infrastructure-deploy, shared-build]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: ${{ needs.setup.outputs.environment }}
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      
+      - name: Download shared artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-dist
+          path: ${{ env.SHARED_WORKING_DIR }}/dist
+      
+      - name: Install dependencies and prepare monorepo
+        run: |
+          echo "Installing workspace dependencies..."
+          npm ci
+          
+          echo "Copying shared package to frontend node_modules..."
+          mkdir -p frontend/node_modules/@vcarpool
+          cp -r shared/dist/* frontend/node_modules/@vcarpool/
+          cp shared/package.json frontend/node_modules/@vcarpool/
+          
+          echo "Workspace preparation completed"
       
       - name: Deploy to Azure Static Web Apps (Hybrid Next.js)
         uses: Azure/static-web-apps-deploy@v1

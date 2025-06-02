@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateTripSchema, UpdateTripRequest, Trip } from "@vcarpool/shared";
+import {
+  updateTripSchema,
+  UpdateTripRequest,
+  Trip,
+} from "../../../../types/shared";
 import { useTripStore } from "../../../../store/trip.store";
 import DashboardLayout from "../../../../components/DashboardLayout";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";

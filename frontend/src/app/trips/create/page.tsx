@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createTripSchema, CreateTripRequest } from '@vcarpool/shared';
-import { useTripStore } from '../../../store/trip.store';
-import DashboardLayout from '../../../components/DashboardLayout';
-import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createTripSchema, CreateTripRequest } from "../../../types/shared";
+import { useTripStore } from "../../../store/trip.store";
+import DashboardLayout from "../../../components/DashboardLayout";
+import { SectionErrorBoundary } from "../../../components/SectionErrorBoundary";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export default function CreateTripPage() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function CreateTripPage() {
     resolver: zodResolver(createTripSchema),
     defaultValues: {
       maxPassengers: 4,
-    }
+    },
   });
 
   const onSubmit = async (data: CreateTripRequest) => {
@@ -32,7 +32,7 @@ export default function CreateTripPage() {
     try {
       const success = await createTrip(data);
       if (success) {
-        router.push('/trips');
+        router.push("/trips");
       }
     } finally {
       setIsSubmitting(false);
@@ -42,7 +42,7 @@ export default function CreateTripPage() {
   const getTomorrowDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
+    return tomorrow.toISOString().split("T")[0];
   };
 
   return (
@@ -59,7 +59,9 @@ export default function CreateTripPage() {
               Back
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Create New Trip</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Create New Trip
+              </h1>
               <p className="mt-1 text-sm text-gray-500">
                 Set up a new carpool trip and let others join
               </p>
@@ -79,93 +81,123 @@ export default function CreateTripPage() {
 
               {/* Date */}
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="date"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Date *
                 </label>
                 <input
                   type="date"
                   id="date"
                   min={getTomorrowDate()}
-                  {...register('date')}
+                  {...register("date")}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
                 {errors.date && (
-                  <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.date.message}
+                  </p>
                 )}
               </div>
 
               {/* Time Fields */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="departureTime" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="departureTime"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Departure Time *
                   </label>
                   <input
                     type="time"
                     id="departureTime"
-                    {...register('departureTime')}
+                    {...register("departureTime")}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   />
                   {errors.departureTime && (
-                    <p className="mt-1 text-sm text-red-600">{errors.departureTime.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.departureTime.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="arrivalTime" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="arrivalTime"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Arrival Time *
                   </label>
                   <input
                     type="time"
                     id="arrivalTime"
-                    {...register('arrivalTime')}
+                    {...register("arrivalTime")}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   />
                   {errors.arrivalTime && (
-                    <p className="mt-1 text-sm text-red-600">{errors.arrivalTime.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.arrivalTime.message}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Destination */}
               <div>
-                <label htmlFor="destination" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="destination"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Destination *
                 </label>
                 <input
                   type="text"
                   id="destination"
                   placeholder="Enter destination address"
-                  {...register('destination')}
+                  {...register("destination")}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
                 {errors.destination && (
-                  <p className="mt-1 text-sm text-red-600">{errors.destination.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.destination.message}
+                  </p>
                 )}
               </div>
 
               {/* Max Passengers and Cost */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="maxPassengers" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="maxPassengers"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Max Passengers *
                   </label>
                   <select
                     id="maxPassengers"
-                    {...register('maxPassengers', { valueAsNumber: true })}
+                    {...register("maxPassengers", { valueAsNumber: true })}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                      <option key={num} value={num}>{num}</option>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                      <option key={num} value={num}>
+                        {num}
+                      </option>
                     ))}
                   </select>
                   {errors.maxPassengers && (
-                    <p className="mt-1 text-sm text-red-600">{errors.maxPassengers.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.maxPassengers.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="cost" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="cost"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Cost per Person ($)
                   </label>
                   <input
@@ -174,29 +206,36 @@ export default function CreateTripPage() {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    {...register('cost', { valueAsNumber: true })}
+                    {...register("cost", { valueAsNumber: true })}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   />
                   {errors.cost && (
-                    <p className="mt-1 text-sm text-red-600">{errors.cost.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.cost.message}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Notes */}
               <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="notes"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Notes (Optional)
                 </label>
                 <textarea
                   id="notes"
                   rows={3}
                   placeholder="Add any additional information about the trip..."
-                  {...register('notes')}
+                  {...register("notes")}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
                 {errors.notes && (
-                  <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.notes.message}
+                  </p>
                 )}
               </div>
 
@@ -220,7 +259,7 @@ export default function CreateTripPage() {
                       Creating...
                     </>
                   ) : (
-                    'Create Trip'
+                    "Create Trip"
                   )}
                 </button>
               </div>

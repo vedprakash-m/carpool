@@ -1,4 +1,8 @@
-import { updateTripSchema, UpdateTripRequest, Trip } from "@vcarpool/shared";
+import {
+  updateTripSchema,
+  UpdateTripRequest,
+  Trip,
+} from "../../../../types/shared";
 
 // Static params generation for build-time export
 export async function generateStaticParams() {

@@ -1,0 +1,215 @@
+// Local copy of shared types for deployment compatibility
+import { z } from "zod";
+
+// User roles
+export type UserRole = "student" | "parent" | "driver" | "admin";
+
+// Trip status
+export type TripStatus = "planned" | "active" | "completed" | "cancelled";
+
+// User interface
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  phone?: string;
+  grade?: string;
+  emergencyContact?: string;
+  preferences?: UserPreferences;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// User preferences
+export interface UserPreferences {
+  pickupLocation?: string;
+  dropoffLocation?: string;
+  preferredTime?: string;
+  isDriver?: boolean;
+  smokingAllowed?: boolean;
+  notifications?: {
+    email?: boolean;
+    sms?: boolean;
+    tripReminders?: boolean;
+    swapRequests?: boolean;
+    scheduleChanges?: boolean;
+  };
+}
+
+// Trip interface
+export interface Trip {
+  id: string;
+  driverId: string;
+  passengers: string[];
+  date: Date;
+  departureTime: string;
+  arrivalTime: string;
+  pickupLocations: PickupLocation[];
+  destination: string;
+  maxPassengers: number;
+  availableSeats: number;
+  status: TripStatus;
+  cost?: number;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PickupLocation {
+  userId: string;
+  address: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  estimatedTime: string;
+}
+
+// Trip passenger interface (for compatibility)
+export interface TripPassenger {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  pickupLocation?: string;
+  joinedAt: Date;
+  status: "confirmed" | "pending" | "cancelled";
+}
+
+// API Response wrapper
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+// Authentication types
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  department?: string;
+}
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  phoneNumber?: string;
+  department?: string;
+  grade?: string;
+  emergencyContact?: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+  refreshToken: string;
+}
+
+// Trip request types
+export interface CreateTripRequest {
+  date: string;
+  departureTime: string;
+  arrivalTime: string;
+  destination: string;
+  maxPassengers: number;
+  cost?: number;
+  notes?: string;
+}
+
+export interface UpdateTripRequest {
+  date?: string;
+  departureTime?: string;
+  arrivalTime?: string;
+  destination?: string;
+  maxPassengers?: number;
+  cost?: number;
+  notes?: string;
+  status?: TripStatus;
+}
+
+export interface JoinTripRequest {
+  pickupLocation: string;
+}
+
+// Validation schemas
+export const updateUserSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  department: z.string().optional(),
+  grade: z.string().optional(),
+  emergencyContact: z.string().optional(),
+});
+
+export const createUserSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  phoneNumber: z.string().optional(),
+  department: z.string().optional(),
+});
+
+export const createTripSchema = z.object({
+  date: z.string().min(1, "Date is required"),
+  departureTime: z.string().min(1, "Departure time is required"),
+  arrivalTime: z.string().min(1, "Arrival time is required"),
+  destination: z.string().min(1, "Destination is required"),
+  maxPassengers: z.number().min(1).max(8),
+  cost: z.number().min(0).optional(),
+  notes: z.string().optional(),
+});
+
+export const updateTripSchema = z.object({
+  date: z.string().min(1).optional(),
+  departureTime: z.string().optional(),
+  arrivalTime: z.string().optional(),
+  destination: z.string().min(1).optional(),
+  maxPassengers: z.number().min(1).max(8).optional(),
+  cost: z.number().min(0).optional(),
+  notes: z.string().optional(),
+  status: z.enum(["planned", "active", "completed", "cancelled"]).optional(),
+});
+
+export const joinTripSchema = z.object({
+  pickupLocation: z.string().min(1, "Pickup location is required"),
+});
+
+// Auth validation schemas
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const registerSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  phoneNumber: z.string().optional(),
+  department: z.string().optional(),
+});
+
+// Utility types
+export type CreateUserRequest = z.infer<typeof createUserSchema>;
+export type CreateTripRequestType = z.infer<typeof createTripSchema>;
+export type UpdateTripRequestType = z.infer<typeof updateTripSchema>;
+export type JoinTripRequestType = z.infer<typeof joinTripSchema>;
+export type LoginRequestType = z.infer<typeof loginSchema>;
+export type RegisterRequestType = z.infer<typeof registerSchema>;

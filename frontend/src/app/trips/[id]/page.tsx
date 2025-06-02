@@ -6,7 +6,7 @@ import { useAuthStore } from "../../../store/auth.store";
 import { useTripStore } from "../../../store/trip.store";
 import DashboardLayout from "../../../components/DashboardLayout";
 import LoadingSpinner from "../../../components/LoadingSpinner";
-import { Trip, TripStatus } from "@vcarpool/shared";
+import { Trip, TripStatus } from "../../../types/shared";
 import {
   CalendarIcon,
   ClockIcon,
