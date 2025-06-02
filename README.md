@@ -5,14 +5,16 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 ## 🚗 Features
 
 ### Core Features
-- **User Management**: Registration, authentication, and profile management
-- **Smart Scheduling**: Automated trip scheduling with recurring patterns
-- **Route Optimization**: AI-powered route planning for efficient carpooling
+
+- **User Management**: Registration, authentication, and profile management with password reset
+- **Trip Management**: Create, search, join, and manage carpool trips with advanced filtering
 - **Real-time Communication**: Instant notifications and trip updates
 - **Swap Requests**: Easy trip swapping between users
 - **Analytics**: Trip statistics and cost savings tracking
+- **Security**: Enterprise-grade security with JWT authentication and role-based access
 
 ### Advanced Features
+
 - **Real-time Monitoring**: Comprehensive system health monitoring and alerting
 - **Security Scanner**: Advanced threat detection and vulnerability assessment
 - **Performance Optimization**: Intelligent caching, database optimization, and API performance tuning
@@ -22,6 +24,7 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 ## 🏗️ Architecture
 
 ### Backend (Azure Functions + TypeScript)
+
 - **Runtime**: Node.js 18+ with TypeScript
 - **Database**: Azure Cosmos DB with query optimization
 - **Authentication**: JWT-based auth with refresh tokens and role-based access control
@@ -33,6 +36,7 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 - **Deployment**: Azure Functions with infrastructure optimization
 
 ### Frontend (Next.js + TypeScript)
+
 - **Framework**: Next.js 14 with App Router
 - **Styling**: Tailwind CSS
 - **State Management**: Zustand
@@ -40,11 +44,13 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 - **Deployment**: Azure Static Web Apps
 
 ### Shared Package
+
 - **Types**: Shared TypeScript interfaces
 - **Validation**: Zod schemas for API validation
 - **Utilities**: Common helper functions
 
 ### Monitoring & Security Stack
+
 - **Application Insights**: Azure-native monitoring with custom telemetry
 - **Real-time Dashboard**: Comprehensive metrics visualization
 - **Health Checks**: Automated system health monitoring
@@ -55,6 +61,7 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - npm or yarn
 - Azure Account (for deployment)
@@ -63,6 +70,7 @@ A comprehensive carpool management application built with Node.js TypeScript bac
 ### Installation
 
 1. **Clone and install dependencies**:
+
 ```bash
 git clone <repository-url>
 cd vcarpool
@@ -70,6 +78,7 @@ npm install
 ```
 
 2. **Install workspace dependencies**:
+
 ```bash
 # Install shared package dependencies
 cd shared && npm install && npm run build
@@ -84,6 +93,7 @@ cd ../frontend && npm install
 3. **Set up environment variables**:
 
 Backend (`backend/local.settings.json`):
+
 ```json
 {
   "IsEncrypted": false,
@@ -111,6 +121,7 @@ Backend (`backend/local.settings.json`):
 ```
 
 Frontend (`.env.local`):
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:7071/api
 ```
@@ -118,21 +129,25 @@ NEXT_PUBLIC_API_URL=http://localhost:7071/api
 ### Development
 
 1. **Start the shared package in watch mode**:
+
 ```bash
 cd shared && npm run dev
 ```
 
 2. **Start the backend**:
+
 ```bash
 cd backend && npm run dev
 ```
 
 3. **Start the frontend**:
+
 ```bash
 cd frontend && npm run dev
 ```
 
 Or run everything concurrently from the root:
+
 ```bash
 npm run dev
 ```
@@ -185,6 +200,7 @@ npm test
 ## 🚀 Deployment
 
 ### Backend (Azure Functions)
+
 ```bash
 cd backend
 
@@ -199,6 +215,7 @@ ENABLE_MONITORING=true ENABLE_SECURITY_SCANNER=true npm run deploy
 ```
 
 ### Frontend (Azure Static Web Apps)
+
 ```bash
 cd frontend
 
@@ -212,13 +229,16 @@ npm run deploy
 ### Production Configuration
 
 #### Azure Functions Host Configuration
+
 The application includes optimized `host.json` configuration for production:
+
 - **Performance Tuning**: Optimized timeout, retry, and concurrency settings
 - **Health Monitoring**: Built-in health check endpoints
 - **Logging**: Structured logging with Application Insights integration
 - **Security**: Enhanced security headers and CORS configuration
 
 #### Environment Variables (Production)
+
 ```bash
 # Core Application
 NODE_ENV=production
@@ -248,9 +268,11 @@ SECURITY_SCAN_INTERVAL=3600000
 ## 📈 Monitoring & Troubleshooting
 
 ### Accessing Monitoring Dashboard
+
 The application provides comprehensive monitoring through multiple interfaces:
 
 #### Local Development
+
 ```bash
 # Start monitoring dashboard
 cd backend
@@ -264,6 +286,7 @@ curl http://localhost:7071/api/monitoring/dashboard
 ```
 
 #### Production Monitoring
+
 - **Application Insights**: Real-time telemetry and performance monitoring
 - **Health Endpoints**: Automated health checks with detailed system status
 - **Custom Dashboard**: Advanced monitoring dashboard with business metrics
@@ -272,12 +295,14 @@ curl http://localhost:7071/api/monitoring/dashboard
 ### Key Metrics to Monitor
 
 #### System Health
+
 - **Memory Usage**: Heap usage percentage and trends
 - **Response Times**: P95/P99 response times across endpoints
 - **Error Rates**: Request error rates and failure patterns
 - **Cache Performance**: Hit rates and cache efficiency
 
 #### Business Metrics
+
 - **User Activity**: Daily/weekly/monthly active users
 - **Trip Statistics**: Created trips, completed rides, user engagement
 - **System Performance**: Function executions, cold starts, resource usage
@@ -285,6 +310,7 @@ curl http://localhost:7071/api/monitoring/dashboard
 ### Troubleshooting Common Issues
 
 #### High Memory Usage
+
 ```bash
 # Check memory stats
 curl http://localhost:7071/api/monitoring/performance
@@ -296,6 +322,7 @@ curl http://localhost:7071/api/monitoring/performance
 ```
 
 #### Slow Response Times
+
 ```bash
 # Analyze performance metrics
 curl http://localhost:7071/api/monitoring/dashboard
@@ -307,6 +334,7 @@ curl http://localhost:7071/api/monitoring/dashboard
 ```
 
 #### Security Alerts
+
 ```bash
 # Review security scan results
 curl http://localhost:7071/api/security/scan
@@ -320,17 +348,20 @@ curl http://localhost:7071/api/security/scan
 ## 🔧 API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - User registration with validation
 - `POST /api/auth/login` - User login with security monitoring
 - `POST /api/auth/refresh` - Refresh access token
 - `POST /api/auth/logout` - Secure logout
 
 ### Users
+
 - `GET /api/users/me` - Get current user profile
 - `PUT /api/users/me` - Update user profile
 - `GET /api/users/:id` - Get user by ID (with permissions)
 
 ### Trips
+
 - `GET /api/trips` - List trips with advanced filtering
 - `POST /api/trips` - Create new trip with optimization
 - `PUT /api/trips/:id` - Update trip
@@ -339,12 +370,14 @@ curl http://localhost:7071/api/security/scan
 - `POST /api/trips/:id/leave` - Leave trip
 
 ### Schedules
+
 - `GET /api/schedules` - Get user schedules
 - `POST /api/schedules` - Create recurring schedule
 - `PUT /api/schedules/:id` - Update schedule
 - `DELETE /api/schedules/:id` - Delete schedule
 
 ### Monitoring & Admin
+
 - `GET /api/monitoring/health` - System health check
 - `GET /api/monitoring/dashboard` - Monitoring dashboard metrics
 - `GET /api/monitoring/performance` - Performance metrics
@@ -354,55 +387,67 @@ curl http://localhost:7071/api/security/scan
 ## 📊 Enhanced Features
 
 ### Advanced Monitoring & Analytics
+
 The application includes a comprehensive monitoring system with:
 
 #### Real-time Dashboard
+
 - **System Metrics**: CPU, memory, disk usage, and network statistics
 - **Performance Metrics**: Response times, throughput, error rates, and cache hit rates
 - **Business Metrics**: Active users, trip statistics, user engagement metrics
 - **Security Metrics**: Threat detection, risk scoring, failed auth attempts
 
 #### Health Monitoring
+
 - **Automated Health Checks**: Cache, memory, database, and connection pool monitoring
 - **Performance Alerts**: Configurable thresholds for response times and error rates
 - **Infrastructure Monitoring**: Cold start optimization and resource usage tracking
 
 ### Security & Threat Detection
+
 Advanced security features including:
 
 #### Security Scanner
+
 - **Vulnerability Assessment**: Automated scanning for security vulnerabilities
 - **Threat Detection**: Real-time analysis of security threats
 - **Risk Scoring**: Dynamic risk assessment and mitigation recommendations
 - **Compliance Monitoring**: Security best practices and compliance checking
 
 #### Access Control
+
 - **Role-based Access Control (RBAC)**: Admin, Parent, Student roles
 - **JWT Security**: Secure token management with refresh tokens
 - **Input Validation**: Comprehensive request validation and sanitization
 
 ### Performance Optimization
+
 Comprehensive performance enhancements:
 
 #### Caching Strategy
+
 - **Multi-layer Caching**: Memory and distributed caching with intelligent invalidation
 - **Query Optimization**: Database query optimization and connection pooling
 - **Response Compression**: Automatic response compression and optimization
 
 #### API Optimization
+
 - **Request Batching**: Bulk operations for improved throughput
 - **Response Optimization**: Pagination, filtering, and data optimization
 - **Performance Monitoring**: Real-time tracking of API performance metrics
 
 ### Infrastructure Optimization
+
 Azure Functions optimization features:
 
 #### Cold Start Optimization
+
 - **Pre-warming**: Automatic function pre-warming to reduce cold starts
 - **Memory Management**: Intelligent memory optimization and cleanup
 - **Connection Pooling**: Efficient database and external service connections
 
 #### Resource Management
+
 - **Graceful Shutdown**: Proper resource cleanup on function termination
 - **Memory Monitoring**: Automatic memory usage monitoring and optimization
 - **Performance Tuning**: Continuous performance monitoring and optimization
@@ -412,6 +457,7 @@ Azure Functions optimization features:
 Please read our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information on how to contribute to this project.
 
 ### Development Workflow
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Follow the TypeScript coding standards and best practices
@@ -422,6 +468,7 @@ Please read our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information
 8. Open a Pull Request
 
 ### Code Quality Standards
+
 - **TypeScript**: Strict mode enabled with comprehensive type checking
 - **Testing**: Unit tests for business logic, integration tests for APIs
 - **Security**: Security scanning and vulnerability assessment
@@ -429,6 +476,7 @@ Please read our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information
 - **Documentation**: Comprehensive code documentation and API specs
 
 ### Testing Enhanced Features
+
 ```bash
 # Run all tests including monitoring and security
 npm run test:full
@@ -448,17 +496,20 @@ npm run test:performance
 For support with the enhanced vCarpool application:
 
 ### Documentation
+
 - **API Documentation**: Comprehensive API documentation with monitoring endpoints
 - **Monitoring Guide**: Detailed monitoring and troubleshooting guide
 - **Security Guide**: Security best practices and threat mitigation
 
 ### Contact
+
 - **Email**: support@vcarpool.com
 - **Issues**: Create an issue in the repository for bugs or feature requests
 - **Monitoring Issues**: Use the built-in monitoring dashboard for system health
 - **Security Concerns**: Report security issues through the security scanner or contact directly
 
 ### Monitoring & Health Checks
+
 - **Health Endpoint**: `/api/monitoring/health` for real-time system status
 - **Dashboard**: `/api/monitoring/dashboard` for comprehensive metrics
 - **Security Scanner**: `/api/security/scan` for security assessment
