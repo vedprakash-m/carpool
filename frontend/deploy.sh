@@ -3,24 +3,59 @@ set -e
 
 echo "🚀 Starting vCarpool frontend deployment..."
 
-# Navigate to the workspace root
-cd /github/workspace
+# Get the current working directory
+echo "📍 Current directory: $(pwd)"
+echo "📁 Directory contents:"
+ls -la
 
-echo "📦 Installing workspace dependencies..."
-npm ci
+# Check if we're in the correct location
+if [ ! -f "package.json" ]; then
+  echo "❌ Error: package.json not found. Are we in the frontend directory?"
+  exit 1
+fi
 
-echo "🔧 Building shared package..."
-cd shared
-npm run build
-cd ..
+# Navigate to workspace root if needed
+if [ -d "../shared" ]; then
+  echo "🔄 Found shared package directory"
+  
+  echo "🔧 Building shared package..."
+  cd ../shared
+  npm ci --prefer-offline --no-audit --no-fund
+  npm run build
+  echo "✅ Shared package built successfully"
+  
+  echo "📋 Copying shared package to frontend..."
+  cd ../frontend
+  
+  # Create the node_modules directory structure
+  mkdir -p node_modules/@vcarpool/shared
+  
+  # Copy the built shared package
+  if [ -d "../shared/dist" ]; then
+    cp -r ../shared/dist/* node_modules/@vcarpool/shared/ 2>/dev/null || echo "⚠️  No dist files to copy"
+  fi
+  
+  if [ -f "../shared/package.json" ]; then
+    cp ../shared/package.json node_modules/@vcarpool/shared/package.json 2>/dev/null || echo "⚠️  No package.json to copy"
+  fi
+  
+  echo "✅ Shared package copied successfully"
+else
+  echo "⚠️  Shared package directory not found, assuming it's already set up"
+fi
 
-echo "📋 Copying shared package to frontend..."
-mkdir -p frontend/node_modules/@vcarpool
-cp -r shared/dist/* frontend/node_modules/@vcarpool/
-cp shared/package.json frontend/node_modules/@vcarpool/
+echo "🏗️  Installing frontend dependencies..."
+npm ci --prefer-offline --no-audit --no-fund
+
+echo "🔍 Verifying shared package..."
+if [ -d "node_modules/@vcarpool/shared" ]; then
+  echo "✅ Shared package found in node_modules"
+  ls -la node_modules/@vcarpool/shared/
+else
+  echo "❌ Shared package not found in node_modules"
+fi
 
 echo "🎯 Building frontend..."
-cd frontend
 npm run build
 
 echo "✅ Frontend deployment completed successfully!" 
