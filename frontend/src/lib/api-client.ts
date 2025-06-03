@@ -16,6 +16,9 @@ const MOCK_USER = {
       email: true,
       push: true,
       sms: false,
+      tripReminders: true,
+      swapRequests: true,
+      scheduleChanges: true,
     },
     privacy: {
       showPhoneNumber: true,
@@ -27,8 +30,8 @@ const MOCK_USER = {
     isDriver: true,
     smokingAllowed: false,
   },
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 export class ApiClient {
