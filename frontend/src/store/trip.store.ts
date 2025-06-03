@@ -37,6 +37,24 @@ interface TripStore {
   setCurrentTrip: (trip: Trip | null) => void;
   clearError: () => void;
   reset: () => void;
+  searchTrips: (searchFilters: {
+    searchQuery?: string;
+    destination?: string;
+    origin?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    maxPrice?: number;
+    minSeats?: number;
+    sortBy?:
+      | "date"
+      | "price"
+      | "destination"
+      | "availableSeats"
+      | "departureTime";
+    sortOrder?: "asc" | "desc";
+    page?: number;
+    limit?: number;
+  }) => Promise<void>;
 }
 
 const initialState = {
@@ -305,5 +323,27 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   reset: () => {
     set(initialState);
+  },
+
+  searchTrips: async (searchFilters) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await tripApi.searchTrips(searchFilters);
+      if (response.success && response.data && response.pagination) {
+        set({
+          trips: response.data,
+          pagination: response.pagination,
+          loading: false,
+        });
+      } else {
+        set({
+          error: response.error || "Failed to search trips",
+          loading: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error searching trips:", error);
+      set({ error: "Failed to search trips", loading: false });
+    }
   },
 }));

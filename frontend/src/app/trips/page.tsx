@@ -23,7 +23,10 @@ import {
   PlusIcon as PlusOutlineIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/outline";
+import AdvancedTripSearch from "../../components/AdvancedTripSearch";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 type TabType = "my-trips" | "available" | "driving";
 
@@ -171,6 +174,7 @@ const TripsPage = withPerformanceMonitoring(() => {
     error,
     fetchMyTrips,
     fetchAvailableTrips,
+    searchTrips,
     joinTrip,
     leaveTrip,
     clearError,
@@ -303,16 +307,13 @@ const TripsPage = withPerformanceMonitoring(() => {
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             {/* Search */}
             <div className="flex-1 w-full sm:w-auto">
-              <div className="relative">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search destinations or notes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                />
-              </div>
+              <AdvancedTripSearch
+                onSearch={(filters) => {
+                  // Use the advanced search functionality
+                  searchTrips(filters);
+                }}
+                loading={loading}
+              />
             </div>
 
             {/* Filters */}

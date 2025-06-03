@@ -13,6 +13,20 @@ export interface TripFilters {
   passengerId?: string;
   status?: string;
   date?: string;
+  destination?: string;
+  origin?: string;
+  maxPrice?: number;
+  minSeats?: number;
+  searchQuery?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?:
+    | "date"
+    | "price"
+    | "destination"
+    | "availableSeats"
+    | "departureTime";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -204,6 +218,46 @@ class TripApiService {
     const response = await apiClient.get<ApiResponse<Trip>>(`/trips/${tripId}`);
     if (!response.data) {
       throw new Error("Failed to fetch trip");
+    }
+    return response.data;
+  }
+
+  /**
+   * Search trips with advanced filters
+   */
+  async searchTrips(searchFilters: {
+    searchQuery?: string;
+    destination?: string;
+    origin?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    maxPrice?: number;
+    minSeats?: number;
+    sortBy?:
+      | "date"
+      | "price"
+      | "destination"
+      | "availableSeats"
+      | "departureTime";
+    sortOrder?: "asc" | "desc";
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponse<Trip>> {
+    const params = new URLSearchParams();
+
+    // Convert search filters to query parameters
+    Object.entries(searchFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        params.append(key, value.toString());
+      }
+    });
+
+    const queryString = params.toString();
+    const url = `/trips${queryString ? `?${queryString}` : ""}`;
+
+    const response = await apiClient.get<PaginatedResponse<Trip>>(url);
+    if (!response.data) {
+      throw new Error("Failed to search trips");
     }
     return response.data;
   }
