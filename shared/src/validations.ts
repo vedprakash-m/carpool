@@ -144,3 +144,103 @@ export const userQuerySchema = z
     isDriver: z.boolean().optional(),
   })
   .merge(paginationSchema);
+
+// Message validation schemas
+export const sendMessageSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Message content is required")
+    .max(2000, "Message too long"),
+  type: z.enum(["text", "location", "system", "image"]).default("text"),
+  metadata: z
+    .object({
+      location: z
+        .object({
+          latitude: z.number().min(-90).max(90),
+          longitude: z.number().min(-180).max(180),
+          address: z.string().optional(),
+        })
+        .optional(),
+      imageUrl: z.string().url().optional(),
+    })
+    .optional(),
+});
+
+export const createChatSchema = z.object({
+  tripId: z.string().uuid("Invalid trip ID"),
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).optional(),
+});
+
+export const updateMessageSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Message content is required")
+    .max(2000, "Message too long"),
+});
+
+// Notification validation schemas
+export const createNotificationSchema = z.object({
+  userId: z.string().uuid("Invalid user ID"),
+  type: z.enum([
+    "trip_joined",
+    "trip_left",
+    "trip_cancelled",
+    "trip_updated",
+    "message_received",
+    "trip_reminder",
+    "pickup_reminder",
+  ]),
+  title: z.string().min(1).max(200),
+  message: z.string().min(1).max(1000),
+  data: z.record(z.any()).optional(),
+  expiresAt: z.string().datetime().optional(),
+});
+
+// Chat validation schemas
+export const chatIdParamSchema = z.object({
+  chatId: z.string().uuid("Invalid chat ID"),
+});
+
+export const messageIdParamSchema = z.object({
+  messageId: z.string().uuid("Invalid message ID"),
+});
+
+export const notificationIdParamSchema = z.object({
+  notificationId: z.string().uuid("Invalid notification ID"),
+});
+
+// Query schemas for messaging
+export const messagesQuerySchema = z
+  .object({
+    chatId: z.string().uuid("Invalid chat ID"),
+    before: z.string().datetime().optional(),
+    after: z.string().datetime().optional(),
+    limit: z.number().min(1).max(100).default(50),
+  })
+  .merge(paginationSchema);
+
+export const chatsQuerySchema = z
+  .object({
+    tripId: z.string().uuid().optional(),
+    includeInactive: z.boolean().default(false),
+  })
+  .merge(paginationSchema);
+
+export const notificationsQuerySchema = z
+  .object({
+    type: z
+      .enum([
+        "trip_joined",
+        "trip_left",
+        "trip_cancelled",
+        "trip_updated",
+        "message_received",
+        "trip_reminder",
+        "pickup_reminder",
+      ])
+      .optional(),
+    read: z.boolean().optional(),
+    before: z.string().datetime().optional(),
+  })
+  .merge(paginationSchema);

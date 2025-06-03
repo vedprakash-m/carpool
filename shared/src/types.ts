@@ -9,7 +9,7 @@ export interface User {
   emergencyContact?: string;
   phone?: string; // Alias for phoneNumber
   grade?: string;
-  role?: 'student' | 'parent' | 'admin' | 'faculty' | 'staff';
+  role?: "student" | "parent" | "admin" | "faculty" | "staff";
   preferences: UserPreferences;
   createdAt: Date;
   updatedAt: Date;
@@ -63,7 +63,7 @@ export interface PickupLocation {
   estimatedTime: string;
 }
 
-export type TripStatus = 'planned' | 'active' | 'completed' | 'cancelled';
+export type TripStatus = "planned" | "active" | "completed" | "cancelled";
 
 // Schedule types
 export interface Schedule {
@@ -81,7 +81,7 @@ export interface Schedule {
   updatedAt: Date;
 }
 
-export type ScheduleStatus = 'active' | 'paused' | 'inactive';
+export type ScheduleStatus = "active" | "paused" | "inactive";
 
 // Swap request types
 export interface SwapRequest {
@@ -96,7 +96,11 @@ export interface SwapRequest {
   respondedAt?: Date;
 }
 
-export type SwapRequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
+export type SwapRequestStatus =
+  | "pending"
+  | "accepted"
+  | "rejected"
+  | "cancelled";
 
 // API Response types
 export interface ApiResponse<T = any> {
@@ -187,7 +191,7 @@ export interface EmailRequest {
   to: string[];
   templateId: string;
   variables: Record<string, any>;
-  priority?: 'low' | 'normal' | 'high';
+  priority?: "low" | "normal" | "high";
 }
 
 // Analytics types
@@ -198,4 +202,133 @@ export interface TripAnalytics {
   costSavings: number;
   co2Reduction: number;
   timeframe: string;
+}
+
+// Notification types
+export type NotificationType =
+  | "trip_joined"
+  | "trip_left"
+  | "trip_cancelled"
+  | "trip_updated"
+  | "message_received"
+  | "trip_reminder"
+  | "pickup_reminder";
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  data?: Record<string, any>;
+  read: boolean;
+  createdAt: Date;
+  expiresAt?: Date;
+}
+
+// Message and Chat types
+export type MessageType = "text" | "location" | "system" | "image";
+
+export interface Message {
+  id: string;
+  chatId: string;
+  senderId: string;
+  senderName: string;
+  type: MessageType;
+  content: string;
+  metadata?: {
+    location?: {
+      latitude: number;
+      longitude: number;
+      address?: string;
+    };
+    imageUrl?: string;
+    systemEventType?: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+  editedAt?: Date;
+  deletedAt?: Date;
+}
+
+export interface ChatRoom {
+  id: string;
+  tripId: string;
+  type: "trip_chat";
+  name: string;
+  description?: string;
+  participants: string[]; // Array of user IDs
+  createdBy: string;
+  lastMessage?: {
+    id: string;
+    content: string;
+    senderId: string;
+    senderName: string;
+    timestamp: Date;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+}
+
+export interface ChatParticipant {
+  userId: string;
+  chatId: string;
+  role: "driver" | "passenger";
+  joinedAt: Date;
+  lastReadAt?: Date;
+  notificationsEnabled: boolean;
+}
+
+// Real-time event types
+export interface RealTimeEvent {
+  type: "message" | "user_joined" | "user_left" | "typing" | "trip_update";
+  chatId?: string;
+  tripId?: string;
+  userId: string;
+  data: any;
+  timestamp: Date;
+}
+
+// Request types for messaging
+export interface SendMessageRequest {
+  content: string;
+  type: MessageType;
+  metadata?: {
+    location?: {
+      latitude: number;
+      longitude: number;
+      address?: string;
+    };
+    imageUrl?: string;
+  };
+}
+
+export interface CreateChatRequest {
+  tripId: string;
+  name?: string;
+  description?: string;
+}
+
+export interface UpdateMessageRequest {
+  content: string;
+}
+
+export interface CreateNotificationRequest {
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  data?: Record<string, any>;
+  expiresAt?: Date;
+}
+
+// Response types for messaging
+export interface ChatRoomWithUnreadCount extends ChatRoom {
+  unreadCount: number;
+  userRole: "driver" | "passenger";
+}
+
+export interface MessageWithSender extends Message {
+  isOwnMessage: boolean;
 }

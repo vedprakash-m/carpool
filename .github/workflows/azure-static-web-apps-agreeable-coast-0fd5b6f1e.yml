@@ -1,0 +1,103 @@
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            shared/package-lock.json
+            frontend/package-lock.json
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+
+      - name: Build Shared Package
+        run: |
+          cd shared
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run build
+          cd ..
+
+      - name: Prepare Frontend Dependencies
+        run: |
+          cd frontend
+          # Copy shared package locally to avoid symlink issues
+          mkdir -p node_modules/@vcarpool
+          cp -r ../shared/dist/* node_modules/@vcarpool/ || true
+          cp ../shared/package.json node_modules/@vcarpool/ || true
+          
+          # Install with optimizations
+          npm ci --prefer-offline --no-audit --no-fund --production=false
+          
+          # Clear cache to reduce memory usage
+          npm cache clean --force
+          cd ..
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_COAST_0FD5B6F1E }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/frontend"
+          api_location: ""
+          output_location: "out"
+          deployment_environment: "production"
+        env:
+          # Node.js Memory Optimization
+          NODE_OPTIONS: '--max-old-space-size=4096 --max-semi-space-size=512'
+          
+          # Build Performance
+          NEXT_TELEMETRY_DISABLED: '1'
+          NODE_ENV: 'production'
+          SKIP_ENV_VALIDATION: '1'
+          FAST_BUILD: '1'
+          
+          # Disable unnecessary features
+          DISABLE_SOURCE_MAPS: '1'
+          DISABLE_BUNDLE_ANALYZER: '1'
+          
+          # Azure SWA specific
+          NEXT_PUBLIC_API_URL: 'https://vcarpool-backend.azurewebsites.net/api'
+          
+          # CI optimization
+          CI: '1'
+          NPM_CONFIG_PROGRESS: 'false'
+          NPM_CONFIG_LOGLEVEL: 'error'
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_COAST_0FD5B6F1E }}
+          action: "close" 

@@ -1,0 +1,87 @@
+import {
+  app,
+  HttpRequest,
+  HttpResponseInit,
+  InvocationContext,
+} from "@azure/functions";
+import { containers } from "../config/database";
+import { MessagingService } from "../services/messaging.service";
+import {
+  MessageRepository,
+  ChatRepository,
+  ChatParticipantRepository,
+} from "../repositories/message.repository";
+import { UserRepository } from "../repositories/user.repository";
+import { TripRepository } from "../repositories/trip.repository";
+import { handleRequest } from "../utils/request-handler";
+import { handleValidation } from "../utils/validation-handler";
+import { messagesQuerySchema } from "@vcarpool/shared";
+
+export async function messagesGet(
+  request: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+  return handleRequest(request, context, async (userId: string) => {
+    // Validate query parameters
+    const query = handleValidation(messagesQuerySchema, {
+      chatId: request.query.get("chatId"),
+      before: request.query.get("before"),
+      after: request.query.get("after"),
+      page: parseInt(request.query.get("page") || "1"),
+      limit: parseInt(request.query.get("limit") || "50"),
+    });
+
+    // Initialize repositories and service
+    const messageRepository = new MessageRepository(containers.messages);
+    const chatRepository = new ChatRepository(containers.chats);
+    const participantRepository = new ChatParticipantRepository(
+      containers.chatParticipants
+    );
+    const userRepository = new UserRepository(containers.users);
+    const tripRepository = new TripRepository(containers.trips);
+
+    const messagingService = new MessagingService(
+      messageRepository,
+      chatRepository,
+      participantRepository,
+      userRepository,
+      tripRepository
+    );
+
+    // Calculate offset for pagination
+    const offset = (query.page - 1) * query.limit;
+
+    // Get messages
+    const { messages, total } = await messagingService.getMessages(
+      query.chatId,
+      userId,
+      {
+        limit: query.limit,
+        offset,
+        before: query.before ? new Date(query.before) : undefined,
+        after: query.after ? new Date(query.after) : undefined,
+      }
+    );
+
+    return {
+      status: 200,
+      jsonBody: {
+        success: true,
+        data: messages,
+        pagination: {
+          page: query.page,
+          limit: query.limit,
+          total,
+          totalPages: Math.ceil(total / query.limit),
+        },
+      },
+    };
+  });
+}
+
+app.http("messages-get", {
+  methods: ["GET"],
+  authLevel: "anonymous",
+  route: "chats/{chatId}/messages",
+  handler: messagesGet,
+});
