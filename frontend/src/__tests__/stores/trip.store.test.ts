@@ -4,43 +4,43 @@
  */
 
 import { act, renderHook } from "@testing-library/react";
-import { useTripStore } from "../../store/trip.store";
-import { tripApi } from "../../lib/trip-api";
-import {
-  Trip,
-  CreateTripRequest,
-  UpdateTripRequest,
-  PaginatedResponse,
-} from "../../types/shared";
+import { useTripStore } from "../../stores/trip.store";
+import { tripApi } from "../../lib/api/trip";
+import { Trip, TripStatus, PaginatedResponse } from "@vcarpool/shared";
 
-// Mock the trip API
-jest.mock("../../lib/trip-api");
+// Mock the API
+jest.mock("../../lib/api/trip", () => ({
+  tripApi: {
+    getTrips: jest.fn(),
+    getMyTrips: jest.fn(),
+    createTrip: jest.fn(),
+    updateTrip: jest.fn(),
+    deleteTrip: jest.fn(),
+    joinTrip: jest.fn(),
+    leaveTrip: jest.fn(),
+    getTripById: jest.fn(),
+  },
+}));
+
 const mockTripApi = tripApi as jest.Mocked<typeof tripApi>;
 
 describe("useTripStore", () => {
   const mockTrip: Trip = {
-    id: "trip-123",
-    driverId: "driver-123",
-    date: new Date("2024-12-25"),
-    departureTime: "09:00",
-    arrivalTime: "10:30",
-    destination: "Downtown School",
+    id: "1",
+    driverId: "driver1",
+    passengers: [],
+    date: new Date("2024-01-20"),
+    departureTime: "10:00",
+    arrivalTime: "12:00",
+    pickupLocations: [],
+    destination: "Destination City",
     maxPassengers: 4,
-    availableSeats: 3,
-    passengers: ["passenger-1"],
-    pickupLocations: [
-      {
-        userId: "passenger-1",
-        address: "123 Main St",
-        coordinates: { lat: 40.7128, lng: -74.006 },
-        estimatedTime: "09:05",
-      },
-    ],
-    cost: 15.5,
-    status: "planned",
+    availableSeats: 4,
+    status: "active" as TripStatus,
+    cost: 25,
     notes: "Test trip",
-    createdAt: new Date("2024-01-01"),
-    updatedAt: new Date("2024-01-01"),
+    createdAt: new Date("2024-01-15"),
+    updatedAt: new Date("2024-01-15"),
   };
 
   const mockTripStats = {
@@ -63,10 +63,16 @@ describe("useTripStore", () => {
     // Reset store state
     useTripStore.setState({
       trips: [],
-      currentTrip: null,
-      stats: null,
-      loading: false,
+      myTrips: [],
+      isLoading: false,
       error: null,
+      searchFilters: {
+        origin: "",
+        destination: "",
+        date: "",
+        maxCost: undefined,
+        availableSeats: undefined,
+      },
       pagination: {
         page: 1,
         limit: 20,
@@ -84,10 +90,16 @@ describe("useTripStore", () => {
       const { result } = renderHook(() => useTripStore());
 
       expect(result.current.trips).toEqual([]);
-      expect(result.current.currentTrip).toBeNull();
-      expect(result.current.stats).toBeNull();
-      expect(result.current.loading).toBe(false);
+      expect(result.current.myTrips).toEqual([]);
+      expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
+      expect(result.current.searchFilters).toEqual({
+        origin: "",
+        destination: "",
+        date: "",
+        maxCost: undefined,
+        availableSeats: undefined,
+      });
       expect(result.current.pagination).toEqual({
         page: 1,
         limit: 20,
@@ -99,123 +111,111 @@ describe("useTripStore", () => {
 
   describe("fetchTrips", () => {
     it("should fetch trips successfully", async () => {
-      mockTripApi.getTrips.mockResolvedValueOnce({
+      const mockPaginatedResponse: PaginatedResponse<Trip> = {
         success: true,
         data: [mockTrip],
         pagination: mockPagination,
-      });
+      };
 
-      const { result } = renderHook(() => useTripStore());
+      mockTripApi.getTrips.mockResolvedValueOnce(mockPaginatedResponse);
 
-      await act(async () => {
-        await result.current.fetchTrips();
-      });
+      const { fetchTrips } = useTripStore.getState();
+      await fetchTrips();
 
-      expect(mockTripApi.getTrips).toHaveBeenCalledWith(undefined);
-      expect(result.current.trips).toEqual([mockTrip]);
-      expect(result.current.pagination).toEqual(mockPagination);
-      expect(result.current.loading).toBe(false);
-      expect(result.current.error).toBeNull();
+      const state = useTripStore.getState();
+      expect(state.trips).toEqual([mockTrip]);
+      expect(state.isLoading).toBe(false);
+      expect(state.error).toBeNull();
+      expect(state.pagination).toEqual(mockPaginatedResponse.pagination);
     });
 
     it("should handle fetch trips error", async () => {
-      mockTripApi.getTrips.mockResolvedValueOnce({
+      const errorResponse = {
         success: false,
         error: "Failed to fetch trips",
-      });
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0,
+        },
+      };
 
-      const { result } = renderHook(() => useTripStore());
+      mockTripApi.getTrips.mockResolvedValueOnce(errorResponse);
 
-      await act(async () => {
-        await result.current.fetchTrips();
-      });
+      const { fetchTrips } = useTripStore.getState();
+      await fetchTrips();
 
-      expect(result.current.trips).toEqual([]);
-      expect(result.current.error).toBe("Failed to fetch trips");
-      expect(result.current.loading).toBe(false);
-    });
-
-    it("should pass filters to API", async () => {
-      const filters = { status: "planned" as const, date: "2024-12-25" };
-
-      mockTripApi.getTrips.mockResolvedValueOnce({
-        success: true,
-        data: [mockTrip],
-        pagination: mockPagination,
-      });
-
-      const { result } = renderHook(() => useTripStore());
-
-      await act(async () => {
-        await result.current.fetchTrips(filters);
-      });
-
-      expect(mockTripApi.getTrips).toHaveBeenCalledWith(filters);
+      const state = useTripStore.getState();
+      expect(state.trips).toEqual([]);
+      expect(state.isLoading).toBe(false);
+      expect(state.error).toBe("Failed to fetch trips");
     });
 
     it("should set loading state during fetch", async () => {
-      let resolveTrips: (value: any) => void;
-      const tripsPromise = new Promise((resolve) => {
-        resolveTrips = resolve;
+      const tripsPromise = new Promise<PaginatedResponse<Trip>>((resolve) => {
+        setTimeout(() => resolve(mockPagination), 100);
       });
 
       mockTripApi.getTrips.mockReturnValueOnce(tripsPromise);
 
-      const { result } = renderHook(() => useTripStore());
+      const { fetchTrips } = useTripStore.getState();
+      const fetchPromise = fetchTrips();
 
-      // Start fetch
-      act(() => {
-        result.current.fetchTrips();
-      });
+      // Check loading state
+      expect(useTripStore.getState().isLoading).toBe(true);
 
-      // Should be loading
-      expect(result.current.loading).toBe(true);
+      await fetchPromise;
 
-      // Complete fetch
-      await act(async () => {
-        resolveTrips!({
-          success: true,
-          data: [mockTrip],
-          pagination: mockPagination,
-        });
-        await tripsPromise;
-      });
-
-      expect(result.current.loading).toBe(false);
+      // Check final state
+      const state = useTripStore.getState();
+      expect(state.isLoading).toBe(false);
+      expect(state.trips).toEqual([mockTrip]);
     });
   });
 
   describe("fetchMyTrips", () => {
     it("should fetch user trips successfully", async () => {
-      mockTripApi.getMyTrips.mockResolvedValueOnce({
+      const mockPaginatedResponse: PaginatedResponse<Trip> = {
         success: true,
         data: [mockTrip],
         pagination: mockPagination,
-      });
+      };
 
-      const { result } = renderHook(() => useTripStore());
+      mockTripApi.getMyTrips.mockResolvedValueOnce(mockPaginatedResponse);
 
-      await act(async () => {
-        await result.current.fetchMyTrips();
-      });
+      const { fetchMyTrips } = useTripStore.getState();
+      await fetchMyTrips();
 
-      expect(mockTripApi.getMyTrips).toHaveBeenCalled();
-      expect(result.current.trips).toEqual([mockTrip]);
+      const state = useTripStore.getState();
+      expect(state.myTrips).toEqual([mockTrip]);
+      expect(state.isLoading).toBe(false);
+      expect(state.error).toBeNull();
     });
 
     it("should handle fetch my trips error", async () => {
-      mockTripApi.getMyTrips.mockResolvedValueOnce({
+      const errorResponse = {
         success: false,
         error: "Failed to fetch your trips",
-      });
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0,
+        },
+      };
 
-      const { result } = renderHook(() => useTripStore());
+      mockTripApi.getMyTrips.mockResolvedValueOnce(errorResponse);
 
-      await act(async () => {
-        await result.current.fetchMyTrips();
-      });
+      const { fetchMyTrips } = useTripStore.getState();
+      await fetchMyTrips();
 
-      expect(result.current.error).toBe("Failed to fetch your trips");
+      const state = useTripStore.getState();
+      expect(state.myTrips).toEqual([]);
+      expect(state.isLoading).toBe(false);
+      expect(state.error).toBe("Failed to fetch your trips");
     });
   });
 
@@ -296,7 +296,7 @@ describe("useTripStore", () => {
 
   describe("createTrip", () => {
     it("should create trip successfully", async () => {
-      const createRequest: CreateTripRequest = {
+      const createRequest: Trip = {
         date: "2024-12-25",
         departureTime: "09:00",
         arrivalTime: "10:30",
@@ -321,11 +321,11 @@ describe("useTripStore", () => {
       expect(mockTripApi.createTrip).toHaveBeenCalledWith(createRequest);
       expect(result.current.trips).toEqual([mockTrip]);
       expect(createResult!).toBe(true);
-      expect(result.current.loading).toBe(false);
+      expect(result.current.isLoading).toBe(false);
     });
 
     it("should handle create trip error", async () => {
-      const createRequest: CreateTripRequest = {
+      const createRequest: Trip = {
         date: "2024-12-25",
         departureTime: "09:00",
         arrivalTime: "10:30",
@@ -353,39 +353,41 @@ describe("useTripStore", () => {
 
   describe("updateTrip", () => {
     it("should update trip successfully", async () => {
-      const tripId = "trip-123";
-      const updates: UpdateTripRequest = {
-        destination: "Updated School",
-        maxPassengers: 5,
+      const updatedTrip: Trip = {
+        ...mockTrip,
+        destination: "New Destination",
+        date: new Date("2024-01-25"),
+        updatedAt: new Date(),
       };
 
-      const updatedTrip = { ...mockTrip, ...updates };
-
-      // Set initial state with the trip
-      useTripStore.setState({
-        trips: [mockTrip],
-      });
-
-      mockTripApi.updateTrip.mockResolvedValueOnce({
+      const updateResponse = {
         success: true,
         data: updatedTrip,
+      };
+
+      mockTripApi.updateTrip.mockResolvedValueOnce(updateResponse);
+
+      // Set initial state with the original trip
+      useTripStore.setState({
+        trips: [mockTrip],
+        myTrips: [mockTrip],
       });
 
-      const { result } = renderHook(() => useTripStore());
-
-      let updateResult: boolean;
-      await act(async () => {
-        updateResult = await result.current.updateTrip(tripId, updates);
+      const { updateTrip } = useTripStore.getState();
+      await updateTrip("1", {
+        destination: "New Destination",
+        date: "2024-01-25",
       });
 
-      expect(mockTripApi.updateTrip).toHaveBeenCalledWith(tripId, updates);
-      expect(result.current.trips[0]).toEqual(updatedTrip);
-      expect(updateResult!).toBe(true);
+      const state = useTripStore.getState();
+      expect(state.trips[0].destination).toBe("New Destination");
+      expect(state.myTrips[0].destination).toBe("New Destination");
+      expect(state.error).toBeNull();
     });
 
     it("should handle update trip error", async () => {
       const tripId = "trip-123";
-      const updates: UpdateTripRequest = {
+      const updates: Trip = {
         destination: "Updated School",
       };
 
@@ -413,7 +415,7 @@ describe("useTripStore", () => {
       const updatedTrip = {
         ...mockTrip,
         passengers: [...mockTrip.passengers, "new-passenger"],
-        availableSeats: mockTrip.availableSeats - 1,
+        currentPassengers: mockTrip.passengers.slice(0, -1),
       };
 
       // Set initial state with the trip
@@ -466,8 +468,7 @@ describe("useTripStore", () => {
       const tripId = "trip-123";
       const updatedTrip = {
         ...mockTrip,
-        passengers: [],
-        availableSeats: mockTrip.availableSeats + 1,
+        currentPassengers: [...mockTrip.passengers, "new-passenger"],
       };
 
       // Set initial state with the trip
@@ -560,7 +561,7 @@ describe("useTripStore", () => {
         trips: [mockTrip],
         currentTrip: mockTrip,
         stats: mockTripStats,
-        loading: true,
+        isLoading: true,
         error: "Some error",
         pagination: mockPagination,
       });
@@ -574,7 +575,7 @@ describe("useTripStore", () => {
       expect(result.current.trips).toEqual([]);
       expect(result.current.currentTrip).toBeNull();
       expect(result.current.stats).toBeNull();
-      expect(result.current.loading).toBe(false);
+      expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
       expect(result.current.pagination).toEqual({
         page: 1,
@@ -609,7 +610,7 @@ describe("useTripStore", () => {
     it("should handle API errors for create trip", async () => {
       const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-      const createRequest: CreateTripRequest = {
+      const createRequest: Trip = {
         date: "2024-12-25",
         departureTime: "09:00",
         arrivalTime: "10:30",

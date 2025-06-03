@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "NODE_OPTIONS='--max-old-space-size=4096' NEXT_TELEMETRY_DISABLED=1 next build",
+    "build:with-shared": "npm run build:shared && npm run build",
+    "build:shared": "cd ../shared && npm ci --prefer-offline --no-audit --no-fund && npm run build && cd ../frontend && npm ci --prefer-offline --no-audit --no-fund",
     "build:analyze": "ANALYZE=true npm run build",
     "build:debug": "DEBUG=1 npm run build",
     "build:fast": "NODE_OPTIONS='--max-old-space-size=4096' NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production next build --experimental-build-mode=compile",

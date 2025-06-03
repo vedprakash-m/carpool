@@ -14,7 +14,7 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
         with:
@@ -33,28 +33,6 @@ jobs:
           git config --global user.email "ci-action@example.com"
           git config --global user.name "CI Action"
 
-      - name: Build Shared Package
-        run: |
-          cd shared
-          npm ci --prefer-offline --no-audit --no-fund
-          npm run build
-          cd ..
-
-      - name: Prepare Frontend Dependencies
-        run: |
-          cd frontend
-          # Copy shared package locally to avoid symlink issues
-          mkdir -p node_modules/@vcarpool
-          cp -r ../shared/dist/* node_modules/@vcarpool/ || true
-          cp ../shared/package.json node_modules/@vcarpool/ || true
-          
-          # Install with optimizations
-          npm ci --prefer-offline --no-audit --no-fund --production=false
-          
-          # Clear cache to reduce memory usage
-          npm cache clean --force
-          cd ..
-
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -66,6 +44,8 @@ jobs:
           api_location: ""
           output_location: ""
           deployment_environment: "production"
+          # Custom build command to handle shared dependencies
+          app_build_command: "npm run build:with-shared"
         env:
           # Node.js Memory Optimization
           NODE_OPTIONS: '--max-old-space-size=4096 --max-semi-space-size=512'
