@@ -8,18 +8,21 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "npm run build && func start",
+    "build": "npm run clean && tsc",
+    "dev": "tsc --watch",
     "start": "func start",
     "deploy": "npm run build && func azure functionapp publish vcarpool-functions",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:integration": "jest --config jest.config.integration.json",
+    "test:integration": "jest --config jest.integration.config.js",
     "test:ci": "jest --ci --reporters=default --reporters=jest-junit",
     "test:health-check": "node -e \"console.log('Health check passed')\"",
-    "lint": "echo 'Backend linting: TypeScript compilation validates code quality' && npm run build",
-    "clean": "rm -rf dist"
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "clean": "rimraf dist",
+    "prepare": "npm run build",
+    "deploy:azure": "func azure functionapp publish vcarpool-api-manual --typescript"
   },
   "dependencies": {
     "@azure/cosmos": "^4.0.0",

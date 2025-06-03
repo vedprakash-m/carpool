@@ -18,7 +18,7 @@ on:
           - prod
 
 env:
-  NODE_VERSION: "22.x"
+  NODE_VERSION: "20.x"
   AZURE_FUNCTIONAPP_NAME: "vcarpool-api"
   AZURE_STATICWEBAPP_NAME: "vcarpool-web"
   BACKEND_WORKING_DIR: "./backend"
@@ -435,7 +435,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: ${{ needs.setup.outputs.environment }}
-    timeout-minutes: 45  # Increased timeout for Azure SWA uploads
+    timeout-minutes: 45 # Increased timeout for Azure SWA uploads
     steps:
       - uses: actions/checkout@v4
 
@@ -481,7 +481,7 @@ jobs:
 
           # Set optimal Node.js memory settings
           export NODE_OPTIONS="--max-old-space-size=4096"
-          
+
           # Pre-optimize packages
           echo "Pre-optimizing critical packages..."
           npm ls --depth=0 | head -20
@@ -490,12 +490,12 @@ jobs:
         working-directory: ${{ env.FRONTEND_WORKING_DIR }}
         run: |
           echo "Building Next.js application with upload optimizations..."
-          
+
           # Set production build environment
           export NODE_ENV=production
           export NODE_OPTIONS="--max-old-space-size=4096"
           export NEXT_TELEMETRY_DISABLED=1
-          
+
           # Build with optimized configuration
           npm run build
 
@@ -509,19 +509,19 @@ jobs:
           # Verify build output
           echo "Build output verification:"
           ls -la .next/ || echo "No .next directory found"
-          
+
           # Check optimized build size
           echo "Build size after optimization:"
           du -sh .next/ || echo "Could not determine build size"
           echo "File count after optimization:"
           find .next -type f | wc -l || echo "Could not count files"
-          
+
           # Check for critical files
           if [ ! -f ".next/BUILD_ID" ]; then
             echo "❌ Build may have failed - BUILD_ID missing"
             exit 1
           fi
-          
+
           echo "✅ Build completed successfully"
 
       - name: Deploy to Azure Static Web Apps (Optimized)
@@ -533,19 +533,19 @@ jobs:
           app_location: "frontend"
           api_location: ""
           output_location: ""
-          skip_app_build: true  # We pre-built the app above
+          skip_app_build: true # We pre-built the app above
           skip_api_build: true
         env:
           NODE_VERSION: "20.x"
           NODE_OPTIONS: "--max-old-space-size=4096"
           NEXT_TELEMETRY_DISABLED: 1
           NEXT_PUBLIC_API_URL: ${{ needs.infrastructure-deploy.outputs.functionAppEndpoint }}/api
-          
+
       - name: Verify deployment health
         run: |
           echo "Waiting for deployment to stabilize..."
           sleep 45
-          
+
           # Try to access the deployed app
           if [ ! -z "${{ needs.infrastructure-deploy.outputs.staticWebAppEndpoint }}" ]; then
             echo "Testing deployment endpoint..."

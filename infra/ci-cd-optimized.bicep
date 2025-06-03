@@ -108,7 +108,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~22'
+          value: '~20'
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
@@ -133,14 +133,14 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       ]
       cors: {
         allowedOrigins: [
-          'https://${staticWebAppName}.azurestaticapps.net'
+          'https://${appName}-web-${environmentName}.azurestaticapps.net'
           'http://localhost:3000'
         ]
         supportCredentials: true
       }
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
-      nodeVersion: '~22'
+      nodeVersion: '~20'
     }
     httpsOnly: true
   }
