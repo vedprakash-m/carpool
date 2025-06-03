@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "NODE_OPTIONS='--max-old-space-size=4096' NEXT_TELEMETRY_DISABLED=1 next build",
+    "build:swa": "NODE_OPTIONS='--max-old-space-size=4096' NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production next build",
     "build:analyze": "ANALYZE=true npm run build",
     "build:debug": "DEBUG=1 npm run build",
     "build:fast": "NODE_OPTIONS='--max-old-space-size=4096' NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production next build --experimental-build-mode=compile",
