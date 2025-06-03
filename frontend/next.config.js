@@ -4,17 +4,17 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@vcarpool/shared"],
 
-  // Aggressive build optimization
+  // Build optimization for Azure Static Web Apps
   swcMinify: true,
-  compress: false, // Disable compression during build to save time
+  compress: true, // Enable compression to reduce upload size
   poweredByHeader: false,
   generateEtags: false,
 
-  // Advanced webpack optimization
+  // Webpack optimization for smaller, faster uploads
   webpack: (config, { dev, isServer, webpack }) => {
     // Production optimizations
     if (!dev) {
-      // More aggressive optimization
+      // Optimized chunk splitting for fewer files
       config.optimization = {
         ...config.optimization,
         minimize: true,
@@ -22,47 +22,48 @@ const nextConfig = {
         usedExports: true,
         sideEffects: false,
 
-        // Advanced chunk splitting for faster builds
+        // Reduced chunk splitting for faster uploads
         splitChunks: {
           chunks: "all",
-          minSize: 20000,
-          maxSize: 100000,
+          minSize: 200000, // Larger minimum chunks
+          maxSize: 1000000, // Allow much larger chunks
           cacheGroups: {
-            // Vendor chunk
+            // Combine most vendor code into fewer chunks
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: "vendors",
               chunks: "all",
               priority: 20,
               reuseExistingChunk: true,
+              enforce: true, // Force single vendor chunk where possible
             },
-            // Shared components
-            shared: {
-              name: "shared",
+            // Combine shared components
+            default: {
               minChunks: 2,
-              priority: 10,
+              priority: -20,
               reuseExistingChunk: true,
             },
           },
         },
       };
 
-      // Reduce memory usage during build
+      // Aggressive minification for smaller files
       config.optimization.minimizer?.forEach((minimizer) => {
         if (minimizer.constructor.name === "TerserPlugin") {
-          minimizer.options.parallel = false; // Reduce memory usage
+          minimizer.options.parallel = 2;
           minimizer.options.terserOptions = {
             ...minimizer.options.terserOptions,
             compress: {
               drop_console: true,
               drop_debugger: true,
               pure_funcs: ["console.log", "console.info", "console.debug"],
+              passes: 3, // More compression passes for smaller output
             },
           };
         }
       });
 
-      // Disable source maps for production to speed up build
+      // Disable source maps for production
       config.devtool = false;
     }
 
@@ -72,38 +73,29 @@ const nextConfig = {
       "@": require("path").resolve(__dirname, "src"),
     };
 
-    // Ignore test files during build
+    // Ignore unnecessary files
     config.module.rules.push({
       test: /\.(test|spec)\.(ts|tsx|js|jsx)$/,
       use: "ignore-loader",
     });
 
-    // Optimize node_modules processing
-    config.resolve.modules = ["node_modules"];
-    config.resolve.symlinks = false;
-
     return config;
   },
 
-  // Experimental features for performance
+  // Minimal experimental features
   experimental: {
-    // Remove problematic experimental features
-    turbo: undefined,
-    optimizeCss: false,
-
-    // Enable useful optimizations
     optimizePackageImports: ["@vcarpool/shared"],
   },
 
-  // Output for Azure Static Web Apps
+  // Standalone output for Azure Static Web Apps hybrid mode
   output: "standalone",
 
-  // Image optimization (disable for faster builds)
+  // Image optimization disabled for better compatibility
   images: {
     unoptimized: true,
   },
 
-  // Reduce build output
+  // Build-time optimizations
   eslint: {
     ignoreDuringBuilds: true,
   },

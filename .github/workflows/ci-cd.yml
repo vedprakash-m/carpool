@@ -435,7 +435,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: ${{ needs.setup.outputs.environment }}
-    timeout-minutes: 30  # Increase timeout for build process
+    timeout-minutes: 45  # Increased timeout for Azure SWA uploads
     steps:
       - uses: actions/checkout@v4
 
@@ -489,19 +489,32 @@ jobs:
       - name: Build Next.js application for Azure SWA
         working-directory: ${{ env.FRONTEND_WORKING_DIR }}
         run: |
-          echo "Building Next.js application..."
+          echo "Building Next.js application with upload optimizations..."
           
           # Set production build environment
           export NODE_ENV=production
           export NODE_OPTIONS="--max-old-space-size=4096"
           export NEXT_TELEMETRY_DISABLED=1
           
-          # Build with optimizations
-          npm run build:swa
+          # Build with optimized configuration
+          npm run build
+
+          # Clean up unnecessary files to reduce upload size
+          echo "Cleaning up build artifacts for faster upload..."
+          find .next -name "*.map" -type f -delete || true
+          find .next -name "*.d.ts" -type f -delete || true
+          find .next -name "cache" -type d -exec rm -rf {} + || true
+          find .next -name "*.json.gz" -type f -delete || true
 
           # Verify build output
           echo "Build output verification:"
           ls -la .next/ || echo "No .next directory found"
+          
+          # Check optimized build size
+          echo "Build size after optimization:"
+          du -sh .next/ || echo "Could not determine build size"
+          echo "File count after optimization:"
+          find .next -type f | wc -l || echo "Could not count files"
           
           # Check for critical files
           if [ ! -f ".next/BUILD_ID" ]; then
@@ -511,7 +524,7 @@ jobs:
           
           echo "✅ Build completed successfully"
 
-      - name: Deploy to Azure Static Web Apps (Hybrid Next.js)
+      - name: Deploy to Azure Static Web Apps (Optimized)
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_TOKEN }}
