@@ -100,7 +100,7 @@ jobs:
           name: shared-dist
           path: ${{ env.SHARED_WORKING_DIR }}/dist
       # Backend's dependencies are installed via workspace root
-      - name: Install workspace dependencies
+      - name: Install dependencies
         run: npm ci
         working-directory: ./ # Install from root for workspace
       - name: Lint backend code
