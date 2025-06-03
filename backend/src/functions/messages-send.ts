@@ -15,7 +15,7 @@ import { UserRepository } from "../repositories/user.repository";
 import { TripRepository } from "../repositories/trip.repository";
 import { handleRequest } from "../utils/request-handler";
 import { handleValidation } from "../utils/validation-handler";
-import { sendMessageSchema } from "@vcarpool/shared";
+import { sendMessageSchema, SendMessageRequest } from "@vcarpool/shared";
 
 export async function messagesSend(
   request: HttpRequest,
@@ -37,7 +37,14 @@ export async function messagesSend(
 
       // Parse and validate request body
       const body = await request.json();
-      const messageData = handleValidation(sendMessageSchema, body);
+      const validatedData = handleValidation(sendMessageSchema, body);
+
+      // Ensure the message data conforms to SendMessageRequest type
+      const messageData: SendMessageRequest = {
+        content: validatedData.content,
+        type: validatedData.type || "text", // Provide default if undefined
+        metadata: validatedData.metadata,
+      };
 
       // Initialize repositories and service
       const messageRepository = new MessageRepository(containers.messages);

@@ -151,7 +151,10 @@ export const sendMessageSchema = z.object({
     .string()
     .min(1, "Message content is required")
     .max(2000, "Message too long"),
-  type: z.enum(["text", "location", "system", "image"]).default("text"),
+  type: z
+    .enum(["text", "location", "system", "image"])
+    .optional()
+    .transform((val) => val || "text"),
   metadata: z
     .object({
       location: z
