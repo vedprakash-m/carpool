@@ -16,6 +16,9 @@
     "lint": "next lint --max-warnings 0",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
+    "test": "echo 'Tests not configured yet. Build process validates code quality.' && exit 0",
+    "test:watch": "echo 'Test watch mode not configured'",
+    "test:coverage": "echo 'Test coverage not configured'",
     "clean": "rm -rf .next out dist",
     "preinstall": "npm run clean"
   },

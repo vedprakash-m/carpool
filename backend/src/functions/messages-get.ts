@@ -48,15 +48,19 @@ export async function messagesGet(
       tripRepository
     );
 
+    // Ensure page and limit have default values
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 50;
+
     // Calculate offset for pagination
-    const offset = (query.page - 1) * query.limit;
+    const offset = (page - 1) * limit;
 
     // Get messages
     const { messages, total } = await messagingService.getMessages(
       query.chatId,
       userId,
       {
-        limit: query.limit,
+        limit: limit,
         offset,
         before: query.before ? new Date(query.before) : undefined,
         after: query.after ? new Date(query.after) : undefined,
@@ -69,10 +73,10 @@ export async function messagesGet(
         success: true,
         data: messages,
         pagination: {
-          page: query.page,
-          limit: query.limit,
+          page: page,
+          limit: limit,
           total,
-          totalPages: Math.ceil(total / query.limit),
+          totalPages: Math.ceil(total / limit),
         },
       },
     };
