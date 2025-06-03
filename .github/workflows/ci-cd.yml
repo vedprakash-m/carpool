@@ -19,8 +19,10 @@ on:
 
 env:
   NODE_VERSION: "20.x"
-  AZURE_FUNCTIONAPP_NAME: "vcarpool-api"
-  AZURE_STATICWEBAPP_NAME: "vcarpool-web"
+  AZURE_FUNCTIONAPP_NAME: "vcarpool-api-manual"
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: "./backend"
+  AZURE_STATIC_WEB_APP_NAME: "vcarpool-web-manual"
+  RESOURCE_GROUP_NAME: "vcarpool-rg-manual"
   BACKEND_WORKING_DIR: "./backend"
   FRONTEND_WORKING_DIR: "./frontend"
   SHARED_WORKING_DIR: "./shared"
