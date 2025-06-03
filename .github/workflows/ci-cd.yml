@@ -41,16 +41,16 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-            echo "resource-group=vcarpool-rg-dev" >> $GITHUB_OUTPUT
+            echo "resource-group=vcarpool-rg-manual" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "environment=prod" >> $GITHUB_OUTPUT
-            echo "resource-group=vcarpool-rg-dev" >> $GITHUB_OUTPUT
+            echo "resource-group=vcarpool-rg-manual" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
             echo "environment=test" >> $GITHUB_OUTPUT
-            echo "resource-group=vcarpool-rg-dev" >> $GITHUB_OUTPUT
+            echo "resource-group=vcarpool-rg-manual" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
-            echo "resource-group=vcarpool-rg-dev" >> $GITHUB_OUTPUT
+            echo "resource-group=vcarpool-rg-manual" >> $GITHUB_OUTPUT
           fi
 
   # Build and test shared library
@@ -303,78 +303,35 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Create Resource Group
-        run: |
-          az group create \
-            --name ${{ needs.setup.outputs.resource-group }} \
-            --location "East US 2"
-
       - name: Deploy Azure Infrastructure
         id: deploy
         run: |
-          cd ${{ env.INFRASTRUCTURE_WORKING_DIR }}
+          # Since we're using existing infrastructure, verify it exists instead of deploying
+          echo "Verifying existing infrastructure in ${{ needs.setup.outputs.resource-group }}"
 
-          # Deploy Bicep template with improved error handling
-          max_attempts=5
-          for i in $(seq 1 $max_attempts); do
-            echo "Attempting infrastructure deployment (Attempt: $i of $max_attempts)"
-            
-            if deployment_output=$(az deployment group create \
-              --resource-group ${{ needs.setup.outputs.resource-group }} \
-              --template-file core-infrastructure.bicep \
-              --parameters environmentName=${{ needs.setup.outputs.environment }} \
-                          appName=vcarpool \
-              --name core-infra-${{ needs.setup.outputs.environment }} \
-              --query 'properties.outputs' \
-              --output json); then
-              echo "✅ Core infrastructure deployment successful"
-              
-              # Extract outputs and set as step outputs
-              echo "functionAppName=$(echo $deployment_output | jq -r '.functionAppName.value // empty')" >> $GITHUB_OUTPUT
-              echo "staticWebAppName=$(echo $deployment_output | jq -r '.staticWebAppName.value // empty')" >> $GITHUB_OUTPUT
-              echo "functionAppEndpoint=$(echo $deployment_output | jq -r '.functionAppEndpoint.value // empty')" >> $GITHUB_OUTPUT
-              echo "staticWebAppEndpoint=$(echo $deployment_output | jq -r '.staticWebAppEndpoint.value // empty')" >> $GITHUB_OUTPUT
-              
-              break
-            else
-              echo "❌ Deployment attempt $i failed"
-              if [ $i -lt 3 ]; then
-                echo "Waiting 60 seconds before retrying..."
-                sleep 60
-              fi
-            fi
-          done
-
-          # Extract outputs and set as step outputs
-          echo "functionAppName=$(echo $deployment_output | jq -r '.functionAppName.value // empty')" >> $GITHUB_OUTPUT
-          echo "staticWebAppName=$(echo $deployment_output | jq -r '.staticWebAppName.value // empty')" >> $GITHUB_OUTPUT
-          echo "functionAppEndpoint=$(echo $deployment_output | jq -r '.functionAppEndpoint.value // empty')" >> $GITHUB_OUTPUT
-          echo "staticWebAppEndpoint=$(echo $deployment_output | jq -r '.staticWebAppEndpoint.value // empty')" >> $GITHUB_OUTPUT
-
-          echo "Infrastructure deployment completed successfully"
-
-      - name: Configure Key Vault Secrets
-        run: |
-          # Check if Key Vault exists (only for full infrastructure deployments)
-          KEY_VAULT_NAME="vcarpool-kv-${{ needs.setup.outputs.environment }}"
-
-          if az keyvault show --name $KEY_VAULT_NAME >/dev/null 2>&1; then
-            echo "✅ Key Vault found: $KEY_VAULT_NAME"
-            
-            # Check if secrets exist, if not create them
-            if ! az keyvault secret show --vault-name $KEY_VAULT_NAME --name JWT-SECRET >/dev/null 2>&1; then
-              JWT_SECRET=$(openssl rand -base64 64)
-              az keyvault secret set --vault-name $KEY_VAULT_NAME --name JWT-SECRET --value "$JWT_SECRET"
-            fi
-            
-            if ! az keyvault secret show --vault-name $KEY_VAULT_NAME --name JWT-REFRESH-SECRET >/dev/null 2>&1; then
-              JWT_REFRESH_SECRET=$(openssl rand -base64 64)
-              az keyvault secret set --vault-name $KEY_VAULT_NAME --name JWT-REFRESH-SECRET --value "$JWT_REFRESH_SECRET"
-            fi
+          # Check if Function App exists and get its details
+          if az functionapp show --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --resource-group ${{ needs.setup.outputs.resource-group }} >/dev/null 2>&1; then
+            echo "✅ Function App found: ${{ env.AZURE_FUNCTIONAPP_NAME }}"
+            FUNCTION_APP_ENDPOINT="https://${{ env.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net"
+            echo "functionAppName=${{ env.AZURE_FUNCTIONAPP_NAME }}" >> $GITHUB_OUTPUT
+            echo "functionAppEndpoint=$FUNCTION_APP_ENDPOINT" >> $GITHUB_OUTPUT
           else
-            echo "ℹ️  Key Vault not found: $KEY_VAULT_NAME (using core infrastructure mode with temporary secrets)"
-            echo "JWT secrets are configured as Function App environment variables instead"
+            echo "❌ Function App not found: ${{ env.AZURE_FUNCTIONAPP_NAME }}"
+            exit 1
           fi
+
+          # Check if Static Web App exists and get its details
+          if az staticwebapp show --name ${{ env.AZURE_STATIC_WEB_APP_NAME }} --resource-group ${{ needs.setup.outputs.resource-group }} >/dev/null 2>&1; then
+            echo "✅ Static Web App found: ${{ env.AZURE_STATIC_WEB_APP_NAME }}"
+            STATIC_WEB_APP_ENDPOINT=$(az staticwebapp show --name ${{ env.AZURE_STATIC_WEB_APP_NAME }} --resource-group ${{ needs.setup.outputs.resource-group }} --query "defaultHostname" --output tsv)
+            echo "staticWebAppName=${{ env.AZURE_STATIC_WEB_APP_NAME }}" >> $GITHUB_OUTPUT
+            echo "staticWebAppEndpoint=https://$STATIC_WEB_APP_ENDPOINT" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Static Web App not found: ${{ env.AZURE_STATIC_WEB_APP_NAME }}"
+            exit 1
+          fi
+
+          echo "✅ Infrastructure verification completed successfully"
 
   # Deploy backend to Azure Functions
   backend-deploy:
@@ -420,7 +377,7 @@ jobs:
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
-          app-name: ${{ needs.infrastructure-deploy.outputs.functionAppName }}
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: ${{ env.BACKEND_WORKING_DIR }}
 
       - name: Health Check
