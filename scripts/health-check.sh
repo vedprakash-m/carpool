@@ -66,3 +66,4 @@ mkdir -p frontend/e2e/test-results
 echo "✅ Ensured test directories exist"
 
 echo "✅ Health check completed successfully!"
+exit 0
