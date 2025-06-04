@@ -247,12 +247,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download frontend artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/
-
       # Get Static Web App deployment token
       - name: Azure Login
         uses: azure/login@v1
@@ -277,8 +271,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "frontend"
-          output_location: ".next"
-          skip_app_build: true
+          skip_app_build: false
 
   # Post-deployment verification
   verify-deployment:
