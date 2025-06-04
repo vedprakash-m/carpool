@@ -90,6 +90,10 @@ const nextConfig = {
   // Standalone output for Azure Static Web Apps hybrid mode
   output: "export",
 
+  // Handle dynamic routes for static export
+  trailingSlash: true,
+  distDir: "out",
+
   // Image optimization disabled for better compatibility
   images: {
     unoptimized: true,
