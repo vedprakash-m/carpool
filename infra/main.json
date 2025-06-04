@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.35.1.17967",
-      "templateHash": "5245373543157757864"
+      "version": "0.36.1.42791",
+      "templateHash": "6812957543530852615"
     }
   },
   "parameters": {
@@ -26,7 +26,11 @@
     "environmentName": {
       "type": "string",
       "defaultValue": "dev",
-      "allowedValues": ["dev", "test", "prod"],
+      "allowedValues": [
+        "dev",
+        "test",
+        "prod"
+      ],
       "metadata": {
         "description": "Environment name (dev, test, prod)"
       }
@@ -131,8 +135,8 @@
       "location": "[parameters('location')]",
       "tags": "[variables('tags')]",
       "sku": {
-        "name": "Y1",
-        "tier": "Dynamic"
+        "name": "B1",
+        "tier": "Basic"
       },
       "properties": {
         "reserved": true
@@ -186,11 +190,11 @@
             },
             {
               "name": "JWT_SECRET",
-              "value": "temp-jwt-secret"
+              "value": "[format('temp-jwt-secret-{0}', uniqueString(resourceGroup().id))]"
             },
             {
               "name": "JWT_REFRESH_SECRET",
-              "value": "temp-refresh-secret"
+              "value": "[format('temp-refresh-secret-{0}', uniqueString(resourceGroup().id))]"
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
@@ -210,7 +214,7 @@
           },
           "ftpsState": "Disabled",
           "minTlsVersion": "1.2",
-          "nodeVersion": "~18"
+          "nodeVersion": "~22"
         },
         "httpsOnly": true
       },
@@ -246,7 +250,7 @@
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
       "apiVersion": "2021-10-15",
-      "name": "[format('{0}/vcarpool', parameters('cosmosDbAccountName'))]",
+      "name": "[format('{0}/{1}', parameters('cosmosDbAccountName'), 'vcarpool')]",
       "properties": {
         "resource": {
           "id": "vcarpool"
@@ -262,12 +266,14 @@
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
       "apiVersion": "2021-10-15",
-      "name": "[format('{0}/users', format('{0}/vcarpool', parameters('cosmosDbAccountName')))]",
+      "name": "[format('{0}/{1}/{2}', parameters('cosmosDbAccountName'), 'vcarpool', 'users')]",
       "properties": {
         "resource": {
           "id": "users",
           "partitionKey": {
-            "paths": ["/id"],
+            "paths": [
+              "/id"
+            ],
             "kind": "Hash"
           },
           "indexingPolicy": {
@@ -287,18 +293,20 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[0], split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[1])]"
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), 'vcarpool')]"
       ]
     },
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
       "apiVersion": "2021-10-15",
-      "name": "[format('{0}/trips', format('{0}/vcarpool', parameters('cosmosDbAccountName')))]",
+      "name": "[format('{0}/{1}/{2}', parameters('cosmosDbAccountName'), 'vcarpool', 'trips')]",
       "properties": {
         "resource": {
           "id": "trips",
           "partitionKey": {
-            "paths": ["/driverId"],
+            "paths": [
+              "/driverId"
+            ],
             "kind": "Hash"
           },
           "indexingPolicy": {
@@ -318,58 +326,64 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[0], split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[1])]"
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), 'vcarpool')]"
       ]
     },
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
       "apiVersion": "2021-10-15",
-      "name": "[format('{0}/schedules', format('{0}/vcarpool', parameters('cosmosDbAccountName')))]",
+      "name": "[format('{0}/{1}/{2}', parameters('cosmosDbAccountName'), 'vcarpool', 'schedules')]",
       "properties": {
         "resource": {
           "id": "schedules",
           "partitionKey": {
-            "paths": ["/userId"],
+            "paths": [
+              "/userId"
+            ],
             "kind": "Hash"
           }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[0], split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[1])]"
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), 'vcarpool')]"
       ]
     },
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
       "apiVersion": "2021-10-15",
-      "name": "[format('{0}/swap-requests', format('{0}/vcarpool', parameters('cosmosDbAccountName')))]",
+      "name": "[format('{0}/{1}/{2}', parameters('cosmosDbAccountName'), 'vcarpool', 'swap-requests')]",
       "properties": {
         "resource": {
           "id": "swap-requests",
           "partitionKey": {
-            "paths": ["/requesterId"],
+            "paths": [
+              "/requesterId"
+            ],
             "kind": "Hash"
           }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[0], split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[1])]"
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), 'vcarpool')]"
       ]
     },
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
       "apiVersion": "2021-10-15",
-      "name": "[format('{0}/email-templates', format('{0}/vcarpool', parameters('cosmosDbAccountName')))]",
+      "name": "[format('{0}/{1}/{2}', parameters('cosmosDbAccountName'), 'vcarpool', 'email-templates')]",
       "properties": {
         "resource": {
           "id": "email-templates",
           "partitionKey": {
-            "paths": ["/id"],
+            "paths": [
+              "/id"
+            ],
             "kind": "Hash"
           }
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[0], split(format('{0}/vcarpool', parameters('cosmosDbAccountName')), '/')[1])]"
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), 'vcarpool')]"
       ]
     },
     {
@@ -388,26 +402,6 @@
         "enabledForTemplateDeployment": true,
         "enableRbacAuthorization": false
       }
-    },
-    {
-      "type": "Microsoft.KeyVault/vaults/accessPolicies",
-      "apiVersion": "2021-11-01-preview",
-      "name": "[format('{0}/{1}', format('{0}-kv-{1}', parameters('appName'), parameters('environmentName')), 'add')]",
-      "properties": {
-        "accessPolicies": [
-          {
-            "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2021-03-01', 'full').identity.principalId]",
-            "tenantId": "[subscription().tenantId]",
-            "permissions": {
-              "secrets": ["get", "list"]
-            }
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
-        "[resourceId('Microsoft.KeyVault/vaults', format('{0}-kv-{1}', parameters('appName'), parameters('environmentName')))]"
-      ]
     },
     {
       "type": "Microsoft.Web/staticSites",
