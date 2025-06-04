@@ -1,9 +1,19 @@
+import {
+  app,
+  HttpRequest,
+  HttpResponseInit,
+  InvocationContext,
+} from "@azure/functions";
+
 /**
  * Health check function - essential for CI/CD pipelines and monitoring
- * Uses traditional Azure Functions pattern for compatibility
+ * Uses modern Azure Functions v4 programming model
  */
-module.exports = async function (context, req) {
-  context.log(`Health check called via ${req.method}`);
+async function healthHandler(
+  request: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+  context.log(`Health check called via ${request.method}`);
 
   // Include basic platform information
   const healthInfo = {
@@ -18,12 +28,19 @@ module.exports = async function (context, req) {
     },
   };
 
-  context.res = {
+  return {
     status: 200,
-    body: healthInfo,
+    jsonBody: healthInfo,
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-cache, no-store, must-revalidate",
     },
   };
-};
+}
+
+app.http("health", {
+  methods: ["GET"],
+  authLevel: "anonymous",
+  route: "health",
+  handler: healthHandler,
+});
