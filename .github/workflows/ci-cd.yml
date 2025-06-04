@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  AZURE_LOCATION: "East US"
+  AZURE_LOCATION: "eastus2"
   ENVIRONMENT: "prod"
   RESOURCE_GROUP: "vcarpool-rg"
 
@@ -152,7 +152,7 @@ jobs:
               --name "$FUNCTION_APP_NAME" \
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --storage-account "$STORAGE_NAME" \
-              --consumption-plan-location "eastus" \
+              --consumption-plan-location "eastus2" \
               --runtime node \
               --runtime-version 22 \
               --functions-version 4 \
