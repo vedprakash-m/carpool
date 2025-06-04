@@ -378,26 +378,28 @@ export default function TripDetailPage() {
                   Passengers ({currentTrip.passengers.length})
                 </h2>
                 <div className="space-y-2">
-                  {currentTrip.passengers.map((passengerId, index) => (
-                    <div
-                      key={passengerId}
-                      className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
-                    >
-                      <div className="flex items-center">
-                        <div className="bg-gray-200 rounded-full p-2 mr-3">
-                          <UserGroupIcon className="h-4 w-4 text-gray-600" />
-                        </div>
-                        <span className="text-sm text-gray-900">
-                          Passenger {index + 1}
-                        </span>
-                        {passengerId === user?.id && (
-                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            You
+                  {currentTrip.passengers.map(
+                    (passengerId: string, index: number) => (
+                      <div
+                        key={passengerId}
+                        className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="flex items-center">
+                          <div className="bg-gray-200 rounded-full p-2 mr-3">
+                            <UserGroupIcon className="h-4 w-4 text-gray-600" />
+                          </div>
+                          <span className="text-sm text-gray-900">
+                            Passenger {index + 1}
                           </span>
-                        )}
+                          {passengerId === user?.id && (
+                            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              You
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </div>
             )}
