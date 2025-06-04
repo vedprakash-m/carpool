@@ -152,7 +152,7 @@ jobs:
               --name "$FUNCTION_APP_NAME" \
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --storage-account "$STORAGE_NAME" \
-              --consumption-plan-location "${{ env.AZURE_LOCATION }}" \
+              --consumption-plan-location "eastus" \
               --runtime node \
               --runtime-version 22 \
               --functions-version 4 \
