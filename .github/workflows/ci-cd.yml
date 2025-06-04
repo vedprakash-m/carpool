@@ -271,6 +271,8 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "./"
+          app_build_command: "npm run build:shared && npm run build:frontend"
+          output_location: "frontend/.next"
           skip_app_build: false
 
   # Post-deployment verification
