@@ -272,7 +272,7 @@ jobs:
           action: "upload"
           app_location: "./"
           app_build_command: "npm run build:shared && npm run build:frontend"
-          output_location: "frontend/.next"
+          output_location: "frontend/out"
           skip_app_build: false
 
   # Post-deployment verification

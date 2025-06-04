@@ -88,7 +88,7 @@ const nextConfig = {
   },
 
   // Standalone output for Azure Static Web Apps hybrid mode
-  output: "standalone",
+  output: "export",
 
   // Image optimization disabled for better compatibility
   images: {
