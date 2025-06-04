@@ -2,7 +2,7 @@
 
 ## Overview
 
-The VCarpool project uses a comprehensive GitHub Actions CI/CD pipeline that automatically builds, tests, and deploys the application to Azure. The pipeline supports multiple environments (dev, test, prod) with infrastructure-as-code provisioning using Bicep templates.
+The VCarpool project uses a comprehensive GitHub Actions CI/CD pipeline that automatically builds, tests, and deploys the application to Azure. The pipeline uses infrastructure-as-code provisioning with Bicep templates for a single production environment.
 
 ## Architecture
 
@@ -22,13 +22,13 @@ The VCarpool project uses a comprehensive GitHub Actions CI/CD pipeline that aut
 
 1. **Azure Subscription** with appropriate permissions
 2. **Service Principal** with Contributor role
-3. **Resource Groups** (auto-created by pipeline)
+3. **Resource Group** (auto-created by pipeline as `vcarpool-rg`)
 
 ### 2. GitHub Repository Setup
 
 1. **Repository secrets** configured
-2. **Branch protection rules** (recommended)
-3. **Environment protection rules** for prod
+2. **Branch protection rules** (recommended for main branch)
+3. **Environment protection rules** for production
 
 ## Required GitHub Secrets
 
@@ -65,19 +65,16 @@ az ad sp create-for-rbac --name "vcarpool-cicd" \
 
 **Triggers**:
 
-- Push to `main` (→ prod environment)
-- Push to `develop` (→ test environment)
+- Push to `main` (→ production deployment)
 - Pull requests (→ build/test only, no deploy)
-- Manual dispatch (→ choose environment)
 
 **Jobs**:
 
-1. **Setup**: Determine environment and deployment settings
-2. **Build**: Install dependencies, lint, test, build all packages
-3. **Infrastructure**: Deploy/update Azure resources via Bicep
-4. **Deploy Backend**: Deploy Azure Functions
-5. **Deploy Frontend**: Deploy Azure Static Web Apps
-6. **Verify**: Health checks and deployment verification
+1. **Build**: Install dependencies, lint, test, build all packages
+2. **Infrastructure**: Deploy/update Azure resources via Bicep
+3. **Deploy Backend**: Deploy Azure Functions
+4. **Deploy Frontend**: Deploy Azure Static Web Apps
+5. **Verify**: Health checks and deployment verification
 
 ### 2. Rollback Pipeline (`.github/workflows/rollback.yml`)
 
@@ -89,16 +86,16 @@ az ad sp create-for-rbac --name "vcarpool-cicd" \
 
 - Rollback infrastructure, backend, frontend, or all components
 - Target specific git tag/commit
-- Environment-specific rollbacks
+- Production environment rollbacks
 - Confirmation required
 
-## Environment Mapping
+## Deployment Strategy
 
-| Git Branch | Environment | Resource Group     | Function App        | Static Web App      |
-| ---------- | ----------- | ------------------ | ------------------- | ------------------- |
-| `main`     | `prod`      | `vcarpool-rg-prod` | `vcarpool-api-prod` | `vcarpool-web-prod` |
-| `develop`  | `test`      | `vcarpool-rg-test` | `vcarpool-api-test` | `vcarpool-web-test` |
-| Feature    | `dev`       | `vcarpool-rg-dev`  | `vcarpool-api-dev`  | `vcarpool-web-dev`  |
+| Trigger         | Action              | Target     | Azure Resources |
+| --------------- | ------------------- | ---------- | --------------- |
+| Push to `main`  | Auto-deploy         | Production | `vcarpool-rg`   |
+| Pull Request    | Build & Test only   | -          | -               |
+| Manual Rollback | Rollback components | Production | `vcarpool-rg`   |
 
 ## Deployment Process
 
@@ -108,44 +105,38 @@ az ad sp create-for-rbac --name "vcarpool-cicd" \
 
    - Triggers production deployment
    - Requires all tests to pass
-   - Uses production-grade resources
+   - Deploys to production Azure resources
 
-2. **Push to `develop`**:
-
-   - Triggers test environment deployment
-   - Used for integration testing
-   - Mirrors production configuration
-
-3. **Pull Requests**:
+2. **Pull Requests**:
    - Runs build and tests only
    - No deployment occurs
    - Must pass before merge
 
-### Manual Deployment
+### Manual Rollback
 
 1. Go to **Actions** tab in GitHub
-2. Select **VCarpool CI/CD Pipeline**
+2. Select **VCarpool Rollback Pipeline**
 3. Click **Run workflow**
-4. Choose environment (dev/test/prod)
-5. Click **Run workflow**
+4. Choose component (all/backend/frontend/infrastructure)
+5. Enter target git tag/commit
+6. Type "CONFIRM" and run
 
 ## Infrastructure Resources
 
-The pipeline creates/manages these Azure resources:
+The pipeline creates/manages these Azure resources in the `vcarpool-rg` resource group:
 
 ### Core Resources
 
-- **Resource Group**: Environment-specific container
-- **Function App**: Node.js 22 backend (Azure Functions)
-- **Static Web App**: Next.js frontend with CDN
-- **App Service Plan**: Compute for Function App
+- **Function App**: `vcarpool-api-prod` (Node.js 22 backend)
+- **Static Web App**: `vcarpool-web-prod` (Next.js frontend with CDN)
+- **App Service Plan**: `vcarpool-plan-prod` (Compute for Function App)
 
 ### Data & Monitoring
 
-- **Cosmos DB**: NoSQL database with containers
-- **Application Insights**: Monitoring and telemetry
-- **Log Analytics**: Centralized logging
-- **Key Vault**: Secrets management
+- **Cosmos DB**: `vcarpool-cosmos-prod` (NoSQL database with containers)
+- **Application Insights**: `vcarpool-insights-prod` (Monitoring and telemetry)
+- **Log Analytics**: `vcarpool-logs-prod` (Centralized logging)
+- **Key Vault**: `vcarpool-kv-prod` (Secrets management)
 
 ### Containers in Cosmos DB
 
@@ -174,7 +165,6 @@ The pipeline creates/manages these Azure resources:
 2. **Execute Rollback**:
 
    - Go to Actions → VCarpool Rollback Pipeline
-   - Select environment
    - Choose component (all/backend/frontend/infrastructure)
    - Enter target git tag/commit
    - Type "CONFIRM" and run
@@ -254,13 +244,13 @@ Error: SWA deployment token invalid
 **Backend Health**:
 
 ```bash
-curl https://vcarpool-api-{env}.azurewebsites.net/api/health
+curl https://vcarpool-api-prod.azurewebsites.net/api/health
 ```
 
 **Frontend Health**:
 
 ```bash
-curl https://vcarpool-web-{env}.azurestaticapps.net
+curl https://vcarpool-web-prod.azurestaticapps.net
 ```
 
 ### Performance Monitoring
@@ -285,31 +275,18 @@ curl https://vcarpool-web-{env}.azurestaticapps.net
 
 ### Access Control
 
-- Environment-based protection rules
+- Environment protection rules for production
 - Required reviews for production deployments
-- Branch protection on main/develop
+- Branch protection on main
 
 ## Cost Optimization
 
-### Resource Tiers by Environment
+### Production Resource Configuration
 
-**Development**:
-
-- Function App: Consumption plan
-- Cosmos DB: Free tier
-- Static Web App: Free tier
-
-**Test**:
-
-- Function App: Basic plan
-- Cosmos DB: Serverless
-- Static Web App: Standard
-
-**Production**:
-
-- Function App: Premium plan
-- Cosmos DB: Provisioned throughput
-- Static Web App: Standard with custom domain
+- **Function App**: Basic plan for cost efficiency
+- **Cosmos DB**: Provisioned throughput with free tier if applicable
+- **Static Web App**: Standard tier with custom domain support
+- **Application Insights**: Pay-as-you-go pricing
 
 ## Maintenance
 
@@ -329,15 +306,14 @@ curl https://vcarpool-web-{env}.azurestaticapps.net
 
 3. **Cost Management**:
    - Review Azure spending
-   - Optimize resource tiers
+   - Optimize resource configurations
    - Clean up unused resources
 
 ### Updating the Pipeline
 
-1. **Test Changes**: Always test in dev environment first
-2. **Gradual Rollout**: Deploy to test before production
-3. **Monitor Impact**: Watch for performance/reliability changes
-4. **Document Changes**: Update this documentation
+1. **Test Changes**: Use pull requests to test pipeline changes
+2. **Monitor Impact**: Watch for performance/reliability changes
+3. **Document Changes**: Update this documentation
 
 ## Support & Escalation
 
@@ -351,7 +327,7 @@ curl https://vcarpool-web-{env}.azurestaticapps.net
 
 - Create GitHub issue with logs
 - Tag relevant team members
-- Include environment and error details
+- Include error details and context
 
 ### Level 3: Emergency
 
@@ -367,13 +343,13 @@ curl https://vcarpool-web-{env}.azurestaticapps.net
 
 ```bash
 # Check deployment status
-az deployment group show --resource-group vcarpool-rg-prod --name {deployment-name}
+az deployment group show --resource-group vcarpool-rg --name {deployment-name}
 
 # View Function App logs
-az webapp log tail --name vcarpool-api-prod --resource-group vcarpool-rg-prod
+az webapp log tail --name vcarpool-api-prod --resource-group vcarpool-rg
 
 # Get Static Web App URL
-az staticwebapp show --name vcarpool-web-prod --resource-group vcarpool-rg-prod --query "defaultHostname"
+az staticwebapp show --name vcarpool-web-prod --resource-group vcarpool-rg --query "defaultHostname"
 ```
 
 ### Important URLs
@@ -382,8 +358,9 @@ az staticwebapp show --name vcarpool-web-prod --resource-group vcarpool-rg-prod 
 - **Azure Portal**: `https://portal.azure.com`
 - **Application Insights**: Check Azure Portal → Application Insights
 - **Production App**: `https://vcarpool-web-prod.azurestaticapps.net`
+- **Production API**: `https://vcarpool-api-prod.azurewebsites.net/api`
 
 ---
 
 _Last updated: [Current Date]_
-_Pipeline version: v2.0_
+_Pipeline version: v2.1 (Simplified)_
