@@ -1,0 +1,206 @@
+name: VCarpool Rollback Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to rollback"
+        required: true
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+      component:
+        description: "Component to rollback"
+        required: true
+        type: choice
+        options:
+          - all
+          - backend
+          - frontend
+          - infrastructure
+      rollback_tag:
+        description: "Git tag/commit to rollback to"
+        required: true
+        type: string
+      confirm_rollback:
+        description: 'Type "CONFIRM" to proceed with rollback'
+        required: true
+        type: string
+
+env:
+  AZURE_LOCATION: "East US"
+
+jobs:
+  validate-rollback:
+    name: Validate Rollback Request
+    runs-on: ubuntu-latest
+    outputs:
+      resource-group: ${{ steps.validate.outputs.resource-group }}
+      proceed: ${{ steps.validate.outputs.proceed }}
+    steps:
+      - name: Validate rollback confirmation
+        id: validate
+        run: |
+          if [ "${{ github.event.inputs.confirm_rollback }}" != "CONFIRM" ]; then
+            echo "❌ Rollback not confirmed. Please type 'CONFIRM' to proceed."
+            exit 1
+          fi
+
+          echo "resource-group=vcarpool-rg-${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          echo "proceed=true" >> $GITHUB_OUTPUT
+
+          echo "✅ Rollback confirmed for environment: ${{ github.event.inputs.environment }}"
+          echo "Component: ${{ github.event.inputs.component }}"
+          echo "Target: ${{ github.event.inputs.rollback_tag }}"
+
+  rollback-infrastructure:
+    name: Rollback Infrastructure
+    runs-on: ubuntu-latest
+    needs: validate-rollback
+    if: needs.validate-rollback.outputs.proceed == 'true' && (github.event.inputs.component == 'all' || github.event.inputs.component == 'infrastructure')
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout rollback target
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.rollback_tag }}
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Rollback infrastructure
+        run: |
+          echo "Rolling back infrastructure to ${{ github.event.inputs.rollback_tag }}"
+          az deployment group create \
+            --resource-group ${{ needs.validate-rollback.outputs.resource-group }} \
+            --template-file infra/main.bicep \
+            --parameters appName=vcarpool \
+            --parameters environmentName=${{ github.event.inputs.environment }} \
+            --parameters location="${{ env.AZURE_LOCATION }}"
+
+  rollback-backend:
+    name: Rollback Backend
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, rollback-infrastructure]
+    if: always() && needs.validate-rollback.outputs.proceed == 'true' && (github.event.inputs.component == 'all' || github.event.inputs.component == 'backend')
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout rollback target
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.rollback_tag }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install and build
+        run: |
+          npm ci
+          npm run build:shared
+          npm run build:backend
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get Function App name
+        id: app-info
+        run: |
+          FUNCTION_APP_NAME="vcarpool-api-${{ github.event.inputs.environment }}"
+          echo "function-app-name=$FUNCTION_APP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Deploy backend rollback
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ steps.app-info.outputs.function-app-name }}
+          package: backend/
+
+  rollback-frontend:
+    name: Rollback Frontend
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, rollback-infrastructure]
+    if: always() && needs.validate-rollback.outputs.proceed == 'true' && (github.event.inputs.component == 'all' || github.event.inputs.component == 'frontend')
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout rollback target
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.rollback_tag }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install and build
+        run: |
+          npm ci
+          npm run build:shared
+          npm run build:frontend
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get Static Web App deployment token
+        id: swa-token
+        run: |
+          STATIC_WEB_APP_NAME="vcarpool-web-${{ github.event.inputs.environment }}"
+          TOKEN=$(az staticwebapp secrets list \
+            --name $STATIC_WEB_APP_NAME \
+            --resource-group ${{ needs.validate-rollback.outputs.resource-group }} \
+            --query 'properties.apiKey' \
+            --output tsv)
+          echo "swa-token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Deploy frontend rollback
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.swa-token }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "frontend"
+          output_location: "frontend/.next"
+          skip_app_build: true
+
+  verify-rollback:
+    name: Verify Rollback
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, rollback-backend, rollback-frontend]
+    if: always() && needs.validate-rollback.outputs.proceed == 'true'
+    steps:
+      - name: Test endpoints
+        run: |
+          FUNCTION_ENDPOINT="https://vcarpool-api-${{ github.event.inputs.environment }}.azurewebsites.net/api"
+          STATIC_ENDPOINT="https://vcarpool-web-${{ github.event.inputs.environment }}.azurestaticapps.net"
+
+          echo "Testing rollback..."
+          sleep 60  # Wait for deployments to stabilize
+
+          if curl -f "$FUNCTION_ENDPOINT/health"; then
+            echo "✅ Backend rollback successful"
+          else
+            echo "❌ Backend rollback may have failed"
+          fi
+
+          if curl -f "$STATIC_ENDPOINT"; then
+            echo "✅ Frontend rollback successful"
+          else
+            echo "❌ Frontend rollback may have failed"
+          fi
+
+      - name: Rollback summary
+        run: |
+          echo "## 🔄 Rollback Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Component**: ${{ github.event.inputs.component }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target**: ${{ github.event.inputs.rollback_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Completed" >> $GITHUB_STEP_SUMMARY
