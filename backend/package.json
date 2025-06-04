@@ -22,9 +22,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "clean": "rimraf dist && rimraf auth-* && rimraf trips-* && rimraf users-*",
     "setup-functions": "node scripts/setup-functions.js",
-    "prepare": "npm run build",
-    "deploy:azure": "func azure functionapp publish vcarpool-api-manual --typescript",
-    "postinstall": "npm run build"
+    "deploy:azure": "func azure functionapp publish vcarpool-api-manual --typescript"
   },
   "dependencies": {
     "@azure/cosmos": "^4.0.0",
