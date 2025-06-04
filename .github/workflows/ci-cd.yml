@@ -28,11 +28,11 @@ jobs:
           cache: "npm"
           cache-dependency-path: package-lock.json
 
-      # Install all dependencies (monorepo)
+      # Install all dependencies (monorepo) without running scripts
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      # Build shared package first
+      # Build shared package first (required by backend and frontend)
       - name: Build shared package
         run: npm run build:shared
 
