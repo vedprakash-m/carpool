@@ -155,6 +155,69 @@ Or run everything concurrently from the root:
 npm run dev
 ```
 
+## 🚀 CI/CD & Deployment
+
+The VCarpool project uses a comprehensive GitHub Actions CI/CD pipeline that automatically builds, tests, and deploys the application to Azure with infrastructure-as-code provisioning.
+
+### Quick Deployment Overview
+
+- **Automatic Deployment**: Push to `main` (prod) or `develop` (test) branches
+- **Infrastructure as Code**: Bicep templates provision all Azure resources
+- **Multi-Environment**: Supports dev, test, and production environments
+- **Rollback Capability**: Safe rollback procedures for any component
+
+### Environment Mapping
+
+| Git Branch | Environment | Auto-Deploy | Azure Resources    |
+| ---------- | ----------- | ----------- | ------------------ |
+| `main`     | Production  | ✅ Yes      | `vcarpool-rg-prod` |
+| `develop`  | Test        | ✅ Yes      | `vcarpool-rg-test` |
+| Feature    | Development | ❌ Manual   | `vcarpool-rg-dev`  |
+
+### Azure Resources Created
+
+The pipeline automatically provisions:
+
+- **Azure Function App** (backend API)
+- **Azure Static Web App** (frontend)
+- **Azure Cosmos DB** (database)
+- **Application Insights** (monitoring)
+- **Key Vault** (secrets management)
+
+### Setup Instructions
+
+1. **Configure Azure Service Principal**:
+
+   ```bash
+   az ad sp create-for-rbac --name "vcarpool-cicd" \
+     --role contributor \
+     --scopes /subscriptions/{subscription-id} \
+     --sdk-auth
+   ```
+
+2. **Add GitHub Secret**:
+
+   - Add `AZURE_CREDENTIALS` secret with the Service Principal JSON
+
+3. **Deploy**:
+   - Push to `main` or `develop` branch
+   - Or use manual workflow dispatch for specific environments
+
+### Complete CI/CD Documentation
+
+For detailed setup instructions, troubleshooting, rollback procedures, and maintenance guides, see:
+
+📚 **[CI/CD Setup Documentation](docs/CI-CD-SETUP.md)**
+
+This includes:
+
+- Complete prerequisites and setup
+- Security configuration
+- Monitoring and troubleshooting
+- Rollback procedures
+- Cost optimization strategies
+- Maintenance and support guidelines
+
 ## 📁 Project Structure
 
 ```
@@ -582,4 +645,5 @@ This project uses AGPLv3 to ensure that improvements to the software remain avai
 ---
 
 **⚖️ License Compliance**: By using, modifying, or distributing this software, you agree to comply with the terms of the GNU Affero General Public License version 3.
-# CI/CD Test Mon Jun  2 22:27:11 PDT 2025
+
+# CI/CD Test Mon Jun 2 22:27:11 PDT 2025
