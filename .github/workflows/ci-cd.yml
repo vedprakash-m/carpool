@@ -8,77 +8,50 @@ on:
 
 jobs:
   setup:
-    name: Setup, Lint, Test, and Build
+    name: Install, Lint, Test, and Build
     runs-on: ubuntu-latest
     steps:
       # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Set up Node.js for backend (Node 22)
-      - name: Set up Node.js 22 (backend)
+      # Set up Node.js (use 22 for backend, 20 for frontend, but install all at root)
+      - name: Set up Node.js 22 (for backend and shared)
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: |
-            backend/package-lock.json
-            shared/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      # Install and build shared package
-      - name: Install and build shared package
-        working-directory: ./shared
-        run: |
-          npm ci
-          npm run build
-
-      # Install backend dependencies
-      - name: Install backend dependencies
-        working-directory: ./backend
+      # Install all dependencies for all workspaces
+      - name: Install dependencies (all workspaces)
         run: npm ci
 
-      # Lint backend
+      # Build shared package
+      - name: Build shared package
+        run: npm run build:shared
+
+      # Lint, test, and build backend
       - name: Lint backend
-        working-directory: ./backend
-        run: npm run lint || echo "No lint script"
-
-      # Test backend
+        run: npm run lint:backend || echo "No lint script"
       - name: Test backend
-        working-directory: ./backend
-        run: npm test || echo "No tests found"
-
-      # Build backend
+        run: npm run test:backend || echo "No tests found"
       - name: Build backend
-        working-directory: ./backend
-        run: npm run build
+        run: npm run build:backend
 
-      # Set up Node.js for frontend (Node 20)
-      - name: Set up Node.js 20 (frontend)
+      # Set up Node.js 20 for frontend build (Next.js/Azure SWA requirement)
+      - name: Set up Node.js 20 (for frontend)
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
 
-      # Install frontend dependencies
-      - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: npm ci
-
-      # Lint frontend
+      # Lint, test, and build frontend
       - name: Lint frontend
-        working-directory: ./frontend
-        run: npm run lint || echo "No lint script"
-
-      # Test frontend
+        run: npm run lint:frontend || echo "No lint script"
       - name: Test frontend
-        working-directory: ./frontend
-        run: npm test || echo "No tests found"
-
-      # Build frontend
+        run: npm run test:frontend || echo "No tests found"
       - name: Build frontend
-        working-directory: ./frontend
-        run: npm run build
+        run: npm run build:frontend
 
   deploy-backend:
     name: Deploy Backend to Azure App Service
@@ -91,11 +64,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install dependencies (all workspaces)
+        run: npm ci
       - name: Build backend
-        working-directory: ./backend
-        run: |
-          npm ci
-          npm run build
+        run: npm run build:backend
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
@@ -114,11 +86,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install dependencies (all workspaces)
+        run: npm ci
       - name: Build frontend
-        working-directory: ./frontend
-        run: |
-          npm ci
-          npm run build
+        run: npm run build:frontend
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
