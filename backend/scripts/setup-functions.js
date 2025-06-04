@@ -5,6 +5,7 @@ const path = require("path");
 
 // List of essential functions to set up (traditional model only)
 const FUNCTIONS = [
+  "health",
   "auth-login",
   "auth-register",
   "auth-refresh-token",

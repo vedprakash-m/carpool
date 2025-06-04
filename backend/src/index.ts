@@ -4,7 +4,6 @@
  */
 
 // Import all functions to register them with the Azure Functions runtime
-import "./functions/health";
 import "./functions/auth-login";
 import "./functions/auth-register";
 import "./functions/auth-refresh-token";
