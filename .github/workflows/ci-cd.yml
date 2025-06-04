@@ -141,33 +141,18 @@ jobs:
               --https-only true
           fi
 
-          # Create App Service Plan
-          echo "Creating App Service Plan..."
-          PLAN_NAME="vcarpool-plan-${{ env.ENVIRONMENT }}"
-          if az appservice plan show --name "$PLAN_NAME" --resource-group ${{ env.RESOURCE_GROUP }} &>/dev/null; then
-            echo "✅ App Service Plan already exists: $PLAN_NAME"
-          else
-            echo "Creating new App Service Plan: $PLAN_NAME"
-            az appservice plan create \
-              --name "$PLAN_NAME" \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
-              --location "${{ env.AZURE_LOCATION }}" \
-              --sku B1 \
-              --is-linux
-          fi
-
-          # Create Function App
+          # Create Function App (using Consumption plan to avoid quota issues)
           echo "Creating Function App..."
           FUNCTION_APP_NAME="vcarpool-api-${{ env.ENVIRONMENT }}"
           if az functionapp show --name "$FUNCTION_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} &>/dev/null; then
             echo "✅ Function App already exists: $FUNCTION_APP_NAME"
           else
-            echo "Creating new Function App: $FUNCTION_APP_NAME"
+            echo "Creating new Function App with Consumption plan: $FUNCTION_APP_NAME"
             az functionapp create \
               --name "$FUNCTION_APP_NAME" \
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --storage-account "$STORAGE_NAME" \
-              --plan "$PLAN_NAME" \
+              --consumption-plan-location "${{ env.AZURE_LOCATION }}" \
               --runtime node \
               --runtime-version 22 \
               --functions-version 4 \
@@ -193,7 +178,6 @@ jobs:
           # Verify all resources exist
           echo "Verifying resources..."
           az storage account show --name "$STORAGE_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv
-          az appservice plan show --name "$PLAN_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv
           az functionapp show --name "$FUNCTION_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv
           az staticwebapp show --name "$STATIC_WEB_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv
 
