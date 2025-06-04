@@ -153,7 +153,7 @@ jobs:
               --resource-group ${{ env.RESOURCE_GROUP }} \
               --location "${{ env.AZURE_LOCATION }}" \
               --sku B1 \
-              --is-linux true
+              --is-linux
           fi
 
           # Create Function App
