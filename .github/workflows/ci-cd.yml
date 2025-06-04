@@ -123,7 +123,7 @@ jobs:
 
           # Compile Bicep to ARM JSON first
           echo "Compiling Bicep template to ARM JSON..."
-          az bicep build --file infra/main.bicep --outfile infra/main-generated.json
+          az bicep build --file infra/minimal-working.bicep --outfile infra/main-generated.json
 
           # Deploy using ARM JSON template with unique name
           DEPLOYMENT_NAME="vcarpool-deploy-$(date +%Y%m%d-%H%M%S)"
