@@ -3,29 +3,29 @@ name: vCarpool E2E Tests
 on:
   # Run on pull requests
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'frontend/**'
-      - 'shared/**'
-  
+      - "frontend/**"
+      - "shared/**"
+
   # Allow manual trigger
   workflow_dispatch:
     inputs:
       browser:
-        description: 'Browser to test on'
+        description: "Browser to test on"
         required: true
-        default: 'chromium'
+        default: "chromium"
         type: choice
         options:
-        - 'chromium'
-        - 'firefox'
-        - 'webkit'
-        - 'all'
+          - "chromium"
+          - "firefox"
+          - "webkit"
+          - "all"
 
 env:
-  NODE_VERSION: '18.x'
-  FRONTEND_WORKING_DIR: './frontend'
-  SHARED_WORKING_DIR: './shared'
+  NODE_VERSION: "22.x"
+  FRONTEND_WORKING_DIR: "./frontend"
+  SHARED_WORKING_DIR: "./shared"
 
 jobs:
   # Build and test shared library
@@ -40,7 +40,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: package-lock.json # Root workspace lock file
       - name: Install dependencies
         run: npm ci
@@ -66,32 +66,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: package-lock.json
       - name: Download shared artifacts
         uses: actions/download-artifact@v4
         with:
           name: shared-dist
           path: ${{ env.SHARED_WORKING_DIR }}/dist
-      
+
       - name: Install dependencies
         run: npm ci
         working-directory: ./ # Install from root for workspace
-      
+
       - name: Verify health check
         run: |
           cd ${{ github.workspace }}
           bash scripts/health-check.sh
-      
+
       - name: Build frontend
         run: npm run build
-      
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps ${{ github.event.inputs.browser != 'all' && github.event.inputs.browser || '' }}
-      
+
       - name: Create test result directories
         run: mkdir -p e2e/test-results playwright-report
-      
+
       - name: Run Playwright tests
         run: |
           browser="${{ github.event.inputs.browser }}"
@@ -107,7 +107,7 @@ jobs:
           fi
         env:
           CI: true
-      
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -115,7 +115,7 @@ jobs:
           name: playwright-report
           path: ${{ env.FRONTEND_WORKING_DIR }}/playwright-report/
           retention-days: 30
-      
+
       - name: Upload test screenshots
         if: always()
         uses: actions/upload-artifact@v4
