@@ -1,583 +1,129 @@
-name: vCarpool CI/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: "Environment to deploy to"
-        required: true
-        default: "dev"
-        type: choice
-        options:
-          - dev
-          - test
-          - prod
-
-env:
-  NODE_VERSION: "20.x"
-  AZURE_FUNCTIONAPP_NAME: "vcarpool-api-manual"
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: "./backend"
-  AZURE_STATIC_WEB_APP_NAME: "vcarpool-web-manual"
-  RESOURCE_GROUP_NAME: "vcarpool-rg-manual"
-  BACKEND_WORKING_DIR: "./backend"
-  FRONTEND_WORKING_DIR: "./frontend"
-  SHARED_WORKING_DIR: "./shared"
-  INFRASTRUCTURE_WORKING_DIR: "./infra"
 
 jobs:
-  # Determine deployment environment
   setup:
+    name: Setup, Lint, Test, and Build
     runs-on: ubuntu-latest
-    outputs:
-      environment: ${{ steps.env.outputs.environment }}
-      resource-group: ${{ steps.env.outputs.resource-group }}
     steps:
-      - name: Determine environment
-        id: env
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-            echo "resource-group=vcarpool-rg-manual" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "environment=prod" >> $GITHUB_OUTPUT
-            echo "resource-group=vcarpool-rg-manual" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
-            echo "environment=test" >> $GITHUB_OUTPUT
-            echo "resource-group=vcarpool-rg-manual" >> $GITHUB_OUTPUT
-          else
-            echo "environment=dev" >> $GITHUB_OUTPUT
-            echo "resource-group=vcarpool-rg-manual" >> $GITHUB_OUTPUT
-          fi
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  # Build and test shared library
-  shared-build:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.SHARED_WORKING_DIR }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
+      # Set up Node.js for backend (Node 22)
+      - name: Set up Node.js 22 (backend)
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: "npm"
-          cache-dependency-path: package-lock.json # Root workspace lock file
-      - name: Install dependencies
-        run: npm ci
-        working-directory: ./ # Install from root for workspace
-      - name: Build shared library
-        run: npm run build
-      - name: Run tests
-        run: npm test
-        working-directory: ./shared # Run from shared directory
-      - name: Upload shared artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: shared-dist
-          path: ${{ env.SHARED_WORKING_DIR }}/dist
+          cache-dependency-path: |
+            backend/package-lock.json
+            shared/package-lock.json
 
-  # Build and test backend
-  backend-build:
-    needs: shared-build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.BACKEND_WORKING_DIR }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: package-lock.json # Root workspace lock file
-      - name: Download shared artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-dist
-          path: ${{ env.SHARED_WORKING_DIR }}/dist
-      # Backend's dependencies are installed via workspace root
-      - name: Install dependencies
-        run: npm ci
-        working-directory: ./ # Install from root for workspace
-      - name: Lint backend code
-        run: npm run lint
-      - name: Build backend
-        run: npm run build
-      - name: Verify environment health
+      # Install and build shared package
+      - name: Install and build shared package
+        working-directory: ./shared
         run: |
-          cd ${{ github.workspace }}
-          bash scripts/health-check.sh
-
-      - name: Run backend tests
-        run: |
-          # Ensure test directories exist
-          mkdir -p coverage
-
-          # Run tests with CI reporter
-          npm run test:ci
-        working-directory: ${{ env.BACKEND_WORKING_DIR }}
-      - name: Upload backend artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-dist
-          path: ${{ env.BACKEND_WORKING_DIR }}/dist
-
-  # Build and test frontend
-  frontend-test:
-    needs: shared-build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.FRONTEND_WORKING_DIR }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: package-lock.json # Root workspace lock file
-      - name: Download shared artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-dist
-          path: ${{ env.SHARED_WORKING_DIR }}/dist # Places artifact at $GITHUB_WORKSPACE/shared/dist
-      # Frontend dependencies are installed via workspace root
-      - name: Install workspace dependencies
-        run: npm ci
-        working-directory: ./ # Install from root for workspace
-      - name: Lint frontend code
-        run: npm run lint
-      - name: Build frontend for testing
-        run: |
-          echo "Building Next.js for testing..."
-          echo "NODE_ENV=${NODE_ENV}"
-
-          # Build to ensure the code compiles without errors
-          if npm run build; then
-            echo "✅ Build completed successfully"
-          else
-            echo "❌ Build failed"
-            exit 1
-          fi
-        env:
-          NODE_ENV: production
-      - name: Run Jest unit tests
-        run: npm test
-        working-directory: ${{ env.FRONTEND_WORKING_DIR }}
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-        working-directory: ${{ env.FRONTEND_WORKING_DIR }}
-      - name: Run Playwright E2E tests
-        run: |
-          mkdir -p e2e/test-results
-          # Retry the E2E tests up to 2 times if they fail
-          for i in {1..3}; do
-            echo "Attempt $i of 3 running E2E tests"
-            if npm run test:e2e:ci; then
-              echo "✅ E2E tests passed"
-              break
-            else
-              echo "❌ E2E tests failed on attempt $i"
-              if [ $i -lt 3 ]; then
-                echo "Waiting 30 seconds before retrying..."
-                sleep 30
-              else
-                echo "::error::E2E tests failed after 3 attempts"
-                # Don't fail the build on E2E test failures during development, just log the error
-                # Remove this condition in production if you want to fail builds on E2E test failures
-                if [[ "${{ needs.setup.outputs.environment }}" == "prod" ]]; then
-                  exit 1
-                fi
-              fi
-            fi
-          done
-          echo "::group::Test Summary"
-          if [ -f playwright-report/results.json ]; then
-            echo "Total Tests: $(jq '.suites[0].specs | length' playwright-report/results.json)"
-            echo "Passed: $(jq '.suites[0].specs | map(select(.ok == true)) | length' playwright-report/results.json)"
-            echo "Failed: $(jq '.suites[0].specs | map(select(.ok == false)) | length' playwright-report/results.json)"
-          else
-            echo "No results.json file found. Tests may not have completed."
-          fi
-          echo "::endgroup::"
-        working-directory: ${{ env.FRONTEND_WORKING_DIR }}
-        env:
-          CI: true
-      - name: Upload Playwright report
-        if: always() # Upload report even if tests fail
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: ${{ env.FRONTEND_WORKING_DIR }}/playwright-report/
-          retention-days: 30
-
-  # Security checks
-  security-checks:
-    needs: [shared-build, backend-build, frontend-test]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Full history for better secret detection
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run secret detection
-        run: |
-          # Ensure scripts directory exists and script is executable
-          if [ ! -f "scripts/check-secrets.sh" ]; then
-            echo "❌ scripts/check-secrets.sh not found"
-            ls -la scripts/ || echo "scripts directory not found"
-            # Fallback: basic secret patterns
-            echo "🔄 Running fallback secret detection..."
-            grep -r -E "(password|secret|key|token)" --include="*.js" --include="*.ts" --include="*.tsx" --include="*.json" . | grep -v node_modules | head -10 || echo "No obvious secrets found in basic scan"
-            exit 1
-          fi
-
-          chmod +x scripts/check-secrets.sh
-          echo "✅ Running custom secret detection..."
-          if ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" | head -20); then
-            echo "✅ Secret detection passed"
-          else
-            echo "❌ Secret detection found issues"
-            # Don't fail the pipeline on secret detection in development
-            if [[ "${{ needs.setup.outputs.environment }}" == "prod" ]]; then
-              exit 1
-            else
-              echo "⚠️ Secret detection issues found but not failing build in development environment"
-            fi
-          fi
-
-      - name: Run dependency audit
-        run: |
-          echo "## NPM Audit Results" >> $GITHUB_STEP_SUMMARY
-          npm audit --audit-level=moderate --production 2>&1 | tee audit-results.txt || true
-
-          if grep -q "found.*vulnerabilities" audit-results.txt; then
-            echo "⚠️ Vulnerabilities found in dependencies" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            cat audit-results.txt >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "✅ No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Security summary
-        run: |
-          echo "## 🔒 Security Check Summary" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Secret detection completed" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Dependency audit completed" >> $GITHUB_STEP_SUMMARY
-          echo "📋 Review any security alerts in the Security tab" >> $GITHUB_STEP_SUMMARY
-
-  # Deploy infrastructure
-  infrastructure-deploy:
-    needs: [setup, shared-build, backend-build, frontend-test, security-checks]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    environment: ${{ needs.setup.outputs.environment }}
-    outputs:
-      functionAppName: ${{ steps.deploy.outputs.functionAppName }}
-      staticWebAppName: ${{ steps.deploy.outputs.staticWebAppName }}
-      functionAppEndpoint: ${{ steps.deploy.outputs.functionAppEndpoint }}
-      staticWebAppEndpoint: ${{ steps.deploy.outputs.staticWebAppEndpoint }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Azure CLI Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy Azure Infrastructure
-        id: deploy
-        run: |
-          # Since we're using existing infrastructure, verify it exists instead of deploying
-          echo "Verifying existing infrastructure in ${{ needs.setup.outputs.resource-group }}"
-
-          # Check if Function App exists and get its details
-          if az functionapp show --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --resource-group ${{ needs.setup.outputs.resource-group }} >/dev/null 2>&1; then
-            echo "✅ Function App found: ${{ env.AZURE_FUNCTIONAPP_NAME }}"
-            FUNCTION_APP_ENDPOINT="https://${{ env.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net"
-            echo "functionAppName=${{ env.AZURE_FUNCTIONAPP_NAME }}" >> $GITHUB_OUTPUT
-            echo "functionAppEndpoint=$FUNCTION_APP_ENDPOINT" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Function App not found: ${{ env.AZURE_FUNCTIONAPP_NAME }}"
-            exit 1
-          fi
-
-          # Check if Static Web App exists and get its details
-          if az staticwebapp show --name ${{ env.AZURE_STATIC_WEB_APP_NAME }} --resource-group ${{ needs.setup.outputs.resource-group }} >/dev/null 2>&1; then
-            echo "✅ Static Web App found: ${{ env.AZURE_STATIC_WEB_APP_NAME }}"
-            STATIC_WEB_APP_ENDPOINT=$(az staticwebapp show --name ${{ env.AZURE_STATIC_WEB_APP_NAME }} --resource-group ${{ needs.setup.outputs.resource-group }} --query "defaultHostname" --output tsv)
-            echo "staticWebAppName=${{ env.AZURE_STATIC_WEB_APP_NAME }}" >> $GITHUB_OUTPUT
-            echo "staticWebAppEndpoint=https://$STATIC_WEB_APP_ENDPOINT" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Static Web App not found: ${{ env.AZURE_STATIC_WEB_APP_NAME }}"
-            exit 1
-          fi
-
-          echo "✅ Infrastructure verification completed successfully"
-
-  # Deploy backend to Azure Functions
-  backend-deploy:
-    needs: [setup, infrastructure-deploy]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    environment: ${{ needs.setup.outputs.environment }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Download backend artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-dist
-          path: ${{ env.BACKEND_WORKING_DIR }}/dist
-
-      - name: Download shared artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-dist
-          path: ${{ env.SHARED_WORKING_DIR }}/dist
-
-      - name: Install production dependencies
-        working-directory: ${{ env.BACKEND_WORKING_DIR }}
-        run: |
-          npm ci --production
-          # Create directory structure for shared library
-          mkdir -p ./node_modules/@vcarpool/
-          # Copy shared library
-          cp -r ../${{ env.SHARED_WORKING_DIR }}/dist/* ./node_modules/@vcarpool/
-          cp ../${{ env.SHARED_WORKING_DIR }}/package.json ./node_modules/@vcarpool/
-
-      - name: Azure CLI Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Functions
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: ${{ env.BACKEND_WORKING_DIR }}
-
-      - name: Health Check
-        run: |
-          sleep 30
-          endpoint="${{ needs.infrastructure-deploy.outputs.functionAppEndpoint }}"
-          if [ ! -z "$endpoint" ]; then
-            curl -f "$endpoint/health" || echo "Health check endpoint not ready yet"
-          fi
-
-  # Deploy frontend to Azure Static Web Apps
-  frontend-deploy:
-    needs: [setup, infrastructure-deploy, shared-build]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    environment: ${{ needs.setup.outputs.environment }}
-    timeout-minutes: 45 # Increased timeout for Azure SWA uploads
-    steps:
-      - uses: actions/checkout@v4
-
-      # Note: Azure Static Web Apps supports Node.js 12, 14, 16, 18, 20 (not 22 yet)
-      # Backend Azure Functions supports Node.js 22
-      - name: Set up Node.js for Azure SWA
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
-
-      - name: Download shared artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-dist
-          path: ${{ env.SHARED_WORKING_DIR }}/dist
-
-      - name: Install dependencies and prepare monorepo
-        run: |
-          echo "Installing workspace dependencies..."
-          npm ci --production=false --prefer-offline
-
-          echo "Preparing shared package for frontend..."
-          mkdir -p frontend/node_modules/@vcarpool
-          cp -r shared/dist/* frontend/node_modules/@vcarpool/
-          cp shared/package.json frontend/node_modules/@vcarpool/
-
-          echo "Workspace preparation completed"
-
-      - name: Optimize build configuration for Azure SWA
-        working-directory: ${{ env.FRONTEND_WORKING_DIR }}
-        run: |
-          echo "Optimizing build for Azure SWA..."
-          echo "Node version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-          echo "Available memory: $(free -m)"
-
-          # Clear any existing build cache
-          rm -rf .next/
-          rm -rf out/
-          npm cache clean --force
-
-          # Set optimal Node.js memory settings
-          export NODE_OPTIONS="--max-old-space-size=4096"
-
-          # Pre-optimize packages
-          echo "Pre-optimizing critical packages..."
-          npm ls --depth=0 | head -20
-
-      - name: Build Next.js application for Azure SWA
-        working-directory: ${{ env.FRONTEND_WORKING_DIR }}
-        run: |
-          echo "Building Next.js application with upload optimizations..."
-
-          # Set production build environment
-          export NODE_ENV=production
-          export NODE_OPTIONS="--max-old-space-size=4096"
-          export NEXT_TELEMETRY_DISABLED=1
-
-          # Build with optimized configuration
+          npm ci
           npm run build
 
-          # Clean up unnecessary files to reduce upload size
-          echo "Cleaning up build artifacts for faster upload..."
-          find .next -name "*.map" -type f -delete || true
-          find .next -name "*.d.ts" -type f -delete || true
-          find .next -name "cache" -type d -exec rm -rf {} + || true
-          find .next -name "*.json.gz" -type f -delete || true
+      # Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
 
-          # Verify build output
-          echo "Build output verification:"
-          ls -la .next/ || echo "No .next directory found"
+      # Lint backend
+      - name: Lint backend
+        working-directory: ./backend
+        run: npm run lint || echo "No lint script"
 
-          # Check optimized build size
-          echo "Build size after optimization:"
-          du -sh .next/ || echo "Could not determine build size"
-          echo "File count after optimization:"
-          find .next -type f | wc -l || echo "Could not count files"
+      # Test backend
+      - name: Test backend
+        working-directory: ./backend
+        run: npm test || echo "No tests found"
 
-          # Check for critical files
-          if [ ! -f ".next/BUILD_ID" ]; then
-            echo "❌ Build may have failed - BUILD_ID missing"
-            exit 1
-          fi
+      # Build backend
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build
 
-          echo "✅ Build completed successfully"
+      # Set up Node.js for frontend (Node 20)
+      - name: Set up Node.js 20 (frontend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Deploy to Azure Static Web Apps (Optimized)
+      # Install frontend dependencies
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      # Lint frontend
+      - name: Lint frontend
+        working-directory: ./frontend
+        run: npm run lint || echo "No lint script"
+
+      # Test frontend
+      - name: Test frontend
+        working-directory: ./frontend
+        run: npm test || echo "No tests found"
+
+      # Build frontend
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+  deploy-backend:
+    name: Deploy Backend to Azure App Service
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build backend
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm run build
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_BACKEND_APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+          package: ./backend
+
+  deploy-frontend:
+    name: Deploy Frontend to Azure Static Web Apps
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build frontend
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_FRONTEND_SWA_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "frontend"
-          api_location: ""
-          output_location: ""
-          skip_app_build: true # We pre-built the app above
-          skip_api_build: true
-        env:
-          NODE_VERSION: "20.x"
-          NODE_OPTIONS: "--max-old-space-size=4096"
-          NEXT_TELEMETRY_DISABLED: 1
-          NEXT_PUBLIC_API_URL: ${{ needs.infrastructure-deploy.outputs.functionAppEndpoint }}/api
-
-      - name: Verify deployment health
-        run: |
-          echo "Waiting for deployment to stabilize..."
-          sleep 45
-
-          # Try to access the deployed app
-          if [ ! -z "${{ needs.infrastructure-deploy.outputs.staticWebAppEndpoint }}" ]; then
-            echo "Testing deployment endpoint..."
-            for i in {1..5}; do
-              if curl -f --connect-timeout 30 --max-time 60 -s "${{ needs.infrastructure-deploy.outputs.staticWebAppEndpoint }}" > /dev/null; then
-                echo "✅ Deployment is accessible"
-                break
-              else
-                echo "Attempt $i/5: Deployment not yet ready, waiting..."
-                sleep 30
-              fi
-            done
-          else
-            echo "No static web app endpoint available for health check"
-          fi
-
-  # Post-deployment tests
-  integration-tests:
-    needs: [setup, infrastructure-deploy, backend-deploy, frontend-deploy]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    environment: ${{ needs.setup.outputs.environment }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install test dependencies
-        working-directory: ${{ env.BACKEND_WORKING_DIR }}
-        run: npm ci
-
-      - name: Wait for deployments to be ready
-        run: |
-          echo "Waiting for services to be fully deployed..."
-          sleep 60
-
-      - name: Run integration tests
-        working-directory: ${{ env.BACKEND_WORKING_DIR }}
-        env:
-          API_BASE_URL: ${{ needs.infrastructure-deploy.outputs.functionAppEndpoint }}
-          FRONTEND_URL: ${{ needs.infrastructure-deploy.outputs.staticWebAppEndpoint }}
-        run: |
-          if npm run test:integration; then
-            echo "✅ Integration tests passed"
-          else
-            echo "❌ Integration tests failed"
-            exit 1
-          fi
-
-  # Notify deployment status
-  notify:
-    needs:
-      [
-        setup,
-        infrastructure-deploy,
-        backend-deploy,
-        frontend-deploy,
-        integration-tests,
-      ]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deployment Summary
-        run: |
-          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: ${{ needs.setup.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Resource Group**: ${{ needs.setup.outputs.resource-group }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Backend API**: ${{ needs.infrastructure-deploy.outputs.functionAppEndpoint }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Frontend App**: ${{ needs.infrastructure-deploy.outputs.staticWebAppEndpoint }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Infrastructure**: ${{ needs.infrastructure-deploy.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Backend**: ${{ needs.backend-deploy.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Frontend**: ${{ needs.frontend-deploy.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Tests**: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          output_location: "frontend/.next"
