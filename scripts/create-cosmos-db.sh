@@ -33,7 +33,7 @@ else
     az cosmosdb create \
         --name "$COSMOS_DB_NAME" \
         --resource-group "$RESOURCE_GROUP" \
-        --location "$LOCATION" \
+        --locations regionName="$LOCATION" failoverPriority=0 isZoneRedundant=false \
         --kind GlobalDocumentDB \
         --default-consistency-level Session \
         --enable-free-tier true \
@@ -114,6 +114,34 @@ else
     echo "✅ SwapRequests container created"
 fi
 
+# Email Templates container
+echo "Creating email-templates container..."
+if az cosmosdb sql container show --account-name "$COSMOS_DB_NAME" --resource-group "$RESOURCE_GROUP" --database-name "$DATABASE_NAME" --name "email-templates" &>/dev/null; then
+    echo "✅ Email Templates container already exists"
+else
+    az cosmosdb sql container create \
+        --account-name "$COSMOS_DB_NAME" \
+        --resource-group "$RESOURCE_GROUP" \
+        --database-name "$DATABASE_NAME" \
+        --name "email-templates" \
+        --partition-key-path "/id"
+    echo "✅ Email Templates container created"
+fi
+
+# Chat Participants container
+echo "Creating chatParticipants container..."
+if az cosmosdb sql container show --account-name "$COSMOS_DB_NAME" --resource-group "$RESOURCE_GROUP" --database-name "$DATABASE_NAME" --name "chatParticipants" &>/dev/null; then
+    echo "✅ Chat Participants container already exists"
+else
+    az cosmosdb sql container create \
+        --account-name "$COSMOS_DB_NAME" \
+        --resource-group "$RESOURCE_GROUP" \
+        --database-name "$DATABASE_NAME" \
+        --name "chatParticipants" \
+        --partition-key-path "/id"
+    echo "✅ Chat Participants container created"
+fi
+
 # Notifications container
 echo "Creating notifications container..."
 if az cosmosdb sql container show --account-name "$COSMOS_DB_NAME" --resource-group "$RESOURCE_GROUP" --database-name "$DATABASE_NAME" --name "notifications" &>/dev/null; then
@@ -184,6 +212,8 @@ echo "- swapRequests (partition: /requesterId)"
 echo "- notifications (partition: /id)"
 echo "- messages (partition: /id)"
 echo "- chats (partition: /id)"
+echo "- chatParticipants (partition: /id)"
+echo "- email-templates (partition: /id)"
 echo ""
 echo "🎯 Next Steps:"
 echo "1. Update Function App settings with connection details"

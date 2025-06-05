@@ -219,6 +219,34 @@ jobs:
               --database-name "vcarpool" \
               --name "notifications" \
               --partition-key-path "/id"
+              
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "messages" \
+              --partition-key-path "/id"
+              
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "chats" \
+              --partition-key-path "/id"
+              
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "chatParticipants" \
+              --partition-key-path "/id"
+              
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "email-templates" \
+              --partition-key-path "/id"
           fi
 
           # Create Static Web App (simplified - no GitHub integration for now)
