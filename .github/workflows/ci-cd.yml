@@ -159,6 +159,68 @@ jobs:
               --https-only true
           fi
 
+          # Create Cosmos DB Account
+          echo "Creating Cosmos DB Account..."
+          COSMOS_DB_NAME="vcarpool-cosmos-${{ env.ENVIRONMENT }}"
+          if az cosmosdb show --name "$COSMOS_DB_NAME" --resource-group ${{ env.RESOURCE_GROUP }} &>/dev/null; then
+            echo "✅ Cosmos DB already exists: $COSMOS_DB_NAME"
+          else
+            echo "Creating new Cosmos DB Account: $COSMOS_DB_NAME"
+            az cosmosdb create \
+              --name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --location "${{ env.AZURE_LOCATION }}" \
+              --kind GlobalDocumentDB \
+              --default-consistency-level Session \
+              --enable-free-tier true
+            
+            echo "Creating Cosmos DB Database..."
+            az cosmosdb sql database create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --name "vcarpool" \
+              --throughput 400
+            
+            echo "Creating Cosmos DB Containers..."
+            # Users container
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "users" \
+              --partition-key-path "/id"
+            
+            # Trips container
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "trips" \
+              --partition-key-path "/driverId"
+            
+            # Additional containers
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "schedules" \
+              --partition-key-path "/userId"
+              
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "swapRequests" \
+              --partition-key-path "/requesterId"
+              
+            az cosmosdb sql container create \
+              --account-name "$COSMOS_DB_NAME" \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --database-name "vcarpool" \
+              --name "notifications" \
+              --partition-key-path "/id"
+          fi
+
           # Create Static Web App (simplified - no GitHub integration for now)
           echo "Creating Static Web App..."
           STATIC_WEB_APP_NAME="vcarpool-web-${{ env.ENVIRONMENT }}"
@@ -175,11 +237,27 @@ jobs:
 
           echo "Resource creation completed!"
 
+          # Configure Function App with Cosmos DB connection
+          echo "Configuring Function App with Cosmos DB connection..."
+          COSMOS_ENDPOINT=$(az cosmosdb show --name "$COSMOS_DB_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query documentEndpoint -o tsv)
+          COSMOS_KEY=$(az cosmosdb keys list --name "$COSMOS_DB_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query primaryMasterKey -o tsv)
+
+          az functionapp config appsettings set \
+            --name "$FUNCTION_APP_NAME" \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --settings \
+              "COSMOS_DB_ENDPOINT=$COSMOS_ENDPOINT" \
+              "COSMOS_DB_KEY=$COSMOS_KEY" \
+              "COSMOS_DB_DATABASE_ID=vcarpool" \
+              "JWT_SECRET=temp-jwt-secret-$(date +%s)" \
+              "JWT_REFRESH_SECRET=temp-refresh-secret-$(date +%s)"
+
           # Verify all resources exist
           echo "Verifying resources..."
           az storage account show --name "$STORAGE_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv
           az functionapp show --name "$FUNCTION_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv
           az staticwebapp show --name "$STATIC_WEB_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv
+          az cosmosdb show --name "$COSMOS_DB_NAME" --resource-group ${{ env.RESOURCE_GROUP }} --query name -o tsv
 
           # Set outputs for next jobs
           echo "functionAppName=$FUNCTION_APP_NAME" >> $GITHUB_OUTPUT
@@ -195,6 +273,7 @@ jobs:
           echo "Static Web App: ${{ steps.deploy.outputs.staticWebAppName }}"
           echo "Function Endpoint: ${{ steps.deploy.outputs.functionAppEndpoint }}"
           echo "Static Web Endpoint: ${{ steps.deploy.outputs.staticWebAppEndpoint }}"
+          echo "Cosmos DB: vcarpool-cosmos-${{ env.ENVIRONMENT }}"
 
   # Deploy Backend (Azure Functions)
   deploy-backend:

@@ -902,7 +902,74 @@ interface ErrorResponse {
 
 **Documentation**: All changes committed and scripts available in `/scripts` directory.
 
-### 15.3 Ongoing Documentation Strategy
+### 15.3 Missing Cosmos DB Infrastructure - Critical Discovery (2024-12-19)
+
+**Issue**: User reported not seeing Cosmos DB in Azure resource group, causing authentication and database issues.
+
+**Root Cause Analysis**:
+
+- **CI/CD Pipeline Gap**: Infrastructure deployment was only creating 3 resources:
+  - ✅ Storage Account (vcarpoolsaprod)
+  - ✅ Function App (vcarpool-api-prod)
+  - ✅ Static Web App (vcarpool-web-prod)
+  - ❌ **Missing**: Cosmos DB Account completely absent from deployment
+
+**Impact**:
+
+- Backend API has no database to connect to
+- Authentication system cannot store/retrieve users
+- All database-dependent features are non-functional
+- Admin user creation script would fail
+
+**Solutions Implemented**:
+
+1. **CI/CD Pipeline Fix**:
+
+   - Added complete Cosmos DB creation to `.github/workflows/ci-cd.yml`
+   - Creates `vcarpool-cosmos-prod` with all required containers:
+     - `users` (partition: /id)
+     - `trips` (partition: /driverId)
+     - `schedules` (partition: /userId)
+     - `swapRequests` (partition: /requesterId)
+     - `notifications` (partition: /id)
+     - `messages` (partition: /id)
+     - `chats` (partition: /id)
+   - Configures Function App with Cosmos DB connection strings automatically
+
+2. **Manual Recovery Script**:
+   - Created `scripts/create-cosmos-db.sh` for immediate manual creation
+   - Includes all containers with proper partition keys
+   - Provides connection details for Function App configuration
+   - Handles Azure CLI authentication and error checking
+
+**Expected Resources After Fix**:
+
+```
+Resource Group: vcarpool-rg
+├── vcarpoolsaprod (Storage Account)
+├── vcarpool-api-prod (Function App)
+├── vcarpool-web-prod (Static Web App)
+└── vcarpool-cosmos-prod (Cosmos DB) ← NEWLY ADDED
+    └── vcarpool (Database)
+        ├── users
+        ├── trips
+        ├── schedules
+        ├── swapRequests
+        ├── notifications
+        ├── messages
+        └── chats
+```
+
+**Immediate Actions**:
+
+1. **Manual Creation**: Run `./scripts/create-cosmos-db.sh` to create Cosmos DB immediately
+2. **CI/CD Update**: Next deployment will include Cosmos DB creation
+3. **Function App Config**: Cosmos DB connection strings will be configured automatically
+4. **Admin User**: Can create real admin user once Cosmos DB exists
+
+**Status**: Critical infrastructure gap identified and resolved - ready for deployment.
+
+### 15.4 Ongoing Documentation Strategy
 
 **Living Document Approach**:
 
