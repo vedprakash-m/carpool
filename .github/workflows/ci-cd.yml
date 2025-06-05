@@ -289,6 +289,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Setup Node.js for frontend build
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          npm ci
+          echo "Dependencies installed successfully"
+
+      # Build the frontend
+      - name: Build frontend
+        run: |
+          echo "Building shared package..."
+          npm run build:shared
+          echo "Building frontend..."
+          npm run build:frontend
+          echo "Frontend build completed"
+
+          # Verify build output exists
+          if [ -d "frontend/out" ]; then
+            echo "✅ Build output directory exists"
+            ls -la frontend/out/
+          else
+            echo "❌ Build output directory not found"
+            exit 1
+          fi
+
       # Get Static Web App deployment token
       - name: Azure Login
         uses: azure/login@v1
@@ -312,10 +344,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.swa-token }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "./"
-          app_build_command: "npm run build:shared && npm run build:frontend"
-          output_location: "frontend/out"
-          skip_app_build: false
+          app_location: "frontend"
+          output_location: "out"
+          skip_app_build: true
 
   # Post-deployment verification
   verify-deployment:

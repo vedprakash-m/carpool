@@ -9,6 +9,7 @@ Thank you for your interest in contributing to vCarpool! This document provides 
 - [How to Contribute](#how-to-contribute)
 - [Development Setup](#development-setup)
 - [Code Style Guidelines](#code-style-guidelines)
+- [Security Guidelines](#security-guidelines)
 - [Testing Requirements](#testing-requirements)
 - [Commit Message Guidelines](#commit-message-guidelines)
 - [Pull Request Process](#pull-request-process)
@@ -20,7 +21,7 @@ Thank you for your interest in contributing to vCarpool! This document provides 
 Before contributing, please:
 
 1. Read this contributing guide thoroughly
-2. Review the [README.md](README.md) to understand the project
+2. Review the [PROJECT_METADATA.md](PROJECT_METADATA.md) to understand the project architecture
 3. Check existing [issues](https://github.com/vedprakashmishra/vcarpool/issues) and [pull requests](https://github.com/vedprakashmishra/vcarpool/pulls)
 4. Set up your development environment
 
@@ -65,24 +66,27 @@ Look for issues labeled `good first issue` or `help wanted`. These are great sta
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 22+ and npm
 - Azure CLI (for infrastructure)
 - Git
 
 ### Local Setup
 
 1. **Fork and clone the repository:**
+
    ```bash
    git clone https://github.com/your-username/vcarpool.git
    cd vcarpool
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables:**
+
    ```bash
    cp frontend/.env.example frontend/.env.local
    cp backend/.env.example backend/.env.local
@@ -90,6 +94,7 @@ Look for issues labeled `good first issue` or `help wanted`. These are great sta
    ```
 
 4. **Start the development servers:**
+
    ```bash
    # Frontend (in one terminal)
    cd frontend
@@ -148,6 +153,55 @@ Look for issues labeled `good first issue` or `help wanted`. These are great sta
 - Add input validation for all endpoints
 - Use TypeScript interfaces for data models
 
+## Security Guidelines
+
+### Secret Management
+
+**NEVER commit secrets to the repository:**
+
+```bash
+# ❌ NEVER DO THIS
+const jwtSecret = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // REAL TOKEN
+
+# ✅ DO THIS INSTEAD
+const jwtSecret = process.env.JWT_SECRET || "your-jwt-secret-here";
+```
+
+**Use placeholder values in code:**
+
+```typescript
+// ✅ GOOD: Use placeholders
+const config = {
+  jwtSecret: process.env.JWT_SECRET || "your-jwt-secret-here",
+  cosmosKey: process.env.COSMOS_DB_KEY || "your-cosmos-key-here",
+};
+```
+
+### Input Validation
+
+**Always validate user inputs:**
+
+```typescript
+// ✅ Use Zod schemas for validation
+const userSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+```
+
+### Authentication & Authorization
+
+- Use the existing JWT middleware for protected endpoints
+- Implement proper role-based access control
+- Never trust client-side data
+- Always verify user permissions on the server
+
+### Rate Limiting
+
+- Use existing rate limiting middleware
+- Configure appropriate limits for different endpoint types
+- Monitor for abuse patterns
+
 ## Testing Requirements
 
 ### Frontend Testing
@@ -198,11 +252,9 @@ Use the [Conventional Commits](https://conventionalcommits.org/) specification:
 <type>[optional scope]: <description>
 
 [optional body]
-
-[optional footer(s)]
 ```
 
-### Types
+**Types:**
 
 - `feat`: A new feature
 - `fix`: A bug fix
@@ -211,153 +263,54 @@ Use the [Conventional Commits](https://conventionalcommits.org/) specification:
 - `refactor`: A code change that neither fixes a bug nor adds a feature
 - `perf`: A code change that improves performance
 - `test`: Adding missing tests or correcting existing tests
-- `build`: Changes that affect the build system or external dependencies
-- `ci`: Changes to CI configuration files and scripts
-- `chore`: Other changes that don't modify src or test files
+- `chore`: Changes to the build process or auxiliary tools
 
-### Examples
+**Examples:**
 
 ```
-feat(auth): add Google OAuth integration
-fix(trips): resolve trip date validation issue
-docs(api): update authentication endpoint documentation
-test(carpool): add unit tests for matching algorithm
+feat(auth): add password reset functionality
+fix(trips): resolve duplicate booking issue
+docs: update API documentation
+test(user): add unit tests for user service
 ```
 
 ## Pull Request Process
 
-### Before Submitting
-
-1. Ensure your code follows the style guidelines
-2. Run all tests and ensure they pass
-3. Update documentation if needed
-4. Add or update tests for your changes
-5. Update the changelog if applicable
-
-### Submitting a Pull Request
-
-1. **Create a feature branch:**
-   ```bash
-   git checkout -b feat/your-feature-name
-   ```
-
-2. **Make your changes and commit:**
-   ```bash
-   git add .
-   git commit -m "feat: add your feature description"
-   ```
-
-3. **Push to your fork:**
-   ```bash
-   git push origin feat/your-feature-name
-   ```
-
-4. **Create a pull request** with:
+1. **Create a feature branch** from `main`
+2. **Make your changes** following the guidelines above
+3. **Write or update tests** for your changes
+4. **Update documentation** if necessary
+5. **Run the full test suite** and ensure all tests pass
+6. **Create a pull request** with:
    - Clear title and description
    - Reference to related issues
-   - Screenshots for UI changes
-   - Test instructions
+   - Screenshots (if UI changes)
+   - Testing instructions
+
+### Pull Request Requirements
+
+- All checks must pass (tests, linting, type checking)
+- At least one reviewer approval required
+- Up-to-date with main branch
+- No merge conflicts
 
 ### Review Process
 
-- All PRs require review from maintainers
-- Address feedback promptly
-- Keep PRs focused and reasonably sized
-- Ensure CI checks pass
-- Maintain backwards compatibility
+- Code reviews focus on security, performance, and maintainability
+- Reviewers will provide constructive feedback
+- Address all comments before merging
+- Squash commits when merging to keep history clean
 
 ## License Agreement
 
-### Important: AGPLv3 License Requirements
-
-By contributing to vCarpool, you agree that your contributions will be licensed under the GNU Affero General Public License version 3 (AGPLv3). This means:
-
-1. **Your contributions become part of AGPLv3-licensed software**
-2. **Network copyleft applies** - anyone who runs modified versions of this software as a network service must provide the source code to users
-3. **You retain copyright** to your contributions but grant rights under AGPLv3
-4. **Commercial use is allowed** but must comply with AGPLv3 requirements
-
-### Contribution License Agreement
-
-By submitting a contribution, you certify that:
-
-- You have the right to submit the work under AGPLv3
-- You understand the implications of the AGPLv3 license
-- Your contribution is original work or properly attributed
-- You agree to the Developer Certificate of Origin (DCO)
-
-### Developer Certificate of Origin
-
-```
-Developer Certificate of Origin
-Version 1.1
-
-By making a contribution to this project, I certify that:
-
-(a) The contribution was created in whole or in part by me and I
-    have the right to submit it under the open source license
-    indicated in the file; or
-
-(b) The contribution is based upon previous work that, to the best
-    of my knowledge, is covered under an appropriate open source
-    license and I have the right under that license to submit that
-    work with modifications, whether created in whole or in part
-    by me, under the same open source license (unless I am
-    permitted to submit under a different license), as indicated
-    in the file; or
-
-(c) The contribution was provided directly to me by some other
-    person who certified (a), (b) or (c) and I have not modified
-    it.
-
-(d) I understand and agree that this project and the contribution
-    are public and that a record of the contribution (including all
-    personal information I submit with it, including my sign-off) is
-    maintained indefinitely and may be redistributed consistent with
-    this project or the open source license(s) involved.
-```
-
-### For Corporate Contributors
-
-If you're contributing on behalf of your employer, ensure you have the necessary permissions and that your employer agrees to the AGPLv3 license terms.
-
-## Security Issues
-
-Please do not open GitHub issues for security vulnerabilities. Instead, email security concerns directly to the maintainers.
-
-## Documentation
-
-- Update relevant documentation for any changes
-- Use clear, concise language
-- Include code examples where helpful
-- Maintain consistency with existing docs
-
-## Performance Considerations
-
-- Consider performance impact of changes
-- Use React.memo() and useMemo() where appropriate
-- Optimize database queries
-- Minimize bundle size impact
-
-## Accessibility
-
-- Ensure WCAG 2.1 AA compliance
-- Test with screen readers
-- Provide proper ARIA labels
-- Maintain keyboard navigation
-- Use semantic HTML
-
-## Internationalization
-
-- Use i18next for translations
-- Extract all user-facing strings
-- Test with different locales
-- Consider RTL language support
+By contributing to vCarpool, you agree that your contributions will be licensed under the same license as the project.
 
 ## Contact
 
-- **Project Repository:** https://github.com/vedprakashmishra/vcarpool
-- **Discussions:** Use GitHub Discussions for questions
-- **Issues:** Use GitHub Issues for bugs and feature requests
+- **Project Lead**: [Vedprakash Mishra](https://github.com/vedprakashmishra)
+- **Issues**: [GitHub Issues](https://github.com/vedprakashmishra/vcarpool/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/vedprakashmishra/vcarpool/discussions)
 
-Thank you for contributing to vCarpool! 🚗✨ 
+---
+
+Thank you for contributing to vCarpool! Your efforts help make transportation more sustainable and accessible for everyone.
