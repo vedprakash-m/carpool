@@ -58,11 +58,8 @@ export class ApiClient {
       },
     });
 
-    // Check if mock mode is enabled
-    this.isMockMode =
-      process.env.NEXT_PUBLIC_MOCK_AUTH === "true" ||
-      (typeof window !== "undefined" &&
-        localStorage.getItem("MOCK_AUTH") === "true");
+    // Disable mock mode completely - force real API calls
+    this.isMockMode = false;
 
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
@@ -373,19 +370,7 @@ export class ApiClient {
       const response = await this.client.get(url, config);
       return response.data;
     } catch (error) {
-      // If backend is not available or returning errors, enable mock mode automatically
-      if (
-        (error as any)?.code === "ECONNREFUSED" ||
-        (error as any)?.response?.status === 404 ||
-        (error as any)?.response?.status === 500 ||
-        (error as any)?.response?.status >= 500
-      ) {
-        console.warn(
-          "Backend not available or returning errors for GET request, enabling mock mode"
-        );
-        this.enableMockMode();
-        return this.get(url, config); // Retry with mock mode enabled
-      }
+      console.error("API GET request failed:", error);
       throw error;
     }
   }
@@ -416,24 +401,7 @@ export class ApiClient {
       const response = await this.client.post(url, data, config);
       return response.data;
     } catch (error) {
-      // If backend is not available and this is an auth request, enable mock mode
-      if (
-        (error as any)?.code === "ECONNREFUSED" ||
-        (error as any)?.response?.status === 404
-      ) {
-        if (url === "/auth/login" || url === "/auth/register") {
-          console.warn(
-            "Backend not available, enabling mock authentication mode"
-          );
-          this.enableMockMode();
-          if (url === "/auth/login") {
-            return this.mockLogin(data) as Promise<ApiResponse<T>>;
-          }
-          if (url === "/auth/register") {
-            return this.mockRegister(data) as Promise<ApiResponse<T>>;
-          }
-        }
-      }
+      console.error("API POST request failed:", error);
       throw error;
     }
   }
@@ -469,7 +437,19 @@ export class ApiClient {
 }
 
 // Create singleton instance
-export const apiClient = new ApiClient();
+// Use proxy routes on Azure Static Web Apps, direct API calls locally
+const getApiUrl = () => {
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname.includes("azurestaticapps.net")
+  ) {
+    // Use relative URL to leverage Azure Static Web Apps proxy
+    return "/api";
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:7071/api";
+};
+
+export const apiClient = new ApiClient(getApiUrl());
 
 // Initialize token on client side
 if (typeof window !== "undefined") {
