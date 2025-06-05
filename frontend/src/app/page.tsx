@@ -19,7 +19,7 @@ export default function HomePage() {
                 Sign In
               </Link>
               <Link href="/register" className="btn-primary">
-                Get Started
+                Join Today
               </Link>
             </div>
           </div>
@@ -30,13 +30,14 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="text-center">
           <h1 className="text-4xl tracking-tight font-extrabold text-secondary-900 sm:text-5xl md:text-6xl">
-            <span className="block">Smart Carpool</span>
-            <span className="block text-primary-600">Management</span>
+            <span className="block">Safe School</span>
+            <span className="block text-primary-600">Carpool Management</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-secondary-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Streamline your organization's transportation with intelligent trip
-            management, advanced search and filtering, and seamless
-            communication between drivers and passengers.
+            Connect with other parents to coordinate safe, reliable school
+            transportation. Share rides, reduce costs, and build community
+            through trusted carpool partnerships for your children's daily
+            school commute.
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
             <div className="rounded-md shadow">
@@ -44,7 +45,7 @@ export default function HomePage() {
                 href="/register"
                 className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 md:py-4 md:text-lg md:px-10"
               >
-                Get Started
+                Start Carpooling
               </Link>
             </div>
             <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
@@ -52,7 +53,7 @@ export default function HomePage() {
                 href="/login"
                 className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-primary-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
               >
-                Sign In
+                Parent Login
               </Link>
             </div>
           </div>
@@ -64,14 +65,26 @@ export default function HomePage() {
             <div className="card">
               <div className="card-body text-center">
                 <div className="w-12 h-12 mx-auto bg-primary-100 rounded-lg flex items-center justify-center">
-                  <CarIcon className="w-6 h-6 text-primary-600" />
+                  <svg
+                    className="w-6 h-6 text-primary-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                    />
+                  </svg>
                 </div>
                 <h3 className="mt-4 text-lg font-medium text-secondary-900">
-                  Smart Search
+                  Trusted Parent Network
                 </h3>
                 <p className="mt-2 text-secondary-500">
-                  Advanced trip search and filtering that helps you find the
-                  perfect carpool match.
+                  Connect with verified parents from your school community for
+                  safe, reliable transportation partnerships.
                 </p>
               </div>
             </div>
@@ -94,11 +107,11 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <h3 className="mt-4 text-lg font-medium text-secondary-900">
-                  Trip Management
+                  Flexible School Scheduling
                 </h3>
                 <p className="mt-2 text-secondary-500">
-                  Create, join, and manage trips with flexible scheduling and
-                  status tracking.
+                  Coordinate morning drop-offs and afternoon pickups with
+                  recurring schedules that work for your family's routine.
                 </p>
               </div>
             </div>
@@ -106,27 +119,50 @@ export default function HomePage() {
             <div className="card">
               <div className="card-body text-center">
                 <div className="w-12 h-12 mx-auto bg-primary-100 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-6 h-6 text-primary-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
+                  <CarIcon className="w-6 h-6 text-primary-600" />
                 </div>
                 <h3 className="mt-4 text-lg font-medium text-secondary-900">
-                  Real-time Communication
+                  Cost-Effective Transportation
                 </h3>
                 <p className="mt-2 text-secondary-500">
-                  Stay connected with instant notifications and easy trip
-                  coordination.
+                  Share fuel costs and reduce wear on your vehicle while
+                  providing reliable school transportation for your children.
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* School-focused testimonial/stats section */}
+        <div className="mt-24 bg-white rounded-2xl shadow-xl p-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-secondary-900 mb-4">
+              Built for School Communities
+            </h2>
+            <p className="text-lg text-secondary-600 mb-8">
+              VCarpool makes school transportation coordination simple and
+              secure for busy families
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary-600">Safe</div>
+                <div className="text-secondary-600">
+                  Verified parent drivers
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary-600">
+                  Simple
+                </div>
+                <div className="text-secondary-600">Easy trip coordination</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary-600">
+                  Savings
+                </div>
+                <div className="text-secondary-600">
+                  Reduced transportation costs
+                </div>
               </div>
             </div>
           </div>
