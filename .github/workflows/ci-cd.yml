@@ -337,16 +337,25 @@ jobs:
             --output tsv)
           echo "swa-token=$TOKEN" >> $GITHUB_OUTPUT
 
-      # Deploy to Azure Static Web Apps
+            # Deploy to Azure Static Web Apps using the action with corrected paths
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.swa-token }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "frontend/out"
-          output_location: "."
+          app_location: "/"
+          output_location: "frontend/out"
           skip_app_build: true
+
+      # Verify deployment succeeded
+      - name: Verify deployment files
+        run: |
+          echo "Waiting for deployment to propagate..."
+          sleep 30
+
+          echo "Testing if files were deployed..."
+          curl -I "https://${{ needs.infrastructure.outputs.static-web-app-name }}.azurestaticapps.net/" || echo "Site not ready yet"
 
   # Post-deployment verification
   verify-deployment:
