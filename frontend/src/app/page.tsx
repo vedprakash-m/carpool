@@ -30,13 +30,13 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="text-center">
           <h1 className="text-4xl tracking-tight font-extrabold text-secondary-900 sm:text-5xl md:text-6xl">
-            <span className="block">Safe School</span>
-            <span className="block text-primary-600">Carpool Management</span>
+            <span className="block">Smart School</span>
+            <span className="block text-primary-600">Carpool Coordination</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-secondary-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Connect with other parents to coordinate safe, reliable school
+            Connect with other parents to coordinate convenient school
             transportation. Share rides, reduce costs, and build community
-            through trusted carpool partnerships for your children's daily
+            through organized carpool partnerships for your children's daily
             school commute.
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
@@ -80,11 +80,11 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <h3 className="mt-4 text-lg font-medium text-secondary-900">
-                  Trusted Parent Network
+                  Parent Community Network
                 </h3>
                 <p className="mt-2 text-secondary-500">
-                  Connect with verified parents from your school community for
-                  safe, reliable transportation partnerships.
+                  Connect with parents from your school community for
+                  convenient, coordinated transportation partnerships.
                 </p>
               </div>
             </div>
@@ -141,13 +141,15 @@ export default function HomePage() {
             </h2>
             <p className="text-lg text-secondary-600 mb-8">
               VCarpool makes school transportation coordination simple and
-              secure for busy families
+              organized for busy families
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-600">Safe</div>
+                <div className="text-3xl font-bold text-primary-600">
+                  Organized
+                </div>
                 <div className="text-secondary-600">
-                  Verified parent drivers
+                  Structured trip planning
                 </div>
               </div>
               <div className="text-center">

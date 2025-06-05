@@ -4,7 +4,7 @@
 
 ![VCarpool Logo](https://img.shields.io/badge/VCarpool-School%20Carpool%20Management-blue?style=for-the-badge&logo=car&logoColor=white)
 
-**A modern, enterprise-grade school carpool management platform built for safe, efficient student transportation.**
+**A modern, enterprise-grade school carpool coordination platform built for efficient, organized student transportation.**
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/vedprakash-m/vcarpool/ci-cd.yml?style=flat-square&logo=github)](https://github.com/vedprakash-m/vcarpool/actions)
 [![Azure Functions](https://img.shields.io/badge/Azure%20Functions-v4-0062AD?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/en-us/services/functions/)
@@ -20,7 +20,7 @@
 
 ## 🌟 Overview
 
-VCarpool is a comprehensive school carpool management application that connects parents and students for safe, efficient school transportation. Built with modern cloud-native architecture, it offers enterprise-grade security, real-time monitoring, and seamless coordination for school drop-off and pick-up.
+VCarpool is a comprehensive school carpool coordination application that connects parents and students for efficient, organized school transportation. Built with modern cloud-native architecture, it offers enterprise-grade technology, real-time monitoring, and seamless coordination for school drop-off and pick-up.
 
 ### ✨ Key Highlights
 
@@ -57,10 +57,10 @@ VCarpool is a comprehensive school carpool management application that connects 
 
 ### Enterprise Features
 
-- **Advanced Security** - Multi-layer security with threat detection and vulnerability scanning
+- **Advanced Technology** - Multi-layer architecture with modern development practices
 - **Performance Monitoring** - Real-time metrics, health checks, and performance optimization
 - **Scalable Architecture** - Auto-scaling Azure Functions with intelligent resource management
-- **Compliance Ready** - Data protection, audit logging, and regulatory compliance features
+- **Modern Development** - TypeScript, testing, and CI/CD automation
 
 ---
 
