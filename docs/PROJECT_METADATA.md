@@ -969,7 +969,54 @@ Resource Group: vcarpool-rg
 
 **Status**: Critical infrastructure gap identified and resolved - ready for deployment.
 
-### 15.4 Ongoing Documentation Strategy
+### 15.4 Bicep Templates Synchronized with Manual Infrastructure (2024-12-19)
+
+**Issue**: Need to ensure Bicep templates contain all Cosmos DB setup details created manually.
+
+**Actions Completed**:
+
+1. **Bicep Template Updates (`infra/main.bicep`)**:
+
+   - ✅ Added all missing containers: `notifications`, `messages`, `chats`, `chatParticipants`
+   - ✅ Fixed container name consistency: `swapRequests` (was `swap-requests`)
+   - ✅ Added comprehensive indexing policies to all containers
+   - ✅ Verified Function App has proper Cosmos DB connection configuration
+
+2. **CI/CD Pipeline Updates (`.github/workflows/ci-cd.yml`)**:
+
+   - ✅ Added creation of all missing containers
+   - ✅ Ensured container names match Bicep templates exactly
+   - ✅ Maintained consistency between manual and automated deployment
+
+3. **Verification & Documentation**:
+   - ✅ Created `scripts/verify-cosmos-containers.sh` validation tool
+   - ✅ Updated `scripts/create-cosmos-db.sh` with all containers
+   - ✅ Verified all 9 containers exist and match template definitions
+
+**Container Verification Results**:
+
+```
+✅ users (partition: /id)
+✅ trips (partition: /driverId)
+✅ schedules (partition: /userId)
+✅ swapRequests (partition: /requesterId)
+✅ notifications (partition: /id)
+✅ messages (partition: /id)
+✅ chats (partition: /id)
+✅ chatParticipants (partition: /id)
+✅ email-templates (partition: /id)
+```
+
+**Infrastructure Consistency**:
+
+- ✅ **Manual Infrastructure**: All containers created and verified
+- ✅ **Bicep Templates**: Updated to match manual infrastructure exactly
+- ✅ **CI/CD Pipeline**: Will create identical infrastructure on future deployments
+- ✅ **Validation**: Script confirms templates match reality
+
+**Status**: Complete synchronization achieved - manual infrastructure matches Infrastructure as Code templates perfectly.
+
+### 15.5 Ongoing Documentation Strategy
 
 **Living Document Approach**:
 
