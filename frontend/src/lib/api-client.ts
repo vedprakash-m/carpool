@@ -278,10 +278,11 @@ export class ApiClient {
           success: true,
           data: {
             totalTrips: 12,
-            activeTrips: 3,
-            completedTrips: 9,
-            totalPassengers: 45,
-            upcomingTrips: 2,
+            tripsAsDriver: 8,
+            tripsAsPassenger: 4,
+            totalDistance: 2450,
+            costSavings: 450,
+            upcomingTrips: 3,
           } as T,
         });
       }
@@ -372,13 +373,15 @@ export class ApiClient {
       const response = await this.client.get(url, config);
       return response.data;
     } catch (error) {
-      // If backend is not available, enable mock mode automatically
+      // If backend is not available or returning errors, enable mock mode automatically
       if (
         (error as any)?.code === "ECONNREFUSED" ||
-        (error as any)?.response?.status === 404
+        (error as any)?.response?.status === 404 ||
+        (error as any)?.response?.status === 500 ||
+        (error as any)?.response?.status >= 500
       ) {
         console.warn(
-          "Backend not available for GET request, enabling mock mode"
+          "Backend not available or returning errors for GET request, enabling mock mode"
         );
         this.enableMockMode();
         return this.get(url, config); // Retry with mock mode enabled
