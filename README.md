@@ -12,7 +12,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-AGPL%20v3-blue?style=flat-square)](LICENSE)
 
-[Live Demo](https://vcarpool-web-prod.azurestaticapps.net) • [Documentation](docs/) • [API Reference](#-api-reference) • [Contributing](CONTRIBUTING.md)
+[Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [Documentation](docs/) • [API Reference](#-api-reference) • [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -181,6 +181,23 @@ graph TB
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:7071/api
    - Health Check: http://localhost:7071/api/health
+
+### 🌐 Live Demo
+
+**URL**: [https://lively-stone-016bfa20f.6.azurestaticapps.net](https://lively-stone-016bfa20f.6.azurestaticapps.net)
+
+**Demo Credentials**:
+
+- **Email**: `mi.vedprakash@gmail.com`
+- **Password**: Use your actual password (authentication is working!)
+
+**Current Features Available**:
+
+- ✅ Real authentication system with JWT tokens
+- ✅ User dashboard with trip statistics
+- ✅ Complete login-to-dashboard user experience
+- ✅ API integration with Azure Functions backend
+- ✅ Responsive design with modern UI
 
 ---
 
