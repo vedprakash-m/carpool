@@ -110,6 +110,13 @@ const nextConfig = {
   // Environment variables
   env: {
     BUILD_TIME: new Date().toISOString(),
+    // API Configuration based on environment
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === "production"
+        ? "https://vcarpool-api-prod.azurewebsites.net/api"
+        : "http://localhost:7071/api"),
+    NEXT_PUBLIC_ENV: process.env.NODE_ENV,
   },
 };
 
