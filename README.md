@@ -1,192 +1,196 @@
-# VCarpool - Carpool Management Application
+# VCarpool
 
-A comprehensive carpool management application built with Node.js TypeScript backend on Azure Functions and Next.js frontend, featuring enterprise-grade security, monitoring, and performance optimization.
+<div align="center">
 
-## 🚗 Features
+![VCarpool Logo](https://img.shields.io/badge/VCarpool-Ride%20Share%20Platform-blue?style=for-the-badge&logo=car&logoColor=white)
 
-### Core Features
+**A modern, enterprise-grade carpool management platform built for scalability, security, and performance.**
 
-- **User Management**: Registration, authentication, and profile management with password reset
-- **Trip Management**: Create, search, join, and manage carpool trips with advanced filtering
-- **Real-time Communication**: Instant notifications and trip updates
-- **Swap Requests**: Easy trip swapping between users
-- **Analytics**: Trip statistics and cost savings tracking
-- **Security**: Enterprise-grade security with JWT authentication and role-based access
+[![Build Status](https://img.shields.io/github/actions/workflow/status/vedprakash-m/vcarpool/ci-cd.yml?style=flat-square&logo=github)](https://github.com/vedprakash-m/vcarpool/actions)
+[![Azure Functions](https://img.shields.io/badge/Azure%20Functions-v4-0062AD?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/en-us/services/functions/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-AGPL%20v3-blue?style=flat-square)](LICENSE)
 
-### Advanced Features
+[Live Demo](https://vcarpool-web-prod.azurestaticapps.net) • [Documentation](docs/) • [API Reference](#-api-reference) • [Contributing](CONTRIBUTING.md)
 
-- **Real-time Monitoring**: Comprehensive system health monitoring and alerting
-- **Security Scanner**: Advanced threat detection and vulnerability assessment
-- **Performance Optimization**: Intelligent caching, database optimization, and API performance tuning
-- **Infrastructure Monitoring**: Memory optimization, connection pooling, and cold start reduction
-- **Advanced Analytics Dashboard**: Real-time metrics, trends, and business insights
+</div>
 
-## 🏗️ Architecture
+---
 
-### Backend (Azure Functions + TypeScript)
+## 🌟 Overview
 
-- **Runtime**: Node.js 22+ with TypeScript
-- **Database**: Azure Cosmos DB with query optimization
-- **Authentication**: JWT-based auth with refresh tokens and role-based access control
-- **Email**: Nodemailer for notifications
-- **Caching**: Multi-layer caching with intelligent invalidation
-- **Monitoring**: Advanced monitoring with Application Insights integration
-- **Security**: Comprehensive security scanning and threat detection
-- **Performance**: API optimization, request batching, and response compression
-- **Deployment**: Azure Functions with infrastructure optimization
+VCarpool is a comprehensive carpool management application that connects drivers and passengers for efficient, eco-friendly transportation. Built with modern cloud-native architecture, it offers enterprise-grade security, real-time monitoring, and seamless user experience.
 
-### Frontend (Next.js + TypeScript)
+### ✨ Key Highlights
 
-- **Framework**: Next.js 14 with App Router
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand
-- **Forms**: React Hook Form with Zod validation
-- **Deployment**: Azure Static Web Apps
+- 🔐 **Enterprise Security** - JWT authentication, role-based access control, and threat detection
+- 🚀 **High Performance** - Optimized for Azure cloud with intelligent caching and cold start reduction
+- 📊 **Real-time Monitoring** - Comprehensive observability with Application Insights integration
+- 🌐 **Modern Stack** - TypeScript, Next.js, Azure Functions, and Cosmos DB
+- 🔄 **CI/CD Ready** - Automated deployment with infrastructure as code
 
-### Shared Package
+---
 
-- **Types**: Shared TypeScript interfaces
-- **Validation**: Zod schemas for API validation
-- **Utilities**: Common helper functions
+## 📋 Table of Contents
 
-### Monitoring & Security Stack
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Quick Start](#-quick-start)
+- [Deployment](#-deployment)
+- [API Reference](#-api-reference)
+- [Monitoring](#-monitoring)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-- **Application Insights**: Azure-native monitoring with custom telemetry
-- **Real-time Dashboard**: Comprehensive metrics visualization
-- **Health Checks**: Automated system health monitoring
-- **Security Scanner**: Advanced threat detection and vulnerability assessment
-- **Performance Monitoring**: API performance tracking and optimization
-- **Infrastructure Monitoring**: Memory, CPU, and resource optimization
+---
 
-## 🚀 Getting Started
+## 🎯 Features
+
+### Core Functionality
+
+- **User Management** - Secure registration, authentication, and profile management
+- **Trip Management** - Create, search, join, and manage carpool trips with advanced filtering
+- **Real-time Communication** - Instant notifications and trip updates
+- **Smart Matching** - Intelligent trip recommendations based on preferences and routes
+- **Analytics Dashboard** - Trip statistics, cost savings, and environmental impact tracking
+
+### Enterprise Features
+
+- **Advanced Security** - Multi-layer security with threat detection and vulnerability scanning
+- **Performance Monitoring** - Real-time metrics, health checks, and performance optimization
+- **Scalable Architecture** - Auto-scaling Azure Functions with intelligent resource management
+- **Compliance Ready** - Data protection, audit logging, and regulatory compliance features
+
+---
+
+## 🏗 Architecture
+
+<div align="center">
+
+```mermaid
+graph TB
+    subgraph "Frontend"
+        FE[Next.js Frontend<br/>Azure Static Web Apps]
+    end
+
+    subgraph "Backend"
+        API[Azure Functions<br/>TypeScript API]
+        AUTH[JWT Authentication]
+        CACHE[Redis Cache]
+    end
+
+    subgraph "Data Layer"
+        DB[(Cosmos DB<br/>NoSQL Database)]
+        BLOB[Azure Blob Storage]
+    end
+
+    subgraph "Monitoring"
+        AI[Application Insights]
+        HEALTH[Health Checks]
+        ALERTS[Alerting]
+    end
+
+    FE --> API
+    API --> AUTH
+    API --> CACHE
+    API --> DB
+    API --> BLOB
+    API --> AI
+    AI --> HEALTH
+    HEALTH --> ALERTS
+```
+
+</div>
+
+### Technology Stack
+
+| Layer              | Technology                           | Purpose                                           |
+| ------------------ | ------------------------------------ | ------------------------------------------------- |
+| **Frontend**       | Next.js 14, TypeScript, Tailwind CSS | Modern React framework with server-side rendering |
+| **Backend**        | Azure Functions v4, Node.js 22       | Serverless compute with TypeScript                |
+| **Database**       | Azure Cosmos DB                      | NoSQL database with global distribution           |
+| **Authentication** | JWT, bcrypt                          | Secure token-based authentication                 |
+| **Monitoring**     | Application Insights, Custom Metrics | Real-time observability and alerting              |
+| **Deployment**     | GitHub Actions, Azure DevOps         | CI/CD with infrastructure as code                 |
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js**: Version requirements depend on deployment target:
-  - **Development & Backend**: Node.js 22+ (LTS recommended)
-  - **Frontend (Azure SWA)**: Node.js 20+ (Azure SWA limitation)
-  - **Compatibility**: The codebase is compatible with Node.js 20-22
-- **npm**: 10+ or yarn
-- **Azure Account**: For deployment
-- **Azure Functions Core Tools**: For local backend development
+- **Node.js** 20+ (22+ recommended for backend)
+- **npm** 10+ or **yarn** 1.22+
+- **Azure Account** (for deployment)
+- **Azure Functions Core Tools** v4+ (for local development)
 
 ### Installation
 
-1. **Clone and install dependencies**:
+1. **Clone the repository**
 
-```bash
-git clone <repository-url>
-cd vcarpool
-npm install
-```
+   ```bash
+   git clone https://github.com/vedprakash-m/vcarpool.git
+   cd vcarpool
+   ```
 
-2. **Install workspace dependencies**:
+2. **Install dependencies**
 
-```bash
-# Install shared package dependencies
-cd shared && npm install && npm run build
+   ```bash
+   npm install
+   ```
 
-# Install backend dependencies
-cd ../backend && npm install
+3. **Setup environment variables**
 
-# Install frontend dependencies
-cd ../frontend && npm install
-```
+   Create `backend/local.settings.json`:
 
-3. **Set up environment variables**:
+   ```json
+   {
+     "IsEncrypted": false,
+     "Values": {
+       "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+       "FUNCTIONS_WORKER_RUNTIME": "node",
+       "NODE_ENV": "development",
+       "JWT_SECRET": "your-development-secret-key",
+       "JWT_REFRESH_SECRET": "your-refresh-secret-key",
+       "COSMOS_DB_ENDPOINT": "your-cosmos-endpoint",
+       "COSMOS_DB_KEY": "your-cosmos-key",
+       "COSMOS_DB_DATABASE_ID": "vcarpool"
+     }
+   }
+   ```
 
-Backend (`backend/local.settings.json`):
+   Create `frontend/.env.local`:
 
-```json
-{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "node",
-    "NODE_ENV": "development",
-    "JWT_SECRET": "your-jwt-secret-key",
-    "JWT_REFRESH_SECRET": "your-jwt-refresh-secret-key",
-    "COSMOS_DB_ENDPOINT": "your-cosmos-db-endpoint",
-    "COSMOS_DB_KEY": "your-cosmos-db-key",
-    "COSMOS_DB_DATABASE_ID": "vcarpool",
-    "SMTP_HOST": "smtp.gmail.com",
-    "SMTP_PORT": "587",
-    "SMTP_USER": "your-email@gmail.com",
-    "SMTP_PASS": "your-app-password",
-    "CORS_ORIGIN": "http://localhost:3000",
-    "APPINSIGHTS_CONNECTION_STRING": "your-app-insights-connection-string",
-    "ENABLE_MONITORING": "true",
-    "ENABLE_SECURITY_SCANNER": "true",
-    "CACHE_TTL": "300000",
-    "MAX_CACHE_SIZE": "100"
-  }
-}
-```
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:7071/api
+   ```
 
-Frontend (`.env.local`):
+4. **Start development servers**
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:7071/api
-```
+   ```bash
+   # Start all services
+   npm run dev
 
-### Development
+   # Or start individually
+   npm run dev:backend   # Backend on http://localhost:7071
+   npm run dev:frontend  # Frontend on http://localhost:3000
+   ```
 
-1. **Start the shared package in watch mode**:
+5. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:7071/api
+   - Health Check: http://localhost:7071/api/health
 
-```bash
-cd shared && npm run dev
-```
+---
 
-2. **Start the backend**:
+## 🚀 Deployment
 
-```bash
-cd backend && npm run dev
-```
+### Automated Deployment (Recommended)
 
-3. **Start the frontend**:
+The application uses GitHub Actions for automated CI/CD deployment to Azure.
 
-```bash
-cd frontend && npm run dev
-```
-
-Or run everything concurrently from the root:
-
-```bash
-npm run dev
-```
-
-## 🚀 CI/CD & Deployment
-
-The VCarpool project uses a comprehensive GitHub Actions CI/CD pipeline that automatically builds, tests, and deploys the application to Azure with infrastructure-as-code provisioning.
-
-### Quick Deployment Overview
-
-- **Automatic Deployment**: Push to `main` branch deploys to production
-- **Infrastructure as Code**: Bicep templates provision all Azure resources
-- **Production Environment**: Single production environment for simplicity
-- **Rollback Capability**: Safe rollback procedures for any component
-
-### Deployment Strategy
-
-| Trigger         | Action              | Target Environment | Azure Resources |
-| --------------- | ------------------- | ------------------ | --------------- |
-| Push to `main`  | Auto-deploy         | Production         | `vcarpool-rg`   |
-| Pull Request    | Build & Test only   | -                  | -               |
-| Manual Rollback | Rollback components | Production         | `vcarpool-rg`   |
-
-### Azure Resources Created
-
-The pipeline automatically provisions:
-
-- **Azure Function App** (backend API): `vcarpool-api-prod`
-- **Azure Static Web App** (frontend): `vcarpool-web-prod`
-- **Azure Cosmos DB** (database): `vcarpool-cosmos-prod`
-- **Application Insights** (monitoring): `vcarpool-insights-prod`
-- **Key Vault** (secrets management): `vcarpool-kv-prod`
-
-### Setup Instructions
-
-1. **Configure Azure Service Principal**:
+1. **Configure Azure Service Principal**
 
    ```bash
    az ad sp create-for-rbac --name "vcarpool-cicd" \
@@ -195,455 +199,222 @@ The pipeline automatically provisions:
      --sdk-auth
    ```
 
-2. **Add GitHub Secret**:
+2. **Add GitHub Secrets**
 
-   - Add `AZURE_CREDENTIALS` secret with the Service Principal JSON
+   - `AZURE_CREDENTIALS`: Service Principal JSON from step 1
 
-3. **Deploy**:
-   - Push to `main` branch for automatic production deployment
-   - Use Actions tab for manual rollback if needed
+3. **Deploy**
+   ```bash
+   git push origin main  # Automatically deploys to production
+   ```
 
-### Complete CI/CD Documentation
+### Manual Deployment
 
-For detailed setup instructions, troubleshooting, rollback procedures, and maintenance guides, see:
+```bash
+# Build and deploy backend
+cd backend
+npm run build
+npm run deploy
 
-📚 **[CI/CD Setup Documentation](docs/CI-CD-SETUP.md)**
+# Build and deploy frontend
+cd frontend
+npm run build
+az staticwebapp upload --name vcarpool-web-prod --source ./out
+```
 
-This includes:
+### Infrastructure
 
-- Complete prerequisites and setup
-- Security configuration
-- Monitoring and troubleshooting
-- Rollback procedures
-- Cost optimization strategies
-- Maintenance and support guidelines
+The deployment creates these Azure resources:
+
+- **Function App** (`vcarpool-api-prod`) - Backend API
+- **Static Web App** (`vcarpool-web-prod`) - Frontend hosting
+- **Cosmos DB** (`vcarpool-cosmos-prod`) - Database
+- **Application Insights** (`vcarpool-insights-prod`) - Monitoring
+- **Key Vault** (`vcarpool-kv-prod`) - Secrets management
+
+For detailed deployment instructions, see [CI/CD Setup Documentation](docs/CI-CD-SETUP.md).
+
+---
+
+## 📡 API Reference
+
+### Authentication Endpoints
+
+| Method | Endpoint             | Description              |
+| ------ | -------------------- | ------------------------ |
+| `POST` | `/api/auth/register` | User registration        |
+| `POST` | `/api/auth/login`    | User authentication      |
+| `POST` | `/api/auth/refresh`  | Refresh access token     |
+| `GET`  | `/api/users/me`      | Get current user profile |
+
+### Trip Management
+
+| Method   | Endpoint               | Description               |
+| -------- | ---------------------- | ------------------------- |
+| `GET`    | `/api/trips`           | List trips with filtering |
+| `POST`   | `/api/trips`           | Create new trip           |
+| `PUT`    | `/api/trips/:id`       | Update trip               |
+| `DELETE` | `/api/trips/:id`       | Cancel trip               |
+| `POST`   | `/api/trips/:id/join`  | Join trip                 |
+| `POST`   | `/api/trips/:id/leave` | Leave trip                |
+
+### System Endpoints
+
+| Method | Endpoint                    | Description         |
+| ------ | --------------------------- | ------------------- |
+| `GET`  | `/api/health`               | System health check |
+| `GET`  | `/api/monitoring/dashboard` | Monitoring metrics  |
+| `GET`  | `/api/security/scan`        | Security assessment |
+
+For complete API documentation with request/response schemas, see our [API Documentation](docs/API.md).
+
+---
+
+## 📊 Monitoring
+
+### Health Monitoring
+
+The application includes comprehensive monitoring capabilities:
+
+- **Real-time Health Checks** - Automated system health monitoring
+- **Performance Metrics** - Response times, throughput, error rates
+- **Business Analytics** - User engagement, trip statistics, cost savings
+- **Security Monitoring** - Threat detection, failed authentication attempts
+
+### Access Monitoring Dashboard
+
+**Local Development:**
+
+```bash
+curl http://localhost:7071/api/health
+curl http://localhost:7071/api/monitoring/dashboard
+```
+
+**Production:**
+
+- Health Check: https://vcarpool-api-prod.azurewebsites.net/api/health
+- Azure Application Insights: Available in Azure Portal
+
+### Key Metrics
+
+- **System Health**: Memory usage, response times, error rates
+- **Performance**: API latency, cache hit rates, database performance
+- **Business**: Active users, trips created, user engagement
+- **Security**: Authentication attempts, threat detection alerts
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Development Workflow
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Follow** TypeScript and coding standards
+4. **Test** your changes (`npm test`)
+5. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+6. **Push** to the branch (`git push origin feature/amazing-feature`)
+7. **Open** a Pull Request
+
+### Code Quality Standards
+
+- ✅ **TypeScript** - Strict mode with comprehensive type checking
+- ✅ **Testing** - Unit and integration tests required
+- ✅ **Security** - Security scanning and vulnerability assessment
+- ✅ **Performance** - Performance monitoring and optimization
+- ✅ **Documentation** - Comprehensive code documentation
+
+---
 
 ## 📁 Project Structure
 
 ```
 vcarpool/
-├── package.json              # Root workspace configuration
-├── backend/                  # Azure Functions backend
-│   ├── src/
-│   │   ├── functions/       # Azure Functions
-│   │   ├── services/        # Business logic services
-│   │   ├── middleware/      # Express-like middleware
-│   │   ├── config/          # Configuration files
-│   │   ├── monitoring/      # Advanced monitoring dashboard
-│   │   ├── security/        # Security scanner and threat detection
-│   │   └── utils/           # Utility modules (caching, optimization, etc.)
-│   ├── host.json           # Azure Functions host config
-│   └── local.settings.json # Local environment variables
-├── frontend/                # Next.js frontend
-│   ├── src/
-│   │   ├── app/            # Next.js app directory
-│   │   ├── components/     # React components
-│   │   ├── lib/            # Utility libraries
-│   │   └── store/          # Zustand stores
-│   └── tailwind.config.js  # Tailwind configuration
-├── shared/                  # Shared TypeScript package
-│   └── src/
-│       ├── types.ts        # Shared type definitions
-│       ├── validations.ts  # Zod validation schemas
-│       └── utils.ts        # Utility functions
-└── docs/                    # Documentation
-    └── README.md           # Comprehensive project documentation
+├── 📁 backend/                  # Azure Functions backend
+│   ├── 📁 src/
+│   │   ├── 📁 functions/       # Azure Functions endpoints
+│   │   ├── 📁 services/        # Business logic services
+│   │   ├── 📁 middleware/      # Authentication & validation
+│   │   └── 📁 config/          # Configuration files
+│   └── 📄 host.json           # Azure Functions configuration
+├── 📁 frontend/                # Next.js frontend
+│   ├── 📁 src/
+│   │   ├── 📁 app/            # Next.js App Router
+│   │   ├── 📁 components/     # React components
+│   │   └── 📁 lib/            # Utility libraries
+│   └── 📄 next.config.js      # Next.js configuration
+├── 📁 shared/                  # Shared TypeScript package
+│   └── 📁 src/
+│       ├── 📄 types.ts        # Shared type definitions
+│       └── 📄 validations.ts  # Zod validation schemas
+├── 📁 docs/                    # Documentation
+└── 📁 infra/                   # Infrastructure as Code (Bicep)
 ```
+
+---
 
 ## 🧪 Testing
 
 ```bash
-# Run backend tests
-cd backend && npm test
-
-# Run frontend tests
-cd frontend && npm test
-
 # Run all tests
 npm test
+
+# Run backend tests
+npm run test:backend
+
+# Run frontend tests
+npm run test:frontend
+
+# Run end-to-end tests
+npm run test:e2e
+
+# Run with coverage
+npm run test:coverage
 ```
-
-## 🚀 Deployment
-
-### Backend (Azure Functions)
-
-```bash
-cd backend
-
-# Build the project
-npm run build
-
-# Deploy with monitoring enabled
-npm run deploy
-
-# Deploy with enhanced monitoring and security
-ENABLE_MONITORING=true ENABLE_SECURITY_SCANNER=true npm run deploy
-```
-
-### Frontend (Azure Static Web Apps)
-
-```bash
-cd frontend
-
-# Build for production
-npm run build
-
-# Deploy to Azure Static Web Apps
-npm run deploy
-```
-
-### Production Configuration
-
-#### Azure Functions Host Configuration
-
-The application includes optimized `host.json` configuration for production:
-
-- **Performance Tuning**: Optimized timeout, retry, and concurrency settings
-- **Health Monitoring**: Built-in health check endpoints
-- **Logging**: Structured logging with Application Insights integration
-- **Security**: Enhanced security headers and CORS configuration
-
-#### Environment Variables (Production)
-
-```bash
-# Core Application
-NODE_ENV=production
-JWT_SECRET=<secure-production-secret>
-JWT_REFRESH_SECRET=<secure-refresh-secret>
-
-# Database
-COSMOS_DB_ENDPOINT=<production-cosmos-endpoint>
-COSMOS_DB_KEY=<production-cosmos-key>
-COSMOS_DB_DATABASE_ID=vcarpool-prod
-
-# Monitoring
-APPINSIGHTS_CONNECTION_STRING=<production-app-insights>
-ENABLE_MONITORING=true
-ENABLE_SECURITY_SCANNER=true
-
-# Performance
-CACHE_TTL=900000
-MAX_CACHE_SIZE=1000
-ENABLE_COMPRESSION=true
-
-# Security
-ENABLE_RATE_LIMITING=true
-SECURITY_SCAN_INTERVAL=3600000
-```
-
-## 📈 Monitoring & Troubleshooting
-
-### Accessing Monitoring Dashboard
-
-The application provides comprehensive monitoring through multiple interfaces:
-
-#### Local Development
-
-```bash
-# Start monitoring dashboard
-cd backend
-npm run start:monitoring
-
-# Access health check endpoint
-curl http://localhost:7071/api/monitoring/health
-
-# View performance metrics
-curl http://localhost:7071/api/monitoring/dashboard
-```
-
-#### Production Monitoring
-
-- **Application Insights**: Real-time telemetry and performance monitoring
-- **Health Endpoints**: Automated health checks with detailed system status
-- **Custom Dashboard**: Advanced monitoring dashboard with business metrics
-- **Alerting**: Configurable alerts for system health and performance issues
-
-### Key Metrics to Monitor
-
-#### System Health
-
-- **Memory Usage**: Heap usage percentage and trends
-- **Response Times**: P95/P99 response times across endpoints
-- **Error Rates**: Request error rates and failure patterns
-- **Cache Performance**: Hit rates and cache efficiency
-
-#### Business Metrics
-
-- **User Activity**: Daily/weekly/monthly active users
-- **Trip Statistics**: Created trips, completed rides, user engagement
-- **System Performance**: Function executions, cold starts, resource usage
-
-### Troubleshooting Common Issues
-
-#### High Memory Usage
-
-```bash
-# Check memory stats
-curl http://localhost:7071/api/monitoring/performance
-
-# Review memory optimization
-# - Cache size limits
-# - Connection pool configuration
-# - Memory cleanup intervals
-```
-
-#### Slow Response Times
-
-```bash
-# Analyze performance metrics
-curl http://localhost:7071/api/monitoring/dashboard
-
-# Check database optimization
-# - Query performance
-# - Index usage
-# - Connection pooling
-```
-
-#### Security Alerts
-
-```bash
-# Review security scan results
-curl http://localhost:7071/api/security/scan
-
-# Check for:
-# - Failed authentication attempts
-# - Suspicious request patterns
-# - Vulnerability assessments
-```
-
-## 🔧 API Endpoints
-
-### Authentication
-
-- `POST /api/auth/register` - User registration with validation
-- `POST /api/auth/login` - User login with security monitoring
-- `POST /api/auth/refresh` - Refresh access token
-- `POST /api/auth/logout` - Secure logout
-
-### Users
-
-- `GET /api/users/me` - Get current user profile
-- `PUT /api/users/me` - Update user profile
-- `GET /api/users/:id` - Get user by ID (with permissions)
-
-### Trips
-
-- `GET /api/trips` - List trips with advanced filtering
-- `POST /api/trips` - Create new trip with optimization
-- `PUT /api/trips/:id` - Update trip
-- `DELETE /api/trips/:id` - Cancel trip
-- `POST /api/trips/:id/join` - Join trip with validation
-- `POST /api/trips/:id/leave` - Leave trip
-
-### Schedules
-
-- `GET /api/schedules` - Get user schedules
-- `POST /api/schedules` - Create recurring schedule
-- `PUT /api/schedules/:id` - Update schedule
-- `DELETE /api/schedules/:id` - Delete schedule
-
-### Monitoring & Admin
-
-- `GET /api/monitoring/health` - System health check
-- `GET /api/monitoring/dashboard` - Monitoring dashboard metrics
-- `GET /api/monitoring/performance` - Performance metrics
-- `GET /api/security/scan` - Security scan report
-- `GET /api/admin/metrics` - Admin-only system metrics
-
-## 📊 Enhanced Features
-
-### Advanced Monitoring & Analytics
-
-The application includes a comprehensive monitoring system with:
-
-#### Real-time Dashboard
-
-- **System Metrics**: CPU, memory, disk usage, and network statistics
-- **Performance Metrics**: Response times, throughput, error rates, and cache hit rates
-- **Business Metrics**: Active users, trip statistics, user engagement metrics
-- **Security Metrics**: Threat detection, risk scoring, failed auth attempts
-
-#### Health Monitoring
-
-- **Automated Health Checks**: Cache, memory, database, and connection pool monitoring
-- **Performance Alerts**: Configurable thresholds for response times and error rates
-- **Infrastructure Monitoring**: Cold start optimization and resource usage tracking
-
-### Security & Threat Detection
-
-Advanced security features including:
-
-#### Security Scanner
-
-- **Vulnerability Assessment**: Automated scanning for security vulnerabilities
-- **Threat Detection**: Real-time analysis of security threats
-- **Risk Scoring**: Dynamic risk assessment and mitigation recommendations
-- **Compliance Monitoring**: Security best practices and compliance checking
-
-#### Access Control
-
-- **Role-based Access Control (RBAC)**: Admin, Parent, Student roles
-- **JWT Security**: Secure token management with refresh tokens
-- **Input Validation**: Comprehensive request validation and sanitization
-
-### Performance Optimization
-
-Comprehensive performance enhancements:
-
-#### Caching Strategy
-
-- **Multi-layer Caching**: Memory and distributed caching with intelligent invalidation
-- **Query Optimization**: Database query optimization and connection pooling
-- **Response Compression**: Automatic response compression and optimization
-
-#### API Optimization
-
-- **Request Batching**: Bulk operations for improved throughput
-- **Response Optimization**: Pagination, filtering, and data optimization
-- **Performance Monitoring**: Real-time tracking of API performance metrics
-
-### Infrastructure Optimization
-
-Azure Functions optimization features:
-
-#### Cold Start Optimization
-
-- **Pre-warming**: Automatic function pre-warming to reduce cold starts
-- **Memory Management**: Intelligent memory optimization and cleanup
-- **Connection Pooling**: Efficient database and external service connections
-
-#### Resource Management
-
-- **Graceful Shutdown**: Proper resource cleanup on function termination
-- **Memory Monitoring**: Automatic memory usage monitoring and optimization
-- **Performance Tuning**: Continuous performance monitoring and optimization
-
-## 🤝 Contributing
-
-Please read our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information on how to contribute to this project.
-
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Follow the TypeScript coding standards and best practices
-4. Ensure all tests pass (`npm test`)
-5. Verify monitoring and security checks pass
-6. Commit your changes (`git commit -m 'Add some amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
-
-### Code Quality Standards
-
-- **TypeScript**: Strict mode enabled with comprehensive type checking
-- **Testing**: Unit tests for business logic, integration tests for APIs
-- **Security**: Security scanning and vulnerability assessment
-- **Performance**: Performance monitoring and optimization
-- **Documentation**: Comprehensive code documentation and API specs
-
-### Testing Enhanced Features
-
-```bash
-# Run all tests including monitoring and security
-npm run test:full
-
-# Test monitoring dashboard
-npm run test:monitoring
-
-# Test security scanner
-npm run test:security
-
-# Performance testing
-npm run test:performance
-```
-
-## 🆘 Support
-
-For support with the enhanced vCarpool application:
-
-### Documentation
-
-- **API Documentation**: Comprehensive API documentation with monitoring endpoints
-- **Monitoring Guide**: Detailed monitoring and troubleshooting guide
-- **Security Guide**: Security best practices and threat mitigation
-
-### Contact
-
-- **Email**: support@vcarpool.com
-- **Issues**: Create an issue in the repository for bugs or feature requests
-- **Monitoring Issues**: Use the built-in monitoring dashboard for system health
-- **Security Concerns**: Report security issues through the security scanner or contact directly
-
-### Monitoring & Health Checks
-
-- **Health Endpoint**: `/api/monitoring/health` for real-time system status
-- **Dashboard**: `/api/monitoring/dashboard` for comprehensive metrics
-- **Security Scanner**: `/api/security/scan` for security assessment
 
 ---
 
-## 🔍 Architecture Notes
+## 🆘 Support
 
-This application represents a comprehensive, enterprise-grade carpool management system with:
+### Getting Help
 
-- **Scalable Architecture**: Designed for high availability and performance
-- **Security-First Approach**: Comprehensive security monitoring and threat detection
-- **Observability**: Full-stack monitoring with detailed metrics and alerting
-- **Performance Optimization**: Multi-layer optimization from database to API responses
-- **Infrastructure Management**: Intelligent resource management and optimization
+- 📚 **Documentation**: [docs/](docs/) directory
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/vedprakash-m/vcarpool/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/vedprakash-m/vcarpool/discussions)
+- 🔒 **Security Issues**: See [Security Policy](SECURITY.md)
 
-The enhanced monitoring, security, and performance features make this suitable for production environments with enterprise-level requirements for reliability, security, and observability.
+### Health Checks
+
+- **System Status**: `/api/health`
+- **Monitoring Dashboard**: `/api/monitoring/dashboard`
+- **Security Assessment**: `/api/security/scan`
 
 ---
 
 ## 📄 License
 
-**Copyright (C) 2025 Vedprakash Mishra**
+**Copyright © 2025 Vedprakash Mishra**
 
-This project is licensed under the **GNU Affero General Public License version 3 (AGPLv3)**.
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
 
-### Key License Terms
+### License Summary
 
-- **Free Software**: You can redistribute and/or modify this software under the terms of the AGPLv3
-- **Network Copyleft**: If you run this software on a server and provide it as a service to users over a network, you must make the source code available to those users
-- **No Warranty**: This software is provided "as is" without warranty of any kind
-- **Commercial Use**: Allowed under AGPLv3 terms, but source code disclosure requirements still apply
+- ✅ **Commercial Use** - Allowed with source disclosure requirements
+- ✅ **Modification** - Create derivative works under same license
+- ✅ **Distribution** - Share the software freely
+- ❗ **Network Use** - Must provide source code to service users
+- ❗ **Same License** - Derivative works must use AGPLv3
 
-### Quick Summary
-
-- ✅ **Use** - for any purpose, including commercial
-- ✅ **Modify** - create derivative works
-- ✅ **Distribute** - share the software
-- ✅ **Private Use** - use privately without disclosure
-- ❗ **Network Use** - must provide source code to users of network services
-- ❗ **License and Copyright Notice** - must include license and copyright
-- ❗ **Same License** - derivative works must use AGPLv3
-- ❗ **State Changes** - must document modifications
-
-### Important Notice for Service Providers
-
-The AGPLv3 license includes specific provisions for software used to provide network services. If you:
-
-- Run this software on a server
-- Allow users to interact with it over a network (web, API, etc.)
-- Have made modifications to the code
-
-**Then you must provide the source code** (including your modifications) to the users of your service.
-
-### Files
-
-- **Full License Text**: [LICENSE](LICENSE)
-- **License Summary**: [NOTICE](NOTICE)
-- **Contributing Guidelines**: [CONTRIBUTING.md](CONTRIBUTING.md)
-
-For questions about licensing or commercial use, please contact the copyright holder.
-
-### Why AGPLv3?
-
-This project uses AGPLv3 to ensure that improvements to the software remain available to the community, even when the software is used to provide services over a network. This promotes collaboration and prevents proprietary forks that don't contribute back to the open source community.
+For detailed license information, see [LICENSE](LICENSE) file.
 
 ---
 
-**⚖️ License Compliance**: By using, modifying, or distributing this software, you agree to comply with the terms of the GNU Affero General Public License version 3.
+<div align="center">
 
-# CI/CD Test Mon Jun 2 22:27:11 PDT 2025
+**Built with ❤️ by [Vedprakash Mishra](https://github.com/vedprakash-m)**
+
+[⭐ Star this project](https://github.com/vedprakash-m/vcarpool) • [🍴 Fork it](https://github.com/vedprakash-m/vcarpool/fork) • [📝 Report Issues](https://github.com/vedprakash-m/vcarpool/issues)
+
+</div>
