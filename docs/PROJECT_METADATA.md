@@ -166,253 +166,455 @@ graph TB
 - Input validation and sanitization
 - Application monitoring and logging
 
-## 4. Design Principles
+## 4. User Experience & Journey Mapping
 
-### 4.1 Core Principles
+### 4.1 Primary User Journeys
 
-- **Security-First**: All inputs validated, authentication required, secure defaults
-- **Performance**: Optimized builds, caching strategies, serverless architecture
-- **Maintainability**: TypeScript everywhere, shared types, comprehensive testing
-- **Scalability**: Serverless functions, NoSQL database, stateless design
-- **User Experience**: Responsive design, fast loading, intuitive navigation
+**Driver Journey**:
 
-### 4.2 Code Standards
-
-- **TypeScript**: Strict mode enabled, comprehensive typing
-- **Validation**: Zod schemas for runtime validation
-- **Error Handling**: Consistent error responses, proper logging
-- **Testing**: Unit tests, integration tests, E2E testing
-- **Documentation**: Inline comments, API documentation
-
-## 5. Known Constraints, Assumptions, and Design Decisions
-
-### 5.1 Constraints
-
-- **Budget**: Free/low-cost Azure tiers (Consumption plans, serverless)
-- **Geographic**: Initial focus on single region deployment
-- **Scale**: Designed for moderate traffic (< 10k users initially)
-- **Compliance**: Basic data protection, GDPR considerations
-
-### 5.2 Assumptions
-
-- Users have modern browsers with JavaScript enabled
-- Primary access via mobile devices
-- English as primary language (i18n planned)
-- Payment integration will be added in future iterations
-
-### 5.3 Design Decisions & Rationale
-
-**Azure Functions v4 Model**:
-
-- _Decision_: Use new programming model (app.http) for new functions
-- _Rationale_: Better TypeScript integration, improved developer experience
-- _Trade-off_: Cannot mix with traditional model in same deployment
-
-**Static Export for Frontend**:
-
-- _Decision_: Next.js static export to Azure Static Web Apps
-- _Rationale_: Cost optimization, global CDN, simplified deployment
-- _Trade-off_: No server-side rendering, limited dynamic capabilities
-
-**Cosmos DB NoSQL**:
-
-- _Decision_: Document database over relational
-- _Rationale_: Serverless pricing, global distribution, JSON-native
-- _Trade-off_: Less mature querying, eventual consistency
-
-**Monorepo Structure**:
-
-- _Decision_: Single repository with multiple packages
-- _Rationale_: Shared types, coordinated deployments, simplified development
-- _Trade-off_: Larger repository, potential deployment coupling
-
-## 6. Core Modules/Services and Responsibilities
-
-### 6.1 Backend Functions (Azure Functions)
-
-**Authentication Services**:
-
-- `auth-login`: User authentication and JWT generation
-- `auth-register`: New user registration
-- `auth-refresh-token`: Token renewal
-- `auth-forgot-password`: Password reset initiation
-- `auth-reset-password`: Password reset completion
-
-**User Management**:
-
-- `users-me`: Get current user profile
-- `users-update`: Update user information
-- `users-change-password`: Password change functionality
-
-**Trip Management**:
-
-- `trips-create`: Create new trips
-- `trips-list`: Search and list available trips
-- `trips-get`: Get trip details
-- `trips-update`: Modify trip information
-- `trips-delete`: Remove trips
-- `trips-stats`: Trip analytics and statistics
-- `trips-join`: Join a trip
-- `trips-leave`: Leave a trip
-
-**Communication**:
-
-- `chats-create`: Create chat channels
-- `chats-get`: Retrieve chat messages
-- `messages-send`: Send messages
-- `messages-get`: Retrieve message history
-
-**System**:
-
-- `health`: Health check endpoint for monitoring
-
-### 6.2 Frontend Pages and Components
-
-**Authentication Pages**:
-
-- Login, Registration, Password Reset
-- Protected route middleware
-
-**Main Application**:
-
-- Dashboard, Trip Search, Trip Creation
-- User Profile, Trip Management
-- Chat and Messaging Interface
-
-**Shared Components**:
-
-- Navigation, Forms, Modals
-- Trip Cards, User Components
-- Loading States, Error Handling
-
-## 7. Key APIs and Data Contracts
-
-### 7.1 Authentication APIs
-
-```typescript
-// Login
-POST /api/auth/login
-Body: { email: string, password: string }
-Response: { success: boolean, token: string, user: User }
-
-// Register
-POST /api/auth/register
-Body: { email: string, password: string, name: string }
-Response: { success: boolean, user: User }
+```mermaid
+journey
+    title Driver Journey
+    section Account Setup
+      Register: 5: Driver
+      Verify Email: 3: Driver
+      Complete Profile: 4: Driver
+    section Create Trip
+      Plan Route: 5: Driver
+      Set Schedule: 4: Driver
+      Configure Pricing: 3: Driver
+      Publish Trip: 5: Driver
+    section Manage Bookings
+      Review Requests: 4: Driver
+      Approve Passengers: 5: Driver
+      Communicate Details: 4: Driver
+    section Trip Execution
+      Start Trip: 5: Driver
+      Update Status: 3: Driver
+      Complete Trip: 5: Driver
+      Rate Passengers: 4: Driver
 ```
 
-### 7.2 Trip Management APIs
+**Passenger Journey**:
 
-```typescript
-// Create Trip
-POST /api/trips/create
-Body: { origin: string, destination: string, datetime: string, capacity: number, price?: number }
-Response: { success: boolean, trip: Trip }
-
-// List Trips
-GET /api/trips/list?origin=&destination=&date=
-Response: { success: boolean, trips: Trip[], pagination: Pagination }
+```mermaid
+journey
+    title Passenger Journey
+    section Discovery
+      Search Trips: 5: Passenger
+      Filter Results: 4: Passenger
+      View Details: 5: Passenger
+    section Booking
+      Request Seat: 5: Passenger
+      Await Approval: 2: Passenger
+      Receive Confirmation: 5: Passenger
+    section Communication
+      Contact Driver: 4: Passenger
+      Get Trip Updates: 4: Passenger
+      Share Live Location: 3: Passenger
+    section Trip Experience
+      Meet at Pickup: 4: Passenger
+      Travel Together: 5: Passenger
+      Rate Driver: 4: Passenger
 ```
 
-### 7.3 Data Contracts
+### 4.2 Critical User Experience Requirements
 
-**User Entity**:
+- **Mobile-First Design**: 80% of users access via mobile devices
+- **Offline Capability**: Basic trip details available without connection
+- **Real-Time Updates**: Trip status and communication updates
+- **Accessibility**: WCAG 2.1 AA compliance for inclusive design
 
-```typescript
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  phone?: string;
-  verified: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-```
+### 4.3 Common Pain Points & Solutions
 
-**Trip Entity**:
+- **Trip Discovery**: Complex search → Smart filtering and recommendations
+- **Trust & Safety**: Unknown users → Profile verification and rating system
+- **Communication**: Coordination challenges → In-app messaging and notifications
+- **Payment**: Split cost complexity → Integrated payment and automatic splitting
 
-```typescript
-interface Trip {
-  id: string;
-  driverId: string;
-  origin: string;
-  destination: string;
-  datetime: string;
-  capacity: number;
-  availableSeats: number;
-  price?: number;
-  status: "active" | "completed" | "cancelled";
-  passengers: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-```
+## 5. Performance Requirements & Constraints
 
-## 8. Critical Business Logic Summary
+### 5.1 Performance Targets
 
-### 8.1 Trip Booking Logic
+**Response Time SLAs**:
 
-- Users can only join trips with available seats
-- Drivers cannot join their own trips
-- Booking status transitions: pending → confirmed → completed
-- Automatic seat count management
+- **Authentication**: < 500ms for login/register
+- **Trip Search**: < 1000ms for filtered results
+- **Trip Creation**: < 800ms for form submission
+- **Chat Messages**: < 300ms for send/receive
+- **Page Navigation**: < 200ms for cached routes
 
-### 8.2 Authentication & Authorization
+**Concurrency Limits**:
+
+- **Peak Users**: 1,000 simultaneous active users
+- **Trip Search**: 100 concurrent search operations
+- **Database**: 1,000 RU/s baseline, 10,000 RU/s burst
+
+**Availability Targets**:
+
+- **Uptime**: 99.5% (excluding planned maintenance)
+- **API Availability**: 99.9% for critical endpoints
+- **Cold Start**: < 2 seconds for Azure Functions
+
+### 5.2 Scalability Constraints
+
+- **Budget**: $200/month operational cost limit
+- **Azure Tier**: Free/consumption tiers where possible
+- **Data Storage**: < 10GB initial, < 100GB projected growth
+- **Geographic**: Single region (East US 2) initially
+
+### 5.3 Performance Monitoring Strategy
+
+- **Health Checks**: Automated monitoring every 5 minutes
+- **Response Time Tracking**: 95th percentile monitoring
+- **Error Rate Alerts**: > 5% error rate triggers alerts
+- **Resource Usage**: Track function execution time and memory
+
+## 6. Security & Compliance Framework
+
+### 6.1 Data Classification
+
+**Highly Sensitive**:
+
+- User passwords (bcrypt hashed)
+- JWT tokens and refresh tokens
+- Payment information (when implemented)
+
+**Moderately Sensitive**:
+
+- Personal profiles (name, phone, email)
+- Trip location data
+- Private messages
+
+**Public Data**:
+
+- Trip listings (without personal details)
+- General location areas
+- Public ratings and reviews
+
+### 6.2 Security Controls
+
+**Authentication & Authorization**:
 
 - JWT tokens with 24-hour expiration
-- Refresh token mechanism for seamless UX
-- Role-based access (driver, passenger)
-- Protected routes require valid authentication
+- Refresh token rotation every 7 days
+- Role-based access control (driver, passenger, admin)
+- Multi-factor authentication (planned)
 
-### 8.3 Search and Matching
+**Data Protection**:
 
-- Location-based trip search
-- Date/time filtering for relevance
-- Distance calculations for proximity matching
-- Real-time availability updates
+- HTTPS/TLS 1.3 for all communications
+- Input validation using Zod schemas
+- SQL injection prevention (NoSQL with parameterized queries)
+- XSS protection via Content Security Policy
 
-### 8.4 Communication Rules
+**Privacy Controls**:
 
-- Chat access limited to trip participants
-- Message history preserved for trip duration
-- Real-time delivery via WebSocket (planned)
-- Moderation capabilities for safety
+- GDPR compliance for EU users
+- Data retention policies (2 years for inactive accounts)
+- User data export/deletion capabilities
+- Location data anonymization for analytics
 
-## 9. Glossary of Terms / Domain Concepts
+### 6.3 Threat Model & Mitigations
 
-- **Driver**: User who creates and owns a trip
-- **Passenger**: User who joins someone else's trip
-- **Trip**: A scheduled journey from origin to destination
-- **Booking**: A passenger's reservation for a specific trip
-- **Seat**: Available capacity unit in a trip
-- **Route**: The path from origin to destination
-- **Chat**: Communication channel for trip participants
+**High Priority Threats**:
 
-## 10. Current Risks and Technical Debt
+- **Account Takeover**: MFA, rate limiting, anomaly detection
+- **Data Breach**: Encryption at rest, access logging, least privilege
+- **Fraud/Fake Profiles**: Identity verification, behavioral analysis
+- **Location Privacy**: Approximate locations, data minimization
 
-### 10.1 Technical Debt
+## 7. Error Scenarios & Recovery Procedures
+
+### 7.1 Common Failure Modes
+
+**Azure Functions Cold Start**:
+
+- **Scenario**: Function takes > 10 seconds to respond
+- **Recovery**: Client-side retry with exponential backoff
+- **Prevention**: Health check warming, optimized deployment size
+
+**Cosmos DB Throttling**:
+
+- **Scenario**: 429 Too Many Requests during peak usage
+- **Recovery**: Client-side retry with jitter, request queuing
+- **Prevention**: Request unit monitoring, auto-scaling alerts
+
+**Authentication Token Expiry**:
+
+- **Scenario**: User session expires during active use
+- **Recovery**: Automatic refresh token exchange, seamless re-auth
+- **Prevention**: Proactive token refresh before expiry
+
+**Network Connectivity Issues**:
+
+- **Scenario**: User loses internet during trip
+- **Recovery**: Offline mode with local storage, sync when reconnected
+- **Prevention**: Progressive web app capabilities, data caching
+
+### 7.2 Error Response Standards
+
+**API Error Format**:
+
+```typescript
+interface ErrorResponse {
+  success: false;
+  error: {
+    code: string; // Stable error identifier
+    message: string; // User-friendly message
+    details?: any; // Technical details for debugging
+    retryAfter?: number; // Seconds to wait before retry
+  };
+  requestId: string; // For support tracking
+}
+```
+
+**Error Categories**:
+
+- **4xx Client Errors**: Validation, authentication, authorization
+- **5xx Server Errors**: Database, external service, system failures
+- **Custom Codes**: Business logic violations, resource conflicts
+
+### 7.3 Incident Response Procedures
+
+**Severity Levels**:
+
+- **Critical**: System down, data loss, security breach
+- **High**: Major feature broken, performance severely degraded
+- **Medium**: Minor feature issues, isolated user impact
+- **Low**: Cosmetic issues, enhancement requests
+
+**Response Timeline**:
+
+- **Critical**: 15 minutes detection, 1 hour mitigation
+- **High**: 1 hour detection, 4 hours resolution
+- **Medium**: 24 hours acknowledgment, 1 week resolution
+
+## 8. External Dependencies & Integration Points
+
+### 8.1 Current External Services
+
+**Azure Services**:
+
+- **Azure Static Web Apps**: Frontend hosting and authentication
+- **Azure Functions**: Backend API hosting
+- **Azure Cosmos DB**: Primary data storage
+- **Azure Application Insights**: Monitoring and analytics
+
+**Third-Party Services (Planned)**:
+
+- **Mapping Service**: Google Maps API or Azure Maps
+- **Payment Processing**: Stripe or PayPal integration
+- **SMS/Email**: Twilio for notifications
+- **Push Notifications**: Azure Notification Hubs
+
+### 8.2 Integration Patterns
+
+**Service-to-Service Communication**:
+
+- REST APIs with JSON payloads
+- Authentication via API keys or OAuth
+- Circuit breaker pattern for fault tolerance
+- Async processing for non-critical operations
+
+**Rate Limiting & Quotas**:
+
+- Azure Functions: 200 executions/second
+- Cosmos DB: 1,000-10,000 RU/s based on usage
+- External APIs: Service-specific limits (to be documented)
+
+### 8.3 Fallback Strategies
+
+**Mapping Service Failure**:
+
+- **Primary**: Google Maps API
+- **Fallback**: Cached location data, manual address entry
+- **Degraded**: Basic text-based location matching
+
+**Payment Service Failure**:
+
+- **Primary**: Stripe payment processing
+- **Fallback**: Manual payment coordination via messaging
+- **Degraded**: Cash-based transactions with trust system
+
+## 9. Testing Strategy & Quality Assurance
+
+### 9.1 Testing Pyramid
+
+**Unit Tests (Jest)**:
+
+- **Coverage Target**: 80% line coverage minimum
+- **Focus Areas**: Business logic, validation functions, utilities
+- **Run Frequency**: Every commit, < 30 seconds execution
+
+**Integration Tests**:
+
+- **API Endpoints**: All CRUD operations with database
+- **Authentication Flows**: Login, register, token refresh
+- **Critical Paths**: Trip creation → booking → completion
+
+**End-to-End Tests (Playwright)**:
+
+- **User Journeys**: Complete driver and passenger workflows
+- **Cross-Browser**: Chrome, Firefox, Safari, Mobile browsers
+- **Run Frequency**: Before production deployment
+
+### 9.2 Quality Gates
+
+**Pre-Commit Checks**:
+
+- TypeScript compilation without errors
+- ESLint rules pass (no warnings in production code)
+- Unit tests pass with coverage threshold
+- Zod schema validation tests
+
+**Pre-Deployment Checks**:
+
+- All tests pass in CI/CD pipeline
+- Health checks succeed in staging environment
+- Performance benchmarks within acceptable range
+- Security scan passes (planned)
+
+### 9.3 Performance Testing
+
+**Load Testing Scenarios**:
+
+- **Normal Load**: 100 concurrent users
+- **Peak Load**: 500 concurrent users
+- **Stress Test**: 1,000+ users to find breaking point
+- **Spike Test**: Sudden traffic bursts
+
+**Key Metrics to Monitor**:
+
+- Response time distribution (p50, p95, p99)
+- Error rate under load
+- Resource utilization (CPU, memory, RU consumption)
+- User experience metrics (time to interactive)
+
+## 10. Operational Procedures & Monitoring
+
+### 10.1 Deployment Strategy
+
+**Environment Pipeline**:
+
+- **Local Development**: Individual developer machines
+- **Staging**: Pre-production testing environment
+- **Production**: Live user-facing environment
+
+**Deployment Process**:
+
+- **Automated CI/CD**: GitHub Actions triggers on main branch
+- **Blue-Green Deployment**: Zero-downtime deployments (planned)
+- **Rollback Capability**: 5-minute rollback to previous version
+- **Feature Flags**: Gradual feature rollout (planned)
+
+### 10.2 Monitoring & Alerting
+
+**Health Monitoring**:
+
+- **Application Health**: `/api/health` endpoint every 5 minutes
+- **Database Health**: Connection and response time monitoring
+- **External Dependencies**: Third-party service availability
+
+**Alert Thresholds**:
+
+- **Response Time**: > 2 seconds for critical endpoints
+- **Error Rate**: > 5% for any 5-minute period
+- **Availability**: < 99% uptime for any 1-hour period
+- **Resource Usage**: > 80% CPU/memory for 10+ minutes
+
+**Alert Channels**:
+
+- **Critical**: SMS + Email + Slack
+- **High**: Email + Slack
+- **Medium**: Slack notification
+- **Low**: Dashboard notification only
+
+### 10.3 Debugging & Troubleshooting
+
+**Logging Strategy**:
+
+- **Structured Logging**: JSON format with correlation IDs
+- **Log Levels**: ERROR, WARN, INFO, DEBUG
+- **Retention**: 30 days for application logs, 90 days for audit logs
+- **PII Handling**: No sensitive data in logs
+
+**Common Debugging Procedures**:
+
+- **User Issues**: Trace request flow via correlation ID
+- **Performance Issues**: Analyze Application Insights metrics
+- **Database Issues**: Check Cosmos DB metrics and query performance
+- **Authentication Issues**: Review JWT validation and refresh flows
+
+**Support Tools**:
+
+- **Azure Application Insights**: Performance and error tracking
+- **Azure Monitor**: Infrastructure and resource monitoring
+- **Log Analytics**: Advanced log querying and analysis
+
+## 11. Current Risks and Technical Debt
+
+### 11.1 Technical Debt
 
 - **Mixed Function Models**: Legacy traditional Azure Functions alongside v4 model
 - **Limited Error Handling**: Basic error responses, needs comprehensive error taxonomy
 - **Testing Coverage**: Integration tests needed for complex workflows
 - **Performance Monitoring**: Basic health checks, needs APM integration
+- **API Documentation**: Missing OpenAPI specifications for all endpoints
+- **Security Audit**: No formal security assessment completed
 
-### 10.2 Risks
+### 11.2 Risks
 
 - **Cold Start Latency**: Azure Functions cold starts affecting user experience
 - **Authentication Complexity**: JWT management and refresh token security
 - **Data Consistency**: Eventual consistency challenges with Cosmos DB
 - **Deployment Dependencies**: Monorepo coupling between frontend and backend deployments
+- **Vendor Lock-in**: Heavy dependency on Azure ecosystem
+- **Scale Limitations**: Current architecture may not handle 10x growth efficiently
 
-### 10.3 Mitigation Strategies
+### 11.3 Mitigation Strategies
 
 - Improved health checks and monitoring (recently implemented)
 - Staged deployments with better error handling
 - Comprehensive testing strategy implementation
 - Performance optimization and caching strategies
+- Regular security audits and dependency updates
+- Multi-cloud strategy evaluation for critical components
 
-## 11. Metadata Evolution Log
+## 12. Team Dynamics & Development Workflow
+
+### 12.1 Development Standards
+
+**Code Review Requirements**:
+
+- All changes require at least one approval
+- Focus on security, performance, and maintainability
+- Automated checks must pass before merge
+- Documentation updates for API changes
+
+**Git Workflow**:
+
+- **Main Branch**: Always deployable, protected
+- **Feature Branches**: Short-lived, focused changes
+- **Commit Messages**: Conventional commits format
+- **Merge Strategy**: Squash and merge for clean history
+
+### 12.2 Knowledge Management
+
+**Documentation Standards**:
+
+- **API Changes**: Update OpenAPI specs and examples
+- **Architecture Changes**: Update PROJECT_METADATA.md
+- **Deployment Changes**: Update runbooks and procedures
+- **Security Changes**: Update threat model and controls
+
+**Team Communication**:
+
+- **Daily Standups**: Progress, blockers, coordination
+- **Weekly Reviews**: Architecture decisions, technical debt
+- **Monthly Retrospectives**: Process improvements
+
+## 13. Metadata Evolution Log
 
 ### Recent Updates (June 2025)
 
@@ -420,6 +622,7 @@ interface Trip {
 - **Health Check Improvements**: Enhanced resilience for Azure Functions cold starts
 - **Documentation**: Added comprehensive backend README and deployment guides
 - **Code Cleanup**: Removed duplicate health endpoint implementations
+- **Comprehensive Metadata**: Added user journeys, performance requirements, and operational procedures
 
 ### Pending Clarifications
 
@@ -428,6 +631,9 @@ interface Trip {
 - [ ] File upload requirements for user profiles and trip images
 - [ ] Internationalization (i18n) priority and supported languages
 - [ ] Advanced search features (geolocation, preferences)
+- [ ] Specific performance SLA agreements with stakeholders
+- [ ] Security audit schedule and requirements
+- [ ] Mobile app development strategy and timeline
 
 ### Outdated Areas to Update
 
@@ -435,6 +641,8 @@ interface Trip {
 - [ ] Performance benchmarks and optimization targets
 - [ ] Security audit findings and remediation plan
 - [ ] Mobile app strategy (PWA vs native)
+- [ ] Load testing results and capacity planning
+- [ ] Incident response procedures testing
 
 ---
 
