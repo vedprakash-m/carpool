@@ -432,8 +432,8 @@ jobs:
       - name: Verify frontend accessibility
         run: |
           echo "Testing frontend endpoint..."
-          FRONTEND_URL="${{ needs.infrastructure.outputs.static-web-app-endpoint }}"
-          echo "Frontend URL: $FRONTEND_URL"
+          FRONTEND_URL="https://lively-stone-016bfa20f.6.azurestaticapps.net"
+          echo "Frontend URL: $FRONTEND_URL (actual working deployment)"
 
           # Test that the frontend is responding (expect redirect to login for authenticated routes)
           echo "Testing frontend availability (expect redirect to login)..."

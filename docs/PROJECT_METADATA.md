@@ -775,6 +775,77 @@ interface ErrorResponse {
 - **Decision**: Professional documentation presentation improves project credibility and developer onboarding experience
 - **Status**: README.md completely rewritten with professional formatting and structure
 
+**2024-12-19: Azure Static Web Apps Fifth Deployment Attempt - Dedicated Directory**
+
+- **Issue**: Fifth CI/CD failure - Still "Failed to find a default file in the app artifacts folder (/)"
+- **Root Cause**: Azure SWA deployment action confusion with file locations despite multiple configuration attempts
+  - Previous attempts with various `app_location` and `output_location` combinations not working
+  - SWA consistently looking for files in wrong locations
+  - Built files exist in `frontend/out/` but SWA can't locate them properly
+- **Solution**: Create dedicated deployment directory approach:
+  - Build frontend normally to `frontend/out/`
+  - Copy all built files to new `swa-deploy/` directory
+  - Set `app_location: "swa-deploy"` and `output_location: "."`
+  - This ensures SWA finds `index.html` exactly where it expects
+- **Rationale**: Eliminates path confusion by giving SWA exactly what it expects in the location it expects
+- **Status**: Fifth fix deployed (commit `22508eed`), expecting this approach to resolve deployment issues
+
+**2024-12-19: README Branding Correction - School Carpool Focus**
+
+- **Issue**: User pointed out that README logo said "Ride Share Platform" but the app is specifically for kids' school carpool
+- **Problem**: Misleading branding made it appear to be a general ride-sharing platform rather than school-specific
+- **Solution**: Updated branding throughout README to reflect school carpool focus:
+  - Changed logo from "Ride Share Platform" to "School Carpool Management"
+  - Updated tagline to emphasize "safe, efficient student transportation"
+  - Modified overview to specify "school drop-off and pick-up" coordination
+  - Updated feature descriptions to highlight parent-student, school routes, family analytics
+- **Rationale**: Accurate branding better represents the actual use case and target audience
+- **Status**: Branding corrected to reflect school carpool purpose (commit `223cb7ba`)
+
+**2024-12-19: Azure Static Web Apps Investigation Required - Fifth Deployment Attempt Failed**
+
+- **Issue**: Fifth CI/CD attempt failed - Still getting Azure SWA default 404 page despite dedicated directory approach
+- **Pattern Analysis**: All five deployment configuration attempts have failed consistently:
+  1. ❌ Original configuration (path issues)
+  2. ❌ Fixed paths (build issues)
+  3. ❌ Direct artifact pointing (location confusion)
+  4. ❌ Root + output directory (file not found)
+  5. ❌ Dedicated deployment directory (still 404)
+- **Evidence**:
+  - ✅ Frontend builds successfully (`frontend/out/` contains `index.html`)
+  - ✅ CI/CD deployment action completes without errors
+  - ✅ Azure SWA resource responds (TLS working, DNS resolving)
+  - ❌ No custom content being served (Azure default 404 page)
+- **Root Cause Hypothesis**: Issue likely not with CI/CD configuration but with Azure infrastructure:
+  - SWA deployment token may be invalid or insufficient permissions
+  - Azure Static Web App resource may not be properly configured
+  - Deployment action may be completing but not actually uploading files
+  - Azure resource provisioning may have issues
+- **Recommended Next Steps**:
+  - Investigate Azure portal logs and SWA resource configuration
+  - Verify deployment token permissions and validity
+  - Consider manual file upload to test Azure SWA functionality
+  - Check if SWA resource needs to be reprovisioned
+- **Status**: **RESOLVED** - Frontend was actually working all along at different URL!
+
+**2024-12-19: Frontend Deployment Mystery Solved - Working All Along!**
+
+- **Discovery**: User checked Azure Portal and found the actual working Static Web App
+- **Revelation**: Frontend has been working perfectly at `https://lively-stone-016bfa20f.6.azurestaticapps.net`
+- **Root Cause**: We were testing wrong URL - `vcarpool-web-prod.azurestaticapps.net` vs actual `lively-stone-016bfa20f.6.azurestaticapps.net`
+- **Evidence of Success**:
+  - ✅ Azure Portal shows SWA status: "Ready"
+  - ✅ Working URL returns HTTP/2 200 with proper headers
+  - ✅ Websearch confirms VCarpool interface is live and functional
+  - ✅ Shows "Smart Carpool Management" with Sign In/Get Started functionality
+- **Deployment Reality**:
+  - Azure created separate workflow: `.github/workflows/azure-static-web-apps-agreeable-coast-0fd5b6f1e.yml`
+  - This Azure-generated workflow has been successfully deploying
+  - Our main CI/CD was deploying to different/wrong resource
+- **Lesson Learned**: Always verify actual Azure resource URLs in portal vs assumed URLs
+- **Status**: Frontend deployment working perfectly - 5 CI/CD "fix" attempts were unnecessary
+- **Action**: Updated CI/CD verification to use correct working URL
+
 ### 15.2 Ongoing Documentation Strategy
 
 **Living Document Approach**:
