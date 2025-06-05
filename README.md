@@ -2,9 +2,9 @@
 
 <div align="center">
 
-![VCarpool Logo](https://img.shields.io/badge/VCarpool-Ride%20Share%20Platform-blue?style=for-the-badge&logo=car&logoColor=white)
+![VCarpool Logo](https://img.shields.io/badge/VCarpool-School%20Carpool%20Management-blue?style=for-the-badge&logo=car&logoColor=white)
 
-**A modern, enterprise-grade carpool management platform built for scalability, security, and performance.**
+**A modern, enterprise-grade school carpool management platform built for safe, efficient student transportation.**
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/vedprakash-m/vcarpool/ci-cd.yml?style=flat-square&logo=github)](https://github.com/vedprakash-m/vcarpool/actions)
 [![Azure Functions](https://img.shields.io/badge/Azure%20Functions-v4-0062AD?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/en-us/services/functions/)
@@ -20,7 +20,7 @@
 
 ## 🌟 Overview
 
-VCarpool is a comprehensive carpool management application that connects drivers and passengers for efficient, eco-friendly transportation. Built with modern cloud-native architecture, it offers enterprise-grade security, real-time monitoring, and seamless user experience.
+VCarpool is a comprehensive school carpool management application that connects parents and students for safe, efficient school transportation. Built with modern cloud-native architecture, it offers enterprise-grade security, real-time monitoring, and seamless coordination for school drop-off and pick-up.
 
 ### ✨ Key Highlights
 
@@ -49,11 +49,11 @@ VCarpool is a comprehensive carpool management application that connects drivers
 
 ### Core Functionality
 
-- **User Management** - Secure registration, authentication, and profile management
-- **Trip Management** - Create, search, join, and manage carpool trips with advanced filtering
-- **Real-time Communication** - Instant notifications and trip updates
-- **Smart Matching** - Intelligent trip recommendations based on preferences and routes
-- **Analytics Dashboard** - Trip statistics, cost savings, and environmental impact tracking
+- **Parent & Student Management** - Secure registration, authentication, and family profile management
+- **School Trip Management** - Create, search, join, and manage school carpool trips with route filtering
+- **Real-time Communication** - Instant notifications for pickup/drop-off updates and changes
+- **Smart School Matching** - Intelligent carpool recommendations based on school, route, and schedule
+- **Family Analytics** - Trip statistics, cost savings, and time efficiency tracking for families
 
 ### Enterprise Features
 
