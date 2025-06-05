@@ -303,7 +303,7 @@ jobs:
           npm ci
           echo "Dependencies installed successfully"
 
-      # Build the frontend
+            # Build the frontend
       - name: Build frontend
         run: |
           echo "Building shared package..."
@@ -316,6 +316,13 @@ jobs:
           if [ -d "frontend/out" ]; then
             echo "✅ Build output directory exists"
             ls -la frontend/out/
+            
+            # Copy built files to deployment directory for SWA
+            echo "Preparing files for Azure Static Web Apps deployment..."
+            mkdir -p swa-deploy
+            cp -r frontend/out/* swa-deploy/
+            ls -la swa-deploy/
+            echo "✅ Files prepared for deployment"
           else
             echo "❌ Build output directory not found"
             exit 1
@@ -337,15 +344,15 @@ jobs:
             --output tsv)
           echo "swa-token=$TOKEN" >> $GITHUB_OUTPUT
 
-            # Deploy to Azure Static Web Apps using the action with corrected paths
+            # Deploy to Azure Static Web Apps using prepared deployment directory
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.swa-token }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/"
-          output_location: "frontend/out"
+          app_location: "swa-deploy"
+          output_location: "."
           skip_app_build: true
 
       # Verify deployment succeeded
