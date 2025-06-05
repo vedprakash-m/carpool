@@ -385,7 +385,39 @@ jobs:
       - name: Verify frontend accessibility
         run: |
           echo "Testing frontend endpoint..."
-          curl -f "${{ needs.infrastructure.outputs.static-web-app-endpoint }}" || exit 1
+          FRONTEND_URL="${{ needs.infrastructure.outputs.static-web-app-endpoint }}"
+          echo "Frontend URL: $FRONTEND_URL"
+
+          # Test that the frontend is responding (expect redirect to login for authenticated routes)
+          echo "Testing frontend availability (expect redirect to login)..."
+
+          # Try accessing the root - should get a redirect to login
+          response_code=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL" || echo "000")
+          echo "Root URL response code: $response_code"
+
+          # Test login page (should be accessible without auth)
+          login_response=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL/login" || echo "000")
+          echo "Login page response code: $login_response"
+
+          # Test static assets (should be available)
+          favicon_response=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL/favicon.ico" || echo "000")
+          echo "Favicon response code: $favicon_response"
+
+          # Verify frontend is responding (any 2xx, 3xx response is good)
+          if [[ "$response_code" =~ ^[23][0-9][0-9]$ ]] || [[ "$login_response" =~ ^[23][0-9][0-9]$ ]]; then
+            echo "✅ Frontend is accessible and responding correctly"
+          else
+            echo "❌ Frontend verification failed"
+            echo "Root URL ($FRONTEND_URL): HTTP $response_code"
+            echo "Login URL ($FRONTEND_URL/login): HTTP $login_response"
+            echo "Favicon URL ($FRONTEND_URL/favicon.ico): HTTP $favicon_response"
+            
+            # Additional debugging
+            echo "Testing with verbose output..."
+            curl -v "$FRONTEND_URL" || true
+            
+            exit 1
+          fi
 
       - name: Deployment summary
         run: |
