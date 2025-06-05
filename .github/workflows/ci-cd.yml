@@ -258,11 +258,19 @@ jobs:
           FUNCTION_APP_NAME="vcarpool-api-prod"
           STATIC_WEB_APP_NAME="vcarpool-web-prod"
 
-          # Quick health check
+          # Quick health check for Function App
           if az functionapp show --name "$FUNCTION_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} >/dev/null 2>&1; then
-            echo "✅ Function App exists"
+            echo "✅ Function App exists: $FUNCTION_APP_NAME"
           else
             echo "❌ Function App missing - will need manual intervention"
+            exit 1
+          fi
+
+          # Quick health check for Static Web App
+          if az staticwebapp show --name "$STATIC_WEB_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} >/dev/null 2>&1; then
+            echo "✅ Static Web App exists: $STATIC_WEB_APP_NAME"
+          else
+            echo "❌ Static Web App missing - will need manual intervention"
             exit 1
           fi
 
@@ -316,9 +324,10 @@ jobs:
       - name: Get SWA token
         id: swa-token
         run: |
-          # Use the working Static Web App
+          # Use the actual Static Web App resource name
           TOKEN=$(az staticwebapp secrets list \
-            --name "lively-stone-016bfa20f" \
+            --name "${{ needs.infrastructure.outputs.static-web-app-name }}" \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
             --query 'properties.apiKey' \
             --output tsv)
           echo "swa-token=$TOKEN" >> $GITHUB_OUTPUT
