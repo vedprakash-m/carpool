@@ -156,6 +156,45 @@ export default function AdminPage() {
             </p>
           </div>
 
+          {/* Navigation Section */}
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              🚀 Admin Features
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <a
+                href="/admin/scheduling"
+                className="block p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <div className="flex items-center">
+                  <span className="text-2xl mr-3">📅</span>
+                  <div>
+                    <h4 className="font-semibold text-green-800">
+                      Schedule Management
+                    </h4>
+                    <p className="text-sm text-green-600">
+                      Generate weekly driving schedules automatically
+                    </p>
+                  </div>
+                </div>
+              </a>
+
+              <div className="block p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center">
+                  <span className="text-2xl mr-3">👥</span>
+                  <div>
+                    <h4 className="font-semibold text-blue-800">
+                      User Management
+                    </h4>
+                    <p className="text-sm text-blue-600">
+                      Create parent and student accounts (current page)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Create User Form */}
           <div className="px-6 py-6">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
