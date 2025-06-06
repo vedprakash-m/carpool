@@ -1,6 +1,4 @@
-const { app } = require("@azure/functions");
-
-async function parentsWeeklyPreferences(request, context) {
+module.exports = async function (context, req) {
   context.log("Parents weekly preferences function triggered");
 
   // CORS headers
@@ -13,104 +11,87 @@ async function parentsWeeklyPreferences(request, context) {
   };
 
   // Handle preflight OPTIONS request
-  if (request.method === "OPTIONS") {
-    return { status: 200, headers: corsHeaders };
+  if (req.method === "OPTIONS") {
+    context.res = {
+      status: 200,
+      headers: corsHeaders,
+    };
+    return;
   }
 
   try {
     // Get authorization token
-    const authHeader = request.headers.get("authorization");
+    const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
-      return {
+      context.res = {
         status: 401,
         headers: corsHeaders,
-        body: JSON.stringify({
+        body: {
           success: false,
           error: {
             code: "UNAUTHORIZED",
             message: "Missing or invalid authorization token",
           },
-        }),
+        },
       };
+      return;
     }
 
     const token = authHeader.split(" ")[1];
     // Extract parent ID from token (simplified for now)
     const parentId = "parent-1"; // Should decode from JWT
 
-    if (request.method === "GET") {
-      return await getWeeklyPreferences(
-        parentId,
-        request,
-        corsHeaders,
-        context
-      );
-    } else if (request.method === "POST") {
-      return await submitWeeklyPreferences(
-        parentId,
-        request,
-        corsHeaders,
-        context
-      );
+    if (req.method === "GET") {
+      await getWeeklyPreferences(parentId, req, corsHeaders, context);
+    } else if (req.method === "POST") {
+      await submitWeeklyPreferences(parentId, req, corsHeaders, context);
     } else {
-      return {
+      context.res = {
         status: 405,
         headers: corsHeaders,
-        body: JSON.stringify({
+        body: {
           success: false,
           error: {
             code: "METHOD_NOT_ALLOWED",
             message: "Only GET and POST methods are allowed",
           },
-        }),
+        },
       };
     }
   } catch (error) {
     context.log("Weekly preferences error:", error);
 
-    return {
+    context.res = {
       status: 500,
       headers: corsHeaders,
-      body: JSON.stringify({
+      body: {
         success: false,
         error: {
           code: "INTERNAL_ERROR",
           message: "Internal server error occurred",
         },
-      }),
+      },
     };
   }
-}
+};
 
-async function getWeeklyPreferences(parentId, request, corsHeaders, context) {
+async function getWeeklyPreferences(parentId, req, corsHeaders, context) {
   // Get week start date from query params
-  // Fix URL parsing for Azure Functions environment
-  let weekStartDate;
-  try {
-    const url = new URL(request.url);
-    weekStartDate = url.searchParams.get("weekStartDate");
-  } catch (error) {
-    // Fallback for Azure Functions URL parsing issues
-    context.log("URL parsing error, trying fallback:", error);
-    const queryString = request.url.split("?")[1];
-    if (queryString) {
-      const params = new URLSearchParams(queryString);
-      weekStartDate = params.get("weekStartDate");
-    }
-  }
+  const weekStartDate = req.query.weekStartDate;
 
   if (!weekStartDate) {
-    return {
+    context.res = {
       status: 400,
       headers: corsHeaders,
-      body: JSON.stringify({
+      body: {
         success: false,
         error: {
           code: "VALIDATION_ERROR",
           message: "weekStartDate query parameter is required",
         },
-      }),
+      },
     };
+    return;
   }
 
   // Mock data for now - replace with actual Cosmos DB query
@@ -133,10 +114,10 @@ async function getWeeklyPreferences(parentId, request, corsHeaders, context) {
     },
   ];
 
-  return {
+  context.res = {
     status: 200,
     headers: corsHeaders,
-    body: JSON.stringify({
+    body: {
       success: true,
       data: {
         weekStartDate,
@@ -144,49 +125,45 @@ async function getWeeklyPreferences(parentId, request, corsHeaders, context) {
         submissionDeadline: getSubmissionDeadline(weekStartDate),
         canEdit: canEditPreferences(weekStartDate),
       },
-    }),
+    },
   };
 }
 
-async function submitWeeklyPreferences(
-  parentId,
-  request,
-  corsHeaders,
-  context
-) {
+async function submitWeeklyPreferences(parentId, req, corsHeaders, context) {
   // Parse request body
-  const body = await request.text();
-  const submitRequest = JSON.parse(body);
+  const submitRequest = req.body;
 
   // Validate request
   const validationError = validatePreferencesRequest(submitRequest);
   if (validationError) {
-    return {
+    context.res = {
       status: 400,
       headers: corsHeaders,
-      body: JSON.stringify({
+      body: {
         success: false,
         error: {
           code: "VALIDATION_ERROR",
           message: validationError,
         },
-      }),
+      },
     };
+    return;
   }
 
   // Check if submission is still allowed
   if (!canEditPreferences(submitRequest.weekStartDate)) {
-    return {
+    context.res = {
       status: 400,
       headers: corsHeaders,
-      body: JSON.stringify({
+      body: {
         success: false,
         error: {
           code: "SUBMISSION_DEADLINE_PASSED",
           message: "Preference submission deadline has passed for this week",
         },
-      }),
+      },
     };
+    return;
   }
 
   // Create preference records
@@ -204,10 +181,10 @@ async function submitWeeklyPreferences(
     `Mock saving ${preferences.length} preferences for parent ${parentId}, week ${submitRequest.weekStartDate}`
   );
 
-  return {
+  context.res = {
     status: 200,
     headers: corsHeaders,
-    body: JSON.stringify({
+    body: {
       success: true,
       data: {
         weekStartDate: submitRequest.weekStartDate,
@@ -215,7 +192,7 @@ async function submitWeeklyPreferences(
         submissionTimestamp: new Date(),
         message: "Weekly preferences submitted successfully (mock)",
       },
-    }),
+    },
   };
 }
 
@@ -284,12 +261,3 @@ function canEditPreferences(weekStartDate) {
   const deadline = new Date(getSubmissionDeadline(weekStartDate));
   return new Date() < deadline;
 }
-
-app.http("parents-weekly-preferences-simple", {
-  methods: ["GET", "POST", "OPTIONS"],
-  authLevel: "anonymous",
-  route: "parents/weekly-preferences",
-  handler: parentsWeeklyPreferences,
-});
-
-module.exports = { parentsWeeklyPreferences };
