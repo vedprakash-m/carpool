@@ -260,7 +260,10 @@ metrics/local-*
 *credential*
 *token*
 *api-key*
-*auth*
+*.auth
+auth.json
+auth.config
+oauth.json
 
 # Exclude above patterns from specific safe directories
 !docs/*password*
