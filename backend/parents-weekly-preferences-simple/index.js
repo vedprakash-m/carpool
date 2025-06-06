@@ -249,11 +249,14 @@ function validatePreferencesRequest(request) {
 }
 
 function getSubmissionDeadline(weekStartDate) {
-  // Deadline is Wednesday 5 PM of the previous week
+  // Deadline is Saturday midnight (11:59:59 PM) of the week before the target week
   const weekStart = new Date(weekStartDate);
   const deadline = new Date(weekStart);
-  deadline.setDate(deadline.getDate() - 5); // Go back to Wednesday
-  deadline.setHours(17, 0, 0, 0); // 5 PM
+
+  // Go back to the Saturday before the target week (2 days before Monday)
+  deadline.setDate(deadline.getDate() - 2); // Go back to Saturday
+  deadline.setHours(23, 59, 59, 999); // Saturday at 11:59:59.999 PM (essentially midnight)
+
   return deadline.toISOString();
 }
 
