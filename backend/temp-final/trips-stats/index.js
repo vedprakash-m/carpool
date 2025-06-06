@@ -22,30 +22,15 @@ module.exports = async function (context, req) {
   }
 
   try {
-    // Return school carpool focused stats for the dashboard
+    // Return mock stats data for the dashboard
     // In a real app, this would query the database
     const stats = {
-      // Legacy fields for backward compatibility
       totalTrips: 8,
       tripsAsDriver: 5,
       tripsAsPassenger: 3,
       totalDistance: 1250,
       costSavings: 245.5,
       upcomingTrips: 2,
-
-      // New school-focused metrics
-      weeklySchoolTrips: 6,
-      childrenCount: 2,
-      monthlyFuelSavings: 89.25,
-      timeSavedHours: 12,
-
-      // Additional family metrics
-      schoolTripsThisWeek: 6,
-      activeFamilyConnections: 5,
-      reliabilityScore: 98,
-      averageParentRating: 4.8,
-      co2SavedThisMonth: 45.2,
-      emergencyPickupsHelped: 2,
     };
 
     context.log("Returning stats:", stats);
