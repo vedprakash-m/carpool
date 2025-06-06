@@ -11,6 +11,9 @@ const FUNCTIONS = [
   "users-me",
   "admin-create-user",
   "users-change-password",
+  // Phase 2 Functions
+  "admin-generate-schedule-simple",
+  "parents-weekly-preferences-simple",
 ];
 
 console.log("🔧 Setting up Azure Functions...");

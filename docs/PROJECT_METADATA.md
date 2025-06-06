@@ -2202,6 +2202,72 @@ if (fs.existsSync(srcIndexJs)) {
 
 **Status**: Backend build issue resolved - CI/CD pipeline triggered for deployment verification
 
+### 15.15 Critical .gitignore Issue Discovery and Resolution (January 2025)
+
+**ROOT CAUSE DISCOVERED**: CI/CD still failing after build script fix due to missing `users-change-password` function in repository.
+
+**Deep Dive Investigation**:
+
+- **Local vs CI/CD Discrepancy**: Function worked locally but failed in CI/CD environment
+- **Repository Analysis**: `git ls-files backend/users-change-password/` returned empty (not tracked)
+- **Git Ignore Detection**: `git check-ignore backend/users-change-password/` confirmed directory was ignored
+
+**Critical Security Rule Conflict**:
+
+Found `.gitignore` rule on line 267:
+
+```bash
+*password*  # Blanket rule ignoring ANY file/directory containing "password"
+```
+
+**Impact Analysis**:
+
+- **Security Rule**: Designed to prevent committing files with passwords/secrets
+- **Unintended Consequence**: Blocked legitimate `users-change-password` function directory
+- **CI/CD Failure**: Function missing from deployment, causing build failures
+
+**Resolution Applied**:
+
+1. **Updated .gitignore Exception**:
+
+```bash
+# Exclude above patterns from specific safe directories
+!docs/*password*
+!docs/*secret*
+!README*
+!**/README*
+!**/*.md
+!src/**/*.example.*
+!examples/
+!demo/
+!backend/users-change-password/  # ← ADDED EXCEPTION
+```
+
+2. **Added Missing Function to Repository**:
+
+```bash
+git add backend/users-change-password/
+# Added: function.json (296B) + index.js (4.5KB)
+```
+
+**Build Verification**:
+
+- ✅ **Local Build**: All 6 functions now detected correctly
+- ✅ **Git Tracking**: `users-change-password` function properly committed
+- ✅ **Repository**: Function available for CI/CD deployment
+
+**Files Committed**:
+
+- ✅ `.gitignore` - Added exception for backend/users-change-password/
+- ✅ `backend/users-change-password/function.json` - Azure Function configuration
+- ✅ `backend/users-change-password/index.js` - Password change implementation
+
+**Key Learning**: Security-focused .gitignore rules can inadvertently block legitimate code. Critical to review ignore patterns when functions go missing in CI/CD.
+
+**Commit**: `58ef5472` - Missing function added to repository with gitignore exception
+
+**Status**: Complete resolution implemented - CI/CD should now succeed with all 6 functions deployed
+
 ---
 
 _This metadata document represents the actual implementation status and serves as the single source of truth for the vCarpool project. Last updated: January 2025_
