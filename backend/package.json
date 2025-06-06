@@ -20,7 +20,7 @@
     "test:health-check": "node -e \"console.log('Health check passed')\"",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "clean": "rimraf dist && rimraf auth-* && rimraf trips-* && rimraf users-*",
+    "clean": "rimraf dist",
     "setup-functions": "node scripts/setup-functions.js",
     "deploy:azure": "func azure functionapp publish vcarpool-api-manual --typescript"
   },

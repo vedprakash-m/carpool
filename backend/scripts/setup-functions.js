@@ -20,9 +20,18 @@ FUNCTIONS.forEach((functionName) => {
   }
 
   try {
-    // Create root function directory
+    // Create root function directory (preserve existing if it's a JavaScript function)
     if (!fs.existsSync(rootFunctionDir)) {
       fs.mkdirSync(rootFunctionDir, { recursive: true });
+    } else if (
+      fs.existsSync(path.join(rootFunctionDir, "index.js")) &&
+      !fs.existsSync(path.join("src", "functions", functionName, "index.js"))
+    ) {
+      // This is an existing JavaScript function, preserve it
+      console.log(
+        `📦 Preserving existing JavaScript function: ${functionName}`
+      );
+      return;
     }
 
     // Copy function.json from source
