@@ -39,26 +39,6 @@
       }
     },
     {
-      "route": "/_next/static/css/*",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable",
-        "Content-Type": "text/css"
-      }
-    },
-    {
-      "route": "/_next/static/js/*",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable",
-        "Content-Type": "application/javascript"
-      }
-    },
-    {
-      "route": "/_next/static/*",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
       "route": "/images/*",
       "headers": {
         "Cache-Control": "public, max-age=2592000"
@@ -111,22 +91,5 @@
     "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https://*.azurewebsites.net https://*.azurestaticapps.net;",
     "Referrer-Policy": "strict-origin-when-cross-origin"
   },
-  "mimeTypes": {
-    ".json": "application/json",
-    ".js": "text/javascript",
-    ".css": "text/css",
-    ".html": "text/html",
-    ".svg": "image/svg+xml",
-    ".ico": "image/x-icon",
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".webp": "image/webp",
-    ".avif": "image/avif"
-  },
-  "trailingSlash": "never",
-  "forwardingGateway": {
-    "allowedForwardedHosts": [],
-    "requiredHeaders": {}
-  }
+  "trailingSlash": "never"
 }
