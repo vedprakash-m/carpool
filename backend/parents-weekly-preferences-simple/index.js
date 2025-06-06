@@ -84,8 +84,20 @@ async function parentsWeeklyPreferences(request, context) {
 
 async function getWeeklyPreferences(parentId, request, corsHeaders, context) {
   // Get week start date from query params
-  const url = new URL(request.url);
-  const weekStartDate = url.searchParams.get("weekStartDate");
+  // Fix URL parsing for Azure Functions environment
+  let weekStartDate;
+  try {
+    const url = new URL(request.url);
+    weekStartDate = url.searchParams.get("weekStartDate");
+  } catch (error) {
+    // Fallback for Azure Functions URL parsing issues
+    context.log("URL parsing error, trying fallback:", error);
+    const queryString = request.url.split("?")[1];
+    if (queryString) {
+      const params = new URLSearchParams(queryString);
+      weekStartDate = params.get("weekStartDate");
+    }
+  }
 
   if (!weekStartDate) {
     return {
