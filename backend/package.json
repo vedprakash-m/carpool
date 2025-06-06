@@ -8,7 +8,7 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "build": "npm run clean && tsc && npm run setup-functions",
+    "build": "npm run clean && tsc && npm run setup-functions && npm run ensure-functions",
     "dev": "tsc --watch",
     "start": "func start",
     "deploy": "npm run build && func azure functionapp publish vcarpool-functions",
@@ -22,6 +22,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "clean": "rimraf dist",
     "setup-functions": "node scripts/setup-functions.js",
+    "ensure-functions": "node scripts/ensure-functions.js",
     "deploy:azure": "func azure functionapp publish vcarpool-api-manual --typescript"
   },
   "dependencies": {
