@@ -274,6 +274,7 @@ oauth.json
 !src/**/*.example.*
 !examples/
 !demo/
+!backend/users-change-password/
 
 # Ignore any file ending with common secret extensions
 *.secret
