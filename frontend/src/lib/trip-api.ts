@@ -63,11 +63,11 @@ class TripApiService {
     const queryString = params.toString();
     const url = `/trips${queryString ? `?${queryString}` : ""}`;
 
-    const response = await apiClient.get<PaginatedResponse<Trip>>(url);
-    if (!response.data) {
+    const response = await apiClient.get<any>(url);
+    if (!response.success || !response.data) {
       throw new Error("Failed to fetch trips");
     }
-    return response.data;
+    return response as PaginatedResponse<Trip>;
   }
 
   /**
@@ -261,11 +261,12 @@ class TripApiService {
    */
   async getMyTrips(): Promise<PaginatedResponse<Trip>> {
     try {
-      const response = await apiClient.get<PaginatedResponse<Trip>>("/trips");
+      const response = await apiClient.get<any>("/trips");
       if (!response.success || !response.data) {
         throw new Error("Failed to fetch my trips");
       }
-      return response.data;
+      // Backend returns { success: true, data: trips, pagination: ... }
+      return response as PaginatedResponse<Trip>;
     } catch (error) {
       console.error("My trips fetch error:", error);
       // Fallback: return mock data if API fails
