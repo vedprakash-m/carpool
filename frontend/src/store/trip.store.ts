@@ -163,10 +163,8 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   fetchTripStats: async () => {
     try {
-      const response = await tripApi.getTripStats();
-      if (response.success && response.data) {
-        set({ stats: response.data });
-      }
+      const stats = await tripApi.getTripStats();
+      set({ stats });
     } catch (error) {
       console.error("Error fetching trip stats:", error);
     }
