@@ -53,15 +53,28 @@ REQUIRED_FUNCTIONS.forEach((functionName) => {
       return;
     }
 
-    // Copy index.js
+    // Try to copy index.js (either from source for JS functions or from dist for TS functions)
     const srcIndexJs = path.join(srcFunctionDir, "index.js");
+    const distIndexJs = path.join(
+      "dist",
+      "functions",
+      functionName,
+      "index.js"
+    );
     const destIndexJs = path.join(rootFunctionDir, "index.js");
 
     if (fs.existsSync(srcIndexJs)) {
+      // JavaScript source exists, copy it
       fs.copyFileSync(srcIndexJs, destIndexJs);
-      console.log(`✅ ${functionName}: Copied index.js`);
+      console.log(`✅ ${functionName}: Copied index.js from source`);
+    } else if (fs.existsSync(distIndexJs)) {
+      // TypeScript compiled version exists, copy it
+      fs.copyFileSync(distIndexJs, destIndexJs);
+      console.log(
+        `✅ ${functionName}: Copied index.js from compiled TypeScript`
+      );
     } else {
-      console.log(`❌ ${functionName}: index.js not found`);
+      console.log(`❌ ${functionName}: No index.js found in source or dist`);
       return;
     }
 
