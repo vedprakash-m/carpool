@@ -143,13 +143,11 @@ class TripApiService {
    * Get trip statistics
    */
   async getTripStats(): Promise<ApiResponse<TripStats>> {
-    const response = await apiClient.get<ApiResponse<TripStats>>(
-      "/trips/stats"
-    );
-    if (!response.data) {
+    const response = await apiClient.get<TripStats>("/trips/stats");
+    if (!response.success) {
       throw new Error("Failed to fetch trip stats");
     }
-    return response.data;
+    return response;
   }
 
   /**
