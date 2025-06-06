@@ -6,12 +6,7 @@ import { useAuthStore } from "../../store/auth.store";
 import { useTripStore } from "../../store/trip.store";
 import DashboardLayout from "../../components/DashboardLayout";
 import { SectionErrorBoundary } from "../../components/SectionErrorBoundary";
-import {
-  VirtualizedList,
-  PerformanceErrorBoundary,
-  withPerformanceMonitoring,
-  createMemoizedComponent,
-} from "../../components/OptimizedComponents";
+// Removed problematic optimization components
 import { Trip, TripStatus } from "../../types/shared";
 import {
   CalendarIcon,
@@ -37,135 +32,135 @@ interface TripCardProps {
   onLeaveTrip?: (tripId: string) => void;
 }
 
-const TripCard = createMemoizedComponent<TripCardProps>(
-  ({ trip, currentUserId, onJoinTrip, onLeaveTrip }) => {
-    const isDriver = trip.driverId === currentUserId;
-    const isPassenger = trip.passengers.includes(currentUserId);
-    const canJoin =
-      !isDriver &&
-      !isPassenger &&
-      trip.availableSeats > 0 &&
-      trip.status === "planned";
-    const canLeave = isPassenger && trip.status === "planned";
+const TripCard = ({
+  trip,
+  currentUserId,
+  onJoinTrip,
+  onLeaveTrip,
+}: TripCardProps) => {
+  const isDriver = trip.driverId === currentUserId;
+  const isPassenger = trip.passengers.includes(currentUserId);
+  const canJoin =
+    !isDriver &&
+    !isPassenger &&
+    trip.availableSeats > 0 &&
+    trip.status === "planned";
+  const canLeave = isPassenger && trip.status === "planned";
 
-    const formatDate = (date: Date) => {
-      return new Date(date).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      });
-    };
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
-    const getStatusColor = (status: TripStatus) => {
-      switch (status) {
-        case "planned":
-          return "text-blue-600 bg-blue-100";
-        case "active":
-          return "text-green-600 bg-green-100";
-        case "completed":
-          return "text-gray-600 bg-gray-100";
-        case "cancelled":
-          return "text-red-600 bg-red-100";
-        default:
-          return "text-gray-600 bg-gray-100";
-      }
-    };
+  const getStatusColor = (status: TripStatus) => {
+    switch (status) {
+      case "planned":
+        return "text-blue-600 bg-blue-100";
+      case "active":
+        return "text-green-600 bg-green-100";
+      case "completed":
+        return "text-gray-600 bg-gray-100";
+      case "cancelled":
+        return "text-red-600 bg-red-100";
+      default:
+        return "text-gray-600 bg-gray-100";
+    }
+  };
 
-    const handleJoinClick = () => {
-      const pickupLocation = prompt("Please enter your pickup location:");
-      if (pickupLocation && onJoinTrip) {
-        onJoinTrip(trip.id);
-      }
-    };
+  const handleJoinClick = () => {
+    const pickupLocation = prompt("Please enter your pickup location:");
+    if (pickupLocation && onJoinTrip) {
+      onJoinTrip(trip.id);
+    }
+  };
 
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center space-x-2">
-            <MapPinOutlineIcon className="h-5 w-5 text-gray-400" />
-            <span className="font-medium text-gray-900">
-              {trip.destination}
-            </span>
-          </div>
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-              trip.status
-            )}`}
-          >
-            {trip.status.charAt(0).toUpperCase() + trip.status.slice(1)}
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center space-x-2">
+          <MapPinOutlineIcon className="h-5 w-5 text-gray-400" />
+          <span className="font-medium text-gray-900">{trip.destination}</span>
+        </div>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+            trip.status
+          )}`}
+        >
+          {trip.status.charAt(0).toUpperCase() + trip.status.slice(1)}
+        </span>
+      </div>
+
+      <div className="space-y-2 mb-4">
+        <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <CalendarIcon className="h-4 w-4" />
+          <span>{formatDate(trip.date)}</span>
+        </div>
+        <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <ClockOutlineIcon className="h-4 w-4" />
+          <span>
+            {trip.departureTime} - {trip.arrivalTime}
           </span>
         </div>
-
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <CalendarIcon className="h-4 w-4" />
-            <span>{formatDate(trip.date)}</span>
-          </div>
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <ClockOutlineIcon className="h-4 w-4" />
-            <span>
-              {trip.departureTime} - {trip.arrivalTime}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <UserIcon className="h-4 w-4" />
-            <span>
-              {trip.passengers.length}/{trip.maxPassengers} passengers
-            </span>
-          </div>
-        </div>
-
-        {trip.notes && (
-          <p className="text-sm text-gray-600 mb-4 italic">"{trip.notes}"</p>
-        )}
-
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            {isDriver ? (
-              <span className="flex items-center space-x-1">
-                <CarIcon className="h-4 w-4" />
-                <span>You're driving</span>
-              </span>
-            ) : isPassenger ? (
-              <span className="text-green-600">You're a passenger</span>
-            ) : (
-              <span>{trip.availableSeats} seats available</span>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {trip.cost && (
-              <span className="text-sm font-medium text-green-600">
-                ${trip.cost.toFixed(2)}
-              </span>
-            )}
-
-            {canJoin && (
-              <button
-                onClick={handleJoinClick}
-                className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                Join Trip
-              </button>
-            )}
-
-            {canLeave && (
-              <button
-                onClick={() => onLeaveTrip?.(trip.id)}
-                className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                Leave Trip
-              </button>
-            )}
-          </div>
+        <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <UserIcon className="h-4 w-4" />
+          <span>
+            {trip.passengers.length}/{trip.maxPassengers} passengers
+          </span>
         </div>
       </div>
-    );
-  }
-);
 
-// Performance monitoring for the main page component
-const TripsPage = withPerformanceMonitoring(() => {
+      {trip.notes && (
+        <p className="text-sm text-gray-600 mb-4 italic">"{trip.notes}"</p>
+      )}
+
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-500">
+          {isDriver ? (
+            <span className="flex items-center space-x-1">
+              <CarIcon className="h-4 w-4" />
+              <span>You're driving</span>
+            </span>
+          ) : isPassenger ? (
+            <span className="text-green-600">You're a passenger</span>
+          ) : (
+            <span>{trip.availableSeats} seats available</span>
+          )}
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {trip.cost && (
+            <span className="text-sm font-medium text-green-600">
+              ${trip.cost.toFixed(2)}
+            </span>
+          )}
+
+          {canJoin && (
+            <button
+              onClick={handleJoinClick}
+              className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              Join Trip
+            </button>
+          )}
+
+          {canLeave && (
+            <button
+              onClick={() => onLeaveTrip?.(trip.id)}
+              className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              Leave Trip
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function TripsPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const {
@@ -431,49 +426,22 @@ const TripsPage = withPerformanceMonitoring(() => {
           </div>
         ) : (
           <div className="relative">
-            {filteredTrips.length > 10 ? (
-              // Use virtualized list for better performance with many trips
-              <VirtualizedList
-                items={filteredTrips}
-                itemHeight={200}
-                containerHeight={600}
-                className="space-y-4"
-                renderItem={(trip, index) => (
-                  <div className="px-2">
-                    <TripCard
-                      trip={trip}
-                      currentUserId={user.id}
-                      onJoinTrip={handleJoinTrip}
-                      onLeaveTrip={handleLeaveTrip}
-                    />
-                  </div>
-                )}
-              />
-            ) : (
-              // Use regular grid for smaller lists
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredTrips.map((trip) => (
-                  <TripCard
-                    key={trip.id}
-                    trip={trip}
-                    currentUserId={user.id}
-                    onJoinTrip={handleJoinTrip}
-                    onLeaveTrip={handleLeaveTrip}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredTrips.map((trip) => (
+                <TripCard
+                  key={trip.id}
+                  trip={trip}
+                  currentUserId={user.id}
+                  onJoinTrip={handleJoinTrip}
+                  onLeaveTrip={handleLeaveTrip}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
     </DashboardLayout>
   );
-}, "TripsPage");
-
-export default function TripsPageWithErrorBoundary() {
-  return (
-    <PerformanceErrorBoundary>
-      <TripsPage />
-    </PerformanceErrorBoundary>
-  );
 }
+
+export default TripsPage;
