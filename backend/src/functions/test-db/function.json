@@ -5,8 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["post"],
-      "route": "trips"
+      "methods": ["get"],
+      "route": "test-db"
     },
     {
       "type": "http",

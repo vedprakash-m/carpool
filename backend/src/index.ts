@@ -1,16 +1,14 @@
 /**
- * Main entry point for Azure Functions v4
- * This file imports all function modules to ensure they are registered
+ * Minimal entry point for Azure Functions
+ * This file is required by Azure Functions but doesn't need to do anything
+ * since we're using individual function files
  */
 
-// Import all functions to register them with the Azure Functions runtime
-import "./functions/auth-login";
-import "./functions/auth-register";
-import "./functions/auth-refresh-token";
-import "./functions/trips-stats";
-import "./functions/trips-list";
-import "./functions/trips-create";
-import "./functions/users-me";
+// Empty entry point - functions are loaded individually
+console.log("Azure Functions worker started");
 
-// Initialize the application
-import "./startup";
+// Minimal entry point for Azure Functions
+// This file must exist for the Azure Functions runtime to work properly
+export default function () {
+  return "Azure Functions Entry Point";
+}

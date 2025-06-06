@@ -4,15 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 // List of essential functions to set up (traditional model only)
-const FUNCTIONS = [
-  "auth-login",
-  "auth-register",
-  "auth-refresh-token",
-  "trips-stats",
-  "trips-list",
-  "trips-create",
-  "users-me",
-];
+const FUNCTIONS = ["hello", "auth-login-legacy", "trips-stats", "users-me"];
 
 console.log("🔧 Setting up Azure Functions...");
 
@@ -45,15 +37,21 @@ FUNCTIONS.forEach((functionName) => {
       return;
     }
 
-    // Copy compiled JavaScript from dist
+    // Try to copy JavaScript file first (for legacy functions)
+    const srcIndexJs = path.join(srcFunctionDir, "index.js");
     const distIndexJs = path.join(distFunctionDir, "index.js");
     const destIndexJs = path.join(rootFunctionDir, "index.js");
 
-    if (fs.existsSync(distIndexJs)) {
+    if (fs.existsSync(srcIndexJs)) {
+      // Use source JavaScript file directly
+      fs.copyFileSync(srcIndexJs, destIndexJs);
+      console.log(`✅ Copied index.js for ${functionName} (from source)`);
+    } else if (fs.existsSync(distIndexJs)) {
+      // Use compiled TypeScript file
       fs.copyFileSync(distIndexJs, destIndexJs);
-      console.log(`✅ Copied index.js for ${functionName}`);
+      console.log(`✅ Copied index.js for ${functionName} (compiled)`);
     } else {
-      console.log(`❌ Compiled index.js not found for ${functionName}`);
+      console.log(`❌ No index.js found for ${functionName}`);
     }
 
     // Copy source map if it exists

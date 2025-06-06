@@ -13,7 +13,7 @@ const CONTAINER_NAMES = {
   trips: "trips",
   schedules: "schedules",
   swapRequests: "swapRequests",
-  emailTemplates: "emailTemplates",
+  emailTemplates: "email-templates",
   messages: "messages",
   chats: "chats",
   chatParticipants: "chatParticipants",

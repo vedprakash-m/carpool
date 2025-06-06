@@ -1410,7 +1410,145 @@ Resource Group: vcarpool-rg
 
 **Status**: CI/CD pipeline optimization complete - 65% performance improvement achieved with maintained reliability.
 
-### 15.8 Ongoing Documentation Strategy
+### 15.8 Backend API Regression Investigation (January 2025)
+
+**Critical Issue Identified**: Backend API endpoints returning 404/405/500 errors preventing frontend functionality.
+
+**Problem Timeline**:
+
+1. **Frontend Error Report**: User reported "Request failed with status code 405" in browser console during login attempts
+2. **Initial API Testing**:
+
+   - POST to `/api/auth/login` returns HTTP 500 (Internal Server Error)
+   - GET to `/api/auth/login` returns HTTP 404 (Not Found)
+   - `/api/health` endpoint returns HTTP 404
+   - All dashboard endpoints (`/api/trips/stats`, `/api/users/me`) return HTTP 404
+
+3. **Function Deployment Analysis**:
+
+   ```bash
+   # Functions are listed as deployed:
+   - auth-login → https://vcarpool-api-prod.azurewebsites.net/api/auth/login
+   - trips-stats → https://vcarpool-api-prod.azurewebsites.net/api/trips/stats
+   - users-me → https://vcarpool-api-prod.azurewebsites.net/api/users/me
+   - auth-refresh-token, auth-register, trips-create, trips-list
+   ```
+
+4. **Root Cause Investigation**:
+   - **Function Conflict**: Found multiple `auth-login` implementations:
+     - `backend/auth-login-legacy/` (JavaScript, working code)
+     - `backend/src/functions/auth-login/` (TypeScript, database-dependent)
+   - **Build System Issue**: TypeScript build process conflicts with legacy JavaScript functions
+   - **Deployment Issue**: Functions show as deployed but return 404, indicating deployment content mismatch
+
+**Technical Details**:
+
+**Working Legacy Function** (`backend/auth-login-legacy/index.js`):
+
+- Simple mock authentication with hardcoded credentials
+- Returns proper `{ success: true, data: { user, token, refreshToken } }` format
+- CORS headers configured correctly
+- Route configured as `auth/login` in function.json
+
+**Failing TypeScript Function** (`backend/src/functions/auth-login/index.ts`):
+
+- Complex authentication with database dependencies
+- Requires Cosmos DB connection and UserService
+- Uses `@azure/functions` v4 programming model
+- Same route `auth/login` causing conflict
+
+**Deployment Attempts**:
+
+1. **Build Process**: `npm run build` shows issues with function setup script
+2. **Direct Deployment**: Used `az functionapp deployment source config-zip` with existing deployment.zip
+3. **Function Verification**: Functions list correctly but endpoints return 404
+
+**Current Status**:
+
+- ✅ **Frontend**: Deployed and accessible at https://lively-stone-016bfa20f.6.azurestaticapps.net/
+- ❌ **Backend**: Functions deployed but not responding (all endpoints 404)
+- ✅ **CI/CD**: Optimized pipeline ready for use
+- ❌ **Authentication**: Completely broken due to backend API issues
+- ❌ **Dashboard**: Cannot load due to API failures
+
+**Debugging Actions Taken**:
+
+1. Verified Azure Function App status (running)
+2. Listed deployed functions via Azure CLI (all present)
+3. Tested individual endpoints manually (all failing)
+4. Identified function routing conflicts
+5. Attempted redeployment via zip file
+6. Created backup of working legacy functions
+
+**Next Steps for Tomorrow**:
+
+**Immediate Priority (30 minutes)**:
+
+1. **Deploy Working Legacy Functions**:
+
+   ```bash
+   # Copy working functions to proper deployment structure
+   cp -r backend/auth-login-legacy backend/auth-login-working
+   # Modify route to avoid conflicts
+   # Test deployment via CI/CD pipeline
+   ```
+
+2. **Fix Function Routing Conflicts**:
+   - Temporarily disable TypeScript auth functions
+   - Ensure legacy JavaScript functions are deployed correctly
+   - Test individual endpoints manually
+
+**Medium Priority (1 hour)**: 3. **Restore Basic Authentication**:
+
+- Get `/api/auth/login` working with mock credentials
+- Verify `/api/trips/stats` and `/api/users/me` endpoints
+- Test end-to-end login flow from frontend
+
+4. **Debug Deployment Process**:
+   - Verify build script copies JavaScript functions correctly
+   - Check Azure Function App logs for runtime errors
+   - Ensure proper function.json configuration
+
+**Long-term Resolution (2 hours)**: 5. **Choose Authentication Strategy**:
+
+- Option A: Fix TypeScript functions with proper database setup
+- Option B: Keep working legacy functions as production solution
+- Option C: Hybrid approach with gradual migration
+
+6. **Stabilize Deployment Pipeline**:
+   - Ensure CI/CD deploys the correct function versions
+   - Add health checks to verify deployment success
+   - Implement proper function versioning strategy
+
+**Success Criteria**:
+
+- [ ] `curl POST /api/auth/login` returns 200 with auth response
+- [ ] Frontend login flow works end-to-end
+- [ ] Dashboard loads with trip statistics
+- [ ] All API endpoints return proper responses (no 404s)
+
+**Files Modified in This Session**:
+
+- `backend/hello-simple/` (new test function)
+- `backend/auth-login/` (copied from legacy, but ignored by git)
+- `backend/deployment.zip` (redeployed)
+
+**Current Error Examples**:
+
+```bash
+# Frontend console error:
+"API POST request failed: AxiosError - Request failed with status code 405"
+
+# Backend endpoint tests:
+curl POST /api/auth/login → HTTP 500
+curl GET /api/auth/login → HTTP 404
+curl GET /api/trips/stats → HTTP 404
+curl GET /api/health → HTTP 404
+```
+
+**Status**: Backend API regression blocking all functionality - requires immediate resolution to restore working authentication and dashboard.
+
+### 15.9 Ongoing Documentation Strategy
 
 **Living Document Approach**:
 
@@ -1472,16 +1610,17 @@ Resource Group: vcarpool-rg
 - **Scripts Cleanup**: Removed redundant files and optimized development workflow
 - **Performance Improvements**: Achieved 65% faster build times through parallel execution
 
-### Current Status: 99% Complete
+### Current Status: 85% Complete (Regression)
 
-**Core Platform**: Fully functional with production-ready frontend and backend
-**Authentication**: Complete login-to-dashboard user experience working
-**API Integration**: All endpoints operational with proper CORS handling
-**CI/CD Pipeline**: Optimized for 65% faster builds with parallel execution and advanced caching
-**Deployment**: Automatic high-performance deployment via GitHub Actions to Azure Static Web Apps
-**Scripts Management**: Cleaned up and optimized development workflow
-**Remaining Work**: Advanced trip management features and real-time messaging
-**Technical Foundation**: Proven stable architecture with optimized development workflow
+**Core Platform**: Frontend fully functional, backend API experiencing critical failures
+**Authentication**: ❌ BROKEN - Backend API returning 404/500 errors
+**API Integration**: ❌ BROKEN - All endpoints failing, CORS configuration not accessible
+**CI/CD Pipeline**: ✅ Optimized for 65% faster builds with parallel execution and advanced caching
+**Deployment**: ✅ Automatic high-performance deployment working for frontend
+**Scripts Management**: ✅ Cleaned up and optimized development workflow
+**Critical Issue**: Backend function deployment/routing conflicts preventing all API access
+**Immediate Priority**: Restore basic authentication and dashboard API endpoints
+**Technical Foundation**: Infrastructure solid, but runtime function execution failing
 
 ---
 

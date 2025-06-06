@@ -4,8 +4,8 @@
   "description": "Azure Functions backend for vcarpool application",
   "main": "dist/index.js",
   "engines": {
-    "node": ">=20.0.0",
-    "npm": ">=10.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "scripts": {
     "build": "npm run clean && tsc && npm run setup-functions",
@@ -30,6 +30,7 @@
     "@types/lru-cache": "^7.10.9",
     "@vcarpool/shared": "file:../shared",
     "applicationinsights": "^3.7.0",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
