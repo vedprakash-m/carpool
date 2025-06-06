@@ -38,6 +38,11 @@ export interface TripStats {
   totalDistance: number;
   costSavings: number;
   upcomingTrips: number;
+  // School-focused statistics for dashboard
+  weeklySchoolTrips?: number;
+  childrenCount?: number;
+  monthlyFuelSavings?: number;
+  timeSavedHours?: number;
 }
 
 class TripApiService {
@@ -171,6 +176,11 @@ class TripApiService {
         totalDistance: 1250,
         costSavings: 245.5,
         upcomingTrips: 2,
+        // School-focused statistics for dashboard
+        weeklySchoolTrips: 6,
+        childrenCount: 2,
+        monthlyFuelSavings: 89.25,
+        timeSavedHours: 12,
       };
     }
   }

@@ -330,6 +330,21 @@ export interface TripAnalytics {
   timeframe: string;
 }
 
+// Trip Statistics for Dashboard
+export interface TripStats {
+  totalTrips: number;
+  tripsAsDriver: number;
+  tripsAsPassenger: number;
+  totalDistance: number;
+  costSavings: number;
+  upcomingTrips: number;
+  // School-focused statistics for dashboard
+  weeklySchoolTrips?: number;
+  childrenCount?: number;
+  monthlyFuelSavings?: number;
+  timeSavedHours?: number;
+}
+
 // Notification types
 export type NotificationType =
   | "trip_joined"

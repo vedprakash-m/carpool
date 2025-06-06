@@ -72,6 +72,7 @@ export type {
   CreateNotificationRequest,
   ChatRoomWithUnreadCount,
   MessageWithSender,
+  TripStats,
   // NEW Product Spec Types
   Child,
   Location,
