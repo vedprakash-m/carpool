@@ -72,4 +72,16 @@ export type {
   CreateNotificationRequest,
   ChatRoomWithUnreadCount,
   MessageWithSender,
+  // NEW Product Spec Types
+  Child,
+  Location,
+  WeeklyScheduleTemplateSlot,
+  DriverWeeklyPreference,
+  RideAssignment,
+  CreateUserRequest,
+  ChangePasswordRequest,
+  SubmitWeeklyPreferencesRequest,
+  GenerateScheduleRequest,
+  CreateChildRequest,
+  UpdateChildRequest,
 } from "./types";

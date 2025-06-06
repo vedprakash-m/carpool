@@ -4,7 +4,14 @@ const fs = require("fs");
 const path = require("path");
 
 // List of essential functions to set up (traditional model only)
-const FUNCTIONS = ["hello", "auth-login-legacy", "trips-stats", "users-me"];
+const FUNCTIONS = [
+  "hello",
+  "auth-login-legacy",
+  "trips-stats",
+  "users-me",
+  "admin-create-user",
+  "users-change-password",
+];
 
 console.log("🔧 Setting up Azure Functions...");
 
@@ -13,7 +20,16 @@ FUNCTIONS.forEach((functionName) => {
   const distFunctionDir = path.join("dist", "functions", functionName);
   const rootFunctionDir = functionName;
 
-  // Check if source function exists
+  // Check if function already exists at root level (for legacy functions)
+  if (
+    fs.existsSync(path.join(rootFunctionDir, "index.js")) &&
+    fs.existsSync(path.join(rootFunctionDir, "function.json"))
+  ) {
+    console.log(`✅ ${functionName}: Already present at root level`);
+    return;
+  }
+
+  // Check if source function exists in src/functions
   if (!fs.existsSync(srcFunctionDir)) {
     console.log(`⚠️  Skipping ${functionName} - source not found`);
     return;

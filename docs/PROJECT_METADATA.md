@@ -1703,7 +1703,69 @@ curl GET /api/health → HTTP 404
 
 **Status**: **100% FUNCTIONAL** - Complete login-to-dashboard flow operational with robust monitoring and recovery procedures in place.
 
-### 15.10 Ongoing Documentation Strategy
+### 15.10 Critical Dashboard Optimization Removal and Product Spec Gap Analysis (January 2025)
+
+**Major Discovery**: Complex optimization components causing blank pages across multiple components.
+
+**Root Cause**:
+
+- `PerformanceErrorBoundary`, `withPerformanceMonitoring`, `createMemoizedComponent` causing silent failures
+- Premature optimization masking functional issues
+- Multiple error boundaries interfering with error reporting
+
+**Components Fixed**:
+
+- ✅ **Dashboard page**: Removed optimization wrappers, now fully functional
+- ✅ **Trips page**: Applied same pattern, resolved blank page issues
+- ✅ **Added missing API endpoints**: `trips-list` endpoint created
+
+**Dashboard Transformation**:
+
+- **From**: Generic ride-sharing interface with basic trip statistics
+- **To**: School carpool coordination focused on parent-child workflows
+- **New Features**: School-specific stats, family impact metrics, upcoming school runs
+- **Better Alignment**: Now matches README use case (school carpool vs generic rideshare)
+
+**Critical Product Specification Gap Assessment**:
+
+After analyzing `docs/Prod_Spec_vCarpool.md`, discovered **fundamental architectural misalignment**:
+
+**CRITICAL MISSING COMPONENTS (80% incomplete)**:
+
+1. **Automated Schedule Generation Algorithm** - Core business logic missing
+2. **Weekly Driver Preference System** - No preference submission workflow
+3. **Admin User Management** - Cannot create Parent/Student accounts
+4. **Parent-Child Data Model** - No family relationship structure
+5. **Role-Based Access Control** - Basic roles exist but insufficient permissions
+6. **Ride Swap Request System** - Basic structure exists, needs enhancement
+
+**DATA MODEL GAPS**:
+
+- ❌ Missing: `Child`, `WeeklyScheduleTemplateSlot`, `DriverWeeklyPreference`, `RideAssignment` models
+- ⚠️ Incomplete: `User` model missing `is_active_driver`, `home_address`
+
+**API GAPS**:
+
+- ❌ Missing: `/api/v1/admin/users`, `/api/v1/admin/generate-schedule`, `/api/v1/parents/weekly-preferences`
+- ❌ No API versioning pattern
+- ❌ Missing OpenAPI documentation
+
+**UI GAPS**:
+
+- ❌ No admin dashboard for user creation and schedule management
+- ❌ No parent interface for child management and weekly preferences
+- ❌ No student-specific limited interface
+
+**IMPLEMENTATION ROADMAP ESTABLISHED**:
+
+- **Phase 1** (Weeks 1-2): Critical data models and admin management
+- **Phase 2** (Weeks 3-4): Automated scheduling algorithm
+- **Phase 3** (Weeks 5-6): Complete user interfaces for all roles
+
+**Current Status**: ~20% complete vs. specification requirements
+**Next Priority**: Implement Child data model and admin user creation system
+
+### 15.11 Ongoing Documentation Strategy
 
 **Living Document Approach**:
 

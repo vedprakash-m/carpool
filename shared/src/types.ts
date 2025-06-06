@@ -11,6 +11,78 @@ export interface User {
   grade?: string;
   role?: "student" | "parent" | "admin" | "faculty" | "staff";
   preferences: UserPreferences;
+  // New fields from Product Spec
+  isActiveDriver?: boolean;
+  homeAddress?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Child model - NEW from Product Spec
+export interface Child {
+  id: string;
+  parentId: string;
+  fullName: string;
+  studentId: string;
+  grade?: string;
+  emergencyContact?: string;
+  pickupInstructions?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Location model - NEW from Product Spec
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  type: "school" | "home" | "pickup_point" | "other";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Weekly Schedule Template Slot - NEW from Product Spec
+export interface WeeklyScheduleTemplateSlot {
+  id: string;
+  dayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
+  startTime: string; // HH:MM format
+  endTime: string; // HH:MM format
+  routeType:
+    | "school_dropoff"
+    | "school_pickup"
+    | "multi_stop"
+    | "point_to_point";
+  description: string;
+  locationId?: string; // Reference to Location
+  maxPassengers: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Driver Weekly Preference - NEW from Product Spec
+export interface DriverWeeklyPreference {
+  id: string;
+  driverParentId: string;
+  weekStartDate: string; // ISO date string (Monday of the week)
+  templateSlotId: string;
+  preferenceLevel: "preferable" | "less_preferable" | "unavailable";
+  submissionTimestamp: Date;
+}
+
+// Ride Assignment - NEW from Product Spec
+export interface RideAssignment {
+  id: string;
+  slotId: string; // Reference to WeeklyScheduleTemplateSlot
+  driverId: string;
+  date: string; // ISO date string
+  passengers: string[]; // Array of Child IDs
+  assignmentMethod: "automated" | "manual_override" | "swap_result";
+  status: "assigned" | "confirmed" | "completed" | "cancelled";
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -83,23 +155,23 @@ export interface Schedule {
 
 export type ScheduleStatus = "active" | "paused" | "inactive";
 
-// Swap request types
+// Swap request types - UPDATED to match Product Spec
 export interface SwapRequest {
   id: string;
-  requesterId: string;
-  targetUserId: string;
-  requestedDate: Date;
-  offerDate: Date;
-  reason?: string;
+  originalRideId: string; // Reference to RideAssignment
+  requestingDriverId: string;
+  receivingDriverId: string;
   status: SwapRequestStatus;
+  requestMessage?: string;
+  responseMessage?: string;
   createdAt: Date;
-  respondedAt?: Date;
+  updatedAt: Date;
 }
 
 export type SwapRequestStatus =
   | "pending"
   | "accepted"
-  | "rejected"
+  | "declined"
   | "cancelled";
 
 // API Response types
@@ -143,6 +215,60 @@ export interface UpdateUserRequest {
   department?: string;
   grade?: string;
   emergencyContact?: string;
+  isActiveDriver?: boolean;
+  homeAddress?: string;
+}
+
+// NEW API Types from Product Spec
+
+// Admin User Creation Request
+export interface CreateUserRequest {
+  email: string;
+  password: string; // Initial password set by admin
+  firstName: string;
+  lastName: string;
+  role: "parent" | "student";
+  phoneNumber?: string;
+  homeAddress?: string;
+  isActiveDriver?: boolean;
+}
+
+// Change Password Request
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+// Weekly Preference Submission
+export interface SubmitWeeklyPreferencesRequest {
+  weekStartDate: string; // ISO date string (Monday)
+  preferences: {
+    templateSlotId: string;
+    preferenceLevel: "preferable" | "less_preferable" | "unavailable";
+  }[];
+}
+
+// Admin Schedule Generation Request
+export interface GenerateScheduleRequest {
+  weekStartDate: string; // ISO date string (Monday)
+  forceRegenerate?: boolean; // Override existing assignments
+}
+
+// Child Management Requests
+export interface CreateChildRequest {
+  fullName: string;
+  studentId: string;
+  grade?: string;
+  emergencyContact?: string;
+  pickupInstructions?: string;
+}
+
+export interface UpdateChildRequest {
+  fullName?: string;
+  studentId?: string;
+  grade?: string;
+  emergencyContact?: string;
+  pickupInstructions?: string;
 }
 
 export interface AuthResponse {

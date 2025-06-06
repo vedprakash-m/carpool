@@ -5,8 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["get"],
-      "route": "trips/stats"
+      "methods": ["post", "options"],
+      "route": "admin/users"
     },
     {
       "type": "http",

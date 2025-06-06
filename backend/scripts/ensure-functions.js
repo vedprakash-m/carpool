@@ -9,6 +9,8 @@ const REQUIRED_FUNCTIONS = [
   "auth-login-legacy",
   "trips-stats",
   "users-me",
+  "admin-create-user",
+  "users-change-password",
 ];
 
 console.log("🔧 Ensuring all required functions are present...");
