@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthStore>()(
           set({ isLoading: true });
 
           const response = await apiClient.post<AuthResponse>(
-            "/auth/login",
+            "/auth/login-simple",
             credentials
           );
 

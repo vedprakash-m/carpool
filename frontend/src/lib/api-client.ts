@@ -382,7 +382,7 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     // Check for mock mode and auth endpoints
     if (this.isMockMode) {
-      if (url === "/auth/login") {
+      if (url === "/auth/login" || url === "/auth/login-simple") {
         return this.mockLogin(data) as Promise<ApiResponse<T>>;
       }
       if (url === "/auth/register") {

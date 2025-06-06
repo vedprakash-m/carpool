@@ -15,9 +15,9 @@ const REQUIRED_FUNCTIONS = [
   // Phase 2 Functions
   "admin-generate-schedule-simple",
   "parents-weekly-preferences-simple",
-  // Database-integrated functions (Phase 3)
-  "auth-login-db",
-  "trips-stats-db",
+  // Remove conflicting database functions that cause route conflicts
+  // "auth-login-db",        // Conflicts with auth-login-legacy
+  // "trips-stats-db",       // Conflicts with trips-stats
 ];
 
 console.log("🔧 Ensuring all required functions are present...");

@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 // List of essential functions to set up (traditional model only)
-const FUNCTIONS = [
+const requiredFunctions = [
   "hello",
   "auth-login-legacy",
   "auth-register-simple",
@@ -15,14 +15,14 @@ const FUNCTIONS = [
   // Phase 2 Functions
   "admin-generate-schedule-simple",
   "parents-weekly-preferences-simple",
-  // Database-integrated functions (Phase 3)
-  "auth-login-db",
-  "trips-stats-db",
+  // Remove conflicting database functions that cause route conflicts
+  // "auth-login-db",        // Conflicts with auth-login-legacy
+  // "trips-stats-db",       // Conflicts with trips-stats
 ];
 
 console.log("🔧 Setting up Azure Functions...");
 
-FUNCTIONS.forEach((functionName) => {
+requiredFunctions.forEach((functionName) => {
   const srcFunctionDir = path.join("src", "functions", functionName);
   const distFunctionDir = path.join("dist", "functions", functionName);
   const rootFunctionDir = functionName;
@@ -101,5 +101,5 @@ FUNCTIONS.forEach((functionName) => {
 console.log("✅ Azure Functions setup completed!");
 console.log(
   "📋 Functions configured:",
-  FUNCTIONS.filter((fn) => fs.existsSync(fn)).join(", ")
+  requiredFunctions.filter((fn) => fs.existsSync(fn)).join(", ")
 );
