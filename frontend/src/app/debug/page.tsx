@@ -45,6 +45,8 @@ export default function DebugPage() {
     }
   };
 
+  // Force deployment trigger for CORS fix
+
   useEffect(() => {
     testDirectAPI();
   }, []);
