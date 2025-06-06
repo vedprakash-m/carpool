@@ -25,10 +25,10 @@ module.exports = async function (context, req) {
     // Return current user data
     // In a real app, this would verify the JWT token and get user from DB
     const user = {
-      id: "ved-admin-id",
-      email: "mi.vedprakash@gmail.com",
-      firstName: "Ved",
-      lastName: "Mishra",
+      id: "mock-admin-id",
+      email: "admin@example.com", // Mock email - not a real address
+      firstName: "Test",
+      lastName: "Admin",
       role: "admin",
       profilePicture: null,
       phoneNumber: null,
