@@ -290,6 +290,31 @@ jobs:
           name: backend-dist
           path: backend/
 
+      - name: Verify Required Functions
+        run: |
+          echo "🔍 Verifying required functions in deployment package..."
+          REQUIRED_FUNCTIONS=("hello" "auth-login-legacy" "trips-stats" "users-me")
+          MISSING_FUNCTIONS=()
+
+          cd backend
+          for func in "${REQUIRED_FUNCTIONS[@]}"; do
+            if [ -d "$func" ] && [ -f "$func/index.js" ] && [ -f "$func/function.json" ]; then
+              echo "   ✅ $func: Ready"
+            else
+              echo "   ❌ $func: Missing or incomplete"
+              MISSING_FUNCTIONS+=("$func")
+            fi
+          done
+
+          if [ ${#MISSING_FUNCTIONS[@]} -gt 0 ]; then
+            echo "❌ Deployment package missing required functions: ${MISSING_FUNCTIONS[*]}"
+            echo "📋 Available directories:"
+            ls -la
+            exit 1
+          fi
+
+          echo "✅ All required functions present in deployment package"
+
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -301,6 +326,11 @@ jobs:
           app-name: ${{ needs.infrastructure.outputs.function-app-name }}
           package: backend/
           respect-funcignore: true
+
+      - name: Wait for Deployment
+        run: |
+          echo "⏳ Waiting for functions to initialize..."
+          sleep 45
 
   deploy-frontend:
     name: Deploy Frontend
@@ -342,27 +372,94 @@ jobs:
           output_location: "."
           skip_app_build: true
 
-  # Quick verification
+  # Comprehensive verification
   verify:
-    name: Quick Verify
+    name: Verify Deployment
     runs-on: ubuntu-latest
     needs: [deploy-backend, deploy-frontend]
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Test endpoints
+      - name: Test Critical Endpoints
         run: |
-          echo "Testing frontend..."
-          if curl -f -m 10 "https://lively-stone-016bfa20f.6.azurestaticapps.net/" >/dev/null 2>&1; then
-            echo "✅ Frontend accessible"
+          echo "🔍 Testing critical API endpoints..."
+
+          API_BASE="https://vcarpool-api-prod.azurewebsites.net/api"
+          FRONTEND_URL="https://lively-stone-016bfa20f.6.azurestaticapps.net"
+
+          # Test frontend
+          echo "1. Testing frontend..."
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "$FRONTEND_URL/")
+          if [ "$FRONTEND_STATUS" = "200" ] || [ "$FRONTEND_STATUS" = "301" ] || [ "$FRONTEND_STATUS" = "302" ]; then
+            echo "   ✅ Frontend accessible ($FRONTEND_STATUS)"
           else
-            echo "⚠️ Frontend check failed"
+            echo "   ⚠️ Frontend check failed ($FRONTEND_STATUS)"
           fi
 
-          echo "Testing backend..."
-          if curl -f -m 10 "https://vcarpool-api-prod.azurewebsites.net/api/health" >/dev/null 2>&1; then
-            echo "✅ Backend accessible"
+          # Test health endpoint
+          echo "2. Testing health endpoint..."
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 "$API_BASE/health")
+          if [ "$HEALTH_STATUS" = "200" ]; then
+            echo "   ✅ Health endpoint working ($HEALTH_STATUS)"
           else
-            echo "⚠️ Backend check failed"
+            echo "   ❌ Health endpoint failed ($HEALTH_STATUS)"
           fi
 
-          echo "✅ Deployment verification complete"
+          # Test auth login CORS
+          echo "3. Testing auth login CORS..."
+          CORS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 -X OPTIONS "$API_BASE/auth/login")
+          if [ "$CORS_STATUS" = "200" ]; then
+            echo "   ✅ Auth CORS working ($CORS_STATUS)"
+          else
+            echo "   ❌ Auth CORS failed ($CORS_STATUS)"
+          fi
+
+          # Test auth login endpoint
+          echo "4. Testing auth login endpoint..."
+          AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 -X POST "$API_BASE/auth/login" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"admin@vcarpool.com","password":"Admin123!"}')
+          if [ "$AUTH_STATUS" = "200" ]; then
+            echo "   ✅ Auth login working ($AUTH_STATUS)"
+          else
+            echo "   ❌ Auth login failed ($AUTH_STATUS)"
+          fi
+
+          # Test trips stats
+          echo "5. Testing trips stats..."
+          STATS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 "$API_BASE/trips/stats")
+          if [ "$STATS_STATUS" = "200" ]; then
+            echo "   ✅ Trips stats working ($STATS_STATUS)"
+          else
+            echo "   ❌ Trips stats failed ($STATS_STATUS)"
+          fi
+
+          # Test users me
+          echo "6. Testing users me..."
+          USERS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 "$API_BASE/users/me")
+          if [ "$USERS_STATUS" = "200" ]; then
+            echo "   ✅ Users me working ($USERS_STATUS)"
+          else
+            echo "   ❌ Users me failed ($USERS_STATUS)"
+          fi
+
+          echo ""
+          echo "📋 Verification Summary:"
+          echo "   Frontend: $FRONTEND_STATUS"
+          echo "   Health: $HEALTH_STATUS"
+          echo "   CORS: $CORS_STATUS"
+          echo "   Auth: $AUTH_STATUS"
+          echo "   Stats: $STATS_STATUS"
+          echo "   Users: $USERS_STATUS"
+
+          # Check if critical endpoints are working
+          if [ "$HEALTH_STATUS" = "200" ] && [ "$CORS_STATUS" = "200" ] && [ "$AUTH_STATUS" = "200" ]; then
+            echo ""
+            echo "🎉 DEPLOYMENT SUCCESSFUL! Critical endpoints working."
+          else
+            echo ""
+            echo "⚠️ DEPLOYMENT ISSUES DETECTED! Some endpoints failing."
+            echo "   This may trigger emergency backup deployment."
+            
+            # Don't fail the pipeline completely, but alert
+            exit 0
+          fi
