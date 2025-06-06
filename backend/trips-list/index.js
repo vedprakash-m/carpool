@@ -67,6 +67,12 @@ module.exports = async function (context, req) {
     context.res.body = JSON.stringify({
       success: true,
       data: mockTrips,
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: mockTrips.length,
+        totalPages: 1,
+      },
     });
   } catch (error) {
     context.log.error("Error in trips list:", error);

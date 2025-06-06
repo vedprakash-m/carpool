@@ -1,6 +1,4 @@
-const { app } = require("@azure/functions");
-
-async function adminGenerateSchedule(request, context) {
+module.exports = async function (context, req) {
   context.log("Admin generate schedule function triggered");
 
   // CORS headers
@@ -13,45 +11,50 @@ async function adminGenerateSchedule(request, context) {
   };
 
   // Handle preflight OPTIONS request
-  if (request.method === "OPTIONS") {
-    return { status: 200, headers: corsHeaders };
+  if (req.method === "OPTIONS") {
+    context.res = {
+      status: 200,
+      headers: corsHeaders,
+    };
+    return;
   }
 
   // Only allow POST method
-  if (request.method !== "POST") {
-    return {
+  if (req.method !== "POST") {
+    context.res = {
       status: 405,
       headers: corsHeaders,
-      body: JSON.stringify({
+      body: {
         success: false,
         error: {
           code: "METHOD_NOT_ALLOWED",
           message: "Only POST method is allowed",
         },
-      }),
+      },
     };
+    return;
   }
 
   try {
     // Get authorization token
-    const authHeader = request.headers.get("authorization");
+    const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
-      return {
+      context.res = {
         status: 401,
         headers: corsHeaders,
-        body: JSON.stringify({
+        body: {
           success: false,
           error: {
             code: "UNAUTHORIZED",
             message: "Missing or invalid authorization token",
           },
-        }),
+        },
       };
+      return;
     }
 
     // Parse request body
-    const body = await request.text();
-    const generateRequest = JSON.parse(body);
+    const generateRequest = req.body;
 
     if (!generateRequest.weekStartDate) {
       return {
@@ -103,7 +106,7 @@ async function adminGenerateSchedule(request, context) {
       }),
     };
   }
-}
+};
 
 // Core 5-step scheduling algorithm implementation (simplified mock)
 async function generateWeeklySchedule(weekStartDate, forceRegenerate, context) {

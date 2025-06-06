@@ -7,6 +7,7 @@ const path = require("path");
 const REQUIRED_FUNCTIONS = [
   "hello",
   "auth-login-legacy",
+  "auth-register-simple",
   "trips-stats",
   "users-me",
   "admin-create-user",
@@ -14,6 +15,9 @@ const REQUIRED_FUNCTIONS = [
   // Phase 2 Functions
   "admin-generate-schedule-simple",
   "parents-weekly-preferences-simple",
+  // Database-integrated functions (Phase 3)
+  "auth-login-db",
+  "trips-stats-db",
 ];
 
 console.log("🔧 Ensuring all required functions are present...");

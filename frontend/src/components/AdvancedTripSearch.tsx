@@ -58,18 +58,24 @@ export default function AdvancedTripSearch({
     },
   });
 
-  const formValues = watch();
+  // Watch specific fields instead of all form values to avoid infinite re-renders
+  const destination = watch("destination");
+  const origin = watch("origin");
+  const dateFrom = watch("dateFrom");
+  const dateTo = watch("dateTo");
+  const maxPrice = watch("maxPrice");
+  const minSeats = watch("minSeats");
 
   useEffect(() => {
     // Track active filters for display
     const filters = [];
-    if (formValues.destination) filters.push("destination");
-    if (formValues.origin) filters.push("origin");
-    if (formValues.dateFrom || formValues.dateTo) filters.push("date");
-    if (formValues.maxPrice) filters.push("price");
-    if (formValues.minSeats) filters.push("seats");
+    if (destination) filters.push("destination");
+    if (origin) filters.push("origin");
+    if (dateFrom || dateTo) filters.push("date");
+    if (maxPrice) filters.push("price");
+    if (minSeats) filters.push("seats");
     setActiveFilters(filters);
-  }, [formValues]);
+  }, [destination, origin, dateFrom, dateTo, maxPrice, minSeats]);
 
   const onSubmit = (data: AdvancedSearchForm) => {
     // Remove empty string values
@@ -245,10 +251,7 @@ export default function AdvancedTripSearch({
                 <input
                   {...register("dateTo")}
                   type="date"
-                  min={
-                    formValues.dateFrom ||
-                    new Date().toISOString().split("T")[0]
-                  }
+                  min={dateFrom || new Date().toISOString().split("T")[0]}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>

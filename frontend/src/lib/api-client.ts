@@ -437,16 +437,19 @@ export class ApiClient {
 }
 
 // Create singleton instance
-// Always use direct backend API calls since Azure Static Web Apps proxy is not working
+// Always use production backend API for now since local backend setup is complex
 const getApiUrl = () => {
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname.includes("azurestaticapps.net")
-  ) {
-    // Use direct backend API URL instead of broken proxy
-    return "https://vcarpool-api-prod.azurewebsites.net/api";
-  }
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:7071/api";
+  // For now, always use production API to avoid local setup complexity
+  return "https://vcarpool-api-prod.azurewebsites.net/api";
+
+  // Future: Enable local development when needed
+  // if (
+  //   typeof window !== "undefined" &&
+  //   window.location.hostname.includes("azurestaticapps.net")
+  // ) {
+  //   return "https://vcarpool-api-prod.azurewebsites.net/api";
+  // }
+  // return process.env.NEXT_PUBLIC_API_URL || "http://localhost:7071/api";
 };
 
 export const apiClient = new ApiClient(getApiUrl());

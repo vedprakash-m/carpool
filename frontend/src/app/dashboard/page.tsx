@@ -161,6 +161,13 @@ function DashboardPage() {
       action: () => router.push("/trips?filter=school"),
     },
     {
+      name: "Weekly Preferences",
+      description: "Submit your weekly driving preferences",
+      icon: CalendarIcon,
+      color: "bg-indigo-500",
+      action: () => router.push("/parents/preferences"),
+    },
+    {
       name: "Manage Children",
       description: "Add or edit student profiles",
       icon: HomeIcon,

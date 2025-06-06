@@ -18,6 +18,7 @@ const CONTAINER_NAMES = {
   chats: "chats",
   chatParticipants: "chatParticipants",
   notifications: "notifications",
+  weeklyPreferences: "weeklyPreferences",
 };
 
 // Container references
@@ -31,6 +32,7 @@ export const containers = {
   chats: database.container(CONTAINER_NAMES.chats),
   chatParticipants: database.container(CONTAINER_NAMES.chatParticipants),
   notifications: database.container(CONTAINER_NAMES.notifications),
+  weeklyPreferences: database.container(CONTAINER_NAMES.weeklyPreferences),
 };
 
 // Initialize database and containers
@@ -83,6 +85,11 @@ export async function initializeDatabase() {
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.notifications,
       partitionKey: "/id",
+    });
+
+    await database.containers.createIfNotExists({
+      id: CONTAINER_NAMES.weeklyPreferences,
+      partitionKey: "/driverParentId",
     });
 
     console.log("Database and containers initialized successfully");

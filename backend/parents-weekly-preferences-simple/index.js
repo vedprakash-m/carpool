@@ -249,11 +249,12 @@ function validatePreferencesRequest(request) {
 }
 
 function getSubmissionDeadline(weekStartDate) {
-  // Deadline is Saturday midnight (11:59:59 PM) of the week before the target week
+  // Deadline is Saturday midnight of the week before the target week
   const weekStart = new Date(weekStartDate);
   const deadline = new Date(weekStart);
 
-  // Go back to the Saturday before the target week (2 days before Monday)
+  // Go back to the Saturday immediately before the target week (2 days before Monday)
+  // Saturday 11:59 PM is essentially Sunday 00:00 (midnight into Sunday)
   deadline.setDate(deadline.getDate() - 2); // Go back to Saturday
   deadline.setHours(23, 59, 59, 999); // Saturday at 11:59:59.999 PM (essentially midnight)
 
