@@ -220,7 +220,7 @@ function isValidDate(dateString) {
   return date instanceof Date && !isNaN(date);
 }
 
-// Mock data for development and testing
+// Mock data for development and testing - all emails and data are fake examples
 function getMockParentAssignments(weekStartDate) {
   return {
     weekStartDate,
@@ -237,7 +237,7 @@ function getMockParentAssignments(weekStartDate) {
         driverId: "parent-1",
         driverName: "Sarah Johnson",
         driverContact: {
-          email: "sarah.johnson@email.com",
+          email: "mock.driver@example.com",
           phoneNumber: "555-0123",
         },
         passengerIds: ["child-1", "child-2", "child-3"],
@@ -278,7 +278,7 @@ function getMockParentAssignments(weekStartDate) {
         driverId: "parent-1",
         driverName: "Sarah Johnson",
         driverContact: {
-          email: "sarah.johnson@email.com",
+          email: "mock.driver@example.com",
           phoneNumber: "555-0123",
         },
         passengerIds: ["child-4", "child-5"],
@@ -314,7 +314,7 @@ function getMockParentAssignments(weekStartDate) {
         driverId: "parent-1",
         driverName: "Sarah Johnson",
         driverContact: {
-          email: "sarah.johnson@email.com",
+          email: "mock.driver@example.com",
           phoneNumber: "555-0123",
         },
         passengerIds: ["child-6"],

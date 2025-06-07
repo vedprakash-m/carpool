@@ -570,14 +570,14 @@ function getMockSwapRequests() {
       requestingDriver: {
         firstName: "Sarah",
         lastName: "Johnson",
-        email: "sarah.johnson@email.com",
+        email: "mock.driver@example.com",
         phoneNumber: "555-0123",
       },
       receivingDriverId: "parent-2",
       receivingDriver: {
         firstName: "Michael",
         lastName: "Chen",
-        email: "michael.chen@email.com",
+        email: "michael.chen@example.com",
         phoneNumber: "555-0124",
       },
       requestedDate: "2025-01-06",
@@ -600,14 +600,14 @@ function getMockSwapRequests() {
       requestingDriver: {
         firstName: "Jennifer",
         lastName: "Davis",
-        email: "jennifer.davis@email.com",
+        email: "jennifer.davis@example.com",
         phoneNumber: "555-0125",
       },
       receivingDriverId: "parent-1",
       receivingDriver: {
         firstName: "Sarah",
         lastName: "Johnson",
-        email: "sarah.johnson@email.com",
+        email: "mock.driver@example.com",
         phoneNumber: "555-0123",
       },
       requestedDate: "2025-01-08",
@@ -633,14 +633,14 @@ function getMockSwapRequests() {
       requestingDriver: {
         firstName: "David",
         lastName: "Wilson",
-        email: "david.wilson@email.com",
+        email: "david.wilson@example.com",
         phoneNumber: "555-0126",
       },
       receivingDriverId: "parent-5",
       receivingDriver: {
         firstName: "Lisa",
         lastName: "Thompson",
-        email: "lisa.thompson@email.com",
+        email: "lisa.thompson@example.com",
         phoneNumber: "555-0127",
       },
       requestedDate: "2025-01-10",
@@ -694,14 +694,14 @@ async function sendSwapRequestNotification(type, swapRequest, context) {
 function getRecipientEmail(type, swapRequest) {
   switch (type) {
     case "swap_request_created":
-      return swapRequest.receivingDriver?.email || "receiving-driver@email.com";
+      return swapRequest.receivingDriver?.email || "receiving-driver@example.com";
     case "swap_request_accepted":
     case "swap_request_declined":
       return (
-        swapRequest.requestingDriver?.email || "requesting-driver@email.com"
+        swapRequest.requestingDriver?.email || "requesting-driver@example.com"
       );
     default:
-      return "unknown@email.com";
+      return "unknown@example.com";
   }
 }
 

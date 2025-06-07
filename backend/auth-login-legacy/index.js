@@ -76,10 +76,8 @@ module.exports = async function (context, req) {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             },
-            token:
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ2ZWQtYWRtaW4taWQiLCJlbWFpbCI6Im1pLnZlZHByYWthc2hAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzMzMzc5NjU4LCJleHAiOjE3MzMzODMyNTh9.test-signature",
-            refreshToken:
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ2ZWQtYWRtaW4taWQiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTczMzM3OTY1OCwiZXhwIjoxNzM0MjQzNjU4fQ.test-refresh-signature",
+            token: "mock-jwt-token-for-testing-only", // Mock JWT for development/testing
+            refreshToken: "mock-refresh-token-for-testing-only", // Mock refresh token for development/testing
           },
         },
       };

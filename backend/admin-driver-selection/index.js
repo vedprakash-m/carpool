@@ -381,7 +381,7 @@ function getMockPotentialDrivers() {
     {
       id: "parent-1",
       name: "Sarah Johnson",
-      email: "sarah.johnson@email.com",
+      email: "mock.driver@example.com",
       phoneNumber: "555-0123",
       pickupLocation: "123 Maple Street",
       dropoffLocation: "Lincoln Elementary School",
@@ -390,7 +390,7 @@ function getMockPotentialDrivers() {
     {
       id: "parent-2",
       name: "Michael Chen",
-      email: "michael.chen@email.com",
+      email: "michael.chen@example.com",
       phoneNumber: "555-0124",
       pickupLocation: "456 Oak Avenue",
       dropoffLocation: "Lincoln Elementary School",
@@ -399,7 +399,7 @@ function getMockPotentialDrivers() {
     {
       id: "parent-3",
       name: "Jennifer Davis",
-      email: "jennifer.davis@email.com",
+      email: "jennifer.davis@example.com",
       phoneNumber: "555-0125",
       pickupLocation: "789 Pine Road",
       dropoffLocation: "Lincoln Elementary School",
@@ -408,7 +408,7 @@ function getMockPotentialDrivers() {
     {
       id: "parent-4",
       name: "David Wilson",
-      email: "david.wilson@email.com",
+      email: "david.wilson@example.com",
       phoneNumber: "555-0126",
       pickupLocation: "321 Elm Drive",
       dropoffLocation: "Lincoln Elementary School",
@@ -417,7 +417,7 @@ function getMockPotentialDrivers() {
     {
       id: "parent-5",
       name: "Lisa Thompson",
-      email: "lisa.thompson@email.com",
+      email: "lisa.thompson@example.com",
       phoneNumber: "555-0127",
       pickupLocation: "654 Cedar Lane",
       dropoffLocation: "Lincoln Elementary School",

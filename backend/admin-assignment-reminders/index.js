@@ -248,7 +248,7 @@ function getMockUpcomingAssignments() {
       description: "Monday Morning School Drop-off",
       driverId: "parent-1",
       driverName: "Sarah Johnson",
-      driverEmail: "sarah.johnson@email.com",
+      driverEmail: "mock.driver@example.com", // Mock data for testing
       passengers: [
         { id: "child-1", name: "Emma Wilson", phoneNumber: "555-0126" },
         { id: "child-2", name: "Lucas Chen", phoneNumber: "555-0124" },
@@ -266,7 +266,7 @@ function getMockUpcomingAssignments() {
       description: "Tuesday Afternoon School Pick-up",
       driverId: "parent-2",
       driverName: "Michael Chen",
-      driverEmail: "michael.chen@email.com",
+      driverEmail: "mock.driver2@example.com", // Mock data for testing
       passengers: [
         { id: "child-3", name: "Sophie Davis", phoneNumber: "555-0125" },
       ],
