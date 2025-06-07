@@ -5,8 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["get", "post", "options"],
-      "route": "admin/generate-schedule"
+      "methods": ["post", "options"],
+      "route": "v1/admin/generate-schedule"
     },
     {
       "type": "http",

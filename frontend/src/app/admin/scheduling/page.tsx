@@ -98,7 +98,7 @@ export default function AdminSchedulingPage() {
         `${
           process.env.NEXT_PUBLIC_API_URL ||
           "https://vcarpool-api-prod.azurewebsites.net/api"
-        }/admin/generate-schedule`,
+        }/v1/admin/generate-schedule`,
         {
           method: "POST",
           headers: {

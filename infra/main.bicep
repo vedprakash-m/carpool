@@ -141,11 +141,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'JWT_SECRET'
-          value: 'temp-jwt-secret-${uniqueString(resourceGroup().id)}'
+          value: 'prod-jwt-secret-${uniqueString(resourceGroup().id)}'
         }
         {
           name: 'JWT_REFRESH_SECRET'
-          value: 'temp-refresh-secret-${uniqueString(resourceGroup().id)}'
+          value: 'prod-refresh-secret-${uniqueString(resourceGroup().id)}'
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
@@ -464,7 +464,7 @@ resource chatParticipantsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDat
   }
 }
 
-// Key Vault for secrets
+// Key Vault for secrets (without access policies initially)
 resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   name: '${appName}-kv-${environmentName}'
   location: location
@@ -475,14 +475,17 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
       name: 'standard'
     }
     tenantId: subscription().tenantId
-    accessPolicies: [] // Access policies will be added separately to avoid circular dependency
+    accessPolicies: [] // Access policies will be added in second deployment
     enabledForTemplateDeployment: true
     enableRbacAuthorization: false
+    enableSoftDelete: true
+    softDeleteRetentionInDays: 7
+    enablePurgeProtection: false // Allow for easier development
   }
 }
 
-// Note: Key Vault Access Policy will be configured post-deployment
-// This avoids circular dependency issues during initial deployment
+// Output Key Vault name for second deployment phase
+output keyVaultName string = keyVault.name
 
 // Static Web App for the frontend
 resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {

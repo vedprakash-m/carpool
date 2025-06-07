@@ -214,7 +214,7 @@ export class ApiClient {
       }
 
       const response = await axios.post<ApiResponse<AuthResponse>>(
-        `${this.client.defaults.baseURL}/auth/refresh-token`,
+        `${this.client.defaults.baseURL}/v1/auth/refresh-token`,
         { refreshToken: this.refreshToken }
       );
 
@@ -382,14 +382,14 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     // Check for mock mode and auth endpoints
     if (this.isMockMode) {
-      if (url === "/auth/login" || url === "/auth/login-simple") {
+      if (url === "/v1/auth/token" || url === "/auth/login-simple") {
         return this.mockLogin(data) as Promise<ApiResponse<T>>;
       }
-      if (url === "/auth/register") {
+      if (url === "/v1/auth/register") {
         return this.mockRegister(data) as Promise<ApiResponse<T>>;
       }
       // For other endpoints in mock mode, return success
-      if (url.startsWith("/auth/")) {
+      if (url.startsWith("/v1/auth/") || url.startsWith("/auth/")) {
         return Promise.resolve({
           success: true,
           data: {} as T,

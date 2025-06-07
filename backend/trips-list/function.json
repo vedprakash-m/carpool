@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get", "options"],
-      "route": "trips"
+      "route": "v1/trips"
     },
     {
       "type": "http",

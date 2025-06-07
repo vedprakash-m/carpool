@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post", "options"],
-      "route": "auth/login"
+      "route": "v1/auth/token"
     },
     {
       "type": "http",

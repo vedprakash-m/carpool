@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["put", "options"],
-      "route": "users/me/password"
+      "route": "v1/users/me/password"
     },
     {
       "type": "http",

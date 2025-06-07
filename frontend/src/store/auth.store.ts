@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthStore>()(
           set({ isLoading: true });
 
           const response = await apiClient.post<AuthResponse>(
-            "/auth/login-simple",
+            "/v1/auth/token",
             credentials
           );
 
@@ -86,7 +86,7 @@ export const useAuthStore = create<AuthStore>()(
           set({ isLoading: true });
 
           const response = await apiClient.post<AuthResponse>(
-            "/auth/register",
+            "/v1/auth/register",
             userData
           );
 
@@ -130,7 +130,7 @@ export const useAuthStore = create<AuthStore>()(
           const token = await apiClient.refreshAccessToken();
 
           // Get the current user info to verify our session
-          const userResponse = await apiClient.get<User>("/users/me");
+          const userResponse = await apiClient.get<User>("/v1/users/me");
 
           if (userResponse.success && userResponse.data) {
             set({
@@ -165,7 +165,7 @@ export const useAuthStore = create<AuthStore>()(
 
       updateUser: async (updates: Partial<User>) => {
         try {
-          const response = await apiClient.put<User>("/users/me", updates);
+          const response = await apiClient.put<User>("/v1/users/me", updates);
 
           if (response.success && response.data) {
             set({ user: response.data });
@@ -181,7 +181,7 @@ export const useAuthStore = create<AuthStore>()(
         try {
           set({ loading: true, error: null });
 
-          const response = await apiClient.put<User>("/users/me", updates);
+          const response = await apiClient.put<User>("/v1/users/me", updates);
 
           if (response.success && response.data) {
             set({
@@ -210,7 +210,7 @@ export const useAuthStore = create<AuthStore>()(
           set({ loading: true, error: null });
 
           const response = await apiClient.put<boolean>(
-            "/users/change-password",
+            "/v1/users/me/password",
             { currentPassword, newPassword }
           );
 

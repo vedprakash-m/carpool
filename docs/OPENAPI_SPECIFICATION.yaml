@@ -1,0 +1,782 @@
+openapi: 3.0.3
+info:
+  title: VCarpool API
+  description: |
+    # VCarpool School Carpool Management API
+    
+    The VCarpool API provides comprehensive endpoints for managing school carpool operations including:
+    - User authentication and management
+    - Automated schedule generation with 5-step algorithm
+    - Weekly driving preferences submission
+    - Trip statistics and management
+    - Role-based access control (Admin, Parent, Student)
+    
+    ## Authentication
+    All protected endpoints require JWT Bearer token authentication.
+    
+    ## Rate Limiting
+    - Authentication endpoints: 5 requests per 15 minutes
+    - General API endpoints: 100 requests per 15 minutes
+    
+    ## Error Handling
+    All endpoints return consistent error responses with appropriate HTTP status codes.
+    
+  version: 1.0.0
+  contact:
+    name: VCarpool API Support
+    url: https://github.com/vedprakash-m/vcarpool
+    email: admin@vcarpool.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://vcarpool-api-prod.azurewebsites.net/api/v1
+    description: Production server
+  - url: http://localhost:7071/api/v1
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "user-123"
+        email:
+          type: string
+          format: email
+          example: "parent@example.com"
+        fullName:
+          type: string
+          example: "John Smith"
+        role:
+          type: string
+          enum: [admin, parent, student]
+          example: "parent"
+        phoneNumber:
+          type: string
+          example: "+1-555-123-4567"
+        isActiveDriver:
+          type: boolean
+          example: true
+        preferences:
+          type: object
+          properties:
+            notifications:
+              type: boolean
+              example: true
+            emergencyContact:
+              type: string
+              example: "Jane Smith"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    TripStats:
+      type: object
+      properties:
+        totalTrips:
+          type: integer
+          example: 8
+        tripsAsDriver:
+          type: integer
+          example: 5
+        tripsAsPassenger:
+          type: integer
+          example: 3
+        totalDistance:
+          type: number
+          example: 145.2
+        costSavings:
+          type: number
+          example: 245.50
+        upcomingTrips:
+          type: integer
+          example: 2
+        weeklySchoolTrips:
+          type: integer
+          example: 6
+        childrenCount:
+          type: integer
+          example: 2
+        monthlyFuelSavings:
+          type: number
+          example: 89.25
+        timeSavedHours:
+          type: number
+          example: 12
+
+    WeeklyPreference:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: "user-123"
+        weekStartDate:
+          type: string
+          format: date
+          example: "2025-01-06"
+        preferences:
+          type: object
+          properties:
+            monday:
+              $ref: '#/components/schemas/DayPreference'
+            tuesday:
+              $ref: '#/components/schemas/DayPreference'
+            wednesday:
+              $ref: '#/components/schemas/DayPreference'
+            thursday:
+              $ref: '#/components/schemas/DayPreference'
+            friday:
+              $ref: '#/components/schemas/DayPreference'
+
+    DayPreference:
+      type: object
+      properties:
+        morning:
+          type: string
+          enum: [unavailable, less-preferable, preferable, neutral]
+          example: "preferable"
+        afternoon:
+          type: string
+          enum: [unavailable, less-preferable, preferable, neutral]
+          example: "neutral"
+
+    SchedulingResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        assignmentsCreated:
+          type: integer
+          example: 12
+        slotsAssigned:
+          type: integer
+          example: 10
+        unassignedSlots:
+          type: integer
+          example: 2
+        algorithmSteps:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlgorithmStep'
+
+    AlgorithmStep:
+      type: object
+      properties:
+        step:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Exclude Unavailable Drivers"
+        slotsProcessed:
+          type: integer
+          example: 3
+        driversAssigned:
+          type: integer
+          example: 2
+        details:
+          type: string
+          example: "Assigned 2 drivers to preferable slots"
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+        requestId:
+          type: string
+          example: "vcpool-abc123"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              example: "Invalid email format"
+            details:
+              type: object
+            retryAfter:
+              type: integer
+              example: 60
+        requestId:
+          type: string
+          example: "vcpool-abc123"
+
+paths:
+  /auth/token:
+    post:
+      tags:
+        - Authentication
+      summary: User authentication
+      description: Authenticate user with email and password, returns JWT tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "admin@vcarpool.com"
+                password:
+                  type: string
+                  format: password
+                  example: "Admin123!"
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register new user account (default role: parent)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - fullName
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "newparent@example.com"
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "SecurePass123!"
+                fullName:
+                  type: string
+                  example: "Jane Smith"
+                phoneNumber:
+                  type: string
+                  example: "+1-555-123-4567"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh-token:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh JWT token
+      description: Refresh expired JWT token using refresh token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                          refreshToken:
+                            type: string
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user profile
+      description: Retrieve authenticated user's profile information
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized - invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/me/password:
+    put:
+      tags:
+        - Users
+      summary: Change user password
+      description: Change authenticated user's password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                  format: password
+                  example: "OldPass123!"
+                newPassword:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "NewSecurePass123!"
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Invalid current password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/users:
+    post:
+      tags:
+        - Admin
+      summary: Create new user
+      description: Create new user account (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - fullName
+                - role
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "newuser@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "TempPass123!"
+                fullName:
+                  type: string
+                  example: "New User"
+                role:
+                  type: string
+                  enum: [admin, parent, student]
+                  example: "parent"
+                phoneNumber:
+                  type: string
+                  example: "+1-555-123-4567"
+                isActiveDriver:
+                  type: boolean
+                  example: true
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '403':
+          description: Forbidden - admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/generate-schedule:
+    post:
+      tags:
+        - Admin
+      summary: Generate weekly carpool schedule
+      description: Generate automated carpool schedule using 5-step algorithm
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - weekStartDate
+              properties:
+                weekStartDate:
+                  type: string
+                  format: date
+                  example: "2025-01-06"
+                forceRegenerate:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Schedule generated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SchedulingResult'
+        '400':
+          description: Invalid week date or deadline passed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /parents/weekly-preferences:
+    get:
+      tags:
+        - Parents
+      summary: Get weekly driving preferences
+      description: Retrieve current week's driving preferences for authenticated parent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: weekStartDate
+          in: query
+          description: Week start date (Monday)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2025-01-06"
+      responses:
+        '200':
+          description: Preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WeeklyPreference'
+        '404':
+          description: No preferences found for specified week
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Parents
+      summary: Submit weekly driving preferences
+      description: Submit driving preferences for upcoming week (deadline: Wednesday 5 PM)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - weekStartDate
+                - preferences
+              properties:
+                weekStartDate:
+                  type: string
+                  format: date
+                  example: "2025-01-06"
+                preferences:
+                  type: object
+                  properties:
+                    monday:
+                      $ref: '#/components/schemas/DayPreference'
+                    tuesday:
+                      $ref: '#/components/schemas/DayPreference'
+                    wednesday:
+                      $ref: '#/components/schemas/DayPreference'
+                    thursday:
+                      $ref: '#/components/schemas/DayPreference'
+                    friday:
+                      $ref: '#/components/schemas/DayPreference'
+      responses:
+        '200':
+          description: Preferences submitted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WeeklyPreference'
+        '400':
+          description: Validation error or deadline passed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /trips/stats:
+    get:
+      tags:
+        - Trips
+      summary: Get trip statistics
+      description: Retrieve comprehensive trip statistics for authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TripStats'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /trips:
+    get:
+      tags:
+        - Trips
+      summary: List trips
+      description: Retrieve list of trips with optional filtering
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of trips to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+            example: 10
+        - name: offset
+          in: query
+          description: Number of trips to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            example: 0
+        - name: status
+          in: query
+          description: Filter by trip status
+          required: false
+          schema:
+            type: string
+            enum: [planned, active, completed, cancelled]
+            example: "planned"
+      responses:
+        '200':
+          description: Trips retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          trips:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: "trip-123"
+                                driverId:
+                                  type: string
+                                  example: "user-456"
+                                driverName:
+                                  type: string
+                                  example: "John Smith"
+                                route:
+                                  type: string
+                                  example: "Lincoln Elementary - Morning"
+                                date:
+                                  type: string
+                                  format: date
+                                  example: "2025-01-07"
+                                time:
+                                  type: string
+                                  example: "07:30"
+                                status:
+                                  type: string
+                                  example: "planned"
+                                passengers:
+                                  type: array
+                                  items:
+                                    type: string
+                                  example: ["Emma", "Liam"]
+                          pagination:
+                            type: object
+                            properties:
+                              total:
+                                type: integer
+                                example: 45
+                              limit:
+                                type: integer
+                                example: 10
+                              offset:
+                                type: integer
+                                example: 0
+                              hasMore:
+                                type: boolean
+                                example: true
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Users
+    description: User profile management
+  - name: Admin
+    description: Administrative functions (admin role required)
+  - name: Parents
+    description: Parent-specific features
+  - name: Trips
+    description: Trip management and statistics
+
+externalDocs:
+  description: VCarpool GitHub Repository
+  url: https://github.com/vedprakash-m/vcarpool 

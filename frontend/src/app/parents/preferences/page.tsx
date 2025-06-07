@@ -215,7 +215,7 @@ export default function ParentPreferencesPage() {
         preferences: DriverWeeklyPreference[];
         submissionDeadline: string;
         canEdit: boolean;
-      }>(`/parents/weekly-preferences?weekStartDate=${selectedWeek}`);
+      }>(`/v1/parents/weekly-preferences?weekStartDate=${selectedWeek}`);
 
       if (response.success && response.data) {
         setExistingPreferences(response.data.preferences);
@@ -315,7 +315,7 @@ export default function ParentPreferencesPage() {
       };
 
       const response = await apiClient.post(
-        "/parents/weekly-preferences",
+        "/v1/parents/weekly-preferences",
         submitData
       );
 

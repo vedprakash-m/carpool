@@ -90,7 +90,7 @@ export default function AdminPage() {
         `${
           process.env.NEXT_PUBLIC_API_URL ||
           "https://vcarpool-api-prod.azurewebsites.net/api"
-        }/admin/users`,
+        }/v1/admin/users`,
         {
           method: "POST",
           headers: {

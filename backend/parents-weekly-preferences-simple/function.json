@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get", "post", "options"],
-      "route": "parents/weekly-preferences"
+      "route": "v1/parents/weekly-preferences"
     },
     {
       "type": "http",

@@ -61,7 +61,7 @@ class TripApiService {
     }
 
     const queryString = params.toString();
-    const url = `/trips${queryString ? `?${queryString}` : ""}`;
+    const url = `/v1/trips${queryString ? `?${queryString}` : ""}`;
 
     const response = await apiClient.get<any>(url);
     if (!response.success || !response.data) {
@@ -75,7 +75,7 @@ class TripApiService {
    */
   async createTrip(tripData: CreateTripRequest): Promise<ApiResponse<Trip>> {
     const response = await apiClient.post<ApiResponse<Trip>>(
-      "/trips",
+      "/v1/trips",
       tripData
     );
     if (!response.data) {
@@ -92,7 +92,7 @@ class TripApiService {
     updates: UpdateTripRequest
   ): Promise<ApiResponse<Trip>> {
     const response = await apiClient.put<ApiResponse<Trip>>(
-      `/trips/${tripId}`,
+      `/v1/trips/${tripId}`,
       updates
     );
     if (!response.data) {
@@ -109,7 +109,7 @@ class TripApiService {
     joinData: JoinTripRequest
   ): Promise<ApiResponse<Trip>> {
     const response = await apiClient.post<ApiResponse<Trip>>(
-      `/trips/${tripId}/join`,
+      `/v1/trips/${tripId}/join`,
       joinData
     );
     if (!response.data) {
@@ -123,7 +123,7 @@ class TripApiService {
    */
   async leaveTrip(tripId: string): Promise<ApiResponse<Trip>> {
     const response = await apiClient.delete<ApiResponse<Trip>>(
-      `/trips/${tripId}/leave`
+      `/v1/trips/${tripId}/leave`
     );
     if (!response.data) {
       throw new Error("Failed to leave trip");
@@ -136,7 +136,7 @@ class TripApiService {
    */
   async deleteTrip(tripId: string): Promise<ApiResponse<Trip>> {
     const response = await apiClient.delete<ApiResponse<Trip>>(
-      `/trips/${tripId}`
+      `/v1/trips/${tripId}`
     );
     if (!response.data) {
       throw new Error("Failed to delete trip");
@@ -152,7 +152,7 @@ class TripApiService {
       // TEMPORARY CORS WORKAROUND: Use simple fetch without custom headers
       // to bypass CORS preflight issues
       const response = await fetch(
-        "https://vcarpool-api-prod.azurewebsites.net/api/trips/stats"
+        "https://vcarpool-api-prod.azurewebsites.net/api/v1/trips/stats"
       );
 
       if (!response.ok) {
@@ -198,7 +198,7 @@ class TripApiService {
       }
 
       const response = await apiClient.get<PaginatedResponse<Trip>>(
-        `/trips?${params.toString()}`
+        `/v1/trips?${params.toString()}`
       );
       if (!response.success || !response.data) {
         throw new Error("Failed to fetch available trips");
@@ -261,7 +261,7 @@ class TripApiService {
    */
   async getMyTrips(): Promise<PaginatedResponse<Trip>> {
     try {
-      const response = await apiClient.get<any>("/trips");
+      const response = await apiClient.get<any>("/v1/trips");
       if (!response.success || !response.data) {
         throw new Error("Failed to fetch my trips");
       }
@@ -342,7 +342,7 @@ class TripApiService {
     // The backend will default to showing user's trips when no specific filters are provided
     // We can add a query parameter to be explicit
     const response = await apiClient.get<PaginatedResponse<Trip>>(
-      "/trips?driver=me"
+      "/v1/trips?driver=me"
     );
     if (!response.data) {
       throw new Error("Failed to fetch driver trips");
@@ -355,7 +355,7 @@ class TripApiService {
    */
   async getMyPassengerTrips(): Promise<PaginatedResponse<Trip>> {
     const response = await apiClient.get<PaginatedResponse<Trip>>(
-      "/trips?passenger=me"
+      "/v1/trips?passenger=me"
     );
     if (!response.data) {
       throw new Error("Failed to fetch passenger trips");
@@ -367,7 +367,9 @@ class TripApiService {
    * Get a specific trip by ID
    */
   async getTripById(tripId: string): Promise<ApiResponse<Trip>> {
-    const response = await apiClient.get<ApiResponse<Trip>>(`/trips/${tripId}`);
+    const response = await apiClient.get<ApiResponse<Trip>>(
+      `/v1/trips/${tripId}`
+    );
     if (!response.data) {
       throw new Error("Failed to fetch trip");
     }
@@ -405,7 +407,7 @@ class TripApiService {
     });
 
     const queryString = params.toString();
-    const url = `/trips${queryString ? `?${queryString}` : ""}`;
+    const url = `/v1/trips${queryString ? `?${queryString}` : ""}`;
 
     const response = await apiClient.get<PaginatedResponse<Trip>>(url);
     if (!response.data) {
