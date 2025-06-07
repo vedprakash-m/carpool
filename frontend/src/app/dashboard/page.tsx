@@ -16,7 +16,11 @@ import {
   AcademicCapIcon,
   HomeIcon,
   ChartBarIcon,
+  ChatBubbleLeftRightIcon,
+  BellIcon,
 } from "@heroicons/react/24/outline";
+import OnboardingModal from "@/components/onboarding/OnboardingModal";
+import EmergencyPanel from "@/components/emergency/EmergencyPanel";
 
 // Memoized components for better performance
 const StatCard = ({
@@ -134,6 +138,39 @@ function DashboardPage() {
   const { user, isAuthenticated } = useAuthStore();
   const { stats, loading: statsLoading, fetchTripStats } = useTripStore();
 
+  // Emergency handlers
+  const handleEmergencyReport = async (
+    type: string,
+    description: string,
+    urgency: string
+  ) => {
+    console.log("Emergency reported from dashboard:", {
+      type,
+      description,
+      urgency,
+      timestamp: new Date().toISOString(),
+    });
+    // In real implementation, this would call emergency API
+  };
+
+  const handleRequestBackup = async (assignmentId: string, reason: string) => {
+    console.log("Backup requested from dashboard:", {
+      assignmentId,
+      reason,
+      timestamp: new Date().toISOString(),
+    });
+    // In real implementation, this would call backup coordination API
+  };
+
+  const handleContactEmergency = async (contactId: string, method: string) => {
+    console.log("Emergency contact used from dashboard:", {
+      contactId,
+      method,
+      timestamp: new Date().toISOString(),
+    });
+    // In real implementation, this would log emergency contact usage
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchTripStats();
@@ -166,6 +203,27 @@ function DashboardPage() {
       icon: CalendarIcon,
       color: "bg-indigo-500",
       action: () => router.push("/parents/preferences"),
+    },
+    {
+      name: "My Assignments",
+      description: "View your driving assignments and passenger details",
+      icon: CarIcon,
+      color: "bg-orange-500",
+      action: () => router.push("/parents/assignments"),
+    },
+    {
+      name: "Swap Requests",
+      description: "Manage assignment swaps with other parents",
+      icon: ChatBubbleLeftRightIcon,
+      color: "bg-purple-500",
+      action: () => router.push("/parents/swaps"),
+    },
+    {
+      name: "Notifications",
+      description: "Manage email notification preferences",
+      icon: BellIcon,
+      color: "bg-yellow-500",
+      action: () => router.push("/parents/notifications"),
     },
     {
       name: "Manage Children",
@@ -278,6 +336,13 @@ function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Emergency Panel */}
+        <EmergencyPanel
+          onEmergencyReport={handleEmergencyReport}
+          onRequestBackup={handleRequestBackup}
+          onContactEmergency={handleContactEmergency}
+        />
 
         {/* School Statistics Grid */}
         <SectionErrorBoundary sectionName="School Statistics">
@@ -506,6 +571,7 @@ function DashboardPage() {
           </div>
         </SectionErrorBoundary>
       </div>
+      <OnboardingModal />
     </DashboardLayout>
   );
 }

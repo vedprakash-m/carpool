@@ -192,11 +192,12 @@ describe("Auth Register - VCarpool Business Requirements", () => {
 
     it("should validate name fields for school directory", () => {
       const validateName = (name: string) => {
+        const trimmed = name?.trim() || "";
         return {
-          isValid: name && name.trim().length > 0,
-          trimmed: name?.trim() || "",
-          hasValidLength: (name?.trim() || "").length >= 2,
-          isAlphabetic: /^[a-zA-Z\s'-]+$/.test(name?.trim() || ""),
+          isValid: trimmed.length > 0,
+          trimmed: trimmed,
+          hasValidLength: trimmed.length >= 2,
+          isAlphabetic: /^[a-zA-Z\s'-]+$/.test(trimmed),
         };
       };
 

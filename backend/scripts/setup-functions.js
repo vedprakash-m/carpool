@@ -19,6 +19,12 @@ const requiredFunctions = [
   // "auth-login-db",        // Conflicts with auth-login-legacy
   // "trips-stats-db",       // Conflicts with trips-stats
   // "auth-register-simple", // Temporarily disabled due to dependency issues
+  "admin-schedule-templates", // NEW: Template management function
+  "admin-driver-selection", // NEW: Driver selection function
+  "admin-parent-assignments", // NEW: Parent assignment viewing function
+  "admin-swap-requests", // NEW: Complete swap request system
+  "admin-notifications", // NEW: Notification service for emails
+  "admin-assignment-reminders", // NEW: Automated assignment reminders
 ];
 
 console.log("🔧 Setting up Azure Functions...");

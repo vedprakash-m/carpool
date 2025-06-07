@@ -8,6 +8,8 @@ import {
   DriverWeeklyPreference,
   SubmitWeeklyPreferencesRequest,
 } from "@vcarpool/shared";
+import VisualCalendarGrid from "@/components/preferences/VisualCalendarGrid";
+import BulkSelectionTools from "@/components/preferences/BulkSelectionTools";
 
 // Mock template slots - replace with real data from API
 const TEMPLATE_SLOTS = [
@@ -282,6 +284,24 @@ export default function ParentPreferencesPage() {
     setError(null);
   };
 
+  const handleBulkPreferenceChange = (slotIds: string[], level: string) => {
+    const newPreferences = { ...preferences };
+
+    slotIds.forEach((slotId) => {
+      if (level === "") {
+        delete newPreferences[slotId];
+      } else {
+        newPreferences[slotId] = level as
+          | "preferable"
+          | "less_preferable"
+          | "unavailable";
+      }
+    });
+
+    setPreferences(newPreferences);
+    setError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -432,239 +452,51 @@ export default function ParentPreferencesPage() {
           </div>
         </div>
 
-        {/* Constraint Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Preference Limits
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="text-sm font-medium text-green-900">
-                Preferable Slots
-              </div>
-              <div
-                className={`text-lg font-bold ${
-                  counts.preferable > 3 ? "text-red-600" : "text-green-600"
-                }`}
-              >
-                {counts.preferable} / 3 maximum
-              </div>
-              <div className="text-xs text-green-700 mt-1">
-                Times you prefer to drive
-              </div>
-            </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="text-sm font-medium text-yellow-900">
-                Less-Preferable Slots
-              </div>
-              <div
-                className={`text-lg font-bold ${
-                  counts.lessPreferable > 2 ? "text-red-600" : "text-yellow-600"
-                }`}
-              >
-                {counts.lessPreferable} / 2 maximum
-              </div>
-              <div className="text-xs text-yellow-700 mt-1">
-                Times you can drive if needed
-              </div>
-            </div>
-
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="text-sm font-medium text-red-900">
-                Unavailable Slots
-              </div>
-              <div
-                className={`text-lg font-bold ${
-                  counts.unavailable > 2 ? "text-red-600" : "text-red-600"
-                }`}
-              >
-                {counts.unavailable} / 2 maximum
-              </div>
-              <div className="text-xs text-red-700 mt-1">
-                Times you cannot drive
-              </div>
+        {/* Visual Calendar Interface */}
+        {isLoadingPrefs ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 mb-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading preferences...</p>
             </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Bulk Selection Tools */}
+            <BulkSelectionTools
+              slots={TEMPLATE_SLOTS}
+              preferences={preferences}
+              onBulkPreferenceChange={handleBulkPreferenceChange}
+              canEdit={canEdit}
+            />
 
-        {/* Preferences Form */}
+            {/* Visual Calendar Grid */}
+            <VisualCalendarGrid
+              slots={TEMPLATE_SLOTS}
+              preferences={preferences}
+              onPreferenceChange={handlePreferenceChange}
+              canEdit={canEdit}
+              constraints={counts}
+            />
+          </>
+        )}
+
+        {/* Error/Success Messages */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="text-sm text-red-700">{error}</div>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="text-sm text-green-700">{success}</div>
+          </div>
+        )}
+
+        {/* Submit Button */}
         <form onSubmit={handleSubmit}>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
-              Weekly Time Slots
-            </h2>
-
-            {isLoadingPrefs ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                <p className="text-gray-600 mt-2">Loading preferences...</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {[1, 2, 3, 4, 5].map((dayOfWeek) => {
-                  const daySlots = TEMPLATE_SLOTS.filter(
-                    (slot) => slot.dayOfWeek === dayOfWeek
-                  );
-
-                  return (
-                    <div
-                      key={dayOfWeek}
-                      className="border border-gray-200 rounded-lg p-4"
-                    >
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">
-                        {DAY_NAMES[dayOfWeek]}
-                      </h3>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {daySlots.map((slot) => (
-                          <div
-                            key={slot.id}
-                            className="border border-gray-100 rounded-lg p-4"
-                          >
-                            <div className="flex justify-between items-start mb-3">
-                              <div>
-                                <h4 className="font-medium text-gray-900">
-                                  {slot.description}
-                                </h4>
-                                <p className="text-sm text-gray-600">
-                                  {slot.startTime} - {slot.endTime}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {slot.routeType.replace("_", " ")} • Max{" "}
-                                  {slot.maxPassengers} passengers
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="flex items-center">
-                                <input
-                                  type="radio"
-                                  name={slot.id}
-                                  value=""
-                                  checked={
-                                    !preferences[slot.id] ||
-                                    preferences[slot.id] === ""
-                                  }
-                                  onChange={(e) =>
-                                    handlePreferenceChange(
-                                      slot.id,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="mr-2 text-green-600"
-                                  disabled={!canEdit}
-                                />
-                                <span className="text-sm text-gray-600">
-                                  No preference
-                                </span>
-                              </label>
-
-                              <label className="flex items-center">
-                                <input
-                                  type="radio"
-                                  name={slot.id}
-                                  value="preferable"
-                                  checked={
-                                    preferences[slot.id] === "preferable"
-                                  }
-                                  onChange={(e) =>
-                                    handlePreferenceChange(
-                                      slot.id,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="mr-2 text-green-600"
-                                  disabled={
-                                    !canEdit ||
-                                    (counts.preferable >= 3 &&
-                                      preferences[slot.id] !== "preferable")
-                                  }
-                                />
-                                <span className="text-sm text-green-600 font-medium">
-                                  Preferable
-                                </span>
-                              </label>
-
-                              <label className="flex items-center">
-                                <input
-                                  type="radio"
-                                  name={slot.id}
-                                  value="less_preferable"
-                                  checked={
-                                    preferences[slot.id] === "less_preferable"
-                                  }
-                                  onChange={(e) =>
-                                    handlePreferenceChange(
-                                      slot.id,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="mr-2 text-yellow-600"
-                                  disabled={
-                                    !canEdit ||
-                                    (counts.lessPreferable >= 2 &&
-                                      preferences[slot.id] !==
-                                        "less_preferable")
-                                  }
-                                />
-                                <span className="text-sm text-yellow-600 font-medium">
-                                  Less-preferable
-                                </span>
-                              </label>
-
-                              <label className="flex items-center">
-                                <input
-                                  type="radio"
-                                  name={slot.id}
-                                  value="unavailable"
-                                  checked={
-                                    preferences[slot.id] === "unavailable"
-                                  }
-                                  onChange={(e) =>
-                                    handlePreferenceChange(
-                                      slot.id,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="mr-2 text-red-600"
-                                  disabled={
-                                    !canEdit ||
-                                    (counts.unavailable >= 2 &&
-                                      preferences[slot.id] !== "unavailable")
-                                  }
-                                />
-                                <span className="text-sm text-red-600 font-medium">
-                                  Unavailable
-                                </span>
-                              </label>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Error/Success Messages */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <div className="text-sm text-red-700">{error}</div>
-            </div>
-          )}
-
-          {success && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <div className="text-sm text-green-700">{success}</div>
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end space-x-4 mb-6">
             <button
               type="button"
               onClick={() => router.push("/dashboard")}

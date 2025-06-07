@@ -181,18 +181,26 @@ describe("ApiClient - VCarpool Core Functionality", () => {
     it("should follow consistent ApiResponse format", () => {
       const expectedFormat = {
         success: expect.any(Boolean),
-        data: expect.anything(),
       };
 
       const mockResponses = [
         { success: true, data: { user: {} } },
         { success: true, data: { totalTrips: 5 } },
         { success: true, data: [] },
-        { success: false, data: "Error response", error: "Not found" },
+        { success: false, data: null, error: "Not found" },
       ];
 
       mockResponses.forEach((response) => {
         expect(response).toMatchObject(expectedFormat);
+        // All responses should have a success property
+        expect(typeof response.success).toBe("boolean");
+
+        // Success responses should have data, error responses can have null data
+        if (response.success) {
+          expect(response.data).toBeDefined();
+        } else {
+          expect(response.error).toBeDefined();
+        }
       });
     });
 

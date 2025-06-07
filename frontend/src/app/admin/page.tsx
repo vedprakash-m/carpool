@@ -3,6 +3,15 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  UserPlusIcon,
+  CalendarIcon,
+  ClipboardDocumentListIcon,
+  UserGroupIcon,
+  Cog6ToothIcon,
+  DocumentIcon,
+} from "@heroicons/react/24/outline";
 
 // Define the interface inline since shared package imports are having issues
 interface CreateUserRequest {
@@ -134,251 +143,255 @@ export default function AdminPage() {
     }
   };
 
+  const adminFeatures = [
+    {
+      title: "User Management",
+      description: "Create and manage parent and student accounts",
+      icon: UserPlusIcon,
+      href: "/admin/users",
+      color: "bg-blue-600",
+      hoverColor: "hover:bg-blue-700",
+      implemented: true,
+    },
+    {
+      title: "Schedule Templates",
+      description: "Create and manage weekly schedule templates",
+      icon: DocumentIcon,
+      href: "/admin/templates",
+      color: "bg-green-600",
+      hoverColor: "hover:bg-green-700",
+      implemented: true,
+      new: true,
+    },
+    {
+      title: "Driver Management",
+      description: "Designate active drivers for weekly schedules",
+      icon: UserGroupIcon,
+      href: "/admin/drivers",
+      color: "bg-purple-600",
+      hoverColor: "hover:bg-purple-700",
+      implemented: true,
+      new: true,
+    },
+    {
+      title: "Schedule Generation",
+      description: "Generate and manage weekly carpool schedules",
+      icon: CalendarIcon,
+      href: "/admin/scheduling",
+      color: "bg-orange-600",
+      hoverColor: "hover:bg-orange-700",
+      implemented: true,
+    },
+    {
+      title: "Reports & Analytics",
+      description: "View system usage and driver participation reports",
+      icon: ClipboardDocumentListIcon,
+      href: "/admin/reports",
+      color: "bg-indigo-600",
+      hoverColor: "hover:bg-indigo-700",
+      implemented: false,
+    },
+    {
+      title: "System Settings",
+      description: "Configure system-wide settings and preferences",
+      icon: Cog6ToothIcon,
+      href: "/admin/settings",
+      color: "bg-gray-600",
+      hoverColor: "hover:bg-gray-700",
+      implemented: false,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-            <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-blue-100 mt-1">
-              Manage users and system settings
-            </p>
-          </div>
-
-          {/* Welcome Section */}
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Welcome, {user.firstName} {user.lastName} 👋
-            </h2>
-            <p className="text-gray-600">
-              System Administrator • VCarpool Management
-            </p>
-          </div>
-
-          {/* Navigation Section */}
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
-              🚀 Admin Features
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <a
-                href="/admin/scheduling"
-                className="block p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
-              >
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">📅</span>
-                  <div>
-                    <h4 className="font-semibold text-green-800">
-                      Schedule Management
-                    </h4>
-                    <p className="text-sm text-green-600">
-                      Generate weekly driving schedules automatically
-                    </p>
-                  </div>
-                </div>
-              </a>
-
-              <div className="block p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">👥</span>
-                  <div>
-                    <h4 className="font-semibold text-blue-800">
-                      User Management
-                    </h4>
-                    <p className="text-sm text-blue-600">
-                      Create parent and student accounts (current page)
-                    </p>
-                  </div>
-                </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-white">
+                  🛡️ Admin Dashboard
+                </h1>
+                <p className="text-green-100 mt-2">
+                  Welcome back, {user.firstName}! Manage your carpool system.
+                </p>
               </div>
+              <Link
+                href="/dashboard"
+                className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
+              >
+                ← Back to Dashboard
+              </Link>
             </div>
           </div>
+        </div>
 
-          {/* Create User Form */}
-          <div className="px-6 py-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Create New User
-            </h3>
-
-            {message && (
-              <div
-                className={`mb-4 p-4 rounded-lg ${
-                  message.type === "success"
-                    ? "bg-green-50 text-green-800 border border-green-200"
-                    : "bg-red-50 text-red-800 border border-red-200"
-                }`}
-              >
-                {message.text}
-              </div>
-            )}
-
-            <form onSubmit={handleCreateUser} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Basic Information */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={createUserData.firstName}
-                    onChange={(e) =>
-                      handleInputChange("firstName", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter first name"
-                  />
+        {/* Admin Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {adminFeatures.map((feature) => (
+            <div key={feature.title} className="relative">
+              {feature.new && (
+                <div className="absolute -top-2 -right-2 z-10">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                    NEW
+                  </span>
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={createUserData.lastName}
-                    onChange={(e) =>
-                      handleInputChange("lastName", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter last name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={createUserData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="user@example.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Initial Password *
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={createUserData.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Min 8 characters"
-                    minLength={8}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={createUserData.phoneNumber || ""}
-                    onChange={(e) =>
-                      handleInputChange("phoneNumber", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Role *
-                  </label>
-                  <select
-                    required
-                    value={createUserData.role}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "role",
-                        e.target.value as "parent" | "student"
-                      )
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="parent">Parent</option>
-                    <option value="student">Student</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Parent-specific fields */}
-              {createUserData.role === "parent" && (
-                <div className="border-t border-gray-200 pt-6">
-                  <h4 className="text-lg font-medium text-gray-800 mb-4">
-                    Parent-Specific Information
-                  </h4>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Home Address
-                      </label>
-                      <input
-                        type="text"
-                        value={createUserData.homeAddress || ""}
-                        onChange={(e) =>
-                          handleInputChange("homeAddress", e.target.value)
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="123 Main St, City, State 12345"
-                      />
-                    </div>
-
+              {feature.implemented ? (
+                <Link
+                  href={feature.href}
+                  className="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="p-6">
                     <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="isActiveDriver"
-                        checked={createUserData.isActiveDriver}
-                        onChange={(e) =>
-                          handleInputChange("isActiveDriver", e.target.checked)
-                        }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label
-                        htmlFor="isActiveDriver"
-                        className="ml-2 block text-sm text-gray-700"
+                      <div className={`${feature.color} p-3 rounded-lg`}>
+                        <feature.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="ml-4 flex-1">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {feature.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${feature.color} ${feature.hoverColor} text-white transition-colors`}
                       >
-                        Designate as Active Driver
-                      </label>
+                        Access Feature →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <div className="bg-white rounded-lg shadow-md opacity-75">
+                  <div className="p-6">
+                    <div className="flex items-center">
+                      <div className="bg-gray-400 p-3 rounded-lg">
+                        <feature.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="ml-4 flex-1">
+                        <h3 className="text-lg font-medium text-gray-500">
+                          {feature.title}
+                        </h3>
+                        <p className="text-sm text-gray-400 mt-1">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-300 text-gray-600">
+                        Coming Soon
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
+            </div>
+          ))}
+        </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-end pt-6">
-                <button
-                  type="submit"
-                  disabled={isCreating}
-                  className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isCreating ? (
-                    <>
-                      <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                      Creating User...
-                    </>
-                  ) : (
-                    `Create ${
-                      createUserData.role === "parent" ? "Parent" : "Student"
-                    } Account`
-                  )}
-                </button>
+        {/* Quick Actions */}
+        <div className="mt-8 bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">
+              🚀 Quick Actions
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link
+                href="/admin/users"
+                className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <UserPlusIcon className="h-8 w-8 text-blue-600" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-blue-900">
+                    Create User
+                  </p>
+                  <p className="text-xs text-blue-700">
+                    Add new parent/student
+                  </p>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/templates"
+                className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <DocumentIcon className="h-8 w-8 text-green-600" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-green-900">
+                    Manage Templates
+                  </p>
+                  <p className="text-xs text-green-700">
+                    Weekly schedule slots
+                  </p>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/drivers"
+                className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+              >
+                <UserGroupIcon className="h-8 w-8 text-purple-600" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-purple-900">
+                    Select Drivers
+                  </p>
+                  <p className="text-xs text-purple-700">Weekly designations</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/scheduling"
+                className="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+              >
+                <CalendarIcon className="h-8 w-8 text-orange-600" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-orange-900">
+                    Generate Schedule
+                  </p>
+                  <p className="text-xs text-orange-700">Auto assignment</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* System Status */}
+        <div className="mt-8 bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">
+              📊 System Status
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600">✅</div>
+                <div className="text-sm text-gray-600 mt-2">
+                  Template Management
+                </div>
+                <div className="text-xs text-gray-500">Ready for use</div>
               </div>
-            </form>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600">✅</div>
+                <div className="text-sm text-gray-600 mt-2">
+                  Driver Selection
+                </div>
+                <div className="text-xs text-gray-500">Fully operational</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-orange-600">🔄</div>
+                <div className="text-sm text-gray-600 mt-2">Calendar View</div>
+                <div className="text-xs text-gray-500">Coming next</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
