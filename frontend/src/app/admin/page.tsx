@@ -19,7 +19,7 @@ interface CreateUserRequest {
   password: string;
   firstName: string;
   lastName: string;
-  role: "parent" | "student";
+  role: "parent" | "student" | "trip_admin";
   phoneNumber?: string;
   homeAddress?: string;
   isActiveDriver?: boolean;
@@ -154,12 +154,32 @@ export default function AdminPage() {
       implemented: true,
     },
     {
+      title: "Role Management",
+      description: "Promote parents to Trip Admin and manage user roles",
+      icon: UserGroupIcon,
+      href: "/admin/roles",
+      color: "bg-purple-600",
+      hoverColor: "hover:bg-purple-700",
+      implemented: true,
+      new: true,
+    },
+    {
       title: "Schedule Templates",
       description: "Create and manage weekly schedule templates",
       icon: DocumentIcon,
       href: "/admin/templates",
       color: "bg-green-600",
       hoverColor: "hover:bg-green-700",
+      implemented: true,
+      new: true,
+    },
+    {
+      title: "Carpool Groups",
+      description: "Create and manage carpool groups and invitations",
+      icon: UserGroupIcon,
+      href: "/admin/groups",
+      color: "bg-indigo-600",
+      hoverColor: "hover:bg-indigo-700",
       implemented: true,
       new: true,
     },

@@ -109,13 +109,13 @@ module.exports = async function (context, req) {
     }
 
     // Validate role
-    if (!["parent", "student"].includes(role)) {
+    if (!["parent", "student", "trip_admin"].includes(role)) {
       context.res.status = 400;
       context.res.body = JSON.stringify({
         success: false,
         error: {
           code: "VALIDATION_ERROR",
-          message: 'Role must be either "parent" or "student"',
+          message: 'Role must be either "parent", "student", or "trip_admin"',
         },
       });
       return;
@@ -162,12 +162,18 @@ module.exports = async function (context, req) {
       role,
       phoneNumber: phoneNumber || null,
       homeAddress: homeAddress || null,
-      isActiveDriver: role === "parent" ? isActiveDriver || false : false,
+      isActiveDriver:
+        role === "parent" || role === "trip_admin"
+          ? isActiveDriver || false
+          : false,
       preferences: {
         pickupLocation: "",
         dropoffLocation: "",
         preferredTime: "",
-        isDriver: role === "parent" ? isActiveDriver || false : false,
+        isDriver:
+          role === "parent" || role === "trip_admin"
+            ? isActiveDriver || false
+            : false,
         maxPassengers: 4,
         smokingAllowed: false,
         musicPreference: "",
@@ -196,7 +202,11 @@ module.exports = async function (context, req) {
       data: {
         user: newUser,
         message: `${
-          role === "parent" ? "Parent" : "Student"
+          role === "parent"
+            ? "Parent"
+            : role === "student"
+            ? "Student"
+            : "Trip Admin"
         } account created successfully. Initial password has been set.`,
       },
     });

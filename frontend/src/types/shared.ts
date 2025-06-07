@@ -2,7 +2,13 @@
 import { z } from "zod";
 
 // User roles
-export type UserRole = "student" | "parent" | "admin" | "faculty" | "staff";
+export type UserRole =
+  | "student"
+  | "parent"
+  | "admin"
+  | "trip_admin"
+  | "faculty"
+  | "staff";
 
 // Trip status
 export type TripStatus = "planned" | "active" | "completed" | "cancelled";

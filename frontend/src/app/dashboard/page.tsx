@@ -18,6 +18,7 @@ import {
   ChartBarIcon,
   ChatBubbleLeftRightIcon,
   BellIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import OnboardingModal from "@/components/onboarding/OnboardingModal";
 import EmergencyPanel from "@/components/emergency/EmergencyPanel";
@@ -231,6 +232,27 @@ function DashboardPage() {
       icon: HomeIcon,
       color: "bg-purple-500",
       action: () => router.push("/family/children"),
+    },
+    {
+      name: "My Carpool Groups",
+      description: "View and manage your carpool group memberships",
+      icon: UserGroupIcon,
+      color: "bg-indigo-500",
+      action: () => router.push("/parents/groups"),
+    },
+    {
+      name: "Discover Groups",
+      description: "Find and join carpool groups near your school",
+      icon: MagnifyingGlassIcon,
+      color: "bg-green-500",
+      action: () => router.push("/parents/discover"),
+    },
+    {
+      name: "Weekly Preferences",
+      description: "Submit driving preferences for upcoming weeks",
+      icon: CalendarIcon,
+      color: "bg-purple-500",
+      action: () => router.push("/parents/preferences"),
     },
   ];
 

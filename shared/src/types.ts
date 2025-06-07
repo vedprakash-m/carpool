@@ -9,13 +9,175 @@ export interface User {
   emergencyContact?: string;
   phone?: string; // Alias for phoneNumber
   grade?: string;
-  role?: "student" | "parent" | "admin" | "faculty" | "staff";
+  role?: "student" | "parent" | "admin" | "trip_admin" | "faculty" | "staff";
   preferences: UserPreferences;
   // New fields from Product Spec
   isActiveDriver?: boolean;
   homeAddress?: string;
+  // Phase 2: Geographic & School Matching
+  homeLocation?: GeographicLocation;
+  preferredSchools?: string[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Phase 2: Geographic & School Matching Types
+export interface GeographicLocation {
+  address: string;
+  latitude: number;
+  longitude: number;
+  zipCode?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  formattedAddress?: string;
+}
+
+export interface School {
+  id: string;
+  name: string;
+  address: string;
+  location: GeographicLocation;
+  district?: string;
+  type: "elementary" | "middle" | "high" | "k12" | "other";
+  grades: string[];
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CarpoolGroup {
+  id: string;
+  name: string;
+  description?: string;
+  tripAdminId: string;
+  tripAdmin: User;
+  targetSchool: School;
+  targetSchoolId: string;
+  // Geographic boundaries
+  serviceArea: {
+    centerLocation: GeographicLocation;
+    radiusMiles: number;
+    includeZipCodes?: string[];
+    excludeZipCodes?: string[];
+  };
+  // Group settings
+  maxChildren: number;
+  ageGroups: string[];
+  schedule: {
+    daysOfWeek: ("monday" | "tuesday" | "wednesday" | "thursday" | "friday")[];
+    morningPickup?: {
+      startTime: string; // "07:30"
+      endTime: string; // "08:00"
+    };
+    afternoonDropoff?: {
+      startTime: string; // "15:00"
+      endTime: string; // "16:00"
+    };
+  };
+  // Membership
+  members: CarpoolGroupMember[];
+  pendingInvitations: CarpoolGroupInvitation[];
+  joinRequests: CarpoolGroupJoinRequest[];
+  // Status & Lifecycle
+  status: "active" | "inactive" | "purging" | "deleted" | "paused" | "archived";
+  isAcceptingMembers: boolean;
+  inactivityDetectedAt?: Date;
+  purgingStartedAt?: Date;
+  purgingScheduledDate?: Date;
+  lastActivityAt: Date;
+  activityMetrics: {
+    lastPreferenceSubmission?: Date;
+    lastScheduleGeneration?: Date;
+    lastMemberActivity?: Date;
+    consecutiveInactiveWeeks: number;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CarpoolGroupMember {
+  id: string;
+  groupId: string;
+  userId: string;
+  user: User;
+  role: "trip_admin" | "parent" | "student";
+  joinedAt: Date;
+  // Children in this group (for parents)
+  children?: {
+    id: string;
+    name: string;
+    grade: string;
+    studentId?: string;
+  }[];
+  // Parent preferences
+  drivingPreferences?: {
+    canDrive: boolean;
+    preferredDays: string[];
+    maxPassengers: number;
+    vehicleInfo?: string;
+  };
+}
+
+export interface CarpoolGroupInvitation {
+  id: string;
+  groupId: string;
+  group: CarpoolGroup;
+  email: string;
+  invitedBy: string;
+  invitedByUser: User;
+  role: "parent" | "student";
+  status: "pending" | "accepted" | "declined" | "expired";
+  message?: string;
+  sentAt: Date;
+  expiresAt: Date;
+  respondedAt?: Date;
+}
+
+export interface CarpoolGroupJoinRequest {
+  id: string;
+  groupId: string;
+  group: CarpoolGroup;
+  requesterId: string;
+  requester: User;
+  status: "pending" | "approved" | "denied";
+  message?: string;
+  // Auto-matching data
+  matchScore?: number;
+  matchReasons?: string[];
+  distance?: number; // miles from group center
+  // Trip admin response
+  reviewedBy?: string;
+  reviewedByUser?: User;
+  reviewMessage?: string;
+  requestedAt: Date;
+  reviewedAt?: Date;
+}
+
+// Phase 2: Geographic matching and search
+export interface GroupSearchCriteria {
+  schoolId?: string;
+  schoolName?: string;
+  maxDistanceMiles?: number;
+  userLocation?: GeographicLocation;
+  ageGroups?: string[];
+  daysOfWeek?: string[];
+  timePreferences?: {
+    morningPickup?: boolean;
+    afternoonDropoff?: boolean;
+  };
+}
+
+export interface GroupSearchResult {
+  group: CarpoolGroup;
+  matchScore: number;
+  distance: number;
+  matchReasons: string[];
+  canRequestToJoin: boolean;
 }
 
 // Child model - NEW from Product Spec
@@ -27,6 +189,9 @@ export interface Child {
   grade?: string;
   emergencyContact?: string;
   pickupInstructions?: string;
+  // Phase 2: School association
+  schoolId?: string;
+  school?: School;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -172,7 +337,9 @@ export type SwapRequestStatus =
   | "pending"
   | "accepted"
   | "declined"
-  | "cancelled";
+  | "cancelled"
+  | "auto_accepted"
+  | "expired";
 
 // API Response types
 export interface ApiResponse<T = any> {
@@ -227,10 +394,66 @@ export interface CreateUserRequest {
   password: string; // Initial password set by admin
   firstName: string;
   lastName: string;
-  role: "parent" | "student";
+  role: "parent" | "student" | "trip_admin";
   phoneNumber?: string;
   homeAddress?: string;
   isActiveDriver?: boolean;
+}
+
+// Parent Group Creation (Self-Service)
+export interface ParentGroupCreationRequest {
+  name: string;
+  description?: string;
+  targetSchoolId: string;
+  serviceArea: {
+    centerLocation: GeographicLocation;
+    radiusMiles: number;
+    includeZipCodes?: string[];
+    excludeZipCodes?: string[];
+  };
+  maxChildren: number;
+  ageGroups: string[];
+  schedule: {
+    daysOfWeek: ("monday" | "tuesday" | "wednesday" | "thursday" | "friday")[];
+    morningPickup?: {
+      startTime: string;
+      endTime: string;
+    };
+    afternoonDropoff?: {
+      startTime: string;
+      endTime: string;
+    };
+  };
+}
+
+// Group Lifecycle Management
+export interface GroupReactivationRequest {
+  id: string;
+  groupId: string;
+  requesterId: string;
+  requester: User;
+  reason: string;
+  activityPlan: string;
+  memberCommitments?: {
+    confirmedMembers: number;
+    newMembersPledged: number;
+    totalExpectedMembers: number;
+  };
+  status: "pending" | "approved" | "denied";
+  requestedAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  reviewerNotes?: string;
+}
+
+export interface InactivityDetectionResult {
+  groupId: string;
+  isInactive: boolean;
+  inactivityReasons: string[];
+  lastActivityDate: Date;
+  inactivityScore: number; // 0-100, higher means more inactive
+  recommendedAction: "monitor" | "warn" | "purge";
+  gracePeriodDays: number;
 }
 
 // Change Password Request
@@ -472,4 +695,266 @@ export interface ChatRoomWithUnreadCount extends ChatRoom {
 
 export interface MessageWithSender extends Message {
   isOwnMessage: boolean;
+}
+
+// Phase 3: Advanced Scheduling Features
+
+export interface WeeklySchedule {
+  id: string;
+  groupId: string;
+  group: CarpoolGroup;
+  weekStartDate: string; // YYYY-MM-DD (Monday)
+  weekEndDate: string; // YYYY-MM-DD (Friday)
+  status:
+    | "preferences_open"
+    | "preferences_closed"
+    | "scheduling"
+    | "swaps_open"
+    | "finalized"
+    | "active"
+    | "completed";
+
+  // Important deadlines
+  preferencesDeadline: string; // Saturday 10PM
+  swapsDeadline: string; // Sunday 5PM
+
+  // Generated assignments
+  assignments: WeeklyAssignment[];
+
+  // Swap requests for this week
+  swapRequests: SwapRequest[];
+
+  // Metadata
+  createdBy: string; // Trip Admin ID
+  createdAt: Date;
+  updatedAt: Date;
+  finalizedAt?: Date;
+}
+
+export interface WeeklyPreferences {
+  id: string;
+  scheduleId: string;
+  parentId: string;
+  parent: User;
+
+  // Driving availability for each day
+  drivingAvailability: {
+    monday: DayPreference;
+    tuesday: DayPreference;
+    wednesday: DayPreference;
+    thursday: DayPreference;
+    friday: DayPreference;
+  };
+
+  // Special requests or constraints
+  specialRequests?: string;
+  emergencyContact?: string;
+
+  // Submission tracking
+  submittedAt: Date;
+  isLateSubmission: boolean; // After Saturday 10PM deadline
+}
+
+export interface DayPreference {
+  canDrive: boolean;
+  preferredRole: "driver" | "passenger" | "either" | "unavailable";
+  timeConstraints?: {
+    earliestPickup?: string; // "07:30"
+    latestDropoff?: string; // "16:00"
+  };
+  maxPassengers?: number; // If driving
+  notes?: string;
+}
+
+export interface WeeklyAssignment {
+  id: string;
+  scheduleId: string;
+  date: string; // YYYY-MM-DD
+  dayOfWeek: "monday" | "tuesday" | "wednesday" | "thursday" | "friday";
+
+  // Morning trip (home → school)
+  morningTrip?: {
+    driverId: string;
+    driver: User;
+    passengers: AssignmentPassenger[];
+    pickupTime: string;
+    route: RouteStop[];
+  };
+
+  // Afternoon trip (school → home)
+  afternoonTrip?: {
+    driverId: string;
+    driver: User;
+    passengers: AssignmentPassenger[];
+    pickupTime: string;
+    route: RouteStop[];
+  };
+
+  // Assignment metadata
+  algorithmScore: number; // How well this assignment fits preferences
+  conflictResolution?: {
+    reason: string;
+    alternativeOptions: string[];
+  };
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AssignmentPassenger {
+  parentId: string;
+  parent: User;
+  children: {
+    id: string;
+    name: string;
+    grade: string;
+  }[];
+  pickupLocation: GeographicLocation;
+  dropoffLocation: GeographicLocation;
+  specialInstructions?: string;
+}
+
+export interface RouteStop {
+  order: number;
+  location: GeographicLocation;
+  parentId: string;
+  estimatedTime: string;
+  actualTime?: string;
+  children: string[]; // Child names
+  type: "pickup" | "dropoff";
+}
+
+export interface SwapRequest {
+  id: string;
+  scheduleId: string;
+  requesterId: string;
+  requester: User;
+
+  // What they want to swap
+  originalAssignmentId: string;
+  originalAssignment: WeeklyAssignment;
+
+  // What they're offering instead
+  proposedChange: {
+    date: string;
+    role: "driver" | "passenger";
+    timeSlot: "morning" | "afternoon" | "both";
+  };
+
+  // Who they're requesting to swap with
+  targetParentId?: string;
+  targetParent?: User;
+
+  // Request details
+  reason: string;
+  priority: "low" | "medium" | "high" | "emergency";
+
+  // Response tracking
+  status: SwapRequestStatus;
+  respondedAt?: Date;
+  responseMessage?: string;
+
+  // Auto-acceptance logic
+  autoAcceptAt: string; // Sunday 5PM deadline
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DrivingHistory {
+  id: string;
+  parentId: string;
+  groupId: string;
+
+  // Historical data for conflict resolution
+  totalWeeksInGroup: number;
+  totalDrivingDays: number;
+  drivingFrequencyPercentage: number; // What % of days they typically drive
+
+  // Recent performance metrics
+  recentReliabilityScore: number; // 0-100 based on no-shows, cancellations
+  lastDrivingDate?: string;
+  consecutiveDrivingDays: number;
+  consecutivePassengerDays: number;
+
+  // Weekly history (last 12 weeks)
+  weeklyHistory: {
+    weekStartDate: string;
+    drivingDays: number;
+    passengerDays: number;
+    noShows: number;
+    lastMinuteCancellations: number;
+    swapRequestsMade: number;
+    swapRequestsAccepted: number;
+  }[];
+
+  // Calculated at end of each week
+  lastCalculatedAt: Date;
+  updatedAt: Date;
+}
+
+export interface SchedulingAlgorithmInput {
+  groupId: string;
+  weekStartDate: string;
+  preferences: WeeklyPreferences[];
+  history: DrivingHistory[];
+  groupSettings: {
+    maxConsecutiveDrivingDays: number;
+    preferredDrivingRotation:
+      | "equal"
+      | "preference_based"
+      | "availability_based";
+    allowSingleParentDays: boolean;
+  };
+}
+
+export interface SchedulingAlgorithmOutput {
+  assignments: WeeklyAssignment[];
+  conflicts: SchedulingConflict[];
+  algorithmStats: {
+    totalScore: number;
+    preferenceSatisfactionRate: number;
+    drivingEquityScore: number;
+    routeEfficiencyScore: number;
+  };
+  recommendations: string[];
+}
+
+export interface SchedulingConflict {
+  type:
+    | "insufficient_drivers"
+    | "route_inefficiency"
+    | "preference_conflict"
+    | "capacity_exceeded";
+  date: string;
+  timeSlot: "morning" | "afternoon";
+  description: string;
+  suggestedResolutions: string[];
+  affectedParents: string[];
+}
+
+// Enhanced CarpoolGroup for scheduling
+export interface CarpoolGroupSchedulingSettings {
+  // Scheduling preferences
+  preferenceSubmissionDeadline: {
+    dayOfWeek: "friday" | "saturday" | "sunday";
+    time: string; // "22:00"
+  };
+  swapRequestDeadline: {
+    dayOfWeek: "saturday" | "sunday" | "monday";
+    time: string; // "17:00"
+  };
+
+  // Algorithm settings
+  maxConsecutiveDrivingDays: number;
+  drivingRotationStrategy: "equal" | "preference_based" | "availability_based";
+  allowSingleParentDays: boolean;
+
+  // Route optimization
+  maxDetourMinutes: number;
+  preferredPickupTimeWindow: number; // minutes
+
+  // Emergency procedures
+  emergencyBackupParents: string[]; // Parent IDs willing to be emergency backup
+  emergencyContactMethod: "phone" | "sms" | "app" | "all";
 }
