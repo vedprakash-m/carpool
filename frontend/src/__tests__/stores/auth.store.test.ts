@@ -113,7 +113,7 @@ describe("useAuthStore", () => {
       });
 
       expect(mockApiClient.post).toHaveBeenCalledWith(
-        "/auth/login",
+        "/v1/auth/token",
         loginRequest
       );
       expect(mockApiClient.setToken).toHaveBeenCalledWith(
@@ -236,7 +236,7 @@ describe("useAuthStore", () => {
       });
 
       expect(mockApiClient.post).toHaveBeenCalledWith(
-        "/auth/register",
+        "/v1/auth/register",
         registerRequest
       );
       expect(result.current.user).toEqual(mockUser);
@@ -322,7 +322,7 @@ describe("useAuthStore", () => {
       });
 
       expect(mockApiClient.refreshAccessToken).toHaveBeenCalled();
-      expect(mockApiClient.get).toHaveBeenCalledWith("/users/me");
+      expect(mockApiClient.get).toHaveBeenCalledWith("/v1/users/me");
       expect(result.current.token).toBe("new-access-token");
       expect(result.current.user).toEqual(mockUser);
       expect(result.current.isAuthenticated).toBe(true);
@@ -389,7 +389,7 @@ describe("useAuthStore", () => {
         updateResult = await result.current.updateProfile(updates);
       });
 
-      expect(mockApiClient.put).toHaveBeenCalledWith("/users/me", updates);
+      expect(mockApiClient.put).toHaveBeenCalledWith("/v1/users/me", updates);
       expect(result.current.user).toEqual(updatedUser);
       expect(updateResult!).toBe(true);
       expect(result.current.loading).toBe(false);

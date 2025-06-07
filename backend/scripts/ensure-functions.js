@@ -7,7 +7,7 @@ const path = require("path");
 const REQUIRED_FUNCTIONS = [
   "hello",
   "auth-login-legacy",
-  "auth-register-simple",
+  "auth-register-working", // Using working version
   "trips-stats",
   "users-me",
   "admin-create-user",

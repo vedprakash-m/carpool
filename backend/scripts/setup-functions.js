@@ -7,7 +7,7 @@ const path = require("path");
 const requiredFunctions = [
   "hello",
   "auth-login-legacy",
-  "auth-register-simple",
+  "auth-register-working", // Using working version instead of problematic auth-register-simple
   "trips-stats",
   "users-me",
   "admin-create-user",
@@ -18,6 +18,7 @@ const requiredFunctions = [
   // Remove conflicting database functions that cause route conflicts
   // "auth-login-db",        // Conflicts with auth-login-legacy
   // "trips-stats-db",       // Conflicts with trips-stats
+  // "auth-register-simple", // Temporarily disabled due to dependency issues
 ];
 
 console.log("🔧 Setting up Azure Functions...");
