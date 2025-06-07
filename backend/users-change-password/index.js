@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 let mockUsers = [
   {
     id: "admin-1",
-    email: "admin@vcarpool.com",
+    email: "admin@example.com", // Mock admin for testing
     hashedPassword:
       "$2a$12$5P8P9P9P9P9P9P9P9P9P9O9P9P9P9P9P9P9P9P9P9P9P9P9P9P9P9P", // Admin123!
     firstName: "System",

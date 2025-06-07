@@ -80,7 +80,7 @@ let mockSchools = [
     gradesServed: ["K", "1", "2", "3", "4", "5"],
     contactInfo: {
       phone: "(217) 555-0123",
-      email: "lincoln@springfield.edu",
+      email: "lincoln-school@example.edu", // Mock school email
       principal: "Dr. Sarah Johnson",
     },
   },
@@ -93,7 +93,7 @@ let mockSchools = [
     gradesServed: ["6", "7", "8"],
     contactInfo: {
       phone: "(217) 555-0456",
-      email: "washington@springfield.edu",
+      email: "washington-school@example.edu", // Mock school email
       principal: "Mr. Michael Davis",
     },
   },

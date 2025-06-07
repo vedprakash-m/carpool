@@ -176,16 +176,16 @@ module.exports = async function (context, req) {
     const { email, password } = req.body || {};
 
     if (
-      (email === "admin@vcarpool.com" && password === "Admin123!") ||
-      (email === "mi.vedprakash@gmail.com" && password)
+      (email === "admin@example.com" && password === "Admin123!") ||
+      (email === "test-user@example.com" && password)
     ) {
       context.log("Fallback to mock authentication for:", email);
 
       const mockUser = {
-        id: email === "admin@vcarpool.com" ? "admin-id" : "ved-admin-id",
+        id: email === "admin@example.com" ? "admin-id" : "test-admin-id",
         email: email,
-        firstName: email === "admin@vcarpool.com" ? "Admin" : "Ved",
-        lastName: email === "admin@vcarpool.com" ? "User" : "Mishra",
+        firstName: email === "admin@example.com" ? "Admin" : "Test",
+        lastName: email === "admin@example.com" ? "User" : "User",
         role: "admin",
         phoneNumber: null,
         homeAddress: null,

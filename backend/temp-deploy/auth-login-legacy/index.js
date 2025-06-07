@@ -33,8 +33,8 @@ module.exports = async function (context, req) {
 
     // Check for both test admin and original admin
     if (
-      (email === "admin@vcarpool.com" && password === "Admin123!") ||
-      (email === "mi.vedprakash@gmail.com" && password)
+      (email === "admin@example.com" && password === "Admin123!") ||
+      (email === "test-user@example.com" && password)
     ) {
       context.log("Login successful for email:", email);
 
@@ -46,10 +46,10 @@ module.exports = async function (context, req) {
           success: true,
           data: {
             user: {
-              id: email === "admin@vcarpool.com" ? "admin-id" : "ved-admin-id",
+              id: email === "admin@example.com" ? "admin-id" : "test-admin-id",
               email: email,
-              firstName: email === "admin@vcarpool.com" ? "Admin" : "Ved",
-              lastName: email === "admin@vcarpool.com" ? "User" : "Mishra",
+              firstName: email === "admin@example.com" ? "Admin" : "Test",
+              lastName: email === "admin@example.com" ? "User" : "User",
               role: "admin",
               profilePicture: null,
               phoneNumber: null,
@@ -76,10 +76,8 @@ module.exports = async function (context, req) {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             },
-            token:
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ2ZWQtYWRtaW4taWQiLCJlbWFpbCI6Im1pLnZlZHByYWthc2hAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzMzMzc5NjU4LCJleHAiOjE3MzMzODMyNTh9.test-signature",
-            refreshToken:
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ2ZWQtYWRtaW4taWQiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTczMzM3OTY1OCwiZXhwIjoxNzM0MjQzNjU4fQ.test-refresh-signature",
+            token: "mock-jwt-token-for-testing-only", // Mock JWT for development/testing
+            refreshToken: "mock-refresh-token-for-testing-only", // Mock refresh token for development/testing
           },
         },
       };

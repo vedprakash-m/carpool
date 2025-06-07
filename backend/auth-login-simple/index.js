@@ -33,8 +33,7 @@ module.exports = async function (context, req) {
 
       // Simple authentication check - allow multiple admin accounts
       if (
-        (email === "admin@vcarpool.com" ||
-          email === "mi.vedprakash@gmail.com") &&
+        (email === "admin@example.com" || email === "test-user@example.com") &&
         password === "Admin123!"
       ) {
         context.res = {
@@ -45,14 +44,12 @@ module.exports = async function (context, req) {
             data: {
               user: {
                 id:
-                  email === "mi.vedprakash@gmail.com"
-                    ? "ved-admin-id"
+                  email === "test-user@example.com"
+                    ? "test-admin-id"
                     : "admin-id",
                 email: email,
-                firstName:
-                  email === "mi.vedprakash@gmail.com" ? "Ved" : "Admin",
-                lastName:
-                  email === "mi.vedprakash@gmail.com" ? "Prakash" : "User",
+                firstName: email === "test-user@example.com" ? "Test" : "Admin",
+                lastName: email === "test-user@example.com" ? "User" : "User",
                 role: "admin",
                 phoneNumber: null,
                 preferences: {
@@ -85,7 +82,7 @@ module.exports = async function (context, req) {
         };
       } else {
         context.log("Authentication failed for:", email);
-        context.log("Expected: admin@vcarpool.com / Admin123!");
+        context.log("Expected: admin@example.com / Admin123!");
         context.log(
           "Received: " + email + " / " + (password ? password : "NO_PASSWORD")
         );

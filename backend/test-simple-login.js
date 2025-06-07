@@ -2,7 +2,7 @@ const https = require("https");
 
 // Test credentials for mock authentication - these are NOT real secrets
 const payload = JSON.stringify({
-  email: "admin@vcarpool.com", // Mock test email
+  email: "test-admin@example.com", // Mock test email
   password: "test-password-123", // Mock test password - replace with env var in production
 });
 
