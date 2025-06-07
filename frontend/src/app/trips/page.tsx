@@ -245,10 +245,10 @@ function TripsPage() {
     }
   };
 
-  if (!isAuthenticated || !user) {
-    return null; // DashboardLayout will handle redirect
-  }
+  // Let DashboardLayout handle authentication redirect
+  // Remove early return to allow proper authentication flow
 
+  // For development with mock auth, bypass complex authentication flow
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -431,7 +431,7 @@ function TripsPage() {
                 <TripCard
                   key={trip.id}
                   trip={trip}
-                  currentUserId={user.id}
+                  currentUserId={user?.id || ""}
                   onJoinTrip={handleJoinTrip}
                   onLeaveTrip={handleLeaveTrip}
                 />

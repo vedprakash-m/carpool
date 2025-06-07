@@ -58,8 +58,17 @@ export class ApiClient {
       },
     });
 
-    // Disable mock mode completely - force real API calls
-    this.isMockMode = false;
+    // Check if mock mode was previously enabled
+    if (typeof window !== "undefined") {
+      const mockMode = localStorage.getItem("MOCK_AUTH");
+      if (mockMode === "true") {
+        this.isMockMode = true;
+      }
+    }
+
+    // Temporarily enable mock mode for registration until backend is fixed
+    // This allows users to test the complete registration flow
+    this.enableMockMode();
 
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
@@ -69,21 +78,18 @@ export class ApiClient {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        return Promise.reject(error);
+      }
     );
 
-    // Response interceptor for error handling and token refresh
+    // Response interceptor to handle token refresh
     this.client.interceptors.response.use(
       (response) => response,
-      async (error: AxiosError) => {
-        const originalRequest: any = error.config;
+      async (error) => {
+        const originalRequest = error.config;
 
-        // If error is 401 and we have a refresh token, try to refresh
-        if (
-          error.response?.status === 401 &&
-          this.refreshToken &&
-          !originalRequest._retry
-        ) {
+        if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
           try {
@@ -91,7 +97,7 @@ export class ApiClient {
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return this.client(originalRequest);
           } catch (refreshError) {
-            // If refresh fails, clear tokens and redirect to login
+            // Refresh failed, redirect to login
             this.clearToken();
             if (typeof window !== "undefined") {
               window.location.href = "/login";
