@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import {
   CalendarIcon,
   ClockIcon,
-  CarIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   InformationCircleIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
+import { TruckIcon as CarIcon } from "@heroicons/react/24/outline";
 
 interface DayPreference {
   canDrive: boolean;

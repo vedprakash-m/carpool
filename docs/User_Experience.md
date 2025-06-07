@@ -2082,6 +2082,271 @@ WIREFRAME: Dual Driving Parent Dashboard
 
 ---
 
+## School Calendar & Vacation Management
+
+### Holiday Calendar Integration
+
+**Trip Admin Holiday Management**: Trip Admins can set school-wide holidays that automatically adjust scheduling for all families in their groups.
+
+#### School Holiday Management
+
+- **Authority**: Trip Admin only (affects entire group)
+- **Holiday Types**:
+  - School holidays (no rides needed)
+  - Teacher workdays (modified schedule)
+  - Semester breaks (extended periods)
+  - Weather closures (emergency)
+- **Automatic Adjustments**:
+  - Skip trip generation on holiday dates
+  - Redistribute weekly fairness calculations
+  - Send advance notifications to all families
+- **Integration**: Syncs with school district calendars when available
+
+#### Family Vacation Management
+
+- **Authority**: Parents can set their own family vacations, Trip Admin can set on behalf of families
+- **Vacation Types**:
+  - Family vacation (all family members away)
+  - Individual parent travel (affecting driving availability)
+  - Child-specific absence (camps, visits)
+- **Impact**:
+  - Adjust family fair share calculations
+  - Arrange backup coverage automatically
+  - Notify group of temporary unavailability
+
+```
+WIREFRAME: Holiday & Vacation Calendar
+┌─────────────────────────────────────────────────────────────┐
+│ 📅 School Calendar Management - Lincoln Elementary Group   │
+├─────────────────────────────────────────────────────────────┤
+│ 🏫 School Holidays (Trip Admin)                           │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 🎄 Winter Break: Dec 23, 2024 - Jan 6, 2025           │ │
+│ │ Status: Active • Affects: All families                 │ │
+│ │ Impact: 10 school days cancelled automatically         │ │
+│ │ [Edit] [Remove] [Notify Families]                      │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 📚 Spring Break: Mar 17-21, 2025                      │ │
+│ │ Status: Upcoming • Affects: All families               │ │
+│ │ Impact: 5 school days, notifications sent              │ │
+│ │ [Edit] [Remove] [Notify Families]                      │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ [+ Add School Holiday] [Import School District Calendar]   │
+│                                                             │
+│ 👨‍👩‍👧‍👦 Family Vacations                                        │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Johnson Family - Disney Trip                           │ │
+│ │ Feb 14-18, 2025 • Affects: Emma, Jake                  │ │
+│ │ Coverage: Sarah Chen volunteered for backup driving    │ │
+│ │ [Edit] [Contact Family] [Arrange Coverage]             │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Thompson Family - Grandparents Visit                   │ │
+│ │ Mar 10-12, 2025 • Affects: Oliver                      │ │
+│ │ Status: Backup coverage arranged automatically         │ │
+│ │ [View Details] [Message Family]                        │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ [+ Add Family Vacation] [Calendar View] [Coverage Report]  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Vacation Impact Algorithm
+
+**Fair Share Adjustment**: When families are on vacation, their fair share obligation is temporarily reduced and redistributed among remaining families.
+
+**Coverage Automation**: System automatically identifies backup drivers and sends coverage requests to maintain service continuity.
+
+---
+
+## Long-Term Fairness & Equity System
+
+### Fairness Rotation Algorithm
+
+**Core Principle**: Ensures long-term equity when trips cannot be equally divided among families, preventing the same families from always getting "remainder" assignments.
+
+#### Fairness Debt Tracking
+
+- **Debt Calculation**: Track cumulative difference between assigned trips and mathematical fair share
+- **Rotation Priority**: Families with highest "fairness debt" get priority for lighter weeks
+- **Historical Balance**: System maintains running totals over entire school year
+
+#### Trip Distribution Logic
+
+```
+Algorithm: Enhanced Fair Distribution with Remainder Rotation
+
+1. Calculate base trips per family: floor(total_trips ÷ family_count)
+2. Calculate remainder: total_trips % family_count
+3. Sort families by fairness debt (most owed → least owed)
+4. Assign base trips to all families
+5. Assign remainder trips to families with highest debt
+6. Update fairness debt: debt += (assigned_trips - fair_share)
+
+Example: 7 trips, 3 families
+- Base: 2 trips each, Remainder: 1 trip
+- Week 1: Family A=3, B=2, C=2 (Family A gets remainder)
+- Week 2: Family A=2, B=3, C=2 (Family B gets remainder)
+- Week 3: Family A=2, B=2, C=3 (Family C gets remainder)
+- Result: Perfect rotation, long-term equity maintained
+```
+
+#### Equity Dashboard
+
+```
+WIREFRAME: Fairness Equity Dashboard
+┌─────────────────────────────────────────────────────────────┐
+│ ⚖️ Long-Term Fairness Dashboard - Lincoln Morning Group    │
+├─────────────────────────────────────────────────────────────┤
+│ 📊 Current School Year Equity (Aug 2024 - May 2025)       │
+│                                                             │
+│ Family                │ Total Trips │ Fair Share │ Debt    │
+│ ─────────────────────────────────────────────────────────── │
+│ 👨‍👩‍👧 Johnson (Emma)     │     47      │    45.2    │ +1.8  │
+│ 👨‍👩‍👦 Chen (Liam)        │     43      │    45.2    │ -2.2  │
+│ 👩‍👧 Wilson (Sophia)    │     46      │    45.2    │ +0.8  │
+│ 👨‍👩‍👧‍👦 Davis (2 kids)    │     89      │    90.4    │ -1.4  │
+│                                                             │
+│ 🎯 Next Week Priority: Chen family (highest debt: -2.2)   │
+│                                                             │
+│ 📈 Equity Trends:                                         │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │     ↗️ Improving: System balancing successfully        │ │
+│ │     📊 Range: 4.0 trips (excellent)                   │ │
+│ │     ⭐ Equity Score: 94/100 (very fair)               │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ [Export Report] [Manual Adjustment] [View History]         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Enhanced Family Unit Signup Flow
+
+### Family Unit Definition
+
+**Core Principle**: Family units are indivisible for group membership. Each child defines a separate family unit, but parents within that unit operate as a cohesive group.
+
+#### Unit Structure Rules
+
+1. **Single Parent Household**: 1 parent + child(ren) = 1 unit per child
+2. **Two Parent Household**: 2 parents + child(ren) = 1 unit per child
+3. **Multiple Children**: Each child creates separate unit with same parent(s)
+
+**Examples**:
+
+- Sarah (single mom) + Emma = 1 unit
+- Mike & Lisa + twins (Alex & Beth) = 2 units (same parents, different children)
+- Divorced parents sharing custody = complex case requiring separate registration
+
+#### Enhanced Signup Process
+
+```
+WIREFRAME: Family Unit Registration Flow
+┌─────────────────────────────────────────────────────────────┐
+│ Step 1: Family Structure Discovery                         │
+├─────────────────────────────────────────────────────────────┤
+│ 👥 Tell us about your family structure                     │
+│                                                             │
+│ How many children need carpool rides?                      │
+│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐                          │
+│ │  1  │ │  2  │ │  3  │ │ 4+  │                          │
+│ └─────┘ └─────┘ └─────┘ └─────┘                          │
+│                                                             │
+│ How many parents/guardians will participate?               │
+│ ○ Just me (single parent)                                 │
+│ ○ Two parents/guardians                                   │
+│ ○ Other family structure (explain below)                  │
+│                                                             │
+│ [Continue] →                                               │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ Step 2: Child Information (Repeat for each child)          │
+├─────────────────────────────────────────────────────────────┤
+│ 👧 Child 1 Details                                        │
+│                                                             │
+│ Name: Emma Johnson                                          │
+│ Grade: 2nd Grade                                           │
+│ School: Lincoln Elementary                                  │
+│ Special needs: None                                         │
+│                                                             │
+│ 🚗 Transportation needs for Emma:                         │
+│ ☑️ Morning dropoff (7:30-8:00 AM)                         │
+│ ☑️ Afternoon pickup (3:15-3:45 PM)                        │
+│ ☐ After-school activities                                 │
+│                                                             │
+│ [← Previous] [Continue] →                                  │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ Step 3: Parent/Guardian Profiles                           │
+├─────────────────────────────────────────────────────────────┤
+│ 👨 Primary Parent (You)                                    │
+│                                                             │
+│ Name: Michael Johnson                                       │
+│ Email: mike.j@example.com                                  │
+│ Phone: (555) 123-4567                                     │
+│                                                             │
+│ 🚗 Driving Capability:                                     │
+│ ☑️ I can drive for carpools                               │
+│ Vehicle: 2018 Honda CR-V (5 seats)                        │
+│ Available days: ☑️ Mon ☑️ Tue ☐ Wed ☑️ Thu ☑️ Fri         │
+│                                                             │
+│ 👩 Second Parent/Guardian                                  │
+│ ☑️ Add second parent to this family unit                   │
+│                                                             │
+│ [Send invitation email] or [Enter details directly]        │
+│                                                             │
+│ [← Previous] [Complete Registration] →                     │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ Step 4: Family Unit Summary                                │
+├─────────────────────────────────────────────────────────────┤
+│ ✅ Family Registration Complete!                           │
+│                                                             │
+│ 👨‍👩‍👧‍👦 Your Family Units:                                      │
+│                                                             │
+│ 📋 Unit 1: Emma Johnson                                    │
+│ Parents: Michael Johnson (can drive), Sarah Johnson (TBD)  │
+│ Transportation: Morning dropoff, Afternoon pickup          │
+│                                                             │
+│ 📋 Unit 2: Jake Johnson                                    │
+│ Parents: Michael Johnson (can drive), Sarah Johnson (TBD)  │
+│ Transportation: Morning dropoff, Afternoon pickup          │
+│                                                             │
+│ 🎯 Join Request Impact:                                    │
+│ • Your join request represents 2 family units             │
+│ • Both children will join together when approved           │
+│ • Fair share calculation: 2 units = ~2 driving days/week  │
+│                                                             │
+│ [Submit Join Request] [Review Details] [Edit Information]  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Family Unit Enforcement
+
+**Join Requests**: Always represent complete family units - no partial family memberships allowed
+
+**Departure Rules**: When any parent leaves, entire family unit(s) exit automatically
+
+**Approval Process**: Trip Admin approves/rejects entire family structure as single decision
+
+**Capacity Calculation**: Based on number of children (family units), not number of parents
+
+---
+
 ## Design System & Component Library
 
 ### Color Palette

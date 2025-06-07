@@ -119,8 +119,13 @@ function isSwapsDeadlinePassed(swapsDeadline) {
   return new Date() > new Date(swapsDeadline);
 }
 
-// Enhanced scheduling algorithm with child-based load distribution
-function generateWeeklyAssignments(preferences, history, groupSettings) {
+// Enhanced scheduling algorithm with child-based load distribution and fairness rotation
+function generateWeeklyAssignments(
+  preferences,
+  history,
+  groupSettings,
+  fairnessTracking = {}
+) {
   const assignments = [];
   const conflicts = [];
   const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday"];
@@ -137,16 +142,37 @@ function generateWeeklyAssignments(preferences, history, groupSettings) {
     return map;
   }, {});
 
-  // ENHANCEMENT: Family-based load calculation
+  // ENHANCEMENT: Family-based load calculation with fairness rotation
   const familyUnits = groupFamiliesByChildren(preferences);
   const totalChildren = familyUnits.length;
   const totalTrips = daysOfWeek.length; // 5 days = 5 trips
-  const tripsPerFamily = Math.ceil(totalTrips / totalChildren); // Distribute evenly
+  const baseTripsPerFamily = Math.floor(totalTrips / totalChildren);
+  const remainderTrips = totalTrips % totalChildren;
+
+  // FAIRNESS ENHANCEMENT: Sort families by fairness debt for remainder distribution
+  const familiesWithDebt = familyUnits
+    .map((family) => ({
+      ...family,
+      fairnessDebt: fairnessTracking[family.familyId]?.fairnessDebt || 0,
+      yearlyTripCount: fairnessTracking[family.familyId]?.yearlyTripCount || 0,
+    }))
+    .sort((a, b) => a.fairnessDebt - b.fairnessDebt); // Most owed families first
 
   let totalScore = 0;
   let satisfiedPreferences = 0;
   let totalPreferences = 0;
   let familyTripAssignments = {}; // Track trips assigned per family
+
+  // Initialize family assignments with base amount
+  familiesWithDebt.forEach((family) => {
+    familyTripAssignments[family.familyId] = baseTripsPerFamily;
+  });
+
+  // Distribute remainder trips to families with highest debt
+  for (let i = 0; i < remainderTrips; i++) {
+    const targetFamily = familiesWithDebt[i];
+    familyTripAssignments[targetFamily.familyId]++;
+  }
 
   daysOfWeek.forEach((day, index) => {
     const date = new Date("2024-01-08"); // Start with Monday
