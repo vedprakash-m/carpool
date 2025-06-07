@@ -455,7 +455,7 @@ module.exports = async function (context, req) {
           children: request.childrenInfo || [],
         });
 
-        // Add non-driving parent if exists
+        // Add spouse/second parent if exists (can be driving or non-driving)
         if (request.spouseInfo) {
           mockCarpoolGroups[groupIndex].members.push({
             id: `member-${Date.now()}-spouse`,
@@ -463,9 +463,16 @@ module.exports = async function (context, req) {
             name: `${request.spouseInfo.firstName} ${request.spouseInfo.lastName}`,
             email: request.spouseInfo.email,
             role: "parent",
-            canDrive: false,
+            canDrive: request.spouseInfo.canDrive || false, // ENHANCEMENT: Support dual driving parents
             joinedAt: new Date().toISOString(),
             children: request.childrenInfo || [],
+            drivingPreferences: request.spouseInfo.canDrive
+              ? {
+                  preferredDays: request.spouseInfo.preferredDays || [],
+                  maxPassengers: request.spouseInfo.maxPassengers || 3,
+                  vehicleInfo: request.spouseInfo.vehicleInfo || "",
+                }
+              : undefined,
           });
         }
 

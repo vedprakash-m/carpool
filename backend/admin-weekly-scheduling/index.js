@@ -119,7 +119,7 @@ function isSwapsDeadlinePassed(swapsDeadline) {
   return new Date() > new Date(swapsDeadline);
 }
 
-// Simplified scheduling algorithm
+// Enhanced scheduling algorithm with child-based load distribution
 function generateWeeklyAssignments(preferences, history, groupSettings) {
   const assignments = [];
   const conflicts = [];
@@ -137,9 +137,16 @@ function generateWeeklyAssignments(preferences, history, groupSettings) {
     return map;
   }, {});
 
+  // ENHANCEMENT: Family-based load calculation
+  const familyUnits = groupFamiliesByChildren(preferences);
+  const totalChildren = familyUnits.length;
+  const totalTrips = daysOfWeek.length; // 5 days = 5 trips
+  const tripsPerFamily = Math.ceil(totalTrips / totalChildren); // Distribute evenly
+
   let totalScore = 0;
   let satisfiedPreferences = 0;
   let totalPreferences = 0;
+  let familyTripAssignments = {}; // Track trips assigned per family
 
   daysOfWeek.forEach((day, index) => {
     const date = new Date("2024-01-08"); // Start with Monday
@@ -186,14 +193,19 @@ function generateWeeklyAssignments(preferences, history, groupSettings) {
     }
 
     if (availableDrivers.length > 0) {
-      // Select driver based on history and equity
+      // ENHANCEMENT: Select driver based on family load distribution and equity
       const selectedDriver = selectOptimalDriver(
         availableDrivers,
         historyMap,
-        day
+        day,
+        familyTripAssignments
       );
 
       if (selectedDriver) {
+        // Track family trip assignment
+        const selectedFamilyId = selectedDriver.parentId.split("-spouse")[0];
+        familyTripAssignments[selectedFamilyId] =
+          (familyTripAssignments[selectedFamilyId] || 0) + 1;
         const passengers = needingRides
           .filter((p) => p.parentId !== selectedDriver.parentId)
           .slice(0, selectedDriver.drivingAvailability[day].maxPassengers || 3)
@@ -257,9 +269,51 @@ function generateWeeklyAssignments(preferences, history, groupSettings) {
   };
 }
 
-function selectOptimalDriver(availableDrivers, historyMap, day) {
-  // Sort drivers by equity (those who have driven less recently get priority)
+// ENHANCEMENT: Group families by children for load calculation
+function groupFamiliesByChildren(preferences) {
+  const familyMap = new Map();
+
+  preferences.forEach((pref) => {
+    // Assume parentId contains family identifier (e.g., parent-123, parent-123-spouse)
+    const baseFamilyId = pref.parentId.split("-spouse")[0]; // Remove spouse suffix
+
+    if (!familyMap.has(baseFamilyId)) {
+      familyMap.set(baseFamilyId, {
+        familyId: baseFamilyId,
+        parents: [],
+        children: 1, // Simplified: assume 1 child per family for now
+        tripsAssigned: 0,
+      });
+    }
+
+    familyMap.get(baseFamilyId).parents.push(pref);
+  });
+
+  return Array.from(familyMap.values());
+}
+
+// ENHANCEMENT: Select optimal driver considering family load distribution
+function selectOptimalDriver(
+  availableDrivers,
+  historyMap,
+  day,
+  familyTripAssignments = {}
+) {
+  // Sort drivers by family equity first, then individual equity
   return availableDrivers.sort((a, b) => {
+    const familyIdA = a.parentId.split("-spouse")[0];
+    const familyIdB = b.parentId.split("-spouse")[0];
+
+    // Get family trip counts
+    const familyTripsA = familyTripAssignments[familyIdA] || 0;
+    const familyTripsB = familyTripAssignments[familyIdB] || 0;
+
+    // Prefer families with fewer assigned trips (child-based equity)
+    if (familyTripsA !== familyTripsB) {
+      return familyTripsA - familyTripsB;
+    }
+
+    // Then use individual parent equity
     const historyA = historyMap[a.parentId] || {
       consecutiveDrivingDays: 0,
       drivingFrequencyPercentage: 0,

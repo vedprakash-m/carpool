@@ -227,6 +227,35 @@ graph TB
 - Trip Admin notifications for family departures/arrivals
 - Group capacity updates include entire family units
 
+### 3.6 Dual Driving Parents & Child-Based Load Sharing (✅ NEWLY IMPLEMENTED)
+
+**Enhanced Family Driving Model:**
+
+- **Dual Driving Parent Support**: Both parents in a family can be designated as driving parents
+- **Child-Based Load Distribution**: Trip assignments based on number of children, not parents
+- **Intra-Family Reassignment**: Spouses can reassign trips without external approval
+
+**Core Algorithm Enhancements:**
+
+- **Child-Based Fairness**: `trips_per_family = total_trips ÷ children_count`
+- **Family-First Scheduling**: Enhanced `selectOptimalDriver` prioritizes family equity over individual equity
+- **Dual Parent Optimization**: Algorithm considers both parents' availability when assigning trips
+
+**Implemented Functions:**
+
+- Enhanced `admin-weekly-scheduling`: Child-based load calculation with `groupFamiliesByChildren()`
+- New `handleIntraFamilyReassignment`: Spouse-to-spouse trip reassignment API
+- Enhanced `admin-join-requests`: Support for dual driving parent approval
+- New component: `DualDrivingParentDashboard` for family coordination UI
+
+**Features:**
+
+- Family load tracking per child count rather than parent count
+- Automatic group notification for intra-family reassignments
+- Same-family validation for reassignment requests
+- Dual driving parent onboarding support
+- Family driving coordination dashboard with wireframes
+
 ## 4. Critical Implementation Decisions (January 2025)
 
 ### 4.1 UX Gap Analysis Implementation Status

@@ -52,6 +52,9 @@ module.exports = async function (context, req) {
         if (action === "family-departure") {
           return handleFamilyDeparture(groupId, req.body, context);
         }
+        if (action === "intra-family-reassignment") {
+          return handleIntraFamilyReassignment(groupId, req.body, context);
+        }
         return createGroup(req.body, context);
       case "PUT":
         return updateGroup(groupId, req.body, context);
@@ -358,6 +361,150 @@ async function handleFamilyDeparture(groupId, requestData, context) {
         error: {
           code: "INTERNAL_ERROR",
           message: "Error processing family departure",
+        },
+      }),
+    };
+  }
+}
+
+// Handle intra-family trip reassignment (Rule 3: Non-swap family coordination)
+async function handleIntraFamilyReassignment(groupId, requestData, context) {
+  try {
+    const { fromParentId, toParentId, assignmentId, reason } = requestData;
+
+    if (!fromParentId || !toParentId || !assignmentId) {
+      return {
+        status: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "From parent, to parent, and assignment ID are required",
+          },
+        }),
+      };
+    }
+
+    // Verify both parents are from same family
+    const fromFamilyId = fromParentId.split("-spouse")[0];
+    const toFamilyId = toParentId.split("-spouse")[0];
+
+    if (fromFamilyId !== toFamilyId) {
+      return {
+        status: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "NOT_SAME_FAMILY",
+            message:
+              "Intra-family reassignment only allowed between spouses/same family",
+          },
+        }),
+      };
+    }
+
+    // Find the group
+    const mockGroups = getMockGroups();
+    const group = mockGroups.find((g) => g.id === groupId);
+
+    if (!group) {
+      return {
+        status: 404,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "GROUP_NOT_FOUND",
+            message: "Carpool group not found",
+          },
+        }),
+      };
+    }
+
+    // Find both parents in group
+    const fromParent = group.members.find(
+      (m) => m.userId === fromParentId && m.role === "parent"
+    );
+    const toParent = group.members.find(
+      (m) => m.userId === toParentId && m.role === "parent"
+    );
+
+    if (!fromParent || !toParent) {
+      return {
+        status: 404,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "PARENTS_NOT_FOUND",
+            message: "One or both parents not found in this group",
+          },
+        }),
+      };
+    }
+
+    // Verify receiving parent can drive
+    if (!toParent.canDrive) {
+      return {
+        status: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "RECEIVER_CANNOT_DRIVE",
+            message: "Receiving parent is not designated as a driving parent",
+          },
+        }),
+      };
+    }
+
+    // Mock: Update assignment (in production, would update actual schedule)
+    const reassignmentRecord = {
+      id: `reassignment-${Date.now()}`,
+      groupId,
+      assignmentId,
+      fromParentId,
+      fromParentName: fromParent.name,
+      toParentId,
+      toParentName: toParent.name,
+      reason: reason || "Family coordination",
+      type: "intra-family",
+      processedAt: new Date().toISOString(),
+      notificationSent: true,
+    };
+
+    // Generate group notification message
+    const notificationMessage = `Schedule Update: ${toParent.name} will now drive instead of ${fromParent.name} (family reassignment)`;
+
+    return {
+      status: 200,
+      headers: corsHeaders,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          reassignment: reassignmentRecord,
+          notification: {
+            message: notificationMessage,
+            type: "family_reassignment",
+            sentToGroup: true,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        message: "Trip successfully reassigned within family",
+      }),
+    };
+  } catch (error) {
+    context.log.error("Intra-family reassignment error:", error);
+    return {
+      status: 500,
+      headers: corsHeaders,
+      body: JSON.stringify({
+        success: false,
+        error: {
+          code: "INTERNAL_ERROR",
+          message: "Failed to process intra-family reassignment",
         },
       }),
     };

@@ -1983,6 +1983,105 @@ WIREFRAME: Family Departure Confirmation
 
 ---
 
+## Dual Driving Parents & Child-Based Load Sharing
+
+### Core Principles
+
+**Family Driving Flexibility**: Families can have one or both parents as driving parents, providing maximum flexibility for busy households while maintaining fair distribution across the entire group.
+
+#### Rule 1: Dual Driving Parent Support
+
+- **Policy**: Both parents in a family can be designated as driving parents, or only one parent can drive
+- **Minimum Requirement**: At least one parent in each family must be a driving parent
+- **Rationale**: Accommodates diverse family schedules and work arrangements
+- **Implementation**:
+  - Both parents can have `canDrive: true` in their member profiles
+  - Scheduling algorithm recognizes family units with multiple driving parents
+  - Driving preferences tracked separately for each parent
+
+#### Rule 2: Child-Based Load Distribution
+
+- **Policy**: Trip load is distributed based on number of children in the group, not number of parents
+- **Calculation**: `Total Weekly Trips ÷ Number of Children = Trips per Child/Family`
+- **Example**: 4 children, 8 weekly trips → Each family responsible for 2 trips
+- **Family Flexibility**:
+  - Single driving parent: Takes all assigned trips (2 trips)
+  - Dual driving parents: Can split trips (1 trip each) or assign as preferred
+- **Rationale**: Ensures fair distribution based on beneficiaries (children) rather than available drivers
+
+#### Rule 3: Intra-Family Assignment (Non-Swap)
+
+- **Policy**: Driving parents within the same family can reassign trips between themselves without swap approval process
+- **Process**:
+  - Parent A assigned to drive Monday → can reassign to Parent B (spouse)
+  - No Trip Admin approval required
+  - Automatic group notification sent to all members
+  - Change reflected immediately in schedules
+- **Notification**: "Schedule Update: Sarah Johnson will now drive Monday instead of Mike Johnson (family reassignment)"
+- **Rationale**: Reduces administrative burden while maintaining group transparency
+
+### Implementation Architecture
+
+```
+WIREFRAME: Dual Driving Parent Dashboard
+┌─────────────────────────────────────────────────────────────┐
+│ Family Driving Coordination - The Johnson Family           │
+├─────────────────────────────────────────────────────────────┤
+│ 👨‍👩‍👧‍👦 Family Driving Status:                                   │
+│                                                             │
+│ 🚗 Sarah Johnson (Driving Parent)                          │
+│ - Availability: Mon, Wed, Fri                              │
+│ - Assigned: Monday 1/15 (7:45 AM)                          │
+│ - Status: ✅ Confirmed                                     │
+│                                                             │
+│ 🚗 Mike Johnson (Driving Parent)                           │
+│ - Availability: Tue, Thu                                   │
+│ - Assigned: Thursday 1/18 (7:45 AM)                        │
+│ - Status: ✅ Confirmed                                     │
+│                                                             │
+│ 📊 Family Load Summary:                                    │
+│ - Children: Emma, Jake (2 kids)                           │
+│ - Fair Share: 2 trips per week                            │
+│ - Current Assignment: 2 trips ✅                          │
+│ - Distribution: Sarah (1), Mike (1)                       │
+│                                                             │
+│ 🔄 Quick Reassignment Options:                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Monday 1/15 - Sarah driving                             │ │
+│ │ [Reassign to Mike] [Keep Sarah] [Request Swap]         │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Thursday 1/18 - Mike driving                            │ │
+│ │ [Reassign to Sarah] [Keep Mike] [Request Swap]         │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ ⚠️ Reassignment Policy:                                    │
+│ • Family reassignments notify group automatically          │
+│ • External swaps require approval from other families      │
+│ • Changes must be made 24 hours before trip time          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Scheduling Algorithm Enhancement
+
+**Child-Based Load Calculation:**
+
+1. Count total children in group
+2. Calculate weekly trips needed
+3. Distribute trips per child/family: `trips_per_family = total_trips ÷ children_count`
+4. Assign trips to families, then determine which parent drives each trip
+5. Prioritize family preferences and availability
+
+**Dual Parent Optimization:**
+
+- Algorithm considers both parents' availability when assigning to a family
+- Prefers distributing trips between spouses when both can drive
+- Falls back to single parent if spouse unavailable
+- Tracks driving equity per family unit, not per individual parent
+
+---
+
 ## Design System & Component Library
 
 ### Color Palette
