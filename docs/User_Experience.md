@@ -1873,6 +1873,116 @@ WIREFRAME: Super Admin Reactivation Review
 
 ---
 
+## Family Carpool Membership Rules
+
+### Core Business Rules
+
+**Single Group Membership Policy**: To ensure reliable coordination and prevent scheduling conflicts, each child can only be a member of one carpool group at a time. This simplifies logistics and strengthens community bonds within each group.
+
+**Family Unit Cohesion**: Carpool memberships operate at the family level to maintain consistency and communication clarity:
+
+#### Rule 1: Child Single Group Membership
+
+- **Policy**: Each child can only be in one carpool group at any given time
+- **Rationale**: Prevents scheduling conflicts, ensures clear accountability, and maintains reliable passenger counts
+- **Implementation**: System prevents joining additional groups if child is already a member elsewhere
+- **Exception Handling**: Parents must leave current group before joining a new one
+
+#### Rule 2: Driving Parent Departure Cascade
+
+- **Policy**: When a driving parent leaves a group, their non-driving spouse and all children automatically exit the group
+- **Rationale**: Maintains family coordination unity and prevents orphaned memberships
+- **Process**:
+  - System identifies all family members in the group
+  - Removes all family members simultaneously
+  - Notifies Trip Admin of complete family departure
+  - Updates group capacity and scheduling algorithms
+- **Grace Period**: 48-hour notification period to allow Trip Admin planning
+
+#### Rule 3: Driving Parent Approval Cascade
+
+- **Policy**: When Trip Admin approves a driving parent's join request, their non-driving spouse and children automatically join the group
+- **Rationale**: Ensures complete family integration and prevents partial memberships
+- **Process**:
+  - Trip Admin reviews join request from driving parent
+  - Approval automatically adds entire family unit to group
+  - System creates member records for all family members
+  - Capacity calculations include all family members
+  - Welcome notifications sent to entire family
+
+#### Family Membership Workflow
+
+```
+WIREFRAME: Family-Level Join Request
+┌─────────────────────────────────────────────────────────────┐
+│ Review Join Request - The Johnson Family                   │
+├─────────────────────────────────────────────────────────────┤
+│ 👨‍👩‍👧‍👦 Family Overview:                                        │
+│                                                             │
+│ 🚗 Driving Parent: Sarah Johnson                           │
+│ - Email: sarah.j@example.com                               │
+│ - Phone: (555) 123-4567                                    │
+│ - Driving availability: Weekdays 7:30-8:30 AM             │
+│                                                             │
+│ 👤 Non-Driving Parent: Mike Johnson                        │
+│ - Email: mike.j@example.com                                │
+│ - Phone: (555) 123-4568                                    │
+│ - Emergency contact: Yes                                    │
+│                                                             │
+│ 👶 Children:                                               │
+│ - Emma Johnson (Grade 3, Lincoln Elementary)              │
+│ - Jake Johnson (Grade 1, Lincoln Elementary)              │
+│                                                             │
+│ 📍 Pickup Location: 123 Maple Street (2.1 miles from school)│
+│                                                             │
+│ 📊 Impact on Group:                                        │
+│ - Current capacity: 4/8 members                           │
+│ - After approval: 7/8 members (+3 family members)         │
+│ - Driving capability: +1 reliable driver                   │
+│                                                             │
+│ 💬 Parent's message:                                       │
+│ "We're excited to join! I can drive Tuesday and Thursday  │
+│ mornings regularly, and help with backup as needed."       │
+│                                                             │
+│ ⚠️ Family Unit Policy:                                     │
+│ Approving this request will add the entire Johnson family  │
+│ (2 parents + 2 children) to the group automatically.      │
+│                                                             │
+│ [❌ Decline Request] [✅ Approve Family Membership]        │
+└─────────────────────────────────────────────────────────────┘
+
+WIREFRAME: Family Departure Confirmation
+┌─────────────────────────────────────────────────────────────┐
+│ Confirm Family Departure                                    │
+├─────────────────────────────────────────────────────────────┤
+│ ⚠️ Important: Family Unit Departure                        │
+│                                                             │
+│ You are about to leave "Lincoln Morning Riders"            │
+│                                                             │
+│ 👨‍👩‍👧‍👦 The following family members will also be removed:     │
+│                                                             │
+│ ✓ Sarah Johnson (You - Driving Parent)                     │
+│ ✓ Mike Johnson (Non-driving spouse)                        │
+│ ✓ Emma Johnson (Child - Grade 3)                           │
+│ ✓ Jake Johnson (Child - Grade 1)                           │
+│                                                             │
+│ 📅 Departure will be effective in 48 hours to allow        │
+│ Trip Admin to adjust schedules.                             │
+│                                                             │
+│ 📞 Trip Admin will be notified: Sarah Martinez              │
+│                                                             │
+│ 💡 Consider: If you're having issues with the group,       │
+│ try reaching out to the Trip Admin first.                  │
+│                                                             │
+│ Reason for leaving (optional):                              │
+│ [Schedule changes - new job hours                         ] │
+│                                                             │
+│ [Cancel] [Confirm Family Departure]                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Design System & Component Library
 
 ### Color Palette

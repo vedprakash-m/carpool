@@ -59,6 +59,8 @@ export default function ParentGroupsPage() {
   const [selectedGroup, setSelectedGroup] = useState<CarpoolGroup | null>(null);
   const [isLoading_groups, setIsLoading_groups] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showDepartureModal, setShowDepartureModal] = useState(false);
+  const [departureReason, setDepartureReason] = useState("");
 
   const [message, setMessage] = useState<{
     type: "success" | "error" | "info";
@@ -237,6 +239,54 @@ export default function ParentGroupsPage() {
       setMessage({
         type: "error",
         text: "Failed to decline invitation. Please try again.",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFamilyDeparture = async (group: CarpoolGroup, reason: string) => {
+    setIsProcessing(true);
+    try {
+      // In production, this would call the API
+      const response = await fetch(`/api/admin/groups/${group.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("vcarpool_token")}`,
+        },
+        body: JSON.stringify({
+          action: "family-departure",
+          userId: user?.id,
+          reason,
+          confirmDeparture: true,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Remove the group from the list
+        setGroups((prev) => prev.filter((g) => g.id !== group.id));
+
+        setMessage({
+          type: "success",
+          text: `Family departure completed. ${data.data.departure.departedMembers.length} family members removed from "${group.name}". Trip Admin has been notified.`,
+        });
+
+        setSelectedGroup(null);
+        setShowDepartureModal(false);
+      } else {
+        const errorData = await response.json();
+        setMessage({
+          type: "error",
+          text: errorData.error.message || "Failed to process family departure",
+        });
+      }
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "Error processing family departure. Please try again.",
       });
     } finally {
       setIsProcessing(false);
@@ -605,6 +655,109 @@ export default function ParentGroupsPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Action Buttons */}
+                <div className="p-6 border-t border-gray-200 bg-gray-50">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-600">
+                      ⚠️ <strong>Family Unit Policy:</strong> Leaving this group
+                      will remove your entire family (parents and children) from
+                      the carpool.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setShowDepartureModal(true);
+                        setDepartureReason("");
+                      }}
+                      className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      Leave Group
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Family Departure Confirmation Modal */}
+        {showDepartureModal && selectedGroup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full">
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Confirm Family Departure
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  This action will remove your entire family from "
+                  {selectedGroup.name}"
+                </p>
+              </div>
+
+              <div className="p-6">
+                <div className="mb-4">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-yellow-800">
+                      <strong>⚠️ Important: Family Unit Departure</strong>
+                      <br />
+                      The following family members will be removed:
+                    </p>
+                    <ul className="mt-2 text-xs text-yellow-700">
+                      {selectedGroup.members
+                        .filter(
+                          (m) =>
+                            m.userId === user?.id ||
+                            m.userId?.includes(user?.id || "")
+                        )
+                        .map((m) => (
+                          <li key={m.id}>
+                            ✓ {m.name} ({m.role})
+                          </li>
+                        ))}
+                      {selectedGroup.members
+                        .find((m) => m.userId === user?.id)
+                        ?.children?.map((child) => (
+                          <li key={child.id}>
+                            ✓ {child.name} (Grade {child.grade})
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Reason for leaving (optional):
+                  </label>
+                  <textarea
+                    value={departureReason}
+                    onChange={(e) => setDepartureReason(e.target.value)}
+                    placeholder="e.g., Schedule changes, moving, etc."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    rows={3}
+                  />
+
+                  <p className="text-xs text-gray-500 mt-2">
+                    📅 Departure will be effective in 48 hours to allow Trip
+                    Admin planning time.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-gray-200 bg-gray-50 flex space-x-3">
+                <button
+                  onClick={() => setShowDepartureModal(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() =>
+                    handleFamilyDeparture(selectedGroup, departureReason)
+                  }
+                  disabled={isProcessing}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                >
+                  {isProcessing ? "Processing..." : "Confirm Family Departure"}
+                </button>
               </div>
             </div>
           </div>

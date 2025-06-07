@@ -196,6 +196,37 @@ graph TB
 
 **Status:** Backend messaging infrastructure exists but frontend integration pending
 
+### 3.5 Family Carpool Membership Rules (✅ NEWLY IMPLEMENTED)
+
+**Business Rules Implementation:**
+
+- **Single Group Membership**: Each child can only be in one carpool group at any time
+- **Family Unit Cohesion**: Carpool memberships operate at family level
+- **Driving Parent Departure Cascade**: When driving parent leaves, entire family exits
+- **Driving Parent Approval Cascade**: When driving parent joins, entire family joins
+
+**Implemented Functions:**
+
+- Enhanced `admin-join-requests`: Family cascade approval with child conflict detection
+- New `handleFamilyDeparture`: Family unit departure processing
+- Updated `parent-group-search`: Single group membership validation
+- Enhanced frontend: Family departure confirmation modal
+
+**Features:**
+
+- Child enrollment conflict detection across groups
+- Family member capacity calculation (driving parent + spouse + children)
+- 48-hour grace period for departure notifications
+- Family unit UI with departure confirmation workflow
+- Automatic family member addition/removal cascading
+
+**Policy Enforcement:**
+
+- Backend validation prevents multiple group memberships per child
+- Frontend UI clearly shows family unit impact
+- Trip Admin notifications for family departures/arrivals
+- Group capacity updates include entire family units
+
 ## 4. Critical Implementation Decisions (January 2025)
 
 ### 4.1 UX Gap Analysis Implementation Status

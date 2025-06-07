@@ -342,21 +342,74 @@ module.exports = async function (context, req) {
         return;
       }
 
-      // Check group capacity
+      // FAMILY UNIT MEMBERSHIP: Calculate total family member impact
       const childrenCount = request.childrenInfo?.length || 1;
-      if (group.memberCount + childrenCount > group.maxChildren) {
+      const drivingParent = 1; // The requesting parent
+      const nonDrivingParent = request.hasSpouse ? 1 : 0; // Assume spouse exists if mentioned in request
+      const totalFamilyMembers =
+        drivingParent + nonDrivingParent + childrenCount;
+
+      // Check if any children are already in other groups (Rule 1: Single Group Membership)
+      const childrenNames =
+        request.childrenInfo?.map((child) => child.name.toLowerCase()) || [];
+      const existingChildMemberships = mockJoinRequests.filter(
+        (r) =>
+          r.status === "approved" &&
+          r.groupId !== request.groupId &&
+          r.childrenInfo?.some((child) =>
+            childrenNames.includes(child.name.toLowerCase())
+          )
+      );
+
+      if (existingChildMemberships.length > 0) {
         context.res.status = 400;
         context.res.body = JSON.stringify({
           success: false,
           error: {
-            code: "CAPACITY_EXCEEDED",
-            message: "Adding this family would exceed group capacity",
+            code: "CHILD_ALREADY_ENROLLED",
+            message:
+              "One or more children are already members of another carpool group. Each child can only be in one group at a time.",
+            details: {
+              conflictingGroups: existingChildMemberships
+                .map((r) => r.group?.name)
+                .filter(Boolean),
+              affectedChildren: existingChildMemberships.flatMap((r) =>
+                r.childrenInfo
+                  ?.filter((child) =>
+                    childrenNames.includes(child.name.toLowerCase())
+                  )
+                  .map((child) => child.name)
+              ),
+            },
           },
         });
         return;
       }
 
-      // Update request
+      // Check group capacity for entire family unit
+      if (group.memberCount + totalFamilyMembers > group.maxChildren) {
+        context.res.status = 400;
+        context.res.body = JSON.stringify({
+          success: false,
+          error: {
+            code: "CAPACITY_EXCEEDED",
+            message: `Adding the entire ${request.requester.firstName} family (${totalFamilyMembers} members) would exceed group capacity (${group.maxChildren} max).`,
+            details: {
+              currentCapacity: group.memberCount,
+              maxCapacity: group.maxChildren,
+              familySize: totalFamilyMembers,
+              breakdown: {
+                drivingParent: drivingParent,
+                nonDrivingParent: nonDrivingParent,
+                children: childrenCount,
+              },
+            },
+          },
+        });
+        return;
+      }
+
+      // FAMILY CASCADE APPROVAL: Update request with family unit details
       mockJoinRequests[requestIndex] = {
         ...request,
         status: "approved",
@@ -366,16 +419,68 @@ module.exports = async function (context, req) {
           firstName: "Sarah", // Mock data
           lastName: "Johnson",
         },
-        reviewMessage: reviewMessage || "Welcome to the group!",
+        reviewMessage:
+          reviewMessage ||
+          `Welcome to the group! Your entire family (${totalFamilyMembers} members) has been added.`,
         reviewedAt: new Date().toISOString(),
+        familyMembersAdded: {
+          drivingParent: request.requester,
+          nonDrivingParent: request.spouseInfo || null,
+          children: request.childrenInfo || [],
+          totalCount: totalFamilyMembers,
+        },
       };
 
-      // Update group member count
+      // Update group member count with entire family
       const groupIndex = mockCarpoolGroups.findIndex(
         (g) => g.id === request.groupId
       );
       if (groupIndex !== -1) {
-        mockCarpoolGroups[groupIndex].memberCount += childrenCount;
+        mockCarpoolGroups[groupIndex].memberCount += totalFamilyMembers;
+
+        // Add family members to group's member list
+        if (!mockCarpoolGroups[groupIndex].members) {
+          mockCarpoolGroups[groupIndex].members = [];
+        }
+
+        // Add driving parent
+        mockCarpoolGroups[groupIndex].members.push({
+          id: `member-${Date.now()}-driving`,
+          userId: request.requesterId,
+          name: `${request.requester.firstName} ${request.requester.lastName}`,
+          email: request.requester.email,
+          role: "parent",
+          canDrive: true,
+          joinedAt: new Date().toISOString(),
+          children: request.childrenInfo || [],
+        });
+
+        // Add non-driving parent if exists
+        if (request.spouseInfo) {
+          mockCarpoolGroups[groupIndex].members.push({
+            id: `member-${Date.now()}-spouse`,
+            userId: `${request.requesterId}-spouse`,
+            name: `${request.spouseInfo.firstName} ${request.spouseInfo.lastName}`,
+            email: request.spouseInfo.email,
+            role: "parent",
+            canDrive: false,
+            joinedAt: new Date().toISOString(),
+            children: request.childrenInfo || [],
+          });
+        }
+
+        // Add children as members
+        (request.childrenInfo || []).forEach((child, index) => {
+          mockCarpoolGroups[groupIndex].members.push({
+            id: `member-${Date.now()}-child-${index}`,
+            userId: `${request.requesterId}-child-${index}`,
+            name: child.name,
+            role: "student",
+            grade: child.grade,
+            joinedAt: new Date().toISOString(),
+            parentId: request.requesterId,
+          });
+        });
       }
 
       context.res.status = 200;

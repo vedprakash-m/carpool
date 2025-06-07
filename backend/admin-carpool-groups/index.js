@@ -48,6 +48,10 @@ module.exports = async function (context, req) {
       case "GET":
         return groupId ? getGroupDetails(groupId, context) : getGroups(context);
       case "POST":
+        const { action } = req.body;
+        if (action === "family-departure") {
+          return handleFamilyDeparture(groupId, req.body, context);
+        }
         return createGroup(req.body, context);
       case "PUT":
         return updateGroup(groupId, req.body, context);
@@ -220,6 +224,143 @@ async function deleteGroup(groupId, context) {
   } catch (error) {
     context.log.error("Delete group error:", error);
     throw error;
+  }
+}
+
+// Handle family departure cascade (Rule 2: Driving Parent Departure Cascade)
+async function handleFamilyDeparture(groupId, requestData, context) {
+  try {
+    const { userId, reason, confirmDeparture } = requestData;
+
+    if (!userId || !confirmDeparture) {
+      return {
+        status: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "User ID and departure confirmation are required",
+          },
+        }),
+      };
+    }
+
+    // Find the group
+    const mockGroups = getMockGroups();
+    const groupIndex = mockGroups.findIndex((g) => g.id === groupId);
+
+    if (groupIndex === -1) {
+      return {
+        status: 404,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "GROUP_NOT_FOUND",
+            message: "Carpool group not found",
+          },
+        }),
+      };
+    }
+
+    const group = mockGroups[groupIndex];
+
+    // Find the departing parent and their family members
+    const drivingParent = group.members.find(
+      (m) => m.userId === userId && m.role === "parent" && m.canDrive
+    );
+
+    if (!drivingParent) {
+      return {
+        status: 404,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "MEMBER_NOT_FOUND",
+            message: "Driving parent not found in this group",
+          },
+        }),
+      };
+    }
+
+    // FAMILY CASCADE DEPARTURE: Find all family members
+    const familyMembers = group.members.filter(
+      (m) =>
+        m.userId === userId || // driving parent
+        m.userId === `${userId}-spouse` || // non-driving spouse
+        m.parentId === userId // children
+    );
+
+    if (familyMembers.length === 0) {
+      return {
+        status: 404,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          error: {
+            code: "NO_FAMILY_MEMBERS",
+            message: "No family members found in this group",
+          },
+        }),
+      };
+    }
+
+    // Remove all family members from the group
+    const remainingMembers = group.members.filter(
+      (m) => !familyMembers.find((fm) => fm.id === m.id)
+    );
+
+    // Update group data
+    mockGroups[groupIndex] = {
+      ...group,
+      members: remainingMembers,
+      currentMembers: remainingMembers.length,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Prepare departure notification details
+    const departureDetails = {
+      groupName: group.name,
+      familyName: `${drivingParent.name.split(" ")[0]} Family`,
+      departedMembers: familyMembers.map((m) => ({
+        name: m.name,
+        role: m.role,
+        grade: m.grade || null,
+      })),
+      reason: reason || "No reason provided",
+      departureDate: new Date().toISOString(),
+      gracePeriodEnd: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(), // 48 hours
+      remainingCapacity: group.maxMembers - remainingMembers.length,
+      tripAdminNotified: true,
+    };
+
+    return {
+      status: 200,
+      headers: corsHeaders,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          departure: departureDetails,
+          updatedGroup: mockGroups[groupIndex],
+        },
+        message: `Family departure completed. ${familyMembers.length} members removed from "${group.name}". Trip Admin has been notified.`,
+      }),
+    };
+  } catch (error) {
+    context.log.error("Family departure error:", error);
+    return {
+      status: 500,
+      headers: corsHeaders,
+      body: JSON.stringify({
+        success: false,
+        error: {
+          code: "INTERNAL_ERROR",
+          message: "Error processing family departure",
+        },
+      }),
+    };
   }
 }
 

@@ -422,6 +422,55 @@ module.exports = async function (context, req) {
       // Extract user ID from token (mock)
       const userId = "parent-123"; // In production, extract from JWT
 
+      // RULE 1: Check if any children are already in other groups (Single Group Membership)
+      if (childrenInfo && childrenInfo.length > 0) {
+        const childrenNames = childrenInfo.map((child) =>
+          child.name.toLowerCase()
+        );
+
+        // Check against all approved join requests in other groups
+        const existingChildMemberships = mockJoinRequests.filter(
+          (r) =>
+            r.status === "approved" &&
+            r.groupId !== groupId &&
+            r.childrenInfo?.some((child) =>
+              childrenNames.includes(child.name.toLowerCase())
+            )
+        );
+
+        if (existingChildMemberships.length > 0) {
+          const conflictingChildren = [];
+          const conflictingGroups = [];
+
+          existingChildMemberships.forEach((r) => {
+            const conflicts = r.childrenInfo?.filter((child) =>
+              childrenNames.includes(child.name.toLowerCase())
+            );
+            if (conflicts) {
+              conflictingChildren.push(...conflicts.map((c) => c.name));
+              if (r.group?.name) conflictingGroups.push(r.group.name);
+            }
+          });
+
+          context.res.status = 400;
+          context.res.body = JSON.stringify({
+            success: false,
+            error: {
+              code: "CHILD_ALREADY_ENROLLED",
+              message:
+                "One or more children are already members of another carpool group. Each child can only be in one group at a time.",
+              details: {
+                conflictingChildren: [...new Set(conflictingChildren)],
+                conflictingGroups: [...new Set(conflictingGroups)],
+                policy:
+                  "To join this group, you must first leave your current group for the affected children.",
+              },
+            },
+          });
+          return;
+        }
+      }
+
       // Check for duplicate request
       const existingRequest = mockJoinRequests.find(
         (r) =>
