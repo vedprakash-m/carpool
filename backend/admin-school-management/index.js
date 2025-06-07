@@ -21,8 +21,8 @@ let mockSchools = [
     grades: ["K", "1", "2", "3", "4", "5"],
     contactInfo: {
       phone: "(217) 555-0123",
-      email: "info@lincoln.springfield.k12.il.us",
-      website: "https://lincoln.springfield.k12.il.us",
+      email: "school-contact@example.com", // Example email for demo purposes
+      website: "https://example-school.edu",
     },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -46,8 +46,8 @@ let mockSchools = [
     grades: ["6", "7", "8"],
     contactInfo: {
       phone: "(217) 555-0124",
-      email: "info@washington.springfield.k12.il.us",
-      website: "https://washington.springfield.k12.il.us",
+      email: "middle-school@example.com", // Example email for demo purposes
+      website: "https://example-middle-school.edu",
     },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -71,8 +71,8 @@ let mockSchools = [
     grades: ["9", "10", "11", "12"],
     contactInfo: {
       phone: "(217) 555-0125",
-      email: "info@roosevelt.springfield.k12.il.us",
-      website: "https://roosevelt.springfield.k12.il.us",
+      email: "high-school@example.com", // Example email for demo purposes
+      website: "https://example-high-school.edu",
     },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
