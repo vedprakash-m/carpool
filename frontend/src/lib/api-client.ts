@@ -275,8 +275,8 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     // Check for mock mode and various endpoints
     if (this.isMockMode) {
-      // Mock trips stats for dashboard
-      if (url === "/trips/stats") {
+      // Mock trips stats for dashboard (support both /trips/stats and /v1/trips/stats)
+      if (url === "/trips/stats" || url === "/v1/trips/stats") {
         return Promise.resolve({
           success: true,
           data: {
@@ -290,8 +290,8 @@ export class ApiClient {
         });
       }
 
-      // Mock trips list
-      if (url.startsWith("/trips")) {
+      // Mock trips list (support both /trips and /v1/trips)
+      if (url.startsWith("/trips") || url.startsWith("/v1/trips")) {
         return Promise.resolve({
           success: true,
           data: {
@@ -334,8 +334,8 @@ export class ApiClient {
         });
       }
 
-      // Mock user profile
-      if (url === "/users/me") {
+      // Mock user profile (support both /users/me and /v1/users/me)
+      if (url === "/users/me" || url === "/v1/users/me") {
         return Promise.resolve({
           success: true,
           data: MOCK_USER as T,

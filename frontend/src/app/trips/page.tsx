@@ -179,6 +179,15 @@ function TripsPage() {
   const [sortBy, setSortBy] = useState<"date" | "cost" | "destination">("date");
   const [filterStatus, setFilterStatus] = useState<TripStatus | "all">("all");
 
+  // Fetch trips when component mounts or tab changes
+  useEffect(() => {
+    if (activeTab === "my-trips") {
+      fetchMyTrips();
+    } else if (activeTab === "available") {
+      fetchAvailableTrips();
+    }
+  }, [activeTab, fetchMyTrips, fetchAvailableTrips]);
+
   // Filter and sort trips based on search criteria
   const filteredTrips = trips
     .filter((trip) => {
