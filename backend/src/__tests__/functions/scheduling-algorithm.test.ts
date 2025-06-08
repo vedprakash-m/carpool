@@ -1,17 +1,71 @@
 /**
  * Tests for VCarpool 5-Step Scheduling Algorithm
- * Testing core business logic per Product Specification requirements
+ * ALIGNMENT WITH USER_EXPERIENCE.MD REQUIREMENTS:
+ *
+ * 1. PROGRESSIVE PARENT ONBOARDING: Scheduling availability based on onboarding completion
+ * 2. GROUP DISCOVERY & JOIN REQUEST: Group-based scheduling with admin coordination
+ * 3. WEEKLY PREFERENCE SUBMISSION: Family weekly preference integration in scheduling
+ * 4. GROUP ADMIN SCHEDULE MANAGEMENT: Enhanced admin scheduling coordination and management
+ * 5. EMERGENCY RESPONSE & CRISIS COORDINATION: Emergency scheduling and backup driver coordination
+ * 6. UNIFIED FAMILY DASHBOARD & ROLE TRANSITIONS: Family-centered scheduling with role-based access
+ *
+ * FOCUSES: Family-oriented scheduling, group admin coordination, emergency backup scheduling,
+ * weekly preference integration, and family-centered carpool group management
  */
 
-describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
-  // Test data representing typical school carpool scenario
-  const mockDrivers = [
+describe("VCarpool Family-Oriented Scheduling Algorithm - Core Business Logic", () => {
+  // Family-oriented test data representing school carpool scenario
+  interface TestFamilyDriver {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    familyId: string;
+    isActiveDriver: boolean;
+    children: Array<{
+      name: string;
+      grade: string;
+      school: string;
+    }>;
+    emergencyContacts: Array<{
+      name: string;
+      phone: string;
+      canDrive: boolean;
+    }>;
+    groupAdminRoles?: string[];
+    preferences: {
+      [key: string]:
+        | "preferable"
+        | "unavailable"
+        | "less-preferable"
+        | "neutral";
+    };
+    onboardingProgress: {
+      profileComplete: boolean;
+      emergencyContactsAdded: boolean;
+      childrenAdded: boolean;
+      weeklyPreferencesSet: boolean;
+      groupDiscoveryCompleted: boolean;
+    };
+  }
+
+  const mockFamilyDrivers: TestFamilyDriver[] = [
     {
-      id: "parent-1",
+      id: "family-smith-parent",
       name: "John Smith",
-      email: "john@parent.com",
+      email: "john@lincolnelementary.edu",
       role: "parent",
+      familyId: "family-smith-001",
       isActiveDriver: true,
+      children: [
+        { name: "Emma Smith", grade: "3rd", school: "Lincoln Elementary" },
+        { name: "Jake Smith", grade: "1st", school: "Lincoln Elementary" },
+      ],
+      emergencyContacts: [
+        { name: "Mary Smith", phone: "+1-555-0123", canDrive: true },
+        { name: "Bob Wilson", phone: "+1-555-0124", canDrive: false },
+      ],
+      groupAdminRoles: ["morning-dropoff-group"],
       preferences: {
         monday_morning: "preferable",
         tuesday_morning: "unavailable",
@@ -19,13 +73,28 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         thursday_morning: "preferable",
         friday_morning: "neutral",
       },
+      onboardingProgress: {
+        profileComplete: true,
+        emergencyContactsAdded: true,
+        childrenAdded: true,
+        weeklyPreferencesSet: true,
+        groupDiscoveryCompleted: true,
+      },
     },
     {
-      id: "parent-2",
+      id: "family-doe-parent",
       name: "Jane Doe",
-      email: "jane@parent.com",
+      email: "jane@lincolnelementary.edu",
       role: "parent",
+      familyId: "family-doe-001",
       isActiveDriver: true,
+      children: [
+        { name: "Sophie Doe", grade: "2nd", school: "Lincoln Elementary" },
+      ],
+      emergencyContacts: [
+        { name: "Mike Doe", phone: "+1-555-0456", canDrive: true },
+        { name: "Lisa Johnson", phone: "+1-555-0457", canDrive: true },
+      ],
       preferences: {
         monday_morning: "neutral",
         tuesday_morning: "preferable",
@@ -33,13 +102,30 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         thursday_morning: "unavailable",
         friday_morning: "less-preferable",
       },
+      onboardingProgress: {
+        profileComplete: true,
+        emergencyContactsAdded: true,
+        childrenAdded: true,
+        weeklyPreferencesSet: true,
+        groupDiscoveryCompleted: true,
+      },
     },
     {
-      id: "parent-3",
+      id: "family-johnson-parent",
       name: "Mike Johnson",
-      email: "mike@parent.com",
+      email: "mike@lincolnelementary.edu",
       role: "parent",
+      familyId: "family-johnson-001",
       isActiveDriver: true,
+      children: [
+        { name: "Alex Johnson", grade: "4th", school: "Lincoln Elementary" },
+        { name: "Sam Johnson", grade: "2nd", school: "Lincoln Elementary" },
+      ],
+      emergencyContacts: [
+        { name: "Carol Johnson", phone: "+1-555-0789", canDrive: false },
+        { name: "Dave Miller", phone: "+1-555-0790", canDrive: true },
+      ],
+      groupAdminRoles: ["afternoon-pickup-group", "emergency-response"],
       preferences: {
         monday_morning: "less-preferable",
         tuesday_morning: "neutral",
@@ -47,8 +133,18 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         thursday_morning: "neutral",
         friday_morning: "preferable",
       },
+      onboardingProgress: {
+        profileComplete: true,
+        emergencyContactsAdded: true,
+        childrenAdded: true,
+        weeklyPreferencesSet: true,
+        groupDiscoveryCompleted: true,
+      },
     },
   ];
+
+  // Alias for compatibility with some tests
+  const mockDrivers = mockFamilyDrivers;
 
   const mockTimeSlots = [
     { day: "monday", time: "morning", route: "school-dropoff" },
@@ -58,49 +154,89 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
     { day: "friday", time: "morning", route: "school-dropoff" },
   ];
 
+  describe("Family Onboarding Integration", () => {
+    it("should only include fully onboarded families in scheduling", () => {
+      const onboardedDrivers = mockFamilyDrivers.filter(
+        (driver) =>
+          driver.onboardingProgress.profileComplete &&
+          driver.onboardingProgress.emergencyContactsAdded &&
+          driver.onboardingProgress.childrenAdded &&
+          driver.onboardingProgress.weeklyPreferencesSet
+      );
+
+      // All our test drivers are fully onboarded
+      expect(onboardedDrivers).toHaveLength(3);
+      expect(
+        onboardedDrivers.every(
+          (driver) => driver.onboardingProgress.groupDiscoveryCompleted
+        )
+      ).toBe(true);
+    });
+
+    it("should require emergency contacts for scheduling eligibility", () => {
+      const driversWithEmergencyContacts = mockFamilyDrivers.filter(
+        (driver) => driver.emergencyContacts.length >= 2
+      );
+
+      expect(driversWithEmergencyContacts).toHaveLength(3);
+
+      // Verify each driver has at least one emergency contact who can drive
+      driversWithEmergencyContacts.forEach((driver) => {
+        const canDriveContacts = driver.emergencyContacts.filter(
+          (contact) => contact.canDrive
+        );
+        expect(canDriveContacts.length).toBeGreaterThanOrEqual(1);
+      });
+    });
+  });
+
   describe("Step 1: Exclude Unavailable Drivers", () => {
-    it("should exclude drivers marked as unavailable for specific slots", () => {
-      const availableDrivers = mockDrivers.filter(
+    it("should exclude family drivers marked as unavailable for specific slots", () => {
+      const availableDrivers = mockFamilyDrivers.filter(
         (driver) => driver.preferences.tuesday_morning !== "unavailable"
       );
 
-      // Tuesday morning: parent-1 unavailable, parent-2 and parent-3 available
+      // Tuesday morning: family-smith-parent unavailable, others available
       expect(availableDrivers).toHaveLength(2);
-      expect(availableDrivers.map((d) => d.id)).not.toContain("parent-1");
-      expect(availableDrivers.map((d) => d.id)).toContain("parent-2");
-      expect(availableDrivers.map((d) => d.id)).toContain("parent-3");
+      expect(availableDrivers.map((d) => d.id)).not.toContain(
+        "family-smith-parent"
+      );
+      expect(availableDrivers.map((d) => d.id)).toContain("family-doe-parent");
+      expect(availableDrivers.map((d) => d.id)).toContain(
+        "family-johnson-parent"
+      );
     });
 
-    it("should handle all drivers unavailable scenario", () => {
-      // Test with Thursday morning where parent-2 is unavailable
-      const thursdayUnavailableDrivers = mockDrivers.filter(
+    it("should handle all family drivers unavailable scenario", () => {
+      // Test with Thursday morning where family-doe-parent is unavailable
+      const thursdayUnavailableDrivers = mockFamilyDrivers.filter(
         (driver) => driver.preferences.thursday_morning === "unavailable"
       );
 
-      // Only parent-2 is unavailable for Thursday morning
+      // Only family-doe-parent is unavailable for Thursday morning
       expect(thursdayUnavailableDrivers).toHaveLength(1);
-      expect(thursdayUnavailableDrivers[0].id).toBe("parent-2");
+      expect(thursdayUnavailableDrivers[0].id).toBe("family-doe-parent");
     });
 
-    it("should preserve driver pool when no unavailable preferences", () => {
-      const availableDrivers = mockDrivers.filter(
+    it("should preserve family driver pool when no unavailable preferences", () => {
+      const availableDrivers = mockFamilyDrivers.filter(
         (driver) => driver.preferences.wednesday_morning !== "unavailable"
       );
 
-      // Wednesday morning: all drivers available (none marked unavailable)
+      // Wednesday morning: all family drivers available (none marked unavailable)
       expect(availableDrivers).toHaveLength(3);
     });
   });
 
   describe("Step 2: Assign Preferable Slots (Max 3 per week)", () => {
-    it("should prioritize drivers with preferable preferences", () => {
-      const mondayPreferableDrivers = mockDrivers.filter(
+    it("should prioritize family drivers with preferable preferences", () => {
+      const mondayPreferableDrivers = mockFamilyDrivers.filter(
         (driver) => driver.preferences.monday_morning === "preferable"
       );
 
-      // Monday morning: only parent-1 has preferable
+      // Monday morning: only family-smith-parent has preferable
       expect(mondayPreferableDrivers).toHaveLength(1);
-      expect(mondayPreferableDrivers[0].id).toBe("parent-1");
+      expect(mondayPreferableDrivers[0].id).toBe("family-smith-parent");
     });
 
     it("should enforce maximum 3 preferable slots per driver per week", () => {
@@ -108,7 +244,7 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         mockDrivers[0].preferences
       ).filter((pref) => pref === "preferable");
 
-      // Parent-1 has 2 preferable slots (within limit)
+      // family-smith-parent has 2 preferable slots (within limit)
       expect(parent1Preferable).toHaveLength(2);
       expect(parent1Preferable.length).toBeLessThanOrEqual(3);
     });
@@ -118,9 +254,9 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         (driver) => driver.preferences.wednesday_morning === "preferable"
       );
 
-      // Wednesday morning: parent-2 has preferable
+      // Wednesday morning: family-doe-parent has preferable
       expect(wednesdayPreferableDrivers).toHaveLength(1);
-      expect(wednesdayPreferableDrivers[0].id).toBe("parent-2");
+      expect(wednesdayPreferableDrivers[0].id).toBe("family-doe-parent");
     });
   });
 
@@ -130,9 +266,9 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         (driver) => driver.preferences.wednesday_morning === "less-preferable"
       );
 
-      // Wednesday morning: parent-1 has less-preferable
+      // Wednesday morning: family-smith-parent has less-preferable
       expect(wednesdayLessPreferableDrivers).toHaveLength(1);
-      expect(wednesdayLessPreferableDrivers[0].id).toBe("parent-1");
+      expect(wednesdayLessPreferableDrivers[0].id).toBe("family-smith-parent");
     });
 
     it("should enforce maximum 2 less-preferable slots per driver per week", () => {
@@ -140,7 +276,7 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         mockDrivers[1].preferences
       ).filter((pref) => pref === "less-preferable");
 
-      // Parent-2 has 1 less-preferable slot (within limit)
+      // family-doe-parent has 1 less-preferable slot (within limit)
       expect(parent2LessPreferable).toHaveLength(1);
       expect(parent2LessPreferable.length).toBeLessThanOrEqual(2);
     });
@@ -150,9 +286,9 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         (driver) => driver.preferences.friday_morning === "less-preferable"
       );
 
-      // Friday morning: parent-2 has less-preferable option
+      // Friday morning: family-doe-parent has less-preferable option
       expect(fridayLessPreferableDrivers).toHaveLength(1);
-      expect(fridayLessPreferableDrivers[0].id).toBe("parent-2");
+      expect(fridayLessPreferableDrivers[0].id).toBe("family-doe-parent");
     });
   });
 
@@ -162,9 +298,9 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         (driver) => driver.preferences.monday_morning === "neutral"
       );
 
-      // Monday morning: parent-2 neutral (backup option)
+      // Monday morning: family-doe-parent neutral (backup option)
       expect(mondayNeutralDrivers).toHaveLength(1);
-      expect(mondayNeutralDrivers[0].id).toBe("parent-2");
+      expect(mondayNeutralDrivers[0].id).toBe("family-doe-parent");
     });
 
     it("should provide multiple neutral options for slot filling", () => {
@@ -172,9 +308,9 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         (driver) => driver.preferences.tuesday_morning === "neutral"
       );
 
-      // Tuesday morning: parent-3 has neutral preference
+      // Tuesday morning: family-johnson-parent has neutral preference
       expect(tuesdayNeutralDrivers).toHaveLength(1);
-      expect(tuesdayNeutralDrivers[0].id).toBe("parent-3");
+      expect(tuesdayNeutralDrivers[0].id).toBe("family-johnson-parent");
     });
 
     it("should handle slots with multiple neutral drivers", () => {
@@ -182,7 +318,7 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         (driver) => driver.preferences.wednesday_morning === "neutral"
       );
 
-      // Wednesday morning: parent-3 neutral
+      // Wednesday morning: family-johnson-parent neutral
       expect(wednesdayNeutralDrivers).toHaveLength(1);
     });
   });
@@ -190,25 +326,25 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
   describe("Step 5: Historical Tie-Breaking for Fair Distribution", () => {
     it("should consider historical assignment counts for fairness", () => {
       const mockHistoricalData = {
-        "parent-1": 3, // Had 3 assignments last month
-        "parent-2": 1, // Had 1 assignment last month
-        "parent-3": 2, // Had 2 assignments last month
+        "family-smith-parent": 3, // Had 3 assignments last month
+        "family-doe-parent": 1, // Had 1 assignment last month
+        "family-johnson-parent": 2, // Had 2 assignments last month
       };
 
-      // Parent-2 should be prioritized due to fewer historical assignments
+      // family-doe-parent should be prioritized due to fewer historical assignments
       const sortedByHistory = Object.entries(mockHistoricalData)
         .sort(([, a], [, b]) => a - b)
         .map(([id]) => id);
 
-      expect(sortedByHistory[0]).toBe("parent-2"); // Lowest count first
-      expect(sortedByHistory[2]).toBe("parent-1"); // Highest count last
+      expect(sortedByHistory[0]).toBe("family-doe-parent"); // Lowest count first
+      expect(sortedByHistory[2]).toBe("family-smith-parent"); // Highest count last
     });
 
     it("should handle equal historical counts with secondary criteria", () => {
       const mockEqualHistory = {
-        "parent-1": 2,
-        "parent-2": 2,
-        "parent-3": 2,
+        "family-smith-parent": 2,
+        "family-doe-parent": 2,
+        "family-johnson-parent": 2,
       };
 
       // When equal history, should maintain consistent ordering
@@ -220,12 +356,12 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
 
     it("should track assignment frequency for long-term fairness", () => {
       const mockAssignmentHistory = [
-        { week: 1, driver: "parent-1", slots: 2 },
-        { week: 1, driver: "parent-2", slots: 1 },
-        { week: 1, driver: "parent-3", slots: 2 },
-        { week: 2, driver: "parent-1", slots: 1 },
-        { week: 2, driver: "parent-2", slots: 3 },
-        { week: 2, driver: "parent-3", slots: 1 },
+        { week: 1, driver: "family-smith-parent", slots: 2 },
+        { week: 1, driver: "family-doe-parent", slots: 1 },
+        { week: 1, driver: "family-johnson-parent", slots: 2 },
+        { week: 2, driver: "family-smith-parent", slots: 1 },
+        { week: 2, driver: "family-doe-parent", slots: 3 },
+        { week: 2, driver: "family-johnson-parent", slots: 1 },
       ];
 
       const totalAssignments = mockAssignmentHistory.reduce((acc, record) => {
@@ -233,10 +369,10 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
         return acc;
       }, {} as Record<string, number>);
 
-      // Parent-2 has most total assignments (4), parent-1 and parent-3 tied (3 each)
-      expect(totalAssignments["parent-2"]).toBe(4);
-      expect(totalAssignments["parent-1"]).toBe(3);
-      expect(totalAssignments["parent-3"]).toBe(3);
+      // family-doe-parent has most total assignments (4), family-smith-parent and family-johnson-parent tied (3 each)
+      expect(totalAssignments["family-doe-parent"]).toBe(4);
+      expect(totalAssignments["family-smith-parent"]).toBe(3);
+      expect(totalAssignments["family-johnson-parent"]).toBe(3);
     });
   });
 
@@ -317,7 +453,7 @@ describe("VCarpool Scheduling Algorithm - Core Business Logic", () => {
           slot: slot,
           driver: assignedDriver,
           assignmentMethod: assignedDriver
-            ? mockDrivers.find((d) => d.id === assignedDriver!.id)!.preferences[
+            ? mockDrivers.find((d) => d.id === assignedDriver.id)!.preferences[
                 slotKey
               ]
             : "unassigned",

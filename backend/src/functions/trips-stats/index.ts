@@ -1,76 +1,73 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { ApiResponse } from '@vcarpool/shared';
-import { container } from '../../container';
-import { compose, cors, errorHandler, authenticate, AuthenticatedRequest } from '../../middleware';
-import { validateQueryParams } from '../../middleware/validation.middleware';
-import { trackExecutionTime } from '../../utils/monitoring';
+import {
+  AzureFunction,
+  Context,
+  HttpRequest,
+  HttpResponseInit,
+} from "@azure/functions";
+import { container } from "../../../src/container";
+import { TripService } from "../../../src/services/trip.service";
+import { ILogger } from "../../../src/utils/logger";
+import { ApiResponse, TripStats, tripStatsQuerySchema } from "@vcarpool/shared";
+import {
+  authenticate,
+  validateQuery,
+  requestId,
+  requestLogging,
+  compose,
+} from "../../../src/middleware";
+import { handleError, Errors } from "../../../src/utils/error-handler";
 
-interface TripStats {
-  totalTrips: number;
-  tripsAsDriver: number;
-  tripsAsPassenger: number;
-  totalDistance: number;
-  costSavings: number;
-  upcomingTrips: number;
-}
-
-async function getTripStatsHandler(
-  request: AuthenticatedRequest & { validatedQuery?: any },
-  context: InvocationContext
+const httpTrigger: AzureFunction = async function (
+  context: Context,
+  req: HttpRequest
 ): Promise<HttpResponseInit> {
-  const logger = container.loggers.trip;
-  // Set context for the logger
-  if ('setContext' in logger) {
-    (logger as any).setContext(context);
-  }
-  
-  const userId = request.user!.userId;
-  
-  // Get query parameters (if any)
-  const timeRange = request.query?.get('timeRange') || 'all';
-  
-  // Log the operation start
-  logger.info('Retrieving trip statistics', { userId, timeRange });
+  const tripService = container.resolve<TripService>("TripService");
+  const logger = container
+    .resolve<ILogger>("ILogger")
+    .child({ requestId: req.requestId });
 
-  try {
-    // Get basic trip stats with performance tracking
-    const stats = await trackExecutionTime('getTripStats', 
-      () => container.tripService.getTripStats(userId),
-      'TripService'
-    );
-    
-    // Get upcoming trips count with performance tracking
-    const upcomingTrips = await trackExecutionTime('getUserUpcomingTrips', 
-      () => container.tripService.getUserUpcomingTrips(userId),
-      'TripService'
-    );
+  const mainHandler = async (
+    req: HttpRequest,
+    context: Context
+  ): Promise<HttpResponseInit> => {
+    logger.info("[trips-stats] Received request for trip stats.");
 
-    const tripStats: TripStats = {
-      ...stats,
-      upcomingTrips: upcomingTrips.length
-    };
+    if (!req.user) {
+      return handleError(
+        Errors.Unauthorized("User is not authenticated."),
+        req
+      );
+    }
 
-    logger.info('Trip statistics retrieved successfully', { userId });
-    return {
-      status: 200,
-      jsonBody: {
+    try {
+      const { timeRange } = req.validated?.query;
+      const stats = await tripService.getTripStats(req.user.userId, timeRange);
+
+      const response: ApiResponse<TripStats> = {
         success: true,
-        data: tripStats
-      } as ApiResponse<TripStats>
-    };
-  } catch (error) {
-    logger.error('Error retrieving trip statistics', { userId, error });
-    throw error; // Let the error handler middleware handle it
-  }
-}
+        data: stats,
+      };
 
-app.http('trips-stats', {
-  methods: ['GET'],
-  authLevel: 'anonymous',
-  route: 'trips/stats',
-  handler: compose(
-    cors,
-    errorHandler,
-    authenticate
-  )(getTripStatsHandler)
-});
+      return {
+        status: 200,
+        jsonBody: response,
+      };
+    } catch (error) {
+      logger.error(`[trips-stats] Error getting trip stats: ${error}`, {
+        error,
+      });
+      return handleError(error, req);
+    }
+  };
+
+  const composedMiddleware = compose(
+    requestId,
+    requestLogging,
+    authenticate,
+    validateQuery(tripStatsQuerySchema)
+  );
+
+  return composedMiddleware(mainHandler.bind(null, req, context));
+};
+
+export default httpTrigger;

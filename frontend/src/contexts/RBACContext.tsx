@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useMemo } from "react";
 import { UserRole, RolePermissions } from "../types/shared";
 import { useAuthStore } from "../store/auth.store";

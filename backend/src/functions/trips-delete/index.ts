@@ -1,144 +1,87 @@
 import {
-  app,
+  AzureFunction,
+  Context,
   HttpRequest,
   HttpResponseInit,
-  InvocationContext,
 } from "@azure/functions";
-import { ApiResponse, Trip, tripIdParamSchema } from "@vcarpool/shared";
-import { container } from "../../container";
+import { container } from "../../../src/container";
+import { TripService } from "../../../src/services/trip.service";
+import { ILogger } from "../../../src/utils/logger";
+import { ApiResponse, Trip } from "@vcarpool/shared";
 import {
-  compose,
-  cors,
-  errorHandler,
   authenticate,
-  AuthenticatedRequest,
-} from "../../middleware";
-import {
-  validatePathParams,
-  extractPathParam,
-} from "../../middleware/validation.middleware";
-import { trackExecutionTime } from "../../utils/monitoring";
+  validateParams,
+  requestId,
+  requestLogging,
+  compose,
+  hasRole,
+} from "../../../src/middleware";
+import { tripIdParamSchema } from "@vcarpool/shared/schemas/trip-params";
+import { handleError, Errors } from "../../../src/utils/error-handler";
 
-interface ExtendedRequest extends AuthenticatedRequest {
-  validatedParams?: { tripId: string };
-}
-
-async function deleteTripHandler(
-  request: ExtendedRequest,
-  context: InvocationContext
+const httpTrigger: AzureFunction = async function (
+  context: Context,
+  req: HttpRequest
 ): Promise<HttpResponseInit> {
-  const logger = container.loggers.trip;
-  // Set context for the logger
-  if ("setContext" in logger) {
-    (logger as any).setContext(context);
-  }
+  const tripService = container.resolve<TripService>("TripService");
+  const logger = container
+    .resolve<ILogger>("ILogger")
+    .child({ requestId: req.requestId });
 
-  const userId = request.user!.userId;
-  const tripId = request.validatedParams?.tripId;
+  const mainHandler = async (
+    req: HttpRequest,
+    context: Context
+  ): Promise<HttpResponseInit> => {
+    logger.info("[trips-delete] Received request to delete trip.");
 
-  logger.info("Processing delete trip request", { userId, tripId });
-
-  try {
-    // Check if trip exists with performance tracking
-    const trip = await trackExecutionTime(
-      "getTripById",
-      () => container.tripService.getTripById(tripId || ""),
-      "TripService"
-    );
-
-    if (!trip) {
-      logger.warn("Trip not found", { tripId });
-      return {
-        status: 404,
-        jsonBody: {
-          success: false,
-          error: "Trip not found",
-        } as ApiResponse,
-      };
+    if (!req.user) {
+      return handleError(
+        Errors.Unauthorized("User is not authenticated."),
+        req
+      );
     }
 
-    // Check if user is the driver
-    if (trip.driverId !== userId) {
-      logger.warn("Non-driver attempted to delete trip", {
-        tripId,
-        userId,
-        driverId: trip.driverId,
-      });
-      return {
-        status: 403,
-        jsonBody: {
-          success: false,
-          error: "Only the trip driver can delete the trip",
-        } as ApiResponse,
-      };
-    }
+    try {
+      const { tripId } = req.validated?.params;
+      const trip = await tripService.getTripById(tripId);
 
-    // Check trip status - can only delete planned trips
-    if (trip.status !== "planned") {
-      logger.warn("Attempted to delete non-planned trip", {
-        tripId,
-        status: trip.status,
-      });
-      return {
-        status: 400,
-        jsonBody: {
-          success: false,
-          error: "Can only delete planned trips",
-        } as ApiResponse,
-      };
-    }
+      if (!trip) {
+        return handleError(Errors.NotFound("Trip not found."), req);
+      }
 
-    // Check if trip has passengers - warn but allow deletion
-    if (trip.passengers.length > 0) {
-      logger.info("Deleting trip with passengers - they will be notified", {
-        tripId,
-        passengerCount: trip.passengers.length,
-      });
-    }
+      // User must be the trip driver or an admin to delete the trip
+      if (trip.driverId !== req.user.userId && req.user.role !== "admin") {
+        return handleError(
+          Errors.Forbidden("You are not authorized to delete this trip."),
+          req
+        );
+      }
 
-    // Cancel the trip (set status to cancelled) instead of hard delete
-    const cancelledTrip = await trackExecutionTime(
-      "cancelTrip",
-      () => container.tripService.cancelTrip(tripId || ""),
-      "TripService"
-    );
+      await tripService.deleteTrip(tripId);
 
-    // TODO: Send notifications to passengers about trip cancellation
-    // This could be implemented with email service or push notifications
-
-    logger.info("Trip successfully cancelled", { tripId, userId });
-    return {
-      status: 200,
-      jsonBody: {
+      const response: ApiResponse<void> = {
         success: true,
-        data: cancelledTrip,
-        message: "Trip cancelled successfully. Passengers have been notified.",
-      } as ApiResponse<Trip>,
-    };
-  } catch (error: any) {
-    logger.error("Error deleting trip", {
-      error: error.message,
-      tripId,
-      userId,
-    });
-    return {
-      status: 500,
-      jsonBody: {
-        success: false,
-        error: "An error occurred while deleting the trip",
-      } as ApiResponse,
-    };
-  }
-}
+        message: "Trip deleted successfully.",
+      };
 
-app.http("trips-delete", {
-  methods: ["DELETE"],
-  authLevel: "anonymous",
-  route: "trips/{tripId}",
-  handler: compose(
-    cors,
-    errorHandler,
+      return {
+        status: 200,
+        jsonBody: response,
+      };
+    } catch (error) {
+      logger.error(`[trips-delete] Error deleting trip: ${error}`, { error });
+      return handleError(error, req);
+    }
+  };
+
+  const composedMiddleware = compose(
+    requestId,
+    requestLogging,
     authenticate,
-    validatePathParams(tripIdParamSchema, extractPathParam("tripId"))
-  )(deleteTripHandler),
-});
+    validateParams(tripIdParamSchema)
+  );
+
+  return composedMiddleware(mainHandler.bind(null, req, context));
+};
+
+export default httpTrigger;

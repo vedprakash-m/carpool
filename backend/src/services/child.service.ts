@@ -3,7 +3,7 @@
 // This is a placeholder service to unblock development.
 // In a real implementation, this would interact with a database.
 
-import { Child } from "../types"; // Assuming types are defined here
+import { Child } from "@vcarpool/shared";
 
 export class ChildService {
   private static children: Child[] = [
@@ -11,15 +11,42 @@ export class ChildService {
   ];
 
   public static async createChild(
+    childData: Omit<
+      Child,
+      "id" | "familyId" | "parentId" | "createdAt" | "updatedAt"
+    >,
     familyId: string,
-    childData: Omit<Child, "id" | "familyId">
+    parentId: string
   ): Promise<Child> {
     const newChild: Child = {
       id: `child-${Date.now()}`,
       familyId,
+      parentId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       ...childData,
     };
     this.children.push(newChild);
+    return newChild;
+  }
+
+  async createChild(
+    childData: Omit<
+      Child,
+      "id" | "familyId" | "parentId" | "createdAt" | "updatedAt"
+    >,
+    familyId: string,
+    parentId: string
+  ): Promise<Child> {
+    const newChild: Child = {
+      id: `child-${Date.now()}`,
+      familyId,
+      parentId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...childData,
+    };
+    ChildService.children.push(newChild);
     return newChild;
   }
 }

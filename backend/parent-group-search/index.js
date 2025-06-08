@@ -3,6 +3,15 @@ const { v4: uuidv4 } = require("uuid");
 // Mock data storage (replace with actual database in production)
 let mockSchools = [
   {
+    id: "tesla-stem-redmond",
+    name: "Tesla Stem High School",
+    address: "18700 NE 68th St, Redmond, WA 98052",
+    location: { latitude: 47.674, longitude: -122.1215 },
+    district: "Lake Washington School District",
+    type: "high",
+    grades: ["9", "10", "11", "12"],
+  },
+  {
     id: "school-1",
     name: "Lincoln Elementary School",
     location: { latitude: 39.7817, longitude: -89.6501 },
@@ -20,6 +29,46 @@ let mockSchools = [
 ];
 
 let mockCarpoolGroups = [
+  {
+    id: "group-tesla-1",
+    name: "Tesla Stem Morning Commute",
+    description:
+      "Reliable morning carpool for Tesla Stem High School families in Redmond area",
+    tripAdminId: "trip-admin-tesla-1",
+    tripAdmin: {
+      id: "trip-admin-tesla-1",
+      firstName: "Jennifer",
+      lastName: "Smith",
+      email: "jennifer.smith@example.com",
+    },
+    targetSchoolId: "tesla-stem-redmond",
+    targetSchool: {
+      id: "tesla-stem-redmond",
+      name: "Tesla Stem High School",
+      location: { latitude: 47.674, longitude: -122.1215 },
+    },
+    serviceArea: {
+      centerLocation: {
+        latitude: 47.674,
+        longitude: -122.1215,
+        address: "Tesla Stem High School, Redmond, WA",
+      },
+      radiusMiles: 25.0, // 25-mile radius as specified
+    },
+    maxChildren: 8,
+    ageGroups: ["9", "10", "11", "12"],
+    schedule: {
+      daysOfWeek: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      morningPickup: {
+        startTime: "07:00",
+        endTime: "07:45",
+      },
+    },
+    status: "active",
+    isAcceptingMembers: true,
+    memberCount: 5,
+    createdAt: new Date().toISOString(),
+  },
   {
     id: "group-1",
     name: "Lincoln Morning Riders",
@@ -149,6 +198,126 @@ let mockCarpoolGroups = [
 
 let mockJoinRequests = [];
 
+// Mock users for registration validation
+let mockRegisteredUsers = [
+  {
+    id: "parent-123",
+    email: "john.parent@example.com",
+    firstName: "John",
+    lastName: "Parent",
+    role: "parent",
+    phoneNumber: "+1-555-0123",
+    phoneNumberVerified: true,
+    homeAddress: "123 Main St, Redmond, WA 98052",
+    homeAddressVerified: true,
+    emergencyContactVerified: true,
+    onboardingComplete: true,
+    registrationComplete: true,
+    familyId: "family-123",
+    canAccessGroups: true,
+    createdAt: new Date("2024-01-01").toISOString(),
+  },
+  {
+    id: "parent-456",
+    email: "incomplete.user@example.com",
+    firstName: "Incomplete",
+    lastName: "User",
+    role: "parent",
+    phoneNumber: "+1-555-0456",
+    phoneNumberVerified: false,
+    homeAddress: null,
+    homeAddressVerified: false,
+    emergencyContactVerified: false,
+    onboardingComplete: false,
+    registrationComplete: false,
+    familyId: null,
+    canAccessGroups: false,
+    createdAt: new Date().toISOString(),
+  },
+];
+
+// Registration validation function
+function validateRegistrationRequirement(userId) {
+  const user = mockRegisteredUsers.find((u) => u.id === userId);
+
+  if (!user) {
+    return {
+      isValid: false,
+      errorCode: "USER_NOT_FOUND",
+      message: "User not found. Please register first.",
+      requiresRegistration: true,
+    };
+  }
+
+  if (!user.registrationComplete) {
+    return {
+      isValid: false,
+      errorCode: "REGISTRATION_INCOMPLETE",
+      message:
+        "Please complete your registration before accessing carpool groups.",
+      requiresRegistration: true,
+      missingRequirements: getMissingRequirements(user),
+    };
+  }
+
+  if (!user.phoneNumberVerified) {
+    return {
+      isValid: false,
+      errorCode: "PHONE_NOT_VERIFIED",
+      message: "Please verify your phone number to access carpool groups.",
+      requiresVerification: true,
+    };
+  }
+
+  if (!user.homeAddressVerified) {
+    return {
+      isValid: false,
+      errorCode: "ADDRESS_NOT_VERIFIED",
+      message: "Please verify your home address to access carpool groups.",
+      requiresVerification: true,
+    };
+  }
+
+  if (!user.emergencyContactVerified) {
+    return {
+      isValid: false,
+      errorCode: "EMERGENCY_CONTACT_NOT_VERIFIED",
+      message:
+        "Please add and verify emergency contacts to access carpool groups.",
+      requiresVerification: true,
+    };
+  }
+
+  if (!user.canAccessGroups) {
+    return {
+      isValid: false,
+      errorCode: "ACCESS_RESTRICTED",
+      message:
+        "Your account is not yet approved for group access. Please contact support.",
+      requiresApproval: true,
+    };
+  }
+
+  return {
+    isValid: true,
+    user: user,
+    message: "Registration validation successful",
+  };
+}
+
+function getMissingRequirements(user) {
+  const missing = [];
+
+  if (!user.phoneNumber) missing.push("phone_number");
+  if (!user.phoneNumberVerified) missing.push("phone_verification");
+  if (!user.homeAddress) missing.push("home_address");
+  if (!user.homeAddressVerified) missing.push("address_verification");
+  if (!user.emergencyContactVerified) missing.push("emergency_contacts");
+  if (!user.familyId) missing.push("family_setup");
+
+  return missing;
+}
+
 // Utility function to calculate distance between two points
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 3959; // Earth's radius in miles
@@ -253,7 +422,38 @@ module.exports = async function (context, req) {
     const action = req.query.action;
 
     if (method === "GET" && action === "search") {
-      // Public group search - no auth required for discovery
+      // GROUP SEARCH NOW REQUIRES REGISTRATION - Updated requirement
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        context.res.status = 401;
+        context.res.body = JSON.stringify({
+          success: false,
+          error: {
+            code: "AUTHENTICATION_REQUIRED",
+            message: "You must be logged in to search for carpool groups.",
+            requiresAuth: true,
+          },
+        });
+        return;
+      }
+
+      // Extract user ID from token (mock - in production, decode JWT)
+      const token = authHeader.split(" ")[1];
+      const userId = "parent-123"; // In production, extract from JWT
+
+      // Validate registration requirements
+      const registrationValidation = validateRegistrationRequirement(userId);
+
+      if (!registrationValidation.isValid) {
+        context.res.status = 403;
+        context.res.body = JSON.stringify({
+          success: false,
+          error: registrationValidation,
+        });
+        return;
+      }
+
+      // User is properly registered - proceed with search
+      const user = registrationValidation.user;
       const {
         schoolId,
         schoolName,
@@ -279,12 +479,12 @@ module.exports = async function (context, req) {
         },
       };
 
+      // Use user's verified home address for location-based search if not provided
       const userLocation =
         userLat && userLng
-          ? {
-              latitude: parseFloat(userLat),
-              longitude: parseFloat(userLng),
-            }
+          ? { latitude: parseFloat(userLat), longitude: parseFloat(userLng) }
+          : user.homeAddressVerified
+          ? { latitude: 47.674, longitude: -122.1215 } // Tesla Stem High School area for demo
           : null;
 
       // Filter and score groups
@@ -342,13 +542,19 @@ module.exports = async function (context, req) {
           results,
           total: results.length,
           searchCriteria,
+          userInfo: {
+            registrationComplete: true,
+            hasVerifiedAddress: user.homeAddressVerified,
+            hasVerifiedPhone: user.phoneNumberVerified,
+            hasEmergencyContacts: user.emergencyContactVerified,
+          },
           message: "Group search completed successfully",
         },
       });
       return;
     }
 
-    // Authentication required for remaining endpoints
+    // Authentication required for all other endpoints
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       context.res.status = 401;
       context.res.body = JSON.stringify({
@@ -375,8 +581,21 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Extract user ID and validate registration for protected actions
+    const userId = "parent-123"; // In production, extract from JWT
+    const registrationValidation = validateRegistrationRequirement(userId);
+
+    if (!registrationValidation.isValid) {
+      context.res.status = 403;
+      context.res.body = JSON.stringify({
+        success: false,
+        error: registrationValidation,
+      });
+      return;
+    }
+
     if (method === "POST" && action === "join-request") {
-      // Submit join request to a group
+      // Submit join request to a group - requires full registration
       const { groupId, message, childrenInfo } = req.body;
 
       // Validation

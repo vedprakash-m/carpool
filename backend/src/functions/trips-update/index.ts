@@ -1,93 +1,91 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { ApiResponse, Trip, UpdateTripRequest, updateTripSchema } from '@vcarpool/shared';
-import { TripService } from '../../services/trip.service';
-import { compose, cors, errorHandler, authenticate, validateBody, AuthenticatedRequest } from '../../middleware';
+import {
+  AzureFunction,
+  Context,
+  HttpRequest,
+  HttpResponseInit,
+} from "@azure/functions";
+import { container } from "../../../src/container";
+import { TripService } from "../../../src/services/trip.service";
+import { ILogger } from "../../../src/utils/logger";
+import { ApiResponse, Trip, updateTripSchema } from "@vcarpool/shared";
+import {
+  authenticate,
+  validateBody,
+  validateParams,
+  requestId,
+  requestLogging,
+  compose,
+} from "../../../src/middleware";
+import { tripIdParamSchema } from "@vcarpool/shared/schemas/trip-params";
+import { handleError, Errors } from "../../../src/utils/error-handler";
 
-async function updateTripHandler(
-  request: AuthenticatedRequest,
-  context: InvocationContext
+const httpTrigger: AzureFunction = async function (
+  context: Context,
+  req: HttpRequest
 ): Promise<HttpResponseInit> {
-  const userId = request.user!.userId;
-  
-  // Extract tripId from URL path
-  const urlParts = request.url.split('/');
-  const tripId = urlParts[urlParts.length - 1];
-  
-  // Parse request body
-  const bodyText = await request.text();
-  const updates = JSON.parse(bodyText) as UpdateTripRequest;
+  const tripService = container.resolve<TripService>("TripService");
+  const logger = container
+    .resolve<ILogger>("ILogger")
+    .child({ requestId: req.requestId });
 
-  // Check if trip exists and user is the driver
-  const existingTrip = await TripService.getTripById(tripId);
-  if (!existingTrip) {
-    return {
-      status: 404,
-      jsonBody: {
-        success: false,
-        error: 'Trip not found'
-      } as ApiResponse
-    };
-  }
+  const mainHandler = async (
+    req: HttpRequest,
+    context: Context
+  ): Promise<HttpResponseInit> => {
+    logger.info("[trips-update] Received request to update trip.");
 
-  if (existingTrip.driverId !== userId) {
-    return {
-      status: 403,
-      jsonBody: {
-        success: false,
-        error: 'Only the trip driver can update the trip'
-      } as ApiResponse
-    };
-  }
-
-  // Validate time constraints if both times are being updated
-  if (updates.departureTime && updates.arrivalTime) {
-    const [depHour, depMin] = updates.departureTime.split(':').map(Number);
-    const [arrHour, arrMin] = updates.arrivalTime.split(':').map(Number);
-    const depTimeMinutes = depHour * 60 + depMin;
-    const arrTimeMinutes = arrHour * 60 + arrMin;
-
-    if (depTimeMinutes >= arrTimeMinutes) {
-      return {
-        status: 400,
-        jsonBody: {
-          success: false,
-          error: 'Departure time must be before arrival time'
-        } as ApiResponse
-      };
+    if (!req.user) {
+      return handleError(
+        Errors.Unauthorized("User is not authenticated."),
+        req
+      );
     }
-  }
 
-  // Don't allow updates to completed or cancelled trips
-  if (existingTrip.status === 'completed' || existingTrip.status === 'cancelled') {
-    return {
-      status: 400,
-      jsonBody: {
-        success: false,
-        error: 'Cannot update completed or cancelled trips'
-      } as ApiResponse
-    };
-  }
+    try {
+      const { tripId } = req.validated?.params;
+      const updateData = req.validated?.body;
 
-  const updatedTrip = await TripService.updateTrip(tripId, updates);
+      const trip = await tripService.getTripById(tripId);
 
-  return {
-    status: 200,
-    jsonBody: {
-      success: true,
-      data: updatedTrip,
-      message: 'Trip updated successfully'
-    } as ApiResponse<Trip>
+      if (!trip) {
+        return handleError(Errors.NotFound("Trip not found."), req);
+      }
+
+      // User must be the trip driver or an admin to update the trip
+      if (trip.driverId !== req.user.userId && req.user.role !== "admin") {
+        return handleError(
+          Errors.Forbidden("You are not authorized to update this trip."),
+          req
+        );
+      }
+
+      const updatedTrip = await tripService.updateTrip(tripId, updateData);
+
+      const response: ApiResponse<Trip> = {
+        success: true,
+        message: "Trip updated successfully.",
+        data: updatedTrip,
+      };
+
+      return {
+        status: 200,
+        jsonBody: response,
+      };
+    } catch (error) {
+      logger.error(`[trips-update] Error updating trip: ${error}`, { error });
+      return handleError(error, req);
+    }
   };
-}
 
-app.http('trips-update', {
-  methods: ['PUT'],
-  authLevel: 'anonymous',
-  route: 'trips/{tripId}',
-  handler: compose(
-    cors,
-    errorHandler,
+  const composedMiddleware = compose(
+    requestId,
+    requestLogging,
     authenticate,
+    validateParams(tripIdParamSchema),
     validateBody(updateTripSchema)
-  )(updateTripHandler)
-});
+  );
+
+  return composedMiddleware(mainHandler.bind(null, req, context));
+};
+
+export default httpTrigger;

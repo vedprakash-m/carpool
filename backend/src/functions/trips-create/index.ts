@@ -4,133 +4,62 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import {
-  ApiResponse,
-  Trip,
-  CreateTripRequest,
-  createTripValidation,
-} from "@vcarpool/shared";
+import "reflect-metadata";
+import { container } from "../../container";
 import {
   compose,
-  cors,
-  errorHandler,
   authenticate,
   validateBody,
-  AuthenticatedRequest,
+  requestId,
+  requestLogging,
 } from "../../middleware";
-import { container } from "../../container";
-import { trackExecutionTime } from "../../utils/monitoring";
+import { TripService } from "../../services/trip.service";
+import { createTripSchema } from "@vcarpool/shared";
+import { handleError } from "../../utils/error-handler";
+import { ILogger } from "../../utils/logger";
 
-async function createTripHandler(
-  request: AuthenticatedRequest,
+async function tripsCreateHandler(
+  request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const logger = container.loggers.trip;
-  // Set context for the logger
-  if ("setContext" in logger) {
-    (logger as any).setContext(context);
-  }
-
-  // Log the operation start
-  logger.info(`Creating new trip`, { userId: request.user?.userId });
-
-  const userId = request.user!.userId;
+  const logger = container.resolve<ILogger>("ILogger");
+  const tripService = container.resolve<TripService>("TripService");
 
   try {
-    // Parse request body
-    const bodyText = await request.text();
-    const tripData = JSON.parse(bodyText) as CreateTripRequest;
+    const userId = request.auth?.userId;
+    if (!userId) {
+      throw new Error("User not authenticated.");
+    }
 
-    // Log the parsed data (without sensitive info)
-    logger.debug("Trip data parsed", {
-      destination: tripData.destination,
-      date: tripData.date,
-      maxPassengers: tripData.maxPassengers,
+    const tripData = request.validated!.body;
+    const createdTrip = await tripService.createTrip(userId, tripData);
+
+    logger.info("Trip created successfully", {
+      userId,
+      tripId: createdTrip.id,
     });
-
-    // Validate that the trip date is in the future
-    const tripDate = new Date(tripData.date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (tripDate < today) {
-      logger.warn("Attempted to create trip for past date", {
-        providedDate: tripData.date,
-      });
-      return {
-        status: 400,
-        jsonBody: {
-          success: false,
-          error: "Cannot create trips for past dates",
-        } as ApiResponse,
-      };
-    }
-
-    // Validate departure time is before arrival time
-    const [depHour, depMin] = tripData.departureTime.split(":").map(Number);
-    const [arrHour, arrMin] = tripData.arrivalTime.split(":").map(Number);
-    const depTimeMinutes = depHour * 60 + depMin;
-    const arrTimeMinutes = arrHour * 60 + arrMin;
-
-    if (depTimeMinutes >= arrTimeMinutes) {
-      logger.warn("Invalid time range", {
-        departureTime: tripData.departureTime,
-        arrivalTime: tripData.arrivalTime,
-      });
-      return {
-        status: 400,
-        jsonBody: {
-          success: false,
-          error: "Departure time must be before arrival time",
-        } as ApiResponse,
-      };
-    }
-
-    // Get user information to send email notification - track performance
-    const user = await trackExecutionTime(
-      "getUserById",
-      () => container.userService.getUserById(userId),
-      "UserService"
-    );
-
-    // Create trip with performance tracking
-    const trip = await trackExecutionTime(
-      "createTrip",
-      () =>
-        container.tripService.createTrip(userId, tripData, user || undefined),
-      "TripService"
-    );
-
-    logger.info("Trip created successfully", { tripId: trip.id });
 
     return {
       status: 201,
       jsonBody: {
         success: true,
-        data: trip,
-        message: "Trip created successfully",
-      } as ApiResponse<Trip>,
+        message: "Trip created successfully.",
+        data: createdTrip,
+      },
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "An unknown error occurred";
-    const errorStack = error instanceof Error ? error.stack : undefined;
-    logger.error("Error creating trip", {
-      error: errorMessage,
-      stack: errorStack,
-    });
-    throw error; // Let the error middleware handle the error
+    return handleError(error, request);
   }
 }
 
 app.http("trips-create", {
   methods: ["POST"],
-  authLevel: "anonymous",
-  route: "trips",
+  authLevel: "anonymous", // Handled by middleware
+  route: "trips/create",
   handler: compose(
-    cors,
-    errorHandler,
+    requestId,
+    requestLogging,
     authenticate,
-    validateBody(createTripValidation)
-  )(createTripHandler),
+    validateBody(createTripSchema)
+  )(tripsCreateHandler),
 });

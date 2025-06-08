@@ -1,5 +1,5 @@
-import { Family } from "@vcarpool/shared";
 import { v4 as uuidv4 } from "uuid";
+import { Family } from "@vcarpool/shared/src/types";
 import { FamilyRepository } from "../repositories/family.repository";
 import { ILogger } from "../utils/logger";
 
@@ -16,12 +16,18 @@ export class FamilyService {
       name: "The Simpsons",
       parentIds: ["user-1", "user-2"],
       childIds: ["child-1", "child-2"],
+      primaryParentId: "user-1",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
     {
       id: "family-2",
       name: "The Griffins",
       parentIds: ["user-3", "user-4"],
       childIds: ["child-3", "child-4", "child-5"],
+      primaryParentId: "user-3",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   ];
 
@@ -90,5 +96,21 @@ export class FamilyService {
 
   async findFamiliesByParent(parentId: string): Promise<Family[]> {
     return this.familyRepository.findByParentId(parentId);
+  }
+
+  async createFamilyForUser(familyData: any, userId: string): Promise<Family> {
+    // For now, just create a new family with the user as the primary parent
+    const newFamily: Family = {
+      id: `family-${Date.now()}`,
+      name: familyData.name || "Unnamed Family",
+      primaryParentId: userId,
+      parentIds: [userId],
+      childIds: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    // In a real implementation, save to DB
+    FamilyService.families.push(newFamily);
+    return newFamily;
   }
 }

@@ -422,4 +422,10 @@ export class NotificationService {
       throw error;
     }
   }
+
+  public async sendPasswordResetEmail(email: string, data: any): Promise<void> {
+    this.logger.info(`Sending password reset email to ${email}`, data);
+    // In a real implementation, call EmailService or external provider
+    return;
+  }
 }

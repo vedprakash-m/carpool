@@ -1,62 +1,51 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { ApiResponse, AuthResponse } from '@vcarpool/shared';
-import { compose, cors, errorHandler } from '../../middleware';
-import { container } from '../../container';
+import {
+  app,
+  HttpRequest,
+  HttpResponseInit,
+  InvocationContext,
+} from "@azure/functions";
+import "reflect-metadata";
+import { container } from "../../container";
+import { compose, requestId, requestLogging } from "../../middleware";
+import { AuthService } from "../../services/auth.service";
+import { handleError } from "../../utils/error-handler";
+import { ILogger } from "../../utils/logger";
 
 async function refreshTokenHandler(
   request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
+  const logger = container.resolve<ILogger>("ILogger");
+  const authService = container.resolve<AuthService>("AuthService");
+
   try {
-    // Parse request body
-    const body = await request.json() as { refreshToken?: string };
-    const { refreshToken } = body;
-    
+    const { refreshToken } = await request.json();
+
     if (!refreshToken) {
-      return {
-        status: 400,
-        jsonBody: {
-          success: false,
-          error: 'Refresh token is required'
-        } as ApiResponse
-      };
+      throw new Error("Refresh token is required.");
     }
-    
-    const authService = container.authService;
-    
-    // Verify and refresh the token
-    const { accessToken, user } = await authService.refreshAccessToken(refreshToken);
-    
+
+    const { newAccessToken, newRefreshToken } =
+      await authService.refreshAccessToken(refreshToken);
+
     return {
-      status: 200,
       jsonBody: {
         success: true,
+        message: "Token refreshed successfully",
         data: {
-          user,
-          token: accessToken,
-          refreshToken // Return the same refresh token
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
         },
-        message: 'Token refreshed successfully'
-      } as ApiResponse<AuthResponse>
+      },
     };
   } catch (error) {
-    context.error('Error refreshing token:', error);
-    return {
-      status: 401,
-      jsonBody: {
-        success: false,
-        error: 'Invalid or expired refresh token'
-      } as ApiResponse
-    };
+    return handleError(error, request);
   }
 }
 
-app.http('auth-refresh-token', {
-  methods: ['POST'],
-  authLevel: 'anonymous',
-  route: 'auth/refresh-token',
-  handler: compose(
-    cors,
-    errorHandler
-  )(refreshTokenHandler)
+app.http("auth-refresh-token", {
+  methods: ["POST"],
+  authLevel: "anonymous",
+  route: "auth/refresh-token",
+  handler: compose(requestId, requestLogging)(refreshTokenHandler),
 });

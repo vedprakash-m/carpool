@@ -4,152 +4,81 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
+import "reflect-metadata";
+import { container } from "../../container";
+import { registerSchema, User, Child } from "@vcarpool/shared";
 import {
-  registerSchema,
-  ApiResponse,
-  AuthResponse,
-  User,
-  Family,
-  Child,
-} from "@vcarpool/shared";
+  compose,
+  validateBody,
+  requestId,
+  requestLogging,
+} from "../../middleware";
 import { AuthService } from "../../services/auth.service";
-import { UserService } from "../../services/user.service";
+import { handleError } from "../../utils/error-handler";
+import { ILogger } from "../../utils/logger";
 import { FamilyService } from "../../services/family.service";
 import { ChildService } from "../../services/child.service";
-import { compose, cors, errorHandler, validateBody } from "../../middleware";
-import { container } from "../../container";
-import { logger } from "../../utils/logger";
 
 async function registerHandler(
-  request: HttpRequest & { validatedBody: any },
+  request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const {
-    parent: parentData,
-    children: childrenData,
-    familyName,
-    secondParent: secondParentData,
-  } = request.validatedBody;
+  const logger = container.resolve<ILogger>("ILogger");
+  const authService = container.resolve<AuthService>("AuthService");
+  const familyService = container.resolve<FamilyService>("FamilyService");
+  const childService = container.resolve<ChildService>("ChildService");
 
-  const authService = container.authService;
-  const userService = container.userService;
-  const familyService = container.familyService;
-  const childService = container.childService;
-  const logger = container.loggers.auth;
-
-  // 1. Check if primary parent already exists
-  const existingUser = await userService.getUserByEmail(parentData.email);
-  if (existingUser) {
-    logger.warn("Registration attempt for existing email", {
-      email: parentData.email,
-    });
-    return {
-      status: 409,
-      jsonBody: {
-        success: false,
-        error: "A user with this email already exists.",
-      },
-    };
-  }
-
-  // Use a transaction to ensure all or nothing is created.
-  // This is a conceptual representation. Actual implementation depends on the DB layer.
   try {
-    // 2. Create Parents
-    const primaryPasswordHash = await authService.hashPasswordInstance(
-      parentData.password
-    );
-    const primaryParent = await userService.createUser({
-      ...parentData,
-      passwordHash: primaryPasswordHash,
-      role: "parent",
-    });
+    const { user: userData, family: familyData } = request.validated!.body;
 
-    let secondParent: User | null = null;
-    if (secondParentData) {
-      const secondPasswordHash = await authService.hashPasswordInstance(
-        secondParentData.password
+    // 1. Create the user
+    const user = await authService.register(userData);
+
+    // 2. Create the family and children, linking them to the user
+    const family = await familyService.createFamilyForUser(familyData, user.id);
+
+    // This is a simplified approach. A more robust solution would involve a transaction.
+    const children: Child[] = [];
+    for (const childData of familyData.children) {
+      const child = await childService.createChild(
+        childData,
+        family.id,
+        user.id
       );
-      secondParent = await userService.createUser({
-        ...secondParentData,
-        passwordHash: secondPasswordHash,
-        role: "parent",
-      });
+      children.push(child);
     }
 
-    const parentIds = [primaryParent.id];
-    if (secondParent) {
-      parentIds.push(secondParent.id);
-    }
-
-    // 3. Create the Family
-    const family = await familyService.createFamily(
-      familyName,
-      primaryParent.id,
-      parentIds
-    );
-
-    // 4. Create the Children and link them to the family
-    const children: Child[] = await Promise.all(
-      childrenData.map((childData: any) =>
-        childService.createChild(family.id, childData)
-      )
-    );
-
-    // 5. Update the family with child IDs
-    const childIds = children.map((c) => c.id);
-    await familyService.updateFamily(family.id, {
-      ...family,
-      childIds,
-      updatedAt: new Date(),
+    logger.info("User and family registered successfully", {
+      userId: user.id,
+      familyId: family.id,
     });
-
-    // 6. Generate tokens for the primary parent for auto-login
-    const accessToken = authService.generateAccessTokenInstance(primaryParent);
-    const refreshToken =
-      authService.generateRefreshTokenInstance(primaryParent);
-
-    const userToReturn: Partial<User> = { ...primaryParent };
-    delete (userToReturn as any).passwordHash;
 
     return {
       status: 201,
       jsonBody: {
         success: true,
+        message: "Registration successful",
         data: {
-          user: userToReturn,
-          token: accessToken,
-          refreshToken,
-          familyId: family.id,
+          user,
+          family: {
+            ...family,
+            children,
+          },
         },
       },
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "An unknown error occurred";
-    logger.error("Error during registration transaction", {
-      error: errorMessage,
-    });
-    // TODO: Add compensating transaction logic to roll back created users/family
-    return {
-      status: 500,
-      jsonBody: {
-        success: false,
-        error: "An error occurred during registration.",
-      },
-    };
+    return handleError(error, request);
   }
 }
-
-export const main = compose(
-  cors,
-  errorHandler,
-  validateBody(registerSchema)
-)(registerHandler);
 
 app.http("auth-register", {
   methods: ["POST"],
   authLevel: "anonymous",
   route: "auth/register",
-  handler: main,
+  handler: compose(
+    requestId,
+    requestLogging,
+    validateBody(registerSchema)
+  )(registerHandler),
 });

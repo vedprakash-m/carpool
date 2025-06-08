@@ -1,88 +1,73 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { PaginatedResponse, Trip, TripStatus, tripQuerySchema } from '@vcarpool/shared';
-import { container } from '../../container';
-import { compose, cors, errorHandler, authenticate, AuthenticatedRequest } from '../../middleware';
-import { validateQueryParams } from '../../middleware/validation.middleware';
-import { trackExecutionTime } from '../../utils/monitoring';
+import {
+  AzureFunction,
+  Context,
+  HttpRequest,
+  HttpResponseInit,
+} from "@azure/functions";
+import { container } from "../../../src/container";
+import { TripService } from "../../../src/services/trip.service";
+import { ILogger } from "../../../src/utils/logger";
+import {
+  ApiResponse,
+  PaginatedResponse,
+  Trip,
+  tripQuerySchema,
+} from "@vcarpool/shared";
+import {
+  validateQuery,
+  requestId,
+  requestLogging,
+  compose,
+} from "../../../src/middleware";
+import { handleError } from "../../../src/utils/error-handler";
 
-async function listTripsHandler(
-  request: AuthenticatedRequest & { validatedQuery?: any },
-  context: InvocationContext
+const httpTrigger: AzureFunction = async function (
+  context: Context,
+  req: HttpRequest
 ): Promise<HttpResponseInit> {
-  const logger = container.loggers.trip;
-  // Set context for the logger
-  if ('setContext' in logger) {
-    (logger as any).setContext(context);
-  }
-  
-  // Log the operation start
-  logger.info('Listing trips', { userId: request.user?.userId });
+  const tripService = container.resolve<TripService>("TripService");
+  const logger = container
+    .resolve<ILogger>("ILogger")
+    .child({ requestId: req.requestId });
 
-  // Get validated query params
-  const queryParams = request.validatedQuery || {};
-  const driverId = queryParams.driverId;
-  const passengerId = queryParams.passengerId;
-  const status = queryParams.status as TripStatus;
-  const date = queryParams.date;
-  const page = queryParams.page || 1;
-  const limit = queryParams.limit || 20;
-  const offset = (page - 1) * limit;
+  const mainHandler = async (
+    req: HttpRequest,
+    context: Context
+  ): Promise<HttpResponseInit> => {
+    logger.info("[trips-list] Received request to list trips.");
 
-  // If no specific filters, default to showing user's trips
-  const userId = request.user!.userId;
-  const finalDriverId = driverId || (passengerId ? undefined : userId);
-  const finalPassengerId = passengerId || (driverId ? undefined : userId);
+    try {
+      const query = req.validated?.query;
+      const { trips, total } = await tripService.getTrips(query);
 
-  try {
-    // Get trips with performance tracking
-    const result = await trackExecutionTime('getTrips', 
-      () => container.tripService.getTrips({
-        driverId: finalDriverId,
-        passengerId: finalPassengerId,
-        status,
-        date,
-        limit,
-        offset
-      }),
-      'TripService'
-    );
-
-    const { trips, total } = result;
-    const totalPages = Math.ceil(total / limit);
-
-    logger.info('Trips retrieved successfully', { 
-      userId: request.user?.userId, 
-      count: trips.length,
-      total
-    });
-
-    return {
-      status: 200,
-      jsonBody: {
+      const response: PaginatedResponse<Trip> = {
         success: true,
         data: trips,
         pagination: {
-          page,
-          limit,
           total,
-          totalPages
-        }
-      } as PaginatedResponse<Trip>
-    };
-  } catch (error) {
-    logger.error('Error listing trips', { error });
-    throw error; // Let the error handler middleware handle it
-  }
-}
+          page: query.page,
+          limit: query.limit,
+          totalPages: Math.ceil(total / query.limit),
+        },
+      };
 
-app.http('trips-list', {
-  methods: ['GET'],
-  authLevel: 'anonymous',
-  route: 'trips',
-  handler: compose(
-    cors,
-    errorHandler,
-    authenticate,
-    validateQueryParams(tripQuerySchema)
-  )(listTripsHandler)
-});
+      return {
+        status: 200,
+        jsonBody: response,
+      };
+    } catch (error) {
+      logger.error(`[trips-list] Error listing trips: ${error}`, { error });
+      return handleError(error, req);
+    }
+  };
+
+  const composedMiddleware = compose(
+    requestId,
+    requestLogging,
+    validateQuery(tripQuerySchema)
+  );
+
+  return composedMiddleware(mainHandler.bind(null, req, context));
+};
+
+export default httpTrigger;

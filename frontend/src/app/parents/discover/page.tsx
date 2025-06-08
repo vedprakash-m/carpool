@@ -102,7 +102,7 @@ export default function GroupDiscoveryPage() {
   useEffect(() => {
     if (
       !isLoading &&
-      (!user || (user.role !== "parent" && user.role !== "trip_admin"))
+      (!user || (user.role !== "parent" && user.role !== "group_admin"))
     ) {
       router.push("/dashboard");
     }
@@ -168,7 +168,13 @@ export default function GroupDiscoveryPage() {
         queryParams.append("afternoonDropoff", "true");
       }
 
-      const response = await fetch(`/api/parent/groups?${queryParams}`);
+      const token = localStorage.getItem("vcarpool_token");
+      const response = await fetch(`/api/parent/groups?${queryParams}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -179,6 +185,58 @@ export default function GroupDiscoveryPage() {
           text: `Found ${data.data.results.length} matching carpool groups`,
         });
       } else {
+        const errorData = await response.json();
+
+        // Handle registration-specific errors
+        if (response.status === 401) {
+          setMessage({
+            type: "error",
+            text: "Please log in to search for carpool groups.",
+          });
+          router.push("/auth/login");
+          return;
+        }
+
+        if (response.status === 403 && errorData.error) {
+          const {
+            errorCode,
+            message: errorMessage,
+            missingRequirements,
+          } = errorData.error;
+
+          if (errorCode === "REGISTRATION_INCOMPLETE") {
+            setMessage({
+              type: "error",
+              text: `Registration incomplete: ${errorMessage}${
+                missingRequirements
+                  ? ` Missing: ${missingRequirements.join(", ")}`
+                  : ""
+              }`,
+            });
+          } else if (errorCode === "PHONE_NOT_VERIFIED") {
+            setMessage({
+              type: "error",
+              text: "Please verify your phone number before searching for groups.",
+            });
+          } else if (errorCode === "ADDRESS_NOT_VERIFIED") {
+            setMessage({
+              type: "error",
+              text: "Please verify your home address before searching for groups.",
+            });
+          } else if (errorCode === "EMERGENCY_CONTACT_NOT_VERIFIED") {
+            setMessage({
+              type: "error",
+              text: "Please add and verify emergency contacts before searching for groups.",
+            });
+          } else {
+            setMessage({
+              type: "error",
+              text: errorMessage || "Registration verification required.",
+            });
+          }
+          return;
+        }
+
         setMessage({
           type: "error",
           text: "Failed to search for groups",
@@ -285,7 +343,7 @@ export default function GroupDiscoveryPage() {
     );
   }
 
-  if (!user || (user.role !== "parent" && user.role !== "trip_admin")) {
+  if (!user || (user.role !== "parent" && user.role !== "group_admin")) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -303,6 +361,41 @@ export default function GroupDiscoveryPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Registration Requirements Banner */}
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <CheckCircleIcon className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                🎯 Registration Required for Group Access
+              </h3>
+              <p className="text-blue-800 mb-3">
+                To discover and join carpool groups, you must first complete
+                your registration with verified information:
+              </p>
+              <ul className="text-sm text-blue-700 space-y-1 ml-4">
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
+                  ✓ Phone number verification (SMS)
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
+                  ✓ Home address validation (within 25 miles of Tesla Stem High
+                  School)
+                </li>
+                <li className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
+                  ✓ Emergency contact verification
+                </li>
+              </ul>
+              <p className="text-sm text-blue-600 mt-3">
+                <strong>Current Support Area:</strong> Tesla Stem High School,
+                Redmond, WA and surrounding areas within 25 miles
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center">
             <MagnifyingGlassIcon className="h-8 w-8 mr-3 text-blue-600" />

@@ -1,66 +1,62 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { updateUserSchema, ApiResponse, User } from '@vcarpool/shared';
-import { container } from '../../container';
-import { compose, cors, errorHandler, authenticate, validateBody, AuthenticatedRequest } from '../../middleware';
-import { trackExecutionTime } from '../../utils/monitoring';
+import {
+  app,
+  HttpRequest,
+  HttpResponseInit,
+  InvocationContext,
+} from "@azure/functions";
+import "reflect-metadata";
+import { container } from "../../container";
+import { updateUserSchema, User } from "@vcarpool/shared";
+import {
+  compose,
+  authenticate,
+  validateBody,
+  requestId,
+  requestLogging,
+} from "../../middleware";
+import { handleError } from "../../utils/error-handler";
+import { ILogger } from "../../utils/logger";
+import { UserService } from "../../services/user.service";
 
-async function updateMeHandler(
-  request: AuthenticatedRequest & { validatedBody: any },
+async function usersUpdateHandler(
+  request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const logger = container.loggers.user;
-  // Set context for the logger
-  if ('setContext' in logger) {
-    (logger as any).setContext(context);
-  }
-  
-  const userId = request.user!.userId;
-  const updates = request.validatedBody;
-
-  // Log the operation start
-  logger.info('Updating user profile', { userId, updateFields: Object.keys(updates) });
+  const logger = container.resolve<ILogger>("ILogger");
+  const userService = container.resolve<UserService>("UserService");
 
   try {
-    // Update user profile with performance tracking
-    const updatedUser = await trackExecutionTime('updateUser', 
-      () => container.userService.updateUser(userId, updates),
-      'UserService'
-    );
-
-    if (!updatedUser) {
-      logger.warn('User not found during profile update', { userId });
-      return {
-        status: 404,
-        jsonBody: {
-          success: false,
-          error: 'User not found'
-        } as ApiResponse
-      };
+    const userId = request.auth?.userId;
+    if (!userId) {
+      throw new Error("User not authenticated.");
     }
 
-    logger.info('User profile updated successfully', { userId });
+    const updates = request.validated!.body;
+
+    const updatedUser = await userService.updateUser(userId, updates);
+
+    logger.info("User updated profile successfully", { userId });
+
     return {
-      status: 200,
       jsonBody: {
         success: true,
+        message: "Profile updated successfully.",
         data: updatedUser,
-        message: 'Profile updated successfully'
-      } as ApiResponse<User>
+      },
     };
   } catch (error) {
-    logger.error('Error updating user profile', { userId, error });
-    throw error; // Let the error handler middleware handle it
+    return handleError(error, request);
   }
 }
 
-app.http('users-update', {
-  methods: ['PUT'],
-  authLevel: 'anonymous',
-  route: 'users/me',
+app.http("users-update", {
+  methods: ["PATCH"],
+  authLevel: "anonymous", // Handled by middleware
+  route: "users/me",
   handler: compose(
-    cors,
-    errorHandler,
+    requestId,
+    requestLogging,
     authenticate,
     validateBody(updateUserSchema)
-  )(updateMeHandler)
+  )(usersUpdateHandler),
 });

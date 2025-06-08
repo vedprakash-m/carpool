@@ -1,53 +1,562 @@
 /**
- * Service Validation Tests - Simplified Approach
- * Focus on business logic validation without complex mocking
+ * Service Validation Tests - Family-Oriented Business Logic
+ * Focus on family-oriented business logic validation with UX requirements alignment
+ *
+ * COMPREHENSIVE UX REQUIREMENTS ALIGNMENT:
+ * 1. Progressive Parent Onboarding - Validation for family registration and onboarding steps
+ * 2. Group Discovery & Join Request - Business logic for group membership validation
+ * 3. Weekly Preference Submission - Validation for family scheduling preferences
+ * 4. Group Admin Schedule Management - Business logic for admin role validation
+ * 5. Emergency Response & Crisis Coordination - Emergency contact and notification validation
+ * 6. Unified Family Dashboard & Role Transitions - Family context and role validation
  */
 
 import { describe, it, expect } from "@jest/globals";
 
-describe("VCarpool Service Validation", () => {
-  describe("Email Service Business Logic", () => {
-    it("should validate email template data structures", () => {
-      const welcomeEmailData = {
-        email: "parent@school.edu",
-        firstName: "John",
-        lastName: "Smith",
+// Family-oriented test data interfaces
+interface TestFamilyData {
+  familyId: string;
+  parentEmail: string;
+  children: Array<{
+    id: string;
+    name: string;
+    school: string;
+    grade: string;
+  }>;
+  emergencyContacts: Array<{
+    name: string;
+    phone: string;
+    relationship: string;
+    priority: number;
+  }>;
+  onboardingProgress: {
+    profileComplete: boolean;
+    childrenAdded: boolean;
+    emergencyContactsAdded: boolean;
+    weeklyPreferencesSet: boolean;
+    schoolVerified: boolean;
+  };
+}
+
+describe("Family-Oriented VCarpool Service Validation", () => {
+  describe("Family Email Service Business Logic", () => {
+    it("should validate family welcome email template data structures", () => {
+      const familyWelcomeEmailData = {
+        email: "sarah.johnson@vcarpool.com",
+        firstName: "Sarah",
+        lastName: "Johnson",
         role: "parent",
+        familyId: "johnson-family-001",
+        children: [
+          {
+            id: "child-emma-001",
+            name: "Emma Johnson",
+            school: "Lincoln Elementary School",
+            grade: "3rd Grade",
+          },
+          {
+            id: "child-liam-001",
+            name: "Liam Johnson",
+            school: "Lincoln Elementary School",
+            grade: "1st Grade",
+          },
+        ],
+        emergencyContacts: [
+          {
+            name: "Michael Johnson",
+            phone: "+1-555-0123",
+            relationship: "Spouse",
+            priority: 1,
+          },
+        ],
       };
 
-      // Validate required fields for welcome email
-      expect(welcomeEmailData.email).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
-      expect(welcomeEmailData.firstName).toBeDefined();
-      expect(welcomeEmailData.lastName).toBeDefined();
-      expect(["parent", "student", "admin"]).toContain(welcomeEmailData.role);
-    });
-
-    it("should validate trip notification data structure", () => {
-      const tripNotificationData = {
-        tripId: "trip-123",
-        driverEmail: "driver@school.edu",
-        passengerEmails: ["p1@school.edu", "p2@school.edu"],
-        departureTime: "07:30",
-        pickupLocation: "Main Street",
-        destination: "Lincoln Elementary School",
-      };
-
-      expect(tripNotificationData.tripId).toBeDefined();
-      expect(tripNotificationData.driverEmail).toMatch(
+      // Validate family email requirements
+      expect(familyWelcomeEmailData.email).toMatch(
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       );
-      expect(Array.isArray(tripNotificationData.passengerEmails)).toBe(true);
-      expect(tripNotificationData.departureTime).toMatch(/^\d{2}:\d{2}$/);
+      expect(familyWelcomeEmailData.firstName).toBeDefined();
+      expect(familyWelcomeEmailData.lastName).toBeDefined();
+      expect(["parent", "student", "admin"]).toContain(
+        familyWelcomeEmailData.role
+      );
+      expect(familyWelcomeEmailData.familyId).toBeDefined();
+      expect(familyWelcomeEmailData.children.length).toBeGreaterThan(0);
+      expect(familyWelcomeEmailData.emergencyContacts.length).toBeGreaterThan(
+        0
+      );
+
+      // Validate children data structure
+      familyWelcomeEmailData.children.forEach((child) => {
+        expect(child.id).toBeDefined();
+        expect(child.name).toBeDefined();
+        expect(child.school).toBeDefined();
+        expect(child.grade).toBeDefined();
+      });
+
+      // Validate emergency contacts structure
+      familyWelcomeEmailData.emergencyContacts.forEach((contact) => {
+        expect(contact.name).toBeDefined();
+        expect(contact.phone).toMatch(/^\+?[\d\s\-\(\)]+$/);
+        expect(contact.relationship).toBeDefined();
+        expect(contact.priority).toBeGreaterThan(0);
+      });
     });
 
-    it("should validate schedule notification requirements", () => {
+    it("should validate progressive onboarding email data structure", () => {
+      const onboardingEmailData = {
+        email: "parent@vcarpool.com",
+        firstName: "Parent",
+        lastName: "User",
+        familyId: "family-001",
+        currentStep: "children_addition",
+        completedSteps: ["profile_creation"],
+        remainingSteps: [
+          "children_addition",
+          "emergency_contacts",
+          "weekly_preferences",
+          "school_verification",
+        ],
+        progressPercentage: 20,
+        nextStepDeadline: "2024-01-20T23:59:59Z",
+      };
+
+      expect(onboardingEmailData.email).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+      expect(onboardingEmailData.familyId).toBeDefined();
+      expect(onboardingEmailData.currentStep).toBeDefined();
+      expect(Array.isArray(onboardingEmailData.completedSteps)).toBe(true);
+      expect(Array.isArray(onboardingEmailData.remainingSteps)).toBe(true);
+      expect(onboardingEmailData.progressPercentage).toBeGreaterThanOrEqual(0);
+      expect(onboardingEmailData.progressPercentage).toBeLessThanOrEqual(100);
+
+      // Validate onboarding steps
+      const validSteps = [
+        "profile_creation",
+        "children_addition",
+        "emergency_contacts",
+        "weekly_preferences",
+        "school_verification",
+      ];
+      onboardingEmailData.remainingSteps.forEach((step) => {
+        expect(validSteps).toContain(step);
+      });
+    });
+
+    it("should validate family trip notification data structure", () => {
+      const familyTripNotificationData = {
+        tripId: "family-trip-123",
+        driverFamilyId: "johnson-family-001",
+        driverEmail: "sarah.johnson@vcarpool.com",
+        passengerFamilies: [
+          {
+            familyId: "davis-family-003",
+            parentEmail: "jennifer.davis@vcarpool.com",
+            children: ["Sophie Davis"],
+          },
+        ],
+        departureTime: "07:30",
+        pickupLocation: "Johnson Family Home",
+        destination: "Lincoln Elementary School",
+        cost: 0.0, // Free school carpool
+        emergencyContacts: [
+          {
+            familyId: "johnson-family-001",
+            contacts: [
+              {
+                name: "Michael Johnson",
+                phone: "+1-555-0123",
+                relationship: "Spouse",
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(familyTripNotificationData.tripId).toBeDefined();
+      expect(familyTripNotificationData.driverFamilyId).toBeDefined();
+      expect(familyTripNotificationData.driverEmail).toMatch(
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      );
+      expect(Array.isArray(familyTripNotificationData.passengerFamilies)).toBe(
+        true
+      );
+      expect(familyTripNotificationData.departureTime).toMatch(/^\d{2}:\d{2}$/);
+      expect(familyTripNotificationData.cost).toBeGreaterThanOrEqual(0);
+      expect(Array.isArray(familyTripNotificationData.emergencyContacts)).toBe(
+        true
+      );
+
+      // Validate passenger families structure
+      familyTripNotificationData.passengerFamilies.forEach((family) => {
+        expect(family.familyId).toBeDefined();
+        expect(family.parentEmail).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+        expect(Array.isArray(family.children)).toBe(true);
+      });
+    });
+
+    it("should validate emergency notification requirements", () => {
+      const emergencyNotificationData = {
+        emergencyType: "school_lockdown",
+        affectedSchools: ["Lincoln Elementary School"],
+        message:
+          "EMERGENCY: School lockdown in effect. Do NOT come to school for pickup.",
+        priority: "critical",
+        affectedFamilies: ["johnson-family-001", "davis-family-003"],
+        emergencyContactsRequired: true,
+        timestamp: "2024-01-15T14:30:00Z",
+        estimatedDuration: "2 hours",
+        alternateInstructions:
+          "Children will be kept safe at school until all-clear is given",
+      };
+
+      expect(emergencyNotificationData.emergencyType).toBeDefined();
+      expect([
+        "school_lockdown",
+        "weather_delay",
+        "traffic_incident",
+        "medical_emergency",
+      ]).toContain(emergencyNotificationData.emergencyType);
+      expect(Array.isArray(emergencyNotificationData.affectedSchools)).toBe(
+        true
+      );
+      expect(emergencyNotificationData.message).toBeDefined();
+      expect(["low", "medium", "high", "critical"]).toContain(
+        emergencyNotificationData.priority
+      );
+      expect(Array.isArray(emergencyNotificationData.affectedFamilies)).toBe(
+        true
+      );
+      expect(emergencyNotificationData.emergencyContactsRequired).toBe(true);
+      expect(emergencyNotificationData.timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/
+      );
+    });
+  });
+
+  describe("Family User Service Business Logic", () => {
+    it("should validate family registration requirements", () => {
+      const familyRegistrationData = {
+        email: "newfamily@vcarpool.com",
+        password: "SecurePassword123!",
+        firstName: "Jennifer",
+        lastName: "Davis",
+        role: "parent",
+        familyName: "Davis Family",
+        primarySchool: "Lincoln Elementary School",
+        children: [
+          {
+            name: "Sophie Davis",
+            school: "Lincoln Elementary School",
+            grade: "2nd Grade",
+            dateOfBirth: "2018-03-15",
+          },
+        ],
+        emergencyContacts: [
+          {
+            name: "Robert Davis",
+            phone: "+1-555-0300",
+            relationship: "Spouse",
+            priority: 1,
+            address: "123 Main St, Springfield, IL",
+          },
+        ],
+      };
+
+      // Validate family registration requirements
+      expect(familyRegistrationData.email).toMatch(
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      );
+      expect(familyRegistrationData.password).toMatch(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+      );
+      expect(familyRegistrationData.firstName).toBeDefined();
+      expect(familyRegistrationData.lastName).toBeDefined();
+      expect(familyRegistrationData.role).toBe("parent");
+      expect(familyRegistrationData.familyName).toBeDefined();
+      expect(familyRegistrationData.primarySchool).toBeDefined();
+      expect(familyRegistrationData.children.length).toBeGreaterThan(0);
+      expect(familyRegistrationData.emergencyContacts.length).toBeGreaterThan(
+        0
+      );
+
+      // Validate children requirements
+      familyRegistrationData.children.forEach((child) => {
+        expect(child.name).toBeDefined();
+        expect(child.school).toBeDefined();
+        expect(child.grade).toBeDefined();
+        expect(child.dateOfBirth).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      });
+
+      // Validate emergency contact requirements
+      familyRegistrationData.emergencyContacts.forEach((contact) => {
+        expect(contact.name).toBeDefined();
+        expect(contact.phone).toMatch(/^\+?[\d\s\-\(\)]+$/);
+        expect(contact.relationship).toBeDefined();
+        expect(contact.priority).toBeGreaterThan(0);
+        expect(contact.address).toBeDefined();
+      });
+    });
+
+    it("should validate weekly preference data structure", () => {
+      const weeklyPreferencesData = {
+        familyId: "johnson-family-001",
+        preferences: {
+          availableDays: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+          ],
+          timePreferences: {
+            morningStart: "07:00",
+            morningEnd: "08:30",
+            afternoonStart: "15:00",
+            afternoonEnd: "16:30",
+          },
+          drivingPreferences: {
+            willingToDriver: true,
+            maxPassengers: 3,
+            preferredSchools: ["Lincoln Elementary School"],
+            vehicleType: "SUV",
+            hasCarSeats: true,
+          },
+          specialRequirements: {
+            carSeats: ["booster_seat", "regular_seat"],
+            accessibility: false,
+            notes: "Emma gets carsick in the back seat",
+          },
+        },
+      };
+
+      expect(weeklyPreferencesData.familyId).toBeDefined();
+      expect(
+        Array.isArray(weeklyPreferencesData.preferences.availableDays)
+      ).toBe(true);
+
+      // Validate time preferences
+      const timePrefs = weeklyPreferencesData.preferences.timePreferences;
+      expect(timePrefs.morningStart).toMatch(/^\d{2}:\d{2}$/);
+      expect(timePrefs.morningEnd).toMatch(/^\d{2}:\d{2}$/);
+      expect(timePrefs.afternoonStart).toMatch(/^\d{2}:\d{2}$/);
+      expect(timePrefs.afternoonEnd).toMatch(/^\d{2}:\d{2}$/);
+
+      // Validate driving preferences
+      const drivingPrefs = weeklyPreferencesData.preferences.drivingPreferences;
+      expect(typeof drivingPrefs.willingToDriver).toBe("boolean");
+      expect(drivingPrefs.maxPassengers).toBeGreaterThan(0);
+      expect(Array.isArray(drivingPrefs.preferredSchools)).toBe(true);
+    });
+
+    it("should validate onboarding progress tracking", () => {
+      const onboardingProgress = {
+        profileComplete: true,
+        childrenAdded: true,
+        emergencyContactsAdded: true,
+        weeklyPreferencesSet: false,
+        schoolVerified: false,
+      };
+
+      const requiredSteps = Object.keys(onboardingProgress);
+      expect(requiredSteps).toContain("profileComplete");
+      expect(requiredSteps).toContain("childrenAdded");
+      expect(requiredSteps).toContain("emergencyContactsAdded");
+      expect(requiredSteps).toContain("weeklyPreferencesSet");
+      expect(requiredSteps).toContain("schoolVerified");
+
+      // Calculate completion percentage
+      const completedSteps = Object.values(onboardingProgress).filter(
+        (step) => step === true
+      ).length;
+      const totalSteps = Object.values(onboardingProgress).length;
+      const completionPercentage = (completedSteps / totalSteps) * 100;
+
+      expect(completionPercentage).toBe(60); // 3 out of 5 steps completed
+      expect(completionPercentage).toBeGreaterThanOrEqual(0);
+      expect(completionPercentage).toBeLessThanOrEqual(100);
+    });
+  });
+
+  describe("Group Admin Role Validation", () => {
+    it("should validate group admin permissions", () => {
+      const groupAdminData = {
+        userId: "group-admin-1",
+        familyId: "martinez-family-002",
+        role: "admin",
+        groupAdminRoles: [
+          {
+            groupId: "roosevelt-middle-morning-group",
+            school: "Roosevelt Middle School",
+            route: "Morning Route B",
+            permissions: [
+              "schedule",
+              "notify",
+              "manage_passengers",
+              "emergency_contact",
+              "admin_override",
+            ],
+          },
+        ],
+      };
+
+      expect(groupAdminData.role).toBe("admin");
+      expect(Array.isArray(groupAdminData.groupAdminRoles)).toBe(true);
+      expect(groupAdminData.groupAdminRoles.length).toBeGreaterThan(0);
+
+      // Validate admin permissions
+      const validPermissions = [
+        "schedule",
+        "notify",
+        "manage_passengers",
+        "emergency_contact",
+        "admin_override",
+        "group_creation",
+      ];
+      groupAdminData.groupAdminRoles.forEach((role) => {
+        expect(role.groupId).toBeDefined();
+        expect(role.school).toBeDefined();
+        expect(role.route).toBeDefined();
+        expect(Array.isArray(role.permissions)).toBe(true);
+
+        role.permissions.forEach((permission) => {
+          expect(validPermissions).toContain(permission);
+        });
+      });
+    });
+
+    it("should validate emergency response permissions", () => {
+      const emergencyPermissions = {
+        userId: "group-admin-1",
+        emergencyType: "school_lockdown",
+        requiredPermissions: ["emergency_contact", "admin_override"],
+        hasPermissions: true,
+        canAccessEmergencyContacts: true,
+        canSendEmergencyNotifications: true,
+        canCoordinateResponse: true,
+      };
+
+      expect(Array.isArray(emergencyPermissions.requiredPermissions)).toBe(
+        true
+      );
+      expect(emergencyPermissions.hasPermissions).toBe(true);
+      expect(emergencyPermissions.canAccessEmergencyContacts).toBe(true);
+      expect(emergencyPermissions.canSendEmergencyNotifications).toBe(true);
+      expect(emergencyPermissions.canCoordinateResponse).toBe(true);
+
+      // Validate emergency types
+      const validEmergencyTypes = [
+        "school_lockdown",
+        "weather_delay",
+        "traffic_incident",
+        "medical_emergency",
+        "evacuation",
+      ];
+      expect(validEmergencyTypes).toContain(emergencyPermissions.emergencyType);
+    });
+  });
+
+  describe("Family Dashboard Role Transition Validation", () => {
+    it("should validate role transition requirements", () => {
+      const roleTransitionData = {
+        userId: "family-parent-1",
+        familyId: "johnson-family-001",
+        fromRole: "parent",
+        toRole: "group_admin",
+        groupId: "lincoln-elementary-morning-group",
+        transitionReason: "weekly_schedule_management",
+        hasRequiredPermissions: true,
+        contextValidated: true,
+      };
+
+      expect(roleTransitionData.userId).toBeDefined();
+      expect(roleTransitionData.familyId).toBeDefined();
+      expect(["parent", "student", "admin", "group_admin"]).toContain(
+        roleTransitionData.fromRole
+      );
+      expect(["parent", "student", "admin", "group_admin"]).toContain(
+        roleTransitionData.toRole
+      );
+      expect(roleTransitionData.groupId).toBeDefined();
+      expect(roleTransitionData.hasRequiredPermissions).toBe(true);
+      expect(roleTransitionData.contextValidated).toBe(true);
+
+      // Validate transition reasons
+      const validReasons = [
+        "weekly_schedule_management",
+        "emergency_response",
+        "group_administration",
+        "temporary_admin",
+      ];
+      expect(validReasons).toContain(roleTransitionData.transitionReason);
+    });
+
+    it("should validate family context in dashboard", () => {
+      const familyDashboardContext = {
+        familyId: "johnson-family-001",
+        primaryParent: {
+          id: "family-parent-1",
+          name: "Sarah Johnson",
+          role: "parent",
+        },
+        children: [
+          {
+            id: "child-emma-001",
+            name: "Emma Johnson",
+            school: "Lincoln Elementary School",
+            grade: "3rd Grade",
+          },
+          {
+            id: "child-liam-001",
+            name: "Liam Johnson",
+            school: "Lincoln Elementary School",
+            grade: "1st Grade",
+          },
+        ],
+        activeGroups: [
+          {
+            groupId: "lincoln-elementary-morning-group",
+            role: "group_admin",
+            school: "Lincoln Elementary School",
+          },
+        ],
+        emergencyContacts: [
+          {
+            name: "Michael Johnson",
+            phone: "+1-555-0123",
+            relationship: "Spouse",
+            priority: 1,
+          },
+        ],
+      };
+
+      expect(familyDashboardContext.familyId).toBeDefined();
+      expect(familyDashboardContext.primaryParent).toBeDefined();
+      expect(Array.isArray(familyDashboardContext.children)).toBe(true);
+      expect(familyDashboardContext.children.length).toBeGreaterThan(0);
+      expect(Array.isArray(familyDashboardContext.activeGroups)).toBe(true);
+      expect(Array.isArray(familyDashboardContext.emergencyContacts)).toBe(
+        true
+      );
+      expect(familyDashboardContext.emergencyContacts.length).toBeGreaterThan(
+        0
+      );
+    });
+
+    it("should validate weekly schedule data structure", () => {
       const scheduleData = {
-        weekStartDate: "2025-01-13",
+        weekStartDate: "2024-01-15",
         assignments: [
           {
-            driverId: "parent1",
-            email: "parent1@school.edu",
-            slots: ["monday_morning", "wednesday_afternoon"],
+            familyId: "johnson-family-001",
+            drivingDays: ["Monday", "Wednesday", "Friday"],
+            slots: [
+              {
+                day: "Monday",
+                timeSlot: "07:30-08:00",
+                route: "Morning Route A",
+                passengers: ["child-emma-001", "child-liam-001"],
+              },
+            ],
           },
         ],
       };

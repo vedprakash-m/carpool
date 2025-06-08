@@ -187,4 +187,84 @@ export class AuthService {
       throw Errors.Unauthorized("Invalid refresh token");
     }
   }
+
+  /**
+   * Register a new user
+   */
+  async register(userData: any): Promise<User> {
+    // Minimal implementation: hash password, create user, return user
+    const passwordHash = await this.hashPassword(userData.password);
+    const user: User = {
+      ...userData,
+      id: `user-${Date.now()}`,
+      passwordHash,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      role: userData.role || "parent",
+      preferences: userData.preferences || {},
+    };
+    // In a real implementation, save to DB
+    await this.userRepository.create(user);
+    return user;
+  }
+
+  /**
+   * Login a user
+   */
+  async login(
+    email: string,
+    password: string
+  ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) throw Errors.Unauthorized("Invalid credentials");
+    const valid = await this.verifyPasswordInstance(
+      password,
+      user.passwordHash
+    );
+    if (!valid) throw Errors.Unauthorized("Invalid credentials");
+    const accessToken = this.generateAccessTokenInstance(user);
+    const refreshToken = this.generateRefreshTokenInstance(user);
+    return { user, accessToken, refreshToken };
+  }
+
+  /**
+   * Generate a password reset token
+   */
+  async generatePasswordResetToken(user: User): Promise<string> {
+    // For demo, just sign a JWT with a short expiry
+    return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1h" });
+  }
+
+  /**
+   * Verify a password reset token
+   */
+  verifyPasswordResetToken(token: string): any {
+    return jwt.verify(token, JWT_SECRET);
+  }
+
+  /**
+   * Hash a password
+   */
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 12);
+  }
+
+  /**
+   * Change a user's password
+   */
+  async changePassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw Errors.NotFound("User not found");
+    const valid = await this.verifyPasswordInstance(
+      oldPassword,
+      user.passwordHash
+    );
+    if (!valid) throw Errors.Unauthorized("Invalid current password");
+    user.passwordHash = await this.hashPassword(newPassword);
+    await this.userRepository.update(userId, user);
+  }
 }

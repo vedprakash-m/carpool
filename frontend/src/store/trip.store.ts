@@ -28,7 +28,7 @@ interface TripStore {
   fetchTripById: (tripId: string) => Promise<void>;
   fetchMyTrips: () => Promise<void>;
   fetchAvailableTrips: (date?: string) => Promise<void>;
-  fetchTripStats: () => Promise<void>;
+  fetchTripStats: () => Promise<TripStats>;
   createTrip: (tripData: CreateTripRequest) => Promise<boolean>;
   updateTrip: (tripId: string, updates: UpdateTripRequest) => Promise<boolean>;
   deleteTrip: (tripId: string) => Promise<boolean>;
@@ -165,8 +165,10 @@ export const useTripStore = create<TripStore>((set, get) => ({
     try {
       const stats = await tripApi.getTripStats();
       set({ stats });
+      return stats;
     } catch (error) {
       console.error("Error fetching trip stats:", error);
+      throw error;
     }
   },
 

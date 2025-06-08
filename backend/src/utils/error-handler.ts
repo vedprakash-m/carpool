@@ -1,39 +1,29 @@
 import { HttpRequest, HttpResponseInit } from "@azure/functions";
 import { ApiResponse } from "@vcarpool/shared";
-import { logger } from "./logger";
+import { AzureLogger } from "./logger";
+import { ILogger } from "./logger";
+
+const logger = new AzureLogger();
 
 /**
  * Enhanced base error class
  */
 export class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly isOperational: boolean;
-  public readonly errorCode: string;
-  public readonly details?: Record<string, unknown>;
-
   constructor(
-    message: string,
-    statusCode: number = 500,
-    errorCode: string = "INTERNAL_ERROR",
-    isOperational: boolean = true,
-    details?: Record<string, unknown>
+    public message: string,
+    public statusCode: number = 500,
+    public code: string = "INTERNAL_ERROR",
+    public details?: any
   ) {
     super(message);
-
-    this.statusCode = statusCode;
-    this.isOperational = isOperational;
-    this.errorCode = errorCode;
-    this.details = details;
-
-    // Maintains proper stack trace
-    Error.captureStackTrace(this, this.constructor);
+    Object.setPrototypeOf(this, AppError.prototype);
   }
 }
 
 // Specific error types
 export class ValidationError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(message, 400, "VALIDATION_ERROR", true, details);
+    super(message, 400, "VALIDATION_ERROR", details);
   }
 }
 
@@ -73,126 +63,95 @@ export class DatabaseError extends AppError {
   }
 }
 
+export const Errors = {
+  BadRequest: (msg: string, details?: any) =>
+    new AppError(msg, 400, "BAD_REQUEST", details),
+  Unauthorized: (msg: string, details?: any) =>
+    new AppError(msg, 401, "UNAUTHORIZED", details),
+  Forbidden: (msg: string, details?: any) =>
+    new AppError(msg, 403, "FORBIDDEN", details),
+  NotFound: (msg: string, details?: any) =>
+    new AppError(msg, 404, "NOT_FOUND", details),
+  Conflict: (msg: string, details?: any) =>
+    new AppError(msg, 409, "CONFLICT", details),
+  InternalServerError: (msg: string, details?: any) =>
+    new AppError(msg, 500, "INTERNAL_ERROR", details),
+  ValidationError: (msg: string, details?: any) =>
+    new AppError(msg, 422, "VALIDATION_ERROR", details),
+};
+
 /**
  * Enhanced error handling function
  */
 export function handleError(
   error: unknown,
-  request?: HttpRequest,
-  requestId?: string
-): HttpResponseInit {
-  const isDevelopment = process.env.NODE_ENV === "development";
+  requestOrLogger: HttpRequest | ILogger,
+  loggerMaybe?: ILogger
+): HttpResponseInit | void {
+  let logger: ILogger;
+  let request: HttpRequest | undefined;
 
-  // Sanitize request for logging
-  const sanitizedRequest = request
-    ? {
-        method: request.method,
-        url: request.url,
-        headers: sanitizeHeaders(Object.fromEntries(request.headers.entries())),
-        query: request.query,
-      }
-    : null;
+  if (isHttpRequest(requestOrLogger)) {
+    request = requestOrLogger;
+    logger = loggerMaybe as ILogger;
+  } else {
+    logger = requestOrLogger as ILogger;
+  }
 
-  let statusCode = 500;
-  let errorCode = "INTERNAL_ERROR";
-  let message = "Internal server error";
-  let details: Record<string, unknown> | undefined = undefined;
+  // Default error response
+  const response: HttpResponseInit = {
+    status: 500,
+    jsonBody: {
+      success: false,
+      error: {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "An unexpected error occurred.",
+      },
+      requestId: request?.requestId,
+    },
+  };
 
   if (error instanceof AppError) {
-    statusCode = error.statusCode;
-    errorCode = error.errorCode;
-    message = error.message;
-    details = error.details;
-
-    // Log operational errors as warnings
-    logger.warn("Operational error occurred", {
-      error: {
-        name: error.name,
-        message: error.message,
-        statusCode: error.statusCode,
-        errorCode: error.errorCode,
-        details: error.details,
-      },
-      request: sanitizedRequest,
-      requestId,
-    });
-  } else {
-    // Log unexpected errors as errors
-    const errorInfo =
-      error instanceof Error
-        ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-          }
-        : { message: String(error) };
-
-    logger.error("Unexpected error occurred", {
-      error: errorInfo,
-      request: sanitizedRequest,
-      requestId,
-    });
-
-    // Handle known error types
-    if (error instanceof Error) {
-      if (error.name === "ValidationError") {
-        statusCode = 400;
-        errorCode = "VALIDATION_ERROR";
-        message = error.message;
-      } else if (error.name === "UnauthorizedError") {
-        statusCode = 401;
-        errorCode = "AUTHENTICATION_ERROR";
-        message = "Authentication failed";
-      } else if (
-        error.name === "MongoError" ||
-        error.name === "MongooseError"
-      ) {
-        statusCode = 500;
-        errorCode = "DATABASE_ERROR";
-        message = "Database operation failed";
-      } else {
-        message = isDevelopment ? error.message : "Internal server error";
-      }
+    response.status = error.statusCode;
+    (response.jsonBody as ApiResponse<any>).error = {
+      code: error.code,
+      message: error.message,
+    };
+    if (error.details) {
+      (response.jsonBody as any).details = error.details;
     }
+  } else if (error instanceof Error) {
+    (response.jsonBody as ApiResponse<any>).error = {
+      code: "INTERNAL_SERVER_ERROR",
+      message: "An unexpected internal error occurred.",
+    };
   }
 
-  const response: ApiResponse = {
-    success: false,
-    error: message,
-  };
-
-  // Add details in development or for operational errors
-  if (isDevelopment || (error instanceof AppError && error.isOperational)) {
-    if (details) {
-      (response as Record<string, unknown>).details = details;
-    }
-
-    if (isDevelopment && error instanceof Error) {
-      (response as Record<string, unknown>).stack = error.stack;
-    }
+  // Add stack in development
+  if (process.env.NODE_ENV === "development" && error instanceof Error) {
+    (response.jsonBody as any).stack = error.stack;
   }
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  // Log the error
+  const errorObj = (response.jsonBody as ApiResponse<any>).error;
+  const logMsg =
+    errorObj &&
+    typeof errorObj === "object" &&
+    "message" in errorObj &&
+    typeof errorObj.message === "string"
+      ? errorObj.message
+      : "Unknown error";
+  logger.error(logMsg, {
+    error,
+    requestId: request?.requestId,
+    statusCode: response.status,
+  });
 
-  // Add rate limit headers if applicable
-  if (
-    error instanceof RateLimitError &&
-    error.details &&
-    typeof error.details === "object" &&
-    "retryAfter" in error.details
-  ) {
-    headers["Retry-After"] = String(
-      (error.details as Record<string, unknown>)["retryAfter"]
-    );
+  // If we have a request, return an HTTP response
+  if (request) {
+    return response;
   }
-
-  return {
-    status: statusCode,
-    headers,
-    jsonBody: response,
-  };
+  // Otherwise, just log (for background jobs, etc.)
 }
 
 /**
@@ -217,25 +176,6 @@ function sanitizeHeaders(
   return sanitized;
 }
 
-export const Errors = {
-  NotFound: (message: string = "Resource not found") =>
-    new AppError(message, 404, "NOT_FOUND"),
-
-  Unauthorized: (message: string = "Unauthorized") =>
-    new AppError(message, 401, "UNAUTHORIZED"),
-
-  Forbidden: (message: string = "Forbidden") =>
-    new AppError(message, 403, "FORBIDDEN"),
-
-  BadRequest: (message: string = "Bad request") =>
-    new AppError(message, 400, "BAD_REQUEST"),
-
-  Conflict: (message: string = "Conflict") =>
-    new AppError(message, 409, "CONFLICT"),
-
-  ValidationError: (message: string = "Validation failed") =>
-    new AppError(message, 400, "VALIDATION_ERROR"),
-
-  InternalServerError: (message: string = "Internal server error") =>
-    new AppError(message, 500, "INTERNAL_ERROR"),
-};
+function isHttpRequest(obj: any): obj is HttpRequest {
+  return obj && typeof obj.method === "string" && typeof obj.url === "string";
+}

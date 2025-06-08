@@ -40,7 +40,8 @@
 
 **3. Trust & Transparency**
 
-- Open visibility into group member information and driving history
+- **Registration-First Access**: Complete registration required before viewing or searching groups to ensure data quality and commitment
+- Open visibility into group member information and driving history after registration
 - Clear algorithm explanations for schedule assignments
 - Transparent swap request process with visible deadlines
 - Match scoring system shows why groups are recommended
@@ -55,9 +56,37 @@
 **5. Inclusive Community Building**
 
 - Role-based access that empowers without overwhelming
-- Geographic matching that considers diverse family situations
-- Flexible scheduling that accommodates working parent constraints
+- **Geographic Focus**: Initial service area centered around Tesla Stem High School in Redmond, WA with 25-mile radius support
+- **Traveling Parent Fairness**: Flexible makeup options (2-6 weeks) for parents who travel, ensuring long-term equity
 - Child agency through supervised self-registration process
+
+### Key Platform Decisions
+
+**Decision 1: Registration Requirement**
+
+- All parents must complete full registration before accessing group search or details
+- No anonymous browsing - ensures committed users and data quality
+- Quick preview functionality limited to general platform information
+
+**Decision 2: Comprehensive Validation**
+
+- Required validation of home address with geocoding verification
+- Phone number validation with SMS verification
+- Emergency contact validation
+- Vehicle information validation for driving parents
+
+**Decision 3: Tesla Stem High School Focus**
+
+- Initial supported school: Tesla Stem High School, Redmond, WA
+- Service area: 25-mile radius from school location
+- Expandable framework for additional schools based on demand
+
+**Decision 4: Traveling Parent Support**
+
+- Options for traveling parents to make up missed driving responsibilities
+- 2-6 week makeup window for additional trips
+- Fair distribution algorithm accounts for travel schedules
+- Clear communication tools for makeup arrangements
 
 ---
 
@@ -143,12 +172,109 @@
 
 ### Journey 1: Progressive Parent Onboarding
 
-#### Quick Start Experience
+#### Registration-First Experience
 
-**Philosophy**: Minimize friction with progressive disclosure and smart defaults
+**Philosophy**: Complete registration required before group access - ensures data quality and commitment while streamlining the experience for serious users
 
 ```
-WIREFRAME: Streamlined Onboarding Entry
+WIREFRAME: Registration-First Landing
+┌─────────────────────────────────────────────────────────────┐
+│ 🚗 VCarpool                              [Help] [Login]    │
+├─────────────────────────────────────────────────────────────┤
+│                Welcome to VCarpool                          │
+│                                                             │
+│     "Safe, reliable carpooling for Tesla Stem families"   │
+│                                                             │
+│ 🎯 Start your carpool journey today:                       │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 🔍 Join a Carpool Group                                │ │
+│ │ "Find families near Tesla Stem High School"            │ │
+│ │ Complete registration to search and join groups        │ │
+│ │ [Start Registration →]                                  │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 🚀 Create a New Group                                   │ │
+│ │ "Organize carpooling for your neighborhood"            │ │
+│ │ [Create Group →]                                        │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ 📍 Currently serving Tesla Stem High School area          │
+│ (25-mile radius from Redmond, WA)                         │
+│                                                             │
+│ ✨ Quick Preview:                                          │
+│ [How It Works] [Safety Features] [Success Stories]         │
+└─────────────────────────────────────────────────────────────┘
+
+WIREFRAME: Complete Registration Required
+┌─────────────────────────────────────────────────────────────┐
+│ Create Your VCarpool Account                                │
+├─────────────────────────────────────────────────────────────┤
+│ Complete your profile to search and join carpool groups    │
+│                                                             │
+│ 👤 Parent Information:                                     │
+│ First Name: [John                   ] *Required            │
+│ Last Name:  [Smith                  ] *Required            │
+│ Email:      [john.smith@email.com   ] *Required            │
+│ Phone:      [(425) 555-0123         ] *Required            │
+│             [📱 Verify via SMS]                            │
+│                                                             │
+│ 📍 Home Address: *Required for distance calculations       │
+│ [123 Main St, Redmond, WA 98052    ] [🔍 Verify Address]  │
+│ Distance from Tesla Stem: 3.2 miles ✓                     │
+│                                                             │
+│ 👶 Child Information:                                      │
+│ Child Name: [Emma Smith             ] *Required            │
+│ Grade:      [9th Grade ▼           ] *Required            │
+│ School:     [Tesla Stem High School ▼] *Required          │
+│ Student ID: [ES2024                 ] Optional             │
+│                                                             │
+│ 🚗 Transportation Role:                                    │
+│ ○ I can drive regularly and help coordinate                │
+│ ○ I can drive occasionally when needed                     │
+│ ○ I prefer to be a passenger family only                   │
+│                                                             │
+│ 🆘 Emergency Contact: *Required                            │
+│ Name:  [Jane Smith (Partner)        ]                      │
+│ Phone: [(425) 555-0124             ] [📱 Verify]          │
+│                                                             │
+│ ✈️ Travel Schedule (Optional):                             │
+│ ☐ I travel regularly for work                              │
+│ ☐ I need makeup driving options                            │
+│                                                             │
+│                    [← Back] [Complete Registration →]      │
+│                                                             │
+│ * All fields marked with * are required                   │
+│ Phone numbers will be verified via SMS                     │
+│ Address will be geocoded for accurate distance calculation │
+└─────────────────────────────────────────────────────────────┘
+
+WIREFRAME: Registration Validation Steps
+┌─────────────────────────────────────────────────────────────┐
+│ Verify Your Information                                     │
+├─────────────────────────────────────────────────────────────┤
+│ Step 1 of 3: SMS Verification                              │
+│                                                             │
+│ We sent a code to (425) 555-0123                          │
+│                                                             │
+│ Enter verification code: [_ _ _ _ _ _]                       │
+│                                                             │
+│ [Resend Code] [Use Different Number]                       │
+│                                                             │
+│ Step 2 of 3: Address Verification                          │
+│                                                             │
+│ ✓ Address found: 123 Main St, Redmond, WA 98052          │
+│ ✓ Distance verified: 3.2 miles from Tesla Stem            │
+│ ✓ Within 25-mile service area                              │
+│                                                             │
+│ Step 3 of 3: Emergency Contact                             │
+│                                                             │
+│ We sent a code to (425) 555-0124                          │
+│ Enter verification code: [_ _ _ _ _ _]                       │
+│                                                             │
+│                              [Complete Setup →]            │
+└─────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────┐
 │ 🚗 VCarpool                              [Help] [Login]    │
 ├─────────────────────────────────────────────────────────────┤
@@ -2230,9 +2356,117 @@ WIREFRAME: Fairness Equity Dashboard
 └─────────────────────────────────────────────────────────────┘
 ```
 
----
+### Traveling Parent Fairness System
 
-## Enhanced Family Unit Signup Flow
+**Core Principle**: Parents who travel for work can maintain group membership while ensuring long-term fairness through flexible makeup options over 2-6 week periods.
+
+#### Traveling Parent Registration
+
+- **Travel Schedule Declaration**: Parents can declare regular travel schedules during registration
+- **Makeup Commitment**: Agreement to additional trips within 2-6 week windows
+- **Transparency**: Travel schedules visible to Group Admin and other members
+- **Flexibility**: Ability to update travel patterns with advance notice
+
+#### Makeup Options System
+
+```
+WIREFRAME: Traveling Parent Makeup Options
+┌─────────────────────────────────────────────────────────────┐
+│ 🛫 Traveling Parent Makeup System - Mike Johnson          │
+├─────────────────────────────────────────────────────────────┤
+│ Current Situation: You missed 2 driving days this week     │
+│                                                             │
+│ 📊 Your Balance:                                           │
+│ • Missed trips this month: 3                               │
+│ • Makeup trips completed: 1                                │
+│ • Outstanding makeup needed: 2 trips                       │
+│                                                             │
+│ 🎯 Makeup Options (Next 2-6 weeks):                       │
+│                                                             │
+│ Option 1: Extra Weekly Trips                               │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Week of Jan 22-26: Drive Monday + Tuesday              │ │
+│ │ Week of Jan 29-Feb 2: Drive Friday                     │ │
+│ │ Impact: +2 trips over normal allocation                 │ │
+│ │ [Select This Option]                                    │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ Option 2: Weekend/Special Trips                            │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Volunteer for 2 weekend field trip driving             │ │
+│ │ Drive backup for emergency situations                   │ │
+│ │ Cover for other traveling parents                       │ │
+│ │ [Select This Option]                                    │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ Option 3: Extended Coverage                                 │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Drive for 3 weeks straight (weeks 4-6)                 │ │
+│ │ Cover Spring Break arrangements                         │ │
+│ │ Coordinate special school events                        │ │
+│ │ [Select This Option]                                    │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ 💡 Custom Arrangement:                                     │
+│ [Propose Alternative] [Discuss with Group Admin]           │
+│                                                             │
+│ ⏰ Deadline: Make selection by Friday 5PM                  │
+└─────────────────────────────────────────────────────────────┘
+
+WIREFRAME: Group Admin Travel Management
+┌─────────────────────────────────────────────────────────────┐
+│ ✈️ Travel Schedule Management - Lincoln Morning Group      │
+├─────────────────────────────────────────────────────────────┤
+│ Current Month: January 2025                                │
+│                                                             │
+│ 🛫 Traveling Parents This Month:                           │
+│                                                             │
+│ Mike Johnson - Business Travel                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Travel Dates: Jan 8-12, Jan 22-24                      │ │
+│ │ Missed Trips: 3                                         │ │
+│ │ Makeup Status: 1 completed, 2 pending                  │ │
+│ │ Next Action: Selected extra trips week of Jan 29       │ │
+│ │ [Review Plan] [Approve Makeup] [Send Reminder]         │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ Sarah Chen - Conference Travel                              │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Travel Dates: Jan 15-17                                 │ │
+│ │ Missed Trips: 1                                         │ │
+│ │ Makeup Status: Proposed weekend field trip driving     │ │
+│ │ Status: ✅ Approved                                     │ │
+│ │ [View Details] [Contact Sarah]                          │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ 📊 Travel Impact Summary:                                  │
+│ • Total missed trips this month: 4                         │
+│ • Backup coverage arranged: 4/4 ✅                        │
+│ • Makeup commitments pending: 2                            │
+│ • Group fairness impact: Minimal (+0.3% for non-travelers)│
+│                                                             │
+│ 🎯 Recommendations:                                        │
+│ • Recruit 1 additional backup driver for peak travel months│
+│ • Consider weekend makeup trip opportunities               │
+│ • Review travel patterns for next semester planning        │
+│                                                             │
+│ [Travel Calendar] [Fairness Report] [Backup Pool]         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Integration with Fair Distribution
+
+- **Temporary Adjustment**: Travel weeks excluded from normal fairness calculations
+- **Makeup Tracking**: Additional trips count toward makeup debt, not extra credit
+- **Long-term Balance**: System ensures traveling parents contribute equivalent effort over semester
+- **Group Impact Minimization**: Backup arrangements prevent burden on non-traveling families
+
+#### Communication & Transparency
+
+- **Advance Notice**: Minimum 2-week notice for planned travel
+- **Emergency Travel**: Same-day arrangements with automatic backup activation
+- **Group Visibility**: Travel calendars visible to all group members
+- **Makeup Progress**: Public tracking of makeup trip completion
 
 ### Family Unit Definition
 

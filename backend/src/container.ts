@@ -11,7 +11,7 @@ import { SchedulingService } from "./services/scheduling.service";
 import { UserRepository } from "./repositories/user.repository";
 import { FamilyRepository } from "./repositories/family.repository";
 import { ChildRepository } from "./repositories/child.repository";
-import { createLogger, ILogger } from "./utils/logger";
+import { AzureLogger, ILogger } from "./utils/logger";
 
 // Register services and repositories
 tsyringeContainer.register<AuthService>("AuthService", {
@@ -44,7 +44,7 @@ tsyringeContainer.register<ChildRepository>("ChildRepository", {
 });
 
 // Logger registration
-const logger = createLogger();
+const logger = new AzureLogger();
 tsyringeContainer.register<ILogger>("ILogger", { useValue: logger });
 
 export const container = tsyringeContainer;

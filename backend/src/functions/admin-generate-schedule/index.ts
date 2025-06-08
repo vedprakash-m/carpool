@@ -4,13 +4,7 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import {
-  compose,
-  cors,
-  errorHandler,
-  validateBody,
-  authenticate,
-} from "../../middleware";
+import { compose, authenticate, validateBody } from "../../middleware";
 import { hasRole } from "../../middleware/hasRole";
 import { SchedulingService } from "../../services/scheduling.service";
 
@@ -36,8 +30,6 @@ async function generateScheduleHandler(
 }
 
 export const main = compose(
-  cors,
-  errorHandler,
   authenticate,
   hasRole(["admin", "group_admin"])
 )(generateScheduleHandler);

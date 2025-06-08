@@ -6,25 +6,15 @@ import {
 } from "@azure/functions";
 import { ApiResponse, Trip, tripIdParamSchema } from "@vcarpool/shared";
 import { container } from "../../container";
-import {
-  compose,
-  cors,
-  errorHandler,
-  authenticate,
-  AuthenticatedRequest,
-} from "../../middleware";
+import { compose, authenticate } from "../../middleware";
 import {
   validatePathParams,
   extractPathParam,
 } from "../../middleware/validation.middleware";
 import { trackExecutionTime } from "../../utils/monitoring";
 
-interface ExtendedRequest extends AuthenticatedRequest {
-  validatedParams?: { tripId: string };
-}
-
 async function getTripHandler(
-  request: ExtendedRequest,
+  request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   const logger = container.loggers.trip;
@@ -33,7 +23,7 @@ async function getTripHandler(
     (logger as any).setContext(context);
   }
 
-  const userId = request.user!.userId;
+  const userId = request.auth?.userId;
   const tripId = request.validatedParams?.tripId;
 
   logger.info("Processing get trip request", { userId, tripId });
@@ -90,8 +80,6 @@ app.http("trips-get", {
   authLevel: "anonymous",
   route: "trips/{tripId}",
   handler: compose(
-    cors,
-    errorHandler,
     authenticate,
     validatePathParams(tripIdParamSchema, extractPathParam("tripId"))
   )(getTripHandler),

@@ -515,4 +515,29 @@ export class TripService {
       );
     }
   }
+
+  /**
+   * Join a trip as a passenger
+   */
+  async joinTrip(
+    tripId: string,
+    userId: string,
+    pickupLocation: string
+  ): Promise<Trip | null> {
+    return this.addPassenger(tripId, userId, pickupLocation);
+  }
+
+  /**
+   * Leave a trip as a passenger
+   */
+  async leaveTrip(tripId: string, userId: string): Promise<Trip | null> {
+    return this.removePassenger(tripId, userId);
+  }
+
+  /**
+   * Delete a trip (driver only)
+   */
+  async deleteTrip(tripId: string): Promise<Trip | null> {
+    return this.cancelTrip(tripId);
+  }
 }

@@ -4,19 +4,23 @@
 
 ### 1.1 Purpose
 
-VCarpool is a modern carpooling application designed to connect drivers and passengers for shared transportation. The platform facilitates eco-friendly commuting by enabling users to share rides, split costs, and reduce environmental impact through collaborative transportation.
+VCarpool is a comprehensive carpool management application designed specifically for school communities, starting with Tesla Stem High School in Redmond, WA. The platform connects families within a 25-mile radius for organized, safe, and reliable carpooling arrangements. Key features include registration-first access, comprehensive validation systems, and innovative traveling parent fairness mechanisms to ensure long-term sustainability and equity in carpool participation.
 
 ### 1.2 Stakeholders
 
-- **End Users**: Drivers and passengers seeking shared transportation
-- **Development Team**: Full-stack developers, DevOps engineers
-- **Platform Owner**: Service administrators and moderators
+- **Parents and Families**: Primary users managing carpool arrangements for their children
+- **School Administrators**: Tesla Stem High School staff coordinating transportation
+- **Students**: Secondary users participating in organized carpools
+- **Development Team**: Full-stack developers specializing in TypeScript and Azure
+- **Platform Owner**: Service administrators ensuring safety and platform integrity
 
 ### 1.3 High-Level Goals
 
-- **Primary**: Enable efficient ride-sharing through a user-friendly platform
-- **Secondary**: Reduce transportation costs and environmental impact
-- **Technical**: Deliver a scalable, secure, and maintainable cloud-native application
+- **Primary**: Enable safe, organized carpool management for Tesla Stem High School families
+- **Secondary**: Provide comprehensive validation and verification systems for user safety
+- **Geographic**: Serve families within 25 miles of Tesla Stem High School in Redmond, WA
+- **Fairness**: Implement traveling parent support with flexible makeup scheduling
+- **Technical**: Deliver a scalable, secure TypeScript-based application on Azure
 
 ## 2. System Architecture
 
@@ -130,7 +134,67 @@ graph TB
 
 ## 3. Key Features and Functionality
 
-### 3.1 Authentication & User Management (✅ IMPLEMENTED)
+### 3.1 Tesla Stem Registration & Validation System (✅ NEWLY IMPLEMENTED)
+
+**Core Requirements Implementation:**
+
+- **Registration-First Access**: Users must complete full registration before accessing group search/discovery
+- **Geographic Restriction**: Service limited to families within 25 miles of Tesla Stem High School, Redmond, WA
+- **Comprehensive Validation**: Three-tier verification system (phone, address, emergency contacts)
+
+**Implemented Functions:**
+
+- `phone-verification`: SMS-based phone number verification with 6-digit codes
+- `address-validation`: Geocoding validation with 25-mile radius enforcement from Tesla Stem High School
+- `emergency-contact-verification`: Multi-contact verification with SMS confirmation
+- Enhanced `parent-group-search`: Registration validation middleware preventing access without complete verification
+
+**Validation Features:**
+
+- **Phone Verification**: SMS code delivery, attempt limits (3 max), 10-minute expiration
+- **Address Validation**: Real-time geocoding, service area enforcement, address suggestions
+- **Emergency Contacts**: Minimum 2 contacts, relationship validation, phone verification
+- **Tesla Stem Integration**: School-specific configuration with exact coordinates (47.6740, -122.1215)
+
+**Frontend Components:**
+
+- `PhoneVerification.tsx`: Complete SMS verification flow with countdown timer
+- `AddressValidation.tsx`: Address input with real-time validation and suggestions
+- `RegistrationCompletePage.tsx`: Multi-step completion workflow with progress tracking
+- Enhanced discover page with registration requirements display
+
+### 3.2 Traveling Parent Fairness System (✅ NEWLY IMPLEMENTED)
+
+**Business Logic Implementation:**
+
+- **Makeup Trip Scheduling**: Flexible 2-6 week makeup window for traveling parents
+- **Balance Tracking**: Real-time debt/credit system for trip obligations
+- **Multiple Makeup Options**: Extra weeks, split weeks, weekend trips
+- **Admin Oversight**: Group admin approval system for makeup proposals
+
+**Implemented Functions:**
+
+- `traveling-parent-makeup`: Complete makeup scheduling API with dashboard data, proposal creation, status updates
+- Dashboard analytics for makeup balance, upcoming/completed makeups
+- Validation for makeup proposals (date ranges, trip counts, scheduling conflicts)
+
+**Frontend Components:**
+
+- `TravelingParentMakeupDashboard.tsx`: Comprehensive dashboard with:
+  - Real-time makeup balance display
+  - Travel schedule alerts and impact calculation
+  - Makeup proposal creation with multiple options
+  - Status tracking for all proposals (proposed, approved, rejected, completed)
+  - Admin response system with notes
+
+**Features:**
+
+- Travel schedule detection and automatic trip impact calculation
+- Flexible makeup scheduling with multiple format options
+- Real-time balance calculations and fairness tracking
+- Administrative oversight with approval workflows
+
+### 3.3 Authentication & User Management (✅ ENHANCED)
 
 **Implemented Functions:**
 
@@ -139,15 +203,18 @@ graph TB
 - `auth-refresh-token`: Token refresh mechanism
 - `users-me`: Get current user profile
 
-**Features:**
+**Enhanced Features:**
 
 - JWT-based session management (24h expiration, 7d refresh)
 - bcrypt password hashing (12 rounds)
 - Rate limiting for authentication endpoints (5 attempts per 15 minutes)
 - Input validation and sanitization
 - Role-based access control (admin, parent, student)
+- **NEW**: Registration completion validation middleware
+- **NEW**: Multi-step verification tracking (phone, address, emergency contacts)
+- **NEW**: Tesla Stem High School integration with geographic restrictions
 
-### 3.2 Trip Management (✅ IMPLEMENTED)
+### 3.4 Trip Management (✅ ENHANCED)
 
 **Implemented Functions:**
 
@@ -158,15 +225,18 @@ graph TB
 - `trips-leave`: Leave trips with proper validation
 - `trips-delete`: Cancel trips (status change, not hard delete)
 
-**Features:**
+**Enhanced Features:**
 
 - CRUD operations for trip management
 - Search and filter by destination, date, capacity
 - Passenger management (join/leave with seat tracking)
 - Trip status management (planned, active, cancelled, completed)
 - Email notifications for trip events
+- **NEW**: Tesla Stem High School integration with school-specific groups
+- **NEW**: Geographic validation for 25-mile service area
+- **NEW**: Registration-required access control for group discovery
 
-### 3.3 Security & Monitoring (✅ IMPLEMENTED)
+### 3.5 Security & Monitoring (✅ ENHANCED)
 
 **Implemented Features:**
 
@@ -177,15 +247,19 @@ graph TB
 - Application monitoring and logging
 - JWT authentication middleware
 
-**Security Controls:**
+**Enhanced Security Controls:**
 
 - Enhanced validation middleware with XSS prevention
 - Rate limiters: Auth (5/15min), API (100/15min), Strict (20/15min)
 - SQL injection prevention via parameterized queries
 - Content Security Policy headers
 - Request sanitization for all inputs
+- **NEW**: SMS verification security with attempt limits and expiration
+- **NEW**: Address validation with geocoding fraud prevention
+- **NEW**: Emergency contact verification chains
+- **NEW**: Geographic service area enforcement
 
-### 3.4 Communication (🚧 PARTIALLY IMPLEMENTED)
+### 3.6 Communication (🚧 PARTIALLY IMPLEMENTED)
 
 **Backend Implementation:**
 
@@ -196,7 +270,7 @@ graph TB
 
 **Status:** Backend messaging infrastructure exists but frontend integration pending
 
-### 3.5 Foundational Models & Core Logic (✅ NEWLY IMPLEMENTED)
+### 3.7 Foundational Models & Core Logic (✅ ENHANCED)
 
 #### 3.5.1 Family Unit Model
 
@@ -243,7 +317,7 @@ graph TB
 - New Family Departure workflow with confirmation modal.
 - New Unified Family Dashboard (`/dashboard`) for parents.
 
-### 3.6 Dual Driving Parents & Child-Based Load Sharing (🚧 PARTIALLY IMPLEMENTED)
+### 3.8 Dual Driving Parents & Child-Based Load Sharing (🚧 PARTIALLY IMPLEMENTED)
 
 **Enhanced Family Driving Model:**
 

@@ -31,8 +31,10 @@ export interface User {
   firstName: string;
   lastName: string;
   phoneNumber?: string;
+  phoneNumberVerified?: boolean; // New: SMS verification status
   department?: string;
   emergencyContact?: string;
+  emergencyContactVerified?: boolean; // New: Emergency contact verification
   phone?: string; // Alias for phoneNumber
   grade?: string;
   role: UserRole; // Made required and updated to new role system
@@ -41,9 +43,17 @@ export interface User {
   // New fields from Product Spec
   isActiveDriver?: boolean;
   homeAddress?: string;
+  homeAddressVerified?: boolean; // New: Address verification status
   // Phase 2: Geographic & School Matching
   homeLocation?: GeographicLocation;
   preferredSchools?: string[];
+  // New: Traveling parent support
+  travelSchedule?: {
+    isRegularTraveler: boolean;
+    travelPattern?: string; // "weekly", "monthly", "irregular"
+    needsMakeupOptions: boolean;
+    makeupCommitmentWeeks: number; // 2-6 weeks
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -222,16 +232,15 @@ export interface Family {
 // Child model - NEW from Product Spec
 export interface Child {
   id: string;
-  familyId: string; // Link to the family unit
-  firstName: string;
-  lastName: string;
-  // parentId: string; // This is now covered by the family link
-  fullName: string;
-  studentId?: string; // Made optional as per new schema
+  familyId: string;
+  parentId: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  studentId?: string;
   grade?: string;
   emergencyContact?: string;
   pickupInstructions?: string;
-  // Phase 2: School association
   schoolId?: string;
   school?: School;
   createdAt: Date;
@@ -389,6 +398,8 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
   message?: string;
+  details?: any;
+  stack?: string;
 }
 
 export interface PaginatedResponse<T> extends ApiResponse<T[]> {
@@ -633,7 +644,12 @@ export interface Notification {
 }
 
 // Message and Chat types
-export type MessageType = "text" | "location" | "system" | "image";
+export enum MessageType {
+  text = "text",
+  location = "location",
+  system = "system",
+  image = "image",
+}
 
 export interface Message {
   id: string;
@@ -1009,4 +1025,174 @@ export interface RecurringSchedule {
   createdAt: string;
   updatedAt: string;
   // ...
+}
+
+export interface Preference {
+  id: string;
+  familyId: string;
+  date: string;
+  canDrive: boolean;
+  // Add more fields as needed
+}
+
+export interface Assignment {
+  familyId: string;
+  driverId: string;
+  date: Date;
+  passengerFamilyIds: string[];
+  // Add more fields as needed
+}
+
+// Registration and Validation Types
+export interface ValidationResult {
+  isValid: boolean;
+  message?: string;
+  verificationCode?: string;
+  phoneVerified?: boolean;
+  addressValidated?: boolean;
+  emergencyContactsVerified?: boolean;
+  profileComplete?: boolean;
+  canAccessGroups?: boolean;
+  errors?: string[];
+}
+
+export interface PhoneValidation {
+  phoneNumber: string;
+  code: string;
+  verificationCode?: string; // Alias for backward compatibility
+  isVerified: boolean;
+  attemptCount: number;
+  attempts?: number; // Alias for backward compatibility
+  expiresAt: Date;
+  status?: "pending" | "verified" | "failed";
+  isValid?: boolean;
+}
+
+export interface AddressValidation {
+  address: string;
+  coordinates?: { lat: number; lng: number };
+  geocodedLocation?: GeographicLocation;
+  distanceFromSchool?: number;
+  withinServiceArea: boolean;
+  isValid: boolean;
+  status?: "pending" | "verified" | "failed";
+  validationMessage?: string;
+  error?: string;
+}
+
+export interface RegistrationData {
+  // Parent Information
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  homeAddress: string;
+
+  // Child Information
+  children: {
+    name: string;
+    grade: string;
+    schoolId: string;
+    studentId?: string;
+  }[];
+
+  // Transportation Role
+  transportationRole: "driver_regular" | "driver_occasional" | "passenger_only";
+
+  // Emergency Contact
+  emergencyContact: {
+    name: string;
+    phoneNumber: string;
+    relationship: string;
+  };
+
+  // Travel Schedule (Optional)
+  travelSchedule?: {
+    isRegularTraveler: boolean;
+    needsMakeupOptions: boolean;
+  };
+}
+
+// Tesla STEM High School Configuration
+export const TESLA_STEM_HIGH_SCHOOL: School = {
+  id: "tesla-stem-redmond",
+  name: "Tesla STEM High School",
+  address: "4301 228th Ave NE, Redmond, WA 98053",
+  location: {
+    address: "4301 228th Ave NE, Redmond, WA 98053",
+    latitude: 47.674,
+    longitude: -122.1215,
+    zipCode: "98053",
+    city: "Redmond",
+    state: "WA",
+    country: "USA",
+    formattedAddress: "4301 228th Ave NE, Redmond, WA 98053, USA",
+  },
+  district: "Lake Washington School District",
+  type: "high",
+  grades: ["9", "10", "11", "12"],
+  contactInfo: {
+    phone: "(425) 936-2410",
+    email: "tesla@lwsd.org",
+    website: "https://tesla.lwsd.org",
+  },
+  createdAt: new Date("2025-01-01"),
+  updatedAt: new Date("2025-01-01"),
+};
+
+// Service Area Configuration
+export const SERVICE_AREA_RADIUS_MILES = 25;
+
+// Traveling Parent Types
+export interface TravelingParentSchedule {
+  parentId: string;
+  groupId: string;
+  regularTravelDays?: string[];
+  travelDates: {
+    startDate: Date;
+    endDate: Date;
+    reason?: string;
+  }[];
+  makeupOptions: {
+    selectedOption:
+      | "extra_weekly"
+      | "weekend_special"
+      | "extended_coverage"
+      | "custom";
+    makeupPlan: string;
+    deadline: Date;
+    status: "pending" | "approved" | "completed";
+  };
+  makeupCommitment?: {
+    windowWeeks: number;
+    commitmentType: string;
+  };
+  makeupWindow?: {
+    minWeeks: number;
+    maxWeeks: number;
+  };
+  makeupProposals?: Array<{
+    id: string;
+    status: string;
+    description: string;
+  }>;
+  fairnessImpact: {
+    missedTrips: number;
+    makeupTripsNeeded: number;
+    makeupTripsCompleted: number;
+  };
+}
+
+export interface MakeupOption {
+  id: string;
+  type: "extra_weekly" | "weekend_special" | "extended_coverage" | "custom";
+  description: string;
+  windowWeeks: number;
+  isFlexible: boolean;
+  weekRange: {
+    startWeek: Date;
+    endWeek: Date;
+  };
+  additionalTrips: number;
+  approved: boolean;
 }

@@ -7,6 +7,14 @@ export * from "./validations";
 // Export parameter validation schemas
 export * from "./schemas/trip-params";
 export * from "./schemas/user-params";
+export * from "./schemas/chat-schemas";
+export * from "./schemas/message-schemas";
+// Explicitly export password-related schemas for backend
+export {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  changePasswordSchema,
+} from "./validations";
 
 // Export all utilities
 export * from "./utils";
@@ -86,3 +94,7 @@ export type {
   CreateChildRequest,
   UpdateChildRequest,
 } from "./types";
+
+// Explicitly export types needed by backend services
+export type { Family, DayPreference } from "./types";
+export type { Preference, Assignment } from "./types";

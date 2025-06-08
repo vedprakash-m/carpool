@@ -4,97 +4,45 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { loginSchema, ApiResponse, AuthResponse } from "@vcarpool/shared";
+import "reflect-metadata";
+import { container } from "../../container";
+import { loginSchema } from "@vcarpool/shared";
+import {
+  compose,
+  validateBody,
+  requestId,
+  requestLogging,
+} from "../../middleware";
 import { AuthService } from "../../services/auth.service";
-import { UserService } from "../../services/user.service";
-import { compose, cors, errorHandler, validateBody } from "../../middleware";
-import { UserRepository } from "../../repositories/user.repository";
-import { logger } from "../../utils/logger";
+import { handleError } from "../../utils/error-handler";
+import { ILogger } from "../../utils/logger";
 
 async function loginHandler(
-  request: HttpRequest & { validatedBody: any },
+  request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
+  const logger = container.resolve<ILogger>("ILogger");
+  const authService = container.resolve<AuthService>("AuthService");
+
   try {
-    console.log("Login handler started");
-    console.log("Request body:", request.validatedBody);
+    const { email, password } = request.validated!.body;
 
-    const { email, password } = request.validatedBody;
-
-    const authService = new AuthService(
-      new UserRepository(null as any),
-      logger
+    const { user, accessToken, refreshToken } = await authService.login(
+      email,
+      password
     );
 
-    console.log("About to call UserService.getUserByEmail with:", email);
+    logger.info(`User logged in successfully`, { userId: user.id });
 
-    // Find user by email
-    const userWithPassword = await UserService.getUserByEmail(email);
-    console.log(
-      "UserService.getUserByEmail result:",
-      userWithPassword ? "User found" : "User not found"
-    );
-
-    if (!userWithPassword) {
-      console.log("Returning 401 for user not found");
-      return {
-        status: 401,
-        jsonBody: {
-          success: false,
-          error: "Invalid email or password",
-        } as ApiResponse,
-      };
-    }
-
-    console.log("About to verify password");
-    // Verify password
-    const isPasswordValid = await authService.verifyPasswordInstance(
-      password,
-      userWithPassword.passwordHash
-    );
-    console.log("Password verification result:", isPasswordValid);
-
-    if (!isPasswordValid) {
-      console.log("Returning 401 for invalid password");
-      return {
-        status: 401,
-        jsonBody: {
-          success: false,
-          error: "Invalid email or password",
-        } as ApiResponse,
-      };
-    }
-
-    console.log("About to generate tokens");
-    // Remove password hash from user object
-    const { passwordHash, ...user } = userWithPassword;
-
-    // Generate tokens
-    const accessToken = AuthService.generateAccessToken(user);
-    const refreshToken = AuthService.generateRefreshToken(user);
-
-    console.log("Login successful");
     return {
-      status: 200,
       jsonBody: {
         success: true,
-        data: {
-          user,
-          token: accessToken,
-          refreshToken,
-        },
-      } as ApiResponse<AuthResponse>,
+        message: "Login successful",
+        data: { user, accessToken, refreshToken },
+      },
     };
   } catch (error) {
-    console.error("Login handler error:", error);
-    return {
-      status: 500,
-      jsonBody: {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-      } as ApiResponse,
-    };
+    return handleError(error, request);
   }
 }
 
@@ -102,5 +50,9 @@ app.http("auth-login", {
   methods: ["POST"],
   authLevel: "anonymous",
   route: "auth/login",
-  handler: compose(cors, errorHandler, validateBody(loginSchema))(loginHandler),
+  handler: compose(
+    requestId,
+    requestLogging,
+    validateBody(loginSchema)
+  )(loginHandler),
 });

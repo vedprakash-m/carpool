@@ -1,63 +1,59 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { ApiResponse, User } from '@vcarpool/shared';
-import { container } from '../../container';
-import { compose, cors, errorHandler, authenticate, AuthenticatedRequest } from '../../middleware';
-import { trackExecutionTime } from '../../utils/monitoring';
+import {
+  app,
+  HttpRequest,
+  HttpResponseInit,
+  InvocationContext,
+} from "@azure/functions";
+import "reflect-metadata";
+import { container } from "../../container";
+import {
+  compose,
+  authenticate,
+  requestId,
+  requestLogging,
+} from "../../middleware";
+import { handleError } from "../../utils/error-handler";
+import { ILogger } from "../../utils/logger";
+import { UserService } from "../../services/user.service";
 
-async function getMeHandler(
-  request: AuthenticatedRequest,
+async function usersMeHandler(
+  request: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const logger = container.loggers.user;
-  // Set context for the logger
-  if ('setContext' in logger) {
-    (logger as any).setContext(context);
-  }
-  
-  // Log the operation start
-  logger.info('Retrieving user profile', { userId: request.user?.userId });
-
-  const userId = request.user!.userId;
+  const logger = container.resolve<ILogger>("ILogger");
+  const userService = container.resolve<UserService>("UserService");
 
   try {
-    // Get user profile with performance tracking
-    const user = await trackExecutionTime('getUserById', 
-      () => container.userService.getUserById(userId),
-      'UserService'
-    );
-
-    if (!user) {
-      logger.warn('User profile not found', { userId });
-      return {
-        status: 404,
-        jsonBody: {
-          success: false,
-          error: 'User not found'
-        } as ApiResponse
-      };
+    const userId = request.auth?.userId;
+    if (!userId) {
+      // This should technically be caught by the authenticate middleware,
+      // but it's good practice to check.
+      throw new Error("User not authenticated.");
     }
 
-    logger.info('User profile retrieved successfully', { userId });
+    const user = await userService.getUserById(userId);
+
+    if (!user) {
+      throw new Error("Authenticated user not found.");
+    }
+
+    logger.info("Fetched current user profile successfully", { userId });
+
     return {
-      status: 200,
       jsonBody: {
         success: true,
-        data: user
-      } as ApiResponse<User>
+        message: "User profile fetched successfully.",
+        data: user,
+      },
     };
   } catch (error) {
-    logger.error('Error retrieving user profile', { userId, error });
-    throw error; // Let the error handler middleware handle it
+    return handleError(error, request);
   }
 }
 
-app.http('users-me', {
-  methods: ['GET'],
-  authLevel: 'anonymous',
-  route: 'users/me',
-  handler: compose(
-    cors,
-    errorHandler,
-    authenticate
-  )(getMeHandler)
+app.http("users-me", {
+  methods: ["GET"],
+  authLevel: "anonymous", // Handled by middleware
+  route: "users/me",
+  handler: compose(requestId, requestLogging, authenticate)(usersMeHandler),
 });

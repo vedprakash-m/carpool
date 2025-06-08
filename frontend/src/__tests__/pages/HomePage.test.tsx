@@ -1,3 +1,13 @@
+/**
+ * HomePage Tests - UX Requirements Alignment
+ *
+ * Tests aligned with User_Experience.md requirements:
+ * - Streamlined onboarding entry points
+ * - Enhanced Family Unit Registration integration
+ * - Progressive Parent Onboarding flow support
+ * - Clear value proposition for school carpool coordination
+ * - Accessible navigation to registration and login flows
+ */
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useRouter } from "next/navigation";
@@ -17,7 +27,7 @@ jest.mock("next/link", () => {
   );
 });
 
-describe("HomePage", () => {
+describe("HomePage - Streamlined Family Onboarding Entry", () => {
   const mockRouter = {
     push: jest.fn(),
     replace: jest.fn(),
@@ -40,8 +50,8 @@ describe("HomePage", () => {
     jest.clearAllMocks();
   });
 
-  describe("VCarpool Branding and Header", () => {
-    it("should display VCarpool brand name and logo", () => {
+  describe("Family-Oriented VCarpool Branding", () => {
+    it("should display VCarpool brand with family-focused messaging", () => {
       render(<HomePage />);
 
       expect(screen.getByText("VCarpool")).toBeInTheDocument();
@@ -72,15 +82,15 @@ describe("HomePage", () => {
     });
   });
 
-  describe("Hero Section Content", () => {
-    it("should display smart school carpool messaging", () => {
+  describe("Family Onboarding Hero Section", () => {
+    it("should display family-centered school carpool messaging", () => {
       render(<HomePage />);
 
       expect(screen.getByText("Smart School")).toBeInTheDocument();
       expect(screen.getByText("Carpool Coordination")).toBeInTheDocument();
     });
 
-    it("should display school-focused value proposition", () => {
+    it("should display Enhanced Family Unit Registration value proposition", () => {
       render(<HomePage />);
 
       const description = screen.getByText(
@@ -98,7 +108,7 @@ describe("HomePage", () => {
       ).toBeInTheDocument();
     });
 
-    it("should have primary call-to-action buttons", () => {
+    it("should have Progressive Parent Onboarding call-to-action buttons", () => {
       render(<HomePage />);
 
       const startCarpoolingBtn = screen.getByRole("link", {
@@ -112,7 +122,7 @@ describe("HomePage", () => {
       expect(parentLoginBtn).toHaveAttribute("href", "/login");
     });
 
-    it("should use appropriate styling for hero section", () => {
+    it("should use family-friendly styling for hero section", () => {
       render(<HomePage />);
 
       const heroHeading = screen.getByText("Smart School");
@@ -122,10 +132,25 @@ describe("HomePage", () => {
         "font-extrabold"
       );
     });
+
+    it("should provide clear entry points for new families", () => {
+      render(<HomePage />);
+
+      // The registration button should be prominent for new families
+      const startCarpoolingBtn = screen.getByRole("link", {
+        name: /start carpooling/i,
+      });
+
+      expect(startCarpoolingBtn).toBeInTheDocument();
+      expect(startCarpoolingBtn).toHaveAttribute("href", "/register");
+
+      // Should support the Enhanced Family Unit Registration flow
+      expect(startCarpoolingBtn).toBeVisible();
+    });
   });
 
-  describe("School Community Features", () => {
-    it("should highlight parent community network feature", () => {
+  describe("Family-Centered School Community Features", () => {
+    it("should highlight Enhanced Family Unit Registration through parent community network", () => {
       render(<HomePage />);
 
       expect(screen.getByText("Parent Community Network")).toBeInTheDocument();
@@ -137,7 +162,7 @@ describe("HomePage", () => {
       ).toBeInTheDocument();
     });
 
-    it("should describe flexible school scheduling", () => {
+    it("should describe family-friendly flexible school scheduling", () => {
       render(<HomePage />);
 
       expect(
@@ -153,7 +178,7 @@ describe("HomePage", () => {
       ).toBeInTheDocument();
     });
 
-    it("should emphasize cost-effective transportation", () => {
+    it("should emphasize family cost-effective transportation benefits", () => {
       render(<HomePage />);
 
       expect(
@@ -169,7 +194,7 @@ describe("HomePage", () => {
       ).toBeInTheDocument();
     });
 
-    it("should display all three feature cards with icons", () => {
+    it("should display family-oriented feature cards with accessible icons", () => {
       render(<HomePage />);
 
       const featureCards = screen.getAllByText(
@@ -183,8 +208,8 @@ describe("HomePage", () => {
     });
   });
 
-  describe("School-Focused Value Proposition", () => {
-    it('should display "Built for School Communities" section', () => {
+  describe("Family-Focused School Value Proposition", () => {
+    it('should display "Built for School Communities" with family emphasis', () => {
       render(<HomePage />);
 
       expect(
@@ -197,26 +222,40 @@ describe("HomePage", () => {
       ).toBeInTheDocument();
     });
 
-    it("should highlight organized trip planning", () => {
+    it("should highlight family-oriented organized trip planning", () => {
       render(<HomePage />);
 
       expect(screen.getByText("Organized")).toBeInTheDocument();
       expect(screen.getByText("Structured trip planning")).toBeInTheDocument();
     });
 
-    it("should emphasize simplicity", () => {
+    it("should emphasize family-friendly simplicity", () => {
       render(<HomePage />);
 
       expect(screen.getByText("Simple")).toBeInTheDocument();
       expect(screen.getByText("Easy trip coordination")).toBeInTheDocument();
     });
 
-    it("should promote savings benefit", () => {
+    it("should promote family savings benefit", () => {
       render(<HomePage />);
 
       expect(screen.getByText("Savings")).toBeInTheDocument();
       expect(
         screen.getByText("Reduced transportation costs")
+      ).toBeInTheDocument();
+    });
+
+    it("should support Progressive Parent Onboarding through clear messaging", () => {
+      render(<HomePage />);
+
+      // Value propositions should be accessible and clear for new families
+      expect(screen.getByText("Organized")).toBeInTheDocument();
+      expect(screen.getByText("Simple")).toBeInTheDocument();
+      expect(screen.getByText("Savings")).toBeInTheDocument();
+
+      // These should guide families toward registration
+      expect(
+        screen.getByText("Built for School Communities")
       ).toBeInTheDocument();
     });
   });
@@ -300,8 +339,8 @@ describe("HomePage", () => {
     });
   });
 
-  describe("User Journey and Call-to-Actions", () => {
-    it("should provide clear registration path for new users", () => {
+  describe("Family Onboarding User Journey - Progressive Entry Points", () => {
+    it("should provide clear Enhanced Family Unit Registration path for new families", () => {
       render(<HomePage />);
 
       const registrationLinks = screen.getAllByRole("link", {
@@ -314,7 +353,7 @@ describe("HomePage", () => {
       });
     });
 
-    it("should provide login path for existing users", () => {
+    it("should provide Progressive Parent Onboarding login path for existing families", () => {
       render(<HomePage />);
 
       const loginLinks = screen.getAllByRole("link", {
@@ -327,7 +366,7 @@ describe("HomePage", () => {
       });
     });
 
-    it("should differentiate between primary and secondary actions", () => {
+    it("should differentiate between family registration and family login actions", () => {
       render(<HomePage />);
 
       const startCarpoolingBtn = screen.getByRole("link", {
@@ -337,11 +376,30 @@ describe("HomePage", () => {
         name: /parent login/i,
       });
 
-      // Primary action should have primary styling
+      // Primary action (family registration) should have primary styling
       expect(startCarpoolingBtn).toHaveClass("bg-primary-600");
 
-      // Secondary action should have different styling
+      // Secondary action (family login) should have different styling
       expect(parentLoginBtn).toHaveClass("bg-white");
+    });
+
+    it("should support streamlined family onboarding flow", () => {
+      render(<HomePage />);
+
+      // Multiple entry points for different family onboarding paths
+      const heroRegisterBtn = screen.getByRole("link", {
+        name: /start carpooling/i,
+      });
+      const headerJoinBtn = screen.getByRole("link", {
+        name: /join today/i,
+      });
+
+      expect(heroRegisterBtn).toHaveAttribute("href", "/register");
+      expect(headerJoinBtn).toHaveAttribute("href", "/register");
+
+      // Both should support the Enhanced Family Unit Registration flow
+      expect(heroRegisterBtn).toBeVisible();
+      expect(headerJoinBtn).toBeVisible();
     });
   });
 
@@ -369,11 +427,11 @@ describe("HomePage", () => {
     });
   });
 
-  describe("Content Validation", () => {
-    it("should have complete hero section content", () => {
+  describe("Family-Focused Content Validation", () => {
+    it("should have complete family onboarding hero section content", () => {
       render(<HomePage />);
 
-      // Verify all hero elements are present
+      // Verify all family-focused hero elements are present
       expect(screen.getByText("Smart School")).toBeInTheDocument();
       expect(screen.getByText("Carpool Coordination")).toBeInTheDocument();
       expect(
@@ -384,14 +442,14 @@ describe("HomePage", () => {
       ).toBeInTheDocument();
     });
 
-    it("should not have any placeholder or lorem ipsum text", () => {
+    it("should not have any placeholder or development text", () => {
       render(<HomePage />);
 
       const textContent = document.body.textContent;
       expect(textContent).not.toMatch(/lorem ipsum|placeholder|todo|fixme/i);
     });
 
-    it("should have school-specific language throughout", () => {
+    it("should have family and school-specific language throughout", () => {
       render(<HomePage />);
 
       const textContent = document.body.textContent;
@@ -399,6 +457,30 @@ describe("HomePage", () => {
       expect(textContent).toMatch(/children|kids/i);
       expect(textContent).toMatch(/parents/i);
       expect(textContent).toMatch(/carpool/i);
+      expect(textContent).toMatch(/family|families/i);
+    });
+
+    it("should support Progressive Parent Onboarding messaging", () => {
+      render(<HomePage />);
+
+      // Content should clearly guide families through the onboarding process
+      expect(screen.getByText(/start carpooling/i)).toBeInTheDocument();
+      expect(screen.getByText(/join today/i)).toBeInTheDocument();
+      expect(screen.getByText(/parent login/i)).toBeInTheDocument();
+
+      // Should emphasize community and family benefits
+      expect(screen.getByText(/parent community network/i)).toBeInTheDocument();
+      expect(screen.getByText(/school communities/i)).toBeInTheDocument();
+    });
+
+    it("should provide Enhanced Family Unit Registration context", () => {
+      render(<HomePage />);
+
+      // Should emphasize family-unit benefits and coordination
+      expect(screen.getByText(/family/i)).toBeInTheDocument();
+      expect(screen.getByText(/coordination/i)).toBeInTheDocument();
+      expect(screen.getByText(/organized/i)).toBeInTheDocument();
+      expect(screen.getByText(/convenient/i)).toBeInTheDocument();
     });
   });
 });
