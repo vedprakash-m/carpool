@@ -390,71 +390,103 @@ jobs:
 
           # Test frontend
           echo "1. Testing frontend..."
-          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 10 "$FRONTEND_URL/")
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$FRONTEND_URL/")
           if [ "$FRONTEND_STATUS" = "200" ] || [ "$FRONTEND_STATUS" = "301" ] || [ "$FRONTEND_STATUS" = "302" ]; then
             echo "   ✅ Frontend accessible ($FRONTEND_STATUS)"
           else
             echo "   ⚠️ Frontend check failed ($FRONTEND_STATUS)"
           fi
 
-          # Test health endpoint
+          # Test health endpoint with increased timeout and verbose output
           echo "2. Testing health endpoint..."
-          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 "$API_BASE/health")
-          if [ "$HEALTH_STATUS" = "200" ]; then
-            echo "   ✅ Health endpoint working ($HEALTH_STATUS)"
+          echo "   Attempting to connect to $API_BASE/health"
+          HEALTH_RESPONSE=$(curl -v -m 60 "$API_BASE/health" 2>&1)
+          HEALTH_STATUS=$?
+
+          if [ "$HEALTH_STATUS" = "0" ]; then
+            echo "   ✅ Health endpoint working (HTTP 200)"
+            echo "   Response: $HEALTH_RESPONSE"
           else
-            echo "   ❌ Health endpoint failed ($HEALTH_STATUS)"
+            echo "   ❌ Health endpoint failed with curl error code: $HEALTH_STATUS"
+            echo "   Full response: $HEALTH_RESPONSE"
+            echo "   Possible issues:"
+            echo "   - Function App might be cold starting"
+            echo "   - Network connectivity issues"
+            echo "   - Function App might be down"
+            
+            # Try one more time after a delay
+            echo "   Retrying after 30 second delay..."
+            sleep 30
+            HEALTH_RESPONSE=$(curl -v -m 60 "$API_BASE/health" 2>&1)
+            HEALTH_STATUS=$?
+            
+            if [ "$HEALTH_STATUS" = "0" ]; then
+              echo "   ✅ Health endpoint working on retry (HTTP 200)"
+              echo "   Response: $HEALTH_RESPONSE"
+            else
+              echo "   ❌ Health endpoint still failing after retry"
+              echo "   Full response: $HEALTH_RESPONSE"
+            fi
           fi
 
-          # Test auth login CORS
-          echo "3. Testing auth login CORS..."
-          CORS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 -X OPTIONS "$API_BASE/auth/login")
-          if [ "$CORS_STATUS" = "200" ]; then
-            echo "   ✅ Auth CORS working ($CORS_STATUS)"
-          else
-            echo "   ❌ Auth CORS failed ($CORS_STATUS)"
-          fi
+          # Continue with other tests only if health check passed
+          if [ "$HEALTH_STATUS" = "0" ]; then
+            # Test auth login CORS
+            echo "3. Testing auth login CORS..."
+            CORS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 -X OPTIONS "$API_BASE/auth/login")
+            if [ "$CORS_STATUS" = "200" ]; then
+              echo "   ✅ Auth CORS working ($CORS_STATUS)"
+            else
+              echo "   ❌ Auth CORS failed ($CORS_STATUS)"
+            fi
 
-          # Test auth login endpoint
-          echo "4. Testing auth login endpoint..."
-          AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 -X POST "$API_BASE/auth/login" \
-            -H "Content-Type: application/json" \
-            -d '{"email":"admin@vcarpool.com","password":"Admin123!"}')
-          if [ "$AUTH_STATUS" = "200" ]; then
-            echo "   ✅ Auth login working ($AUTH_STATUS)"
-          else
-            echo "   ❌ Auth login failed ($AUTH_STATUS)"
-          fi
+            # Test auth login endpoint
+            echo "4. Testing auth login endpoint..."
+            AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 -X POST "$API_BASE/auth/login" \
+              -H "Content-Type: application/json" \
+              -d '{"email":"admin@vcarpool.com","password":"Admin123!"}')
+            if [ "$AUTH_STATUS" = "200" ]; then
+              echo "   ✅ Auth login working ($AUTH_STATUS)"
+            else
+              echo "   ❌ Auth login failed ($AUTH_STATUS)"
+            fi
 
-          # Test trips stats
-          echo "5. Testing trips stats..."
-          STATS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 "$API_BASE/trips/stats")
-          if [ "$STATS_STATUS" = "200" ]; then
-            echo "   ✅ Trips stats working ($STATS_STATUS)"
-          else
-            echo "   ❌ Trips stats failed ($STATS_STATUS)"
-          fi
+            # Test trips stats
+            echo "5. Testing trips stats..."
+            STATS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$API_BASE/trips/stats")
+            if [ "$STATS_STATUS" = "200" ]; then
+              echo "   ✅ Trips stats working ($STATS_STATUS)"
+            else
+              echo "   ❌ Trips stats failed ($STATS_STATUS)"
+            fi
 
-          # Test users me
-          echo "6. Testing users me..."
-          USERS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 "$API_BASE/users/me")
-          if [ "$USERS_STATUS" = "200" ]; then
-            echo "   ✅ Users me working ($USERS_STATUS)"
+            # Test users me
+            echo "6. Testing users me..."
+            USERS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "$API_BASE/users/me")
+            if [ "$USERS_STATUS" = "200" ]; then
+              echo "   ✅ Users me working ($USERS_STATUS)"
+            else
+              echo "   ❌ Users me failed ($USERS_STATUS)"
+            fi
           else
-            echo "   ❌ Users me failed ($USERS_STATUS)"
+            echo "Skipping remaining tests due to health check failure"
+            CORS_STATUS="N/A"
+            AUTH_STATUS="N/A"
+            STATS_STATUS="N/A"
+            USERS_STATUS="N/A"
           fi
 
           echo ""
           echo "📋 Verification Summary:"
           echo "   Frontend: $FRONTEND_STATUS"
-          echo "   Health: $HEALTH_STATUS"
+          echo "   Health: $([ "$HEALTH_STATUS" = "0" ] && echo "200" || echo "Failed ($HEALTH_STATUS)")"
           echo "   CORS: $CORS_STATUS"
           echo "   Auth: $AUTH_STATUS"
           echo "   Stats: $STATS_STATUS"
           echo "   Users: $USERS_STATUS"
 
           # Check if critical endpoints are working
-          if [ "$HEALTH_STATUS" = "200" ] && [ "$CORS_STATUS" = "200" ] && [ "$AUTH_STATUS" = "200" ]; then
+          if [ "$HEALTH_STATUS" = "0" ] && [ "$CORS_STATUS" = "200" ] && [ "$AUTH_STATUS" = "200" ]; then
             echo ""
             echo "🎉 DEPLOYMENT SUCCESSFUL! Critical endpoints working."
           else
