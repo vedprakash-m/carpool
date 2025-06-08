@@ -19,7 +19,7 @@ import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 // Service return type interfaces for type safety
 interface ServiceResult {
   success: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface EmailServiceResult extends ServiceResult {
@@ -37,12 +37,13 @@ interface EmailServiceResult extends ServiceResult {
 }
 
 interface UserServiceResult extends ServiceResult {
-  user?: any;
+  user?: TestFamilyUser;
   onboardingRequired?: boolean;
   nextSteps?: string[];
-  members?: any[];
-  emergencyContacts?: any[];
-  updatedProgress?: any;
+  members?: TestFamilyMember[];
+  familyId?: string;
+  emergencyContacts?: EmergencyContact[];
+  updatedProgress?: OnboardingProgress;
   nextStep?: string;
   completionPercentage?: number;
   contactAdded?: boolean;
@@ -68,18 +69,49 @@ interface NotificationServiceResult extends ServiceResult {
   reminderScheduled?: boolean;
   scheduleSent?: boolean;
   allDelivered?: boolean;
-  notifications?: any[];
+  notifications?: Notification[];
   unreadCount?: number;
+}
+
+interface EmergencyContact {
+  name: string;
+  phone: string;
+  relationship: string;
+  priority: number;
+}
+
+interface OnboardingProgress {
+  profileComplete: boolean;
+  childrenAdded: boolean;
+  emergencyContactsAdded: boolean;
+  weeklyPreferencesSet: boolean;
+  schoolVerified: boolean;
+}
+
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  priority: string;
+  actionRequired?: boolean;
 }
 
 // Family-oriented test interfaces
 interface TestFamilyUser {
   id: string;
+  name?: string;
   email: string;
   role: "parent" | "student" | "admin";
   firstName: string;
   lastName: string;
   familyId?: string;
+  isPrimary?: boolean;
+  onboardingComplete?: boolean;
+  school?: string;
+  grade?: string;
   children?: Array<{
     id: string;
     name: string;
@@ -107,6 +139,31 @@ interface TestFamilyUser {
   }>;
 }
 
+interface TestFamilyMember {
+  id: string;
+  name: string;
+  role: "parent" | "student" | "admin";
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  isPrimary?: boolean;
+  onboardingComplete?: boolean;
+  school?: string;
+  grade?: string;
+}
+
+interface FamilyMembersResult {
+  success: boolean;
+  familyId: string;
+  members: TestFamilyMember[];
+  emergencyContacts?: Array<{
+    name: string;
+    phone: string;
+    relationship: string;
+    priority: number;
+  }>;
+}
+
 interface TestFamilyTrip {
   id: string;
   driverId: string;
@@ -129,50 +186,120 @@ interface TestFamilyTrip {
 
 // Mock family-oriented service implementations
 const mockFamilyEmailService = {
-  sendFamilyWelcomeEmail: jest.fn(),
-  sendOnboardingStepEmail: jest.fn(),
-  sendFamilyTripNotification: jest.fn(),
-  sendWeeklyScheduleNotification: jest.fn(),
-  sendEmergencyNotification: jest.fn(),
-  sendGroupJoinRequestEmail: jest.fn(),
-  sendPasswordResetEmail: jest.fn(),
-  validateEmailConfiguration: jest.fn(),
+  sendFamilyWelcomeEmail: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<EmailServiceResult>
+  >,
+  sendOnboardingStepEmail: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<EmailServiceResult>
+  >,
+  sendFamilyTripNotification: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<EmailServiceResult>
+  >,
+  sendWeeklyScheduleNotification: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<EmailServiceResult>
+  >,
+  sendEmergencyNotification: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<EmailServiceResult>
+  >,
+  sendGroupJoinRequestEmail: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<EmailServiceResult>
+  >,
+  sendPasswordResetEmail: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<EmailServiceResult>
+  >,
+  validateEmailConfiguration: jest.fn() as jest.MockedFunction<
+    () => Promise<ServiceResult>
+  >,
 };
 
 const mockFamilyUserService = {
-  createFamilyUser: jest.fn(),
-  getFamilyUserById: jest.fn(),
-  updateFamilyUser: jest.fn(),
-  deleteFamilyUser: jest.fn(),
-  getFamilyUsersByRole: jest.fn(),
-  validateFamilyUser: jest.fn(),
-  getFamilyMembers: jest.fn(),
-  updateOnboardingProgress: jest.fn(),
-  addChildToFamily: jest.fn(),
-  addEmergencyContact: jest.fn(),
-  updateWeeklyPreferences: jest.fn(),
+  createFamilyUser: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<UserServiceResult>
+  >,
+  getFamilyUserById: jest.fn() as jest.MockedFunction<
+    (id: string) => Promise<UserServiceResult>
+  >,
+  updateFamilyUser: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<UserServiceResult>
+  >,
+  deleteFamilyUser: jest.fn() as jest.MockedFunction<
+    (id: string) => Promise<ServiceResult>
+  >,
+  getFamilyUsersByRole: jest.fn() as jest.MockedFunction<
+    (role: string) => Promise<UserServiceResult>
+  >,
+  validateFamilyUser: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<ServiceResult>
+  >,
+  getFamilyMembers: jest.fn() as jest.MockedFunction<
+    (familyId: string) => Promise<UserServiceResult>
+  >,
+  updateOnboardingProgress: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<UserServiceResult>
+  >,
+  addChildToFamily: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<ServiceResult>
+  >,
+  addEmergencyContact: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<UserServiceResult>
+  >,
+  updateWeeklyPreferences: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<UserServiceResult>
+  >,
 };
 
 const mockFamilyMessagingService = {
-  createFamilyGroupChat: jest.fn(),
-  sendFamilyMessage: jest.fn(),
-  sendGroupAdminMessage: jest.fn(),
-  sendEmergencyMessage: jest.fn(),
-  getFamilyMessages: jest.fn(),
-  getGroupMessages: jest.fn(),
-  markAsRead: jest.fn(),
-  deleteMessage: jest.fn(),
+  createFamilyGroupChat: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<MessagingServiceResult>
+  >,
+  sendFamilyMessage: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<MessagingServiceResult>
+  >,
+  sendGroupAdminMessage: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<MessagingServiceResult>
+  >,
+  sendEmergencyMessage: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<MessagingServiceResult>
+  >,
+  getFamilyMessages: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<MessagingServiceResult>
+  >,
+  getGroupMessages: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<MessagingServiceResult>
+  >,
+  markAsRead: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<ServiceResult>
+  >,
+  deleteMessage: jest.fn() as jest.MockedFunction<
+    (id: string) => Promise<ServiceResult>
+  >,
 };
 
 const mockFamilyNotificationService = {
-  sendFamilyNotification: jest.fn(),
-  sendGroupAdminNotification: jest.fn(),
-  sendEmergencyNotification: jest.fn(),
-  createOnboardingNotification: jest.fn(),
-  createScheduleNotification: jest.fn(),
-  markAsRead: jest.fn(),
-  getFamilyNotifications: jest.fn(),
-  deleteNotification: jest.fn(),
+  sendFamilyNotification: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<NotificationServiceResult>
+  >,
+  sendGroupAdminNotification: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<NotificationServiceResult>
+  >,
+  sendEmergencyNotification: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<NotificationServiceResult>
+  >,
+  createOnboardingNotification: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<NotificationServiceResult>
+  >,
+  createScheduleNotification: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<NotificationServiceResult>
+  >,
+  markAsRead: jest.fn() as jest.MockedFunction<
+    (data: any) => Promise<ServiceResult>
+  >,
+  getFamilyNotifications: jest.fn() as jest.MockedFunction<
+    (familyId: string) => Promise<NotificationServiceResult>
+  >,
+  deleteNotification: jest.fn() as jest.MockedFunction<
+    (id: string) => Promise<ServiceResult>
+  >,
 };
 
 // Mock family users for testing
@@ -531,6 +658,7 @@ describe("Family-Oriented User Service Coverage", () => {
         familyName: "Davis Family",
         children: [
           {
+            id: "child-sophie-001",
             name: "Sophie Davis",
             school: "Lincoln Elementary School",
             grade: "2nd Grade",
@@ -569,9 +697,9 @@ describe("Family-Oriented User Service Coverage", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.user.familyId).toBe("davis-family-new");
-      expect(result.user.children?.length).toBe(1);
-      expect(result.user.emergencyContacts?.length).toBe(1);
+      expect(result.user?.familyId).toBe("davis-family-new");
+      expect(result.user?.children?.length).toBe(1);
+      expect(result.user?.emergencyContacts?.length).toBe(1);
       expect(result.onboardingRequired).toBe(true);
       expect(result.nextSteps).toContain("weekly_preferences");
     });
@@ -586,6 +714,8 @@ describe("Family-Oriented User Service Coverage", () => {
           {
             id: "family-parent-1",
             name: "Sarah Johnson",
+            firstName: "Sarah",
+            lastName: "Johnson",
             role: "parent",
             email: "sarah.johnson@vcarpool.com",
             isPrimary: true,
@@ -594,6 +724,8 @@ describe("Family-Oriented User Service Coverage", () => {
           {
             id: "child-emma-001",
             name: "Emma Johnson",
+            firstName: "Emma",
+            lastName: "Johnson",
             role: "student",
             school: "Lincoln Elementary School",
             grade: "3rd Grade",
@@ -602,6 +734,8 @@ describe("Family-Oriented User Service Coverage", () => {
           {
             id: "child-liam-001",
             name: "Liam Johnson",
+            firstName: "Liam",
+            lastName: "Johnson",
             role: "student",
             school: "Lincoln Elementary School",
             grade: "1st Grade",
@@ -1070,8 +1204,8 @@ describe("Family-Oriented Service Integration Tests", () => {
       );
       const notificationResult =
         await mockFamilyNotificationService.createOnboardingNotification({
-          userId: userResult.user.id,
-          familyId: userResult.user.familyId,
+          userId: userResult.user?.id || "",
+          familyId: userResult.user?.familyId || "",
           step: "children_addition",
         });
 
