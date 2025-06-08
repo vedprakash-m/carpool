@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   UserGroupIcon,
   PlusIcon,
@@ -15,7 +16,12 @@ import {
   XCircleIcon,
   ClockIcon,
   AcademicCapIcon,
+  CogIcon,
+  ClipboardDocumentCheckIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
+import { Dialog } from "@headlessui/react";
+import { toast } from "react-hot-toast";
 
 interface CarpoolGroup {
   id: string;
@@ -93,6 +99,8 @@ export default function AdminGroupsPage() {
   const [isLoading_groups, setIsLoading_groups] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [groupToLeave, setGroupToLeave] = useState<CarpoolGroup | null>(null);
 
   // Form data
   const [createForm, setCreateForm] = useState<CreateGroupForm>({
@@ -440,6 +448,25 @@ export default function AdminGroupsPage() {
     }
   };
 
+  const handleLeaveGroup = (group: CarpoolGroup) => {
+    setGroupToLeave(group);
+    setShowLeaveConfirm(true);
+  };
+
+  const confirmLeaveGroup = async () => {
+    if (!groupToLeave) return;
+
+    toast.loading(`Leaving ${groupToLeave.name}...`);
+    // Mock API call
+    await new Promise((res) => setTimeout(res, 1500));
+    toast.dismiss();
+    toast.success(`Your family has left the group: ${groupToLeave.name}`);
+
+    setShowLeaveConfirm(false);
+    setGroupToLeave(null);
+    // Here you would also refetch the groups list
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -557,16 +584,44 @@ export default function AdminGroupsPage() {
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedGroup(group);
-                        setShowInviteForm(true);
-                      }}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                    >
-                      Invite Members
-                    </button>
+                    <div className="flex space-x-2">
+                      <Link
+                        href={`/admin/groups/${group.id}/schedule`}
+                        className="p-2 text-gray-500 hover:text-blue-600"
+                        title="Manage Schedule"
+                      >
+                        <CogIcon className="w-5 h-5" />
+                      </Link>
+                      <Link
+                        href={`/admin/groups/${group.id}/requests`}
+                        className="p-2 text-gray-500 hover:text-yellow-600"
+                        title="Join Requests"
+                      >
+                        <ClipboardDocumentCheckIcon className="w-5 h-5" />
+                      </Link>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedGroup(group);
+                          setShowInviteForm(true);
+                        }}
+                        className="p-2 text-gray-500 hover:text-green-600"
+                        title="Invite Members"
+                      >
+                        <EnvelopeIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-start">
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={() => handleLeaveGroup(group)}
+                        className="text-sm font-medium text-red-600 hover:text-red-800"
+                      >
+                        Leave Group
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1102,6 +1157,66 @@ export default function AdminGroupsPage() {
               Create Your First Group
             </button>
           </div>
+        )}
+
+        {showLeaveConfirm && groupToLeave && (
+          <Dialog
+            as="div"
+            className="relative z-10"
+            onClose={() => setShowLeaveConfirm(false)}
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900 flex items-center"
+                  >
+                    <ExclamationTriangleIcon className="w-6 h-6 mr-2 text-red-600" />
+                    Confirm Family Departure
+                  </Dialog.Title>
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-600">
+                      You are about to leave the group:{" "}
+                      <strong>{groupToLeave.name}</strong>.
+                    </p>
+                    <p className="mt-2 text-sm text-gray-600">
+                      The following family members will be removed along with
+                      you:
+                    </p>
+                    <ul className="mt-2 list-disc list-inside text-sm text-gray-800 bg-gray-50 p-3 rounded-md">
+                      {/* This is mock data, would come from auth store / user context */}
+                      <li>Sarah Johnson (You - Driving Parent)</li>
+                      <li>Mike Johnson (Spouse)</li>
+                      <li>Emma Johnson (Child)</li>
+                    </ul>
+                    <p className="mt-4 text-sm text-gray-500">
+                      Are you sure you want to proceed? This action cannot be
+                      undone.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => setShowLeaveConfirm(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-danger"
+                      onClick={confirmLeaveGroup}
+                    >
+                      Yes, Leave Group
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </div>
+            </div>
+          </Dialog>
         )}
       </div>
     </div>

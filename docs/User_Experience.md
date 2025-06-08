@@ -65,10 +65,10 @@
 
 ### Super Admin
 
-**Primary Goal**: Platform oversight and Trip Admin management  
+**Primary Goal**: Platform oversight and Group Admin management  
 **Key Responsibilities**:
 
-- Promote active driver parents to Trip Admin role
+- Promote active driver parents to Group Admin role
 - Monitor platform health and resolve escalated issues
 - Manage global platform settings and policies
 - Review and approve new school additions
@@ -80,24 +80,26 @@
 - Escalated conflict resolution interface
 - System configuration and policy management
 
-### Trip Admin
+### Group Admin
 
 **Primary Goal**: Successful carpool group operation and member satisfaction  
 **Key Responsibilities**:
 
 - Create and configure carpool groups with school/geographic targeting
 - Review and approve parent join requests
-- Generate weekly schedules using automated algorithm
-- Manage swap requests and resolve scheduling conflicts
-- Maintain group communication and emergency coordination
+- Manage group membership and communication
+- Oversee trip scheduling and assignments
+- Maintain group emergency coordination
+- Ensure fair distribution of driving responsibilities
 
 **Core Workflows**:
 
 - Group creation with school selection and service area definition
 - Join request review with parent/child profile assessment
-- Weekly scheduling dashboard with preference monitoring
+- Weekly trip scheduling with preference monitoring
 - Conflict resolution tools with manual assignment override
 - Group member management and emergency contact coordination
+- Fairness tracking and driving distribution management
 
 ### Parent
 
@@ -126,7 +128,7 @@
 - Complete self-registration with parent invitation code
 - Maintain updated profile information (grade, emergency contacts)
 - View assigned carpool schedule and pickup information
-- Report any safety concerns to parents or Trip Admin
+- Report any safety concerns to parents or Group Admin
 
 **Core Workflows**:
 
@@ -338,7 +340,7 @@ WIREFRAME: Join Request Modal
 │               Request to Join: Lincoln Morning Riders      │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│ Tell the Trip Admin about your family:                     │
+│ Tell the Group Admin about your family:                     │
 │ ┌─────────────────────────────────────────────────────────┐ │
 │ │ Hi Sarah! I'm looking for a reliable morning carpool   │ │
 │ │ for my daughter Emma (2nd grade). I live 2 miles from  │ │
@@ -431,12 +433,12 @@ WIREFRAME: Mobile Preferences
 └─────────────────────────┘ └─────────────────────────┘ └─────────────────────────┘
 ```
 
-### Journey 4: Trip Admin Schedule Management
+### Journey 4: Group Admin Schedule Management
 
 #### Desktop Experience
 
 ```
-WIREFRAME: Trip Admin Scheduling Dashboard
+WIREFRAME: Group Admin Scheduling Dashboard
 ┌─────────────────────────────────────────────────────────────┐
 │ ⚙️  Weekly Scheduling Dashboard                              │
 │                                                             │
@@ -553,7 +555,7 @@ WIREFRAME: Emergency Alert Details
 │                                                             │
 │ 👥 Who should be notified immediately?                     │
 │ ☑ All group members                                        │
-│ ☑ Trip Admin (Sarah Johnson)                               │
+│ ☑ Group Admin (Sarah Johnson)                               │
 │ ☑ Emergency contact (Grandma Smith)                        │
 │ ☐ School administration                                     │
 │                                                             │
@@ -575,14 +577,14 @@ WIREFRAME: Emergency Response Dashboard
 │ "Minor fender bender, kids safe, need pickup help"         │
 │                                                             │
 │ 👥 Response Status:                                         │
-│ ✓ Sarah (Trip Admin): "On my way, ETA 8 min"              │
+│ ✓ Sarah (Group Admin): "On my way, ETA 8 min"              │
 │ ✓ Lisa Martinez: "Can pick up Emma if needed"              │
 │ ⏳ David Smith: Notified, no response yet                   │
 │ ⏳ Jennifer Lopez: Notified, no response yet                │
 │                                                             │
 │ 📍 Location: [View on Map] [Get Directions]                │
 │ 📞 Quick Actions:                                           │
-│ [Call Mike] [Call Trip Admin] [Update Status]              │
+│ [Call Mike] [Call Group Admin] [Update Status]              │
 │                                                             │
 │ 💬 Group Coordination:                                      │
 │ "Sarah: I have room for 2 kids in my car"                 │
@@ -604,7 +606,7 @@ WIREFRAME: Emergency Contact Quick Access
 ├─────────────────────────────────────────────────────────────┤
 │ 🚨 Group Emergency Contacts:                               │
 │                                                             │
-│ Trip Admin: Sarah Johnson                                   │
+│ Group Admin: Sarah Johnson                                   │
 │ [📞 Call] [💬 Text] (555) 123-4567                         │
 │                                                             │
 │ Backup Contact: Mike Chen                                   │
@@ -672,10 +674,10 @@ WIREFRAME: Unified Family Dashboard
 
 WIREFRAME: Role Transition Interface
 ┌─────────────────────────────────────────────────────────────┐
-│ 🎉 Congratulations! You're now a Trip Admin                │
+│ 🎉 Congratulations! You're now a Group Admin                │
 ├─────────────────────────────────────────────────────────────┤
 │ You created "Lincoln Morning Riders" and automatically     │
-│ became the Trip Admin while keeping your Parent role.      │
+│ became the Group Admin while keeping your Parent role.      │
 │                                                             │
 │ 👤 Your Roles:                                             │
 │ ┌─────────────────────────────────────────────────────────┐ │
@@ -685,7 +687,7 @@ WIREFRAME: Role Transition Interface
 │ │ • Coordinate with other parents                        │ │
 │ └─────────────────────────────────────────────────────────┘ │
 │ ┌─────────────────────────────────────────────────────────┐ │
-│ │ ⚙️ Trip Admin (NEW!)                                    │ │
+│ │ ⚙️ Group Admin (NEW!)                                    │ │
 │ │ • Review join requests                                  │ │
 │ │ • Generate weekly schedules                             │ │
 │ │ • Manage group settings                                 │ │
@@ -695,10 +697,10 @@ WIREFRAME: Role Transition Interface
 │ 🎯 What's Next?                                            │
 │ 1. Set up your group preferences and rules                 │
 │ 2. Invite other families to join                          │
-│ 3. Review our Trip Admin Quick Start Guide                │
+│ 3. Review our Group Admin Quick Start Guide                │
 │                                                             │
 │ 🔄 Switch Between Views:                                   │
-│ [Parent Dashboard] [Trip Admin Dashboard] [Quick Tour]     │
+│ [Parent Dashboard] [Group Admin Dashboard] [Quick Tour]     │
 │                                                             │
 │ [Continue as Parent] [Explore Admin Features] [Get Help]   │
 └─────────────────────────────────────────────────────────────┘
@@ -715,7 +717,7 @@ WIREFRAME: Context-Aware Navigation
 │ │ Tommy's schedule, different group activities            │ │
 │ └─────────────────────────────────────────────────────────┘ │
 │                                                             │
-│ 🔄 Switch to: Trip Admin View ⚙️                          │
+│ 🔄 Switch to: Group Admin View ⚙️                          │
 │ ┌─────────────────────────────────────────────────────────┐ │
 │ │ • 3 pending join requests                               │ │
 │ │ • Schedule Emma's group for next week                   │ │
@@ -783,7 +785,7 @@ WIREFRAME: Cross-Group Coordination Alert
 
 - **Status**: Design specifications completed
 - **Features**: Multi-group management, role switching, conflict detection
-- **Innovation**: Seamless Parent ↔ Trip Admin role transitions
+- **Innovation**: Seamless Parent ↔ Group Admin role transitions
 - **Value**: Single dashboard for families with multiple children/groups
 
 ### 🔄 BETA TESTING BACKLOG
@@ -818,7 +820,7 @@ WIREFRAME: Cross-Group Coordination Alert
 - **Visual Hierarchy**: Search filters → Match scoring → Group details → Action buttons
 - **Information Architecture**: Geographic proximity drives primary sort order
 - **Interaction Patterns**: Progressive disclosure from summary to detailed view
-- **Trust Elements**: Match percentage, Trip Admin profile, group member count
+- **Trust Elements**: Match percentage, Group Admin profile, group member count
 
 ### Preferences Submission (Parents)
 
@@ -829,7 +831,7 @@ WIREFRAME: Cross-Group Coordination Alert
 - **Interaction Patterns**: Touch/click friendly day selection with constraint inputs
 - **Trust Elements**: Deadline visibility, draft saving, submission confirmation
 
-### Scheduling Dashboard (Trip Admin)
+### Scheduling Dashboard (Group Admin)
 
 **Design Philosophy**: Control center with algorithm transparency
 
@@ -838,7 +840,7 @@ WIREFRAME: Cross-Group Coordination Alert
 - **Interaction Patterns**: One-click algorithm execution with detailed review options
 - **Trust Elements**: Algorithm scoring explanation, conflict resolution guidance
 
-### Join Request Review (Trip Admin)
+### Join Request Review (Group Admin)
 
 **Design Philosophy**: Candidate assessment with family context
 
@@ -956,7 +958,7 @@ WIREFRAME: Mobile Navigation Pattern
 #### Phase 1: Role Structure Enhancement
 
 - **Super Admin Dashboard**: Role promotion interface with parent activity metrics
-- **Trip Admin Promotion**: One-click promotion workflow with confirmation
+- **Group Admin Promotion**: One-click promotion workflow with confirmation
 - **Child Self-Registration**: Invitation-based registration with parent oversight
 - **Role-Based Navigation**: Conditional menu items based on user permissions
 
@@ -970,7 +972,7 @@ WIREFRAME: Mobile Navigation Pattern
 #### Phase 3: Advanced Scheduling Features
 
 - **Weekly Preferences Page**: Calendar-based daily availability submission
-- **Trip Admin Scheduling**: Algorithm execution with conflict resolution
+- **Group Admin Scheduling**: Algorithm execution with conflict resolution
 - **Swap Request System**: Create, respond, and auto-acceptance workflow
 - **Mobile-Responsive Design**: Touch-friendly interfaces for all core functions
 
@@ -1017,7 +1019,7 @@ WIREFRAME: Parent Group Creation Flow
 │ │                                                         │ │
 │ │ Be the first to organize carpooling for your           │ │
 │ │ school and neighborhood! You'll automatically          │ │
-│ │ become the Trip Admin while keeping your parent        │ │
+│ │ become the Group Admin while keeping your parent        │ │
 │ │ role to participate in the group.                      │ │
 │ │                                                         │ │
 │ │                              [Create New Group →]      │ │
@@ -1054,7 +1056,7 @@ WIREFRAME: Group Creation Form
 
 #### Automatic Role Assignment
 
-- **Parent → Trip Admin**: Creator automatically receives Trip Admin privileges
+- **Parent → Group Admin**: Creator automatically receives Group Admin privileges
 - **Dual Role System**: Maintains Parent role for participation while gaining admin capabilities
 - **Role Transition**: Seamless UI that shows both perspectives (parent dashboard + admin tools)
 
@@ -1094,7 +1096,7 @@ DIAGRAM: Group Lifecycle States
 
 - Weekly automated checks for activity patterns
 - Smart detection excludes school breaks and holidays
-- Manual activity override by Trip Admin resets counters
+- Manual activity override by Group Admin resets counters
 
 #### Purging Process Workflow
 
@@ -1160,7 +1162,7 @@ WIREFRAME: Super Admin Reactivation Review
 │ 📋 Group Reactivation Request                              │
 │                                                             │
 │ Lincoln Morning Riders (Group ID: LMR-2024-001)           │
-│ Trip Admin: Sarah Johnson (sarah.j@email.com)             │
+│ Group Admin: Sarah Johnson (sarah.j@email.com)             │
 │                                                             │
 │ 📊 Group History:                                          │
 │ • Created: March 2023 (10 months ago)                     │
@@ -1180,7 +1182,7 @@ WIREFRAME: Super Admin Reactivation Review
 │ • Commit to minimum 6-month active period                  │
 │                                                             │
 │ 📈 Reactivation Success Factors:                          │
-│ ✓ Trip Admin engagement (active profile, clear plan)      │
+│ ✓ Group Admin engagement (active profile, clear plan)      │
 │ ✓ Member commitment (4/6 families confirmed)              │
 │ ✓ Reasonable inactivity explanation (holiday break)       │
 │ ⚠ Requires new member recruitment (2 families needed)     │
@@ -1206,7 +1208,7 @@ WIREFRAME: Super Admin Reactivation Review
 **Features**:
 
 - One-click group creation from "no results found" discovery page
-- Automatic Trip Admin role assignment with parent role retention
+- Automatic Group Admin role assignment with parent role retention
 - Streamlined onboarding flow with smart defaults based on search criteria
 - Service area suggestion based on parent location and school distance
 - Group template library for common scenarios (morning pickup, after-school, etc.)
@@ -1273,7 +1275,7 @@ WIREFRAME: Super Admin Reactivation Review
 
 - Temporary WhatsApp integration to reduce adoption friction
 - Auto-create groups with carpool context for immediate usability
-- Basic announcement relay through Trip Admin
+- Basic announcement relay through Group Admin
 - **Purpose**: Get users comfortable with platform while building in-app features
 
 **Phase 2: In-App Communication Launch (3-6 months) - Core Development**
@@ -1364,7 +1366,7 @@ WIREFRAME: Super Admin Reactivation Review
 - Predictive modeling for schedule conflicts
 - Route optimization with real-time traffic data
 - Demand forecasting for new group creation
-- Performance analytics dashboard for Trip Admins
+- Performance analytics dashboard for Group Admins
 - Automated recommendations for group improvements
 
 #### Integration & Automation
@@ -1520,7 +1522,7 @@ WIREFRAME: Super Admin Reactivation Review
 │ • Cover Friday pickup for Mike                             │
 │ • Add to substitute pool for future requests               │
 │                                                             │
-│ [Send Requests] [Post to Community Board] [Call Trip Admin]│
+│ [Send Requests] [Post to Community Board] [Call Group Admin]│
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -1540,12 +1542,12 @@ WIREFRAME: Super Admin Reactivation Review
 
 ## Data Analytics & Performance Insights
 
-### Trip Admin Dashboard Analytics
+### Group Admin Dashboard Analytics
 
-**Purpose**: Help Trip Admins optimize group performance and identify issues early
+**Purpose**: Help Group Admins optimize group performance and identify issues early
 **Key Metrics**: Group health, driver reliability, schedule efficiency
 
-**Wireframe: Trip Admin Analytics Dashboard**
+**Wireframe: Group Admin Analytics Dashboard**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -1818,7 +1820,7 @@ WIREFRAME: Super Admin Reactivation Review
 - "Mark pickup complete"
 - "What's my schedule tomorrow?"
 - "Send emergency alert"
-- "Call trip admin"
+- "Call group admin"
 
 **Wireframe: Voice Interface**
 
@@ -1895,16 +1897,16 @@ WIREFRAME: Super Admin Reactivation Review
 - **Process**:
   - System identifies all family members in the group
   - Removes all family members simultaneously
-  - Notifies Trip Admin of complete family departure
+  - Notifies Group Admin of complete family departure
   - Updates group capacity and scheduling algorithms
-- **Grace Period**: 48-hour notification period to allow Trip Admin planning
+- **Grace Period**: 48-hour notification period to allow Group Admin planning
 
 #### Rule 3: Driving Parent Approval Cascade
 
-- **Policy**: When Trip Admin approves a driving parent's join request, their non-driving spouse and children automatically join the group
+- **Policy**: When Group Admin approves a driving parent's join request, their non-driving spouse and children automatically join the group
 - **Rationale**: Ensures complete family integration and prevents partial memberships
 - **Process**:
-  - Trip Admin reviews join request from driving parent
+  - Group Admin reviews join request from driving parent
   - Approval automatically adds entire family unit to group
   - System creates member records for all family members
   - Capacity calculations include all family members
@@ -1967,12 +1969,12 @@ WIREFRAME: Family Departure Confirmation
 │ ✓ Jake Johnson (Child - Grade 1)                           │
 │                                                             │
 │ 📅 Departure will be effective in 48 hours to allow        │
-│ Trip Admin to adjust schedules.                             │
+│ Group Admin to adjust schedules.                             │
 │                                                             │
-│ 📞 Trip Admin will be notified: Sarah Martinez              │
+│ 📞 Group Admin will be notified: Sarah Martinez              │
 │                                                             │
 │ 💡 Consider: If you're having issues with the group,       │
-│ try reaching out to the Trip Admin first.                  │
+│ try reaching out to the Group Admin first.                  │
 │                                                             │
 │ Reason for leaving (optional):                              │
 │ [Schedule changes - new job hours                         ] │
@@ -2014,7 +2016,7 @@ WIREFRAME: Family Departure Confirmation
 - **Policy**: Driving parents within the same family can reassign trips between themselves without swap approval process
 - **Process**:
   - Parent A assigned to drive Monday → can reassign to Parent B (spouse)
-  - No Trip Admin approval required
+  - No Group Admin approval required
   - Automatic group notification sent to all members
   - Change reflected immediately in schedules
 - **Notification**: "Schedule Update: Sarah Johnson will now drive Monday instead of Mike Johnson (family reassignment)"
@@ -2086,11 +2088,11 @@ WIREFRAME: Dual Driving Parent Dashboard
 
 ### Holiday Calendar Integration
 
-**Trip Admin Holiday Management**: Trip Admins can set school-wide holidays that automatically adjust scheduling for all families in their groups.
+**Group Admin Holiday Management**: Group Admins can set school-wide holidays that automatically adjust scheduling for all families in their groups.
 
 #### School Holiday Management
 
-- **Authority**: Trip Admin only (affects entire group)
+- **Authority**: Group Admin only (affects entire group)
 - **Holiday Types**:
   - School holidays (no rides needed)
   - Teacher workdays (modified schedule)
@@ -2104,7 +2106,7 @@ WIREFRAME: Dual Driving Parent Dashboard
 
 #### Family Vacation Management
 
-- **Authority**: Parents can set their own family vacations, Trip Admin can set on behalf of families
+- **Authority**: Parents can set their own family vacations, Group Admin can set on behalf of families
 - **Vacation Types**:
   - Family vacation (all family members away)
   - Individual parent travel (affecting driving availability)
@@ -2119,7 +2121,7 @@ WIREFRAME: Holiday & Vacation Calendar
 ┌─────────────────────────────────────────────────────────────┐
 │ 📅 School Calendar Management - Lincoln Elementary Group   │
 ├─────────────────────────────────────────────────────────────┤
-│ 🏫 School Holidays (Trip Admin)                           │
+│ 🏫 School Holidays (Group Admin)                           │
 │                                                             │
 │ ┌─────────────────────────────────────────────────────────┐ │
 │ │ 🎄 Winter Break: Dec 23, 2024 - Jan 6, 2025           │ │
@@ -2341,7 +2343,7 @@ WIREFRAME: Family Unit Registration Flow
 
 **Departure Rules**: When any parent leaves, entire family unit(s) exit automatically
 
-**Approval Process**: Trip Admin approves/rejects entire family structure as single decision
+**Approval Process**: Group Admin approves/rejects entire family structure as single decision
 
 **Capacity Calculation**: Based on number of children (family units), not number of parents
 
@@ -2445,3 +2447,37 @@ The identified gaps and future roadmap provide clear direction for continued dev
 - Review Cycle: After each major phase completion
 - Stakeholders: Design, Engineering, Product Management
 - Last Review: Phase 3 Completion - January 2024
+
+## Group vs Trip Management
+
+### Group Management
+
+- **Definition**: A carpool group is a community of families organized around a school or geographic area
+- **Components**:
+  - Group membership (parents and children)
+  - Group settings and rules
+  - Service area and school association
+  - Emergency contacts and coordination
+  - Communication channels
+  - Fairness tracking and driving distribution
+
+### Trip Management
+
+- **Definition**: A trip is a single transportation event (pickup or dropoff) assigned to a driving parent
+- **Components**:
+  - Trip assignment (driver and passengers)
+  - Trip timing and route
+  - Trip status tracking
+  - Emergency response for specific trips
+  - Trip-specific communication
+  - Trip completion confirmation
+
+### Relationship Between Groups and Trips
+
+- Groups are the primary organizational unit
+- Trips are the operational units within a group
+- Each group has multiple trips per week
+- Trip assignments are managed within the group context
+- Group admins oversee trip scheduling and assignments
+- Parents participate in trips as either drivers or passengers
+- Children are assigned to specific trips based on group scheduling

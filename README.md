@@ -35,6 +35,18 @@ VCarpool is a **complete, production-ready** school carpool coordination platfor
 - 📊 **Advanced Monitoring** - Application Insights integration with custom business metrics
 - 🚀 **Production Deployed** - Live on Azure with full CI/CD pipeline
 
+### ✅ UX Remediation Plan Complete
+
+- **Phase 1: Foundational Fixes & Core Logic**
+  - **Family Unit Model**: Implemented a family-centric registration and group management system.
+  - **Terminology Standardization**: Corrected "Trip Admin" to "Group Admin" across the application.
+- **Phase 2: Scheduling Algorithm**
+  - **Scheduling Service**: Built the core logic for generating fair and equitable weekly schedules.
+  - **Admin Dashboard**: Created the UI for Group Admins to trigger and review generated schedules.
+- **Phase 3: Unified Dashboard**
+  - **Parent Dashboard**: Replaced the generic dashboard with the wireframed "Unified Family Dashboard."
+  - **Admin Workflows**: Implemented UIs for managing join requests and family departures.
+
 ---
 
 ## 📋 Table of Contents
@@ -58,7 +70,7 @@ VCarpool is a **complete, production-ready** school carpool coordination platfor
 - **🎯 Progressive Onboarding** - School/location-based group discovery before account creation with context-aware registration
 - **💬 Enhanced Communication** - Carpool-specific messaging with voice recording, location sharing, and emergency integration
 - **👨‍👩‍👧‍👦 Unified Family Dashboard** - Multi-group family management with automatic conflict detection and role switching
-- **🏫 Multi-Role Authentication** - Parents, Trip Admins, and Super Admin roles with secure JWT tokens
+- **🏫 Multi-Role Authentication** - Parents, Group Admins, and Super Admin roles with secure JWT tokens
 - **📊 Group Lifecycle Management** - Automated group creation, inactivity detection, and reactivation workflows
 
 ### Enterprise Production Features (100% Complete)

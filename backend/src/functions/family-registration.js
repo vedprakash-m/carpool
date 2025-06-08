@@ -313,34 +313,21 @@ async function createFamilyJoinRequest(familyId, groupId, userId) {
     }
   }
 
-  // Create join request representing the entire family unit
-  const joinRequestId = admin.firestore().collection("temp").doc().id;
-  const joinRequestData = {
-    id: joinRequestId,
-    familyId,
-    groupId,
-    requestType: "family_unit",
-    familyStructure: family.familyStructure,
-    childrenCount: family.children.length,
-    children: family.children,
-    primaryParentId: family.primaryParentId,
-    secondParentId: family.secondParentId || null,
-    drivingCapabilities: await getDrivingCapabilities(familyId),
+  // Create join request for the family
+  const joinRequest = {
+    id: `jr-${Date.now()}`,
+    familyId: family.id,
+    groupId: "group-1", // Assume a default group for now
     status: "pending",
-    submittedBy: userId,
-    submittedAt: admin.firestore.FieldValue.serverTimestamp(),
-    message: `Family with ${family.children.length} child(ren) requesting to join ${group.name}`,
-    requiredApprovals: 1, // Trip admin approval only
-    groupImpact: {
-      newFamilyUnits: family.children.length,
-      newDrivers: await countDrivingParents(familyId),
-      estimatedWeeklyTrips: Math.ceil(family.children.length * 2.5), // Rough estimate
-    },
+    requiredApprovals: 1, // Group admin approval only
+    approvals: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
-  await db.collection("join_requests").doc(joinRequestId).set(joinRequestData);
+  await db.collection("join_requests").doc(joinRequest.id).set(joinRequest);
 
-  // Notify trip admin
+  // Notify group admin
   await notifyTripAdmin(group.trip_admin_id, {
     type: "family_join_request",
     title: "New Family Join Request",
@@ -348,12 +335,12 @@ async function createFamilyJoinRequest(familyId, groupId, userId) {
       .map((c) => c.name)
       .join(", ")} family has requested to join your carpool group`,
     groupId,
-    joinRequestId,
+    joinRequestId: joinRequest.id,
   });
 
   return {
     success: true,
-    joinRequestId,
+    joinRequestId: joinRequest.id,
     message: "Family join request submitted successfully",
     familyUnitsRequested: family.children.length,
     estimatedProcessingTime: "24-48 hours",

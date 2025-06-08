@@ -228,7 +228,7 @@ module.exports = async function (context, req) {
         return;
       }
 
-      // Create new group with parent as Trip Admin
+      // Create new group with parent as Group Admin
       const newGroup = {
         id: uuidv4(),
         name: name.trim(),
@@ -311,7 +311,7 @@ module.exports = async function (context, req) {
           success: true,
           data: {
             group: newGroup,
-            message: `🎉 Congratulations! Your carpool group "${newGroup.name}" has been created successfully. You are now the Trip Admin and can start inviting other families!`,
+            message: `🎉 Congratulations! Your carpool group "${newGroup.name}" has been created successfully. You are now the Group Admin and can start inviting other families!`,
             nextSteps: [
               "Invite other families from your school and neighborhood",
               "Set up your first weekly schedule",

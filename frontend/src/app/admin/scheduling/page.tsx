@@ -66,11 +66,11 @@ export default function SchedulingDashboardPage() {
     weekStartDate: "",
   });
 
-  // Redirect if not Trip Admin
+  // Redirect if not Group Admin
   useEffect(() => {
     if (
       !isLoading &&
-      (!user || (user.role !== "trip_admin" && user.role !== "admin"))
+      (!user || (user.role !== "group_admin" && user.role !== "admin"))
     ) {
       router.push("/dashboard");
     }
@@ -316,7 +316,7 @@ export default function SchedulingDashboardPage() {
     );
   }
 
-  if (!user || (user.role !== "trip_admin" && user.role !== "admin")) {
+  if (!user || (user.role !== "group_admin" && user.role !== "admin")) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -324,7 +324,7 @@ export default function SchedulingDashboardPage() {
             Access Denied
           </h1>
           <p className="text-gray-600">
-            You must be a Trip Admin to access this page.
+            You must be a Group Admin to access this page.
           </p>
         </div>
       </div>

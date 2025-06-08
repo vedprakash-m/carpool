@@ -1,3 +1,5 @@
+import { describe, it, expect } from "@jest/globals";
+
 /**
  * Tests for auth-login-simple Azure Function
  * Core authentication business logic per VCarpool Product Specification
@@ -21,14 +23,14 @@ describe("Auth Login Function - VCarpool Requirements", () => {
     });
 
     it("should handle school-specific role-based authentication", () => {
-      const userRoles = ["admin", "parent", "student"];
+      const userRoles = ["admin", "group_admin", "parent", "child"];
 
       userRoles.forEach((role) => {
-        expect(["admin", "parent", "student"]).toContain(role);
+        expect(["admin", "group_admin", "parent", "child"]).toContain(role);
       });
 
-      // VCarpool requirement: Only these 3 roles supported
-      expect(userRoles).toHaveLength(3);
+      // VCarpool requirement: Only these 4 roles supported
+      expect(userRoles).toHaveLength(4);
     });
 
     it("should enforce JWT token structure for VCarpool", () => {
@@ -39,12 +41,14 @@ describe("Auth Login Function - VCarpool Requirements", () => {
         role: "parent",
         iat: expect.any(Number),
         exp: expect.any(Number),
+        permissions: expect.any(Array), // Added permissions array
       };
 
       // Verify structure matches VCarpool API specification
       expect(expectedTokenPayload).toHaveProperty("userId");
       expect(expectedTokenPayload).toHaveProperty("email");
       expect(expectedTokenPayload).toHaveProperty("role");
+      expect(expectedTokenPayload).toHaveProperty("permissions");
       expect(expectedTokenPayload).toHaveProperty("iat");
       expect(expectedTokenPayload).toHaveProperty("exp");
     });

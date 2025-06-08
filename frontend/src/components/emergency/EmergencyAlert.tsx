@@ -146,7 +146,7 @@ const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
               </label>
               <label className="flex items-center">
                 <input type="checkbox" defaultChecked className="mr-2" />
-                <span className="text-sm">Trip Admin</span>
+                <span className="text-sm">Group Admin</span>
               </label>
             </div>
           </div>

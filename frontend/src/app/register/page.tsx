@@ -3,24 +3,40 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { registerSchema, RegisterRequest } from "../../types/shared";
 import { useAuthStore } from "@/store/auth.store";
-import { TruckIcon as CarIcon } from "@heroicons/react/24/outline";
+import {
+  UserIcon,
+  UsersIcon,
+  AcademicCapIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 
 export default function RegisterPage() {
   const router = useRouter();
   const register = useAuthStore((state) => state.register);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const [currentStep, setCurrentStep] = useState(1);
 
   const {
     register: registerField,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterRequest>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      children: [{ firstName: "", lastName: "", grade: "", school: "" }],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "children",
   });
 
   const onSubmit = async (data: RegisterRequest) => {
@@ -33,162 +49,233 @@ export default function RegisterPage() {
     }
   };
 
+  const nextStep = () => setCurrentStep((prev) => prev + 1);
+  const prevStep = () => setCurrentStep((prev) => prev - 1);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-2xl w-full space-y-8">
         <div>
           <div className="flex justify-center">
-            <CarIcon className="h-12 w-12 text-primary-600" />
+            <UsersIcon className="h-12 w-12 text-primary-600" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+            Join VCarpool as a Family
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
+            Already have an account?{" "}
             <Link
               href="/login"
               className="font-medium text-primary-600 hover:text-primary-500"
             >
-              sign in to your existing account
+              Sign in
             </Link>
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  First Name
-                </label>
-                <input
-                  {...registerField("firstName")}
-                  type="text"
-                  className="mt-1 input"
-                  placeholder="First name"
-                />
-                {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.firstName.message}
-                  </p>
-                )}
+          {currentStep === 1 && (
+            <section>
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                Step 1: Family and Parent Information
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="familyName"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Family Name
+                  </label>
+                  <input
+                    {...registerField("familyName")}
+                    type="text"
+                    className="mt-1 input"
+                    placeholder="e.g., The Johnson Family"
+                  />
+                  {errors.familyName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.familyName.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="parent.firstName"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      First Name
+                    </label>
+                    <input
+                      {...registerField("parent.firstName")}
+                      type="text"
+                      className="mt-1 input"
+                      placeholder="Parent's First Name"
+                    />
+                    {errors.parent?.firstName && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.parent.firstName.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="parent.lastName"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Last Name
+                    </label>
+                    <input
+                      {...registerField("parent.lastName")}
+                      type="text"
+                      className="mt-1 input"
+                      placeholder="Parent's Last Name"
+                    />
+                    {errors.parent?.lastName && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.parent.lastName.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="parent.email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    {...registerField("parent.email")}
+                    type="email"
+                    className="mt-1 input"
+                    placeholder="Parent's Email Address"
+                  />
+                  {errors.parent?.email && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.parent.email.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="parent.password"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Password
+                  </label>
+                  <input
+                    {...registerField("parent.password")}
+                    type="password"
+                    className="mt-1 input"
+                    placeholder="Minimum 8 characters"
+                  />
+                  {errors.parent?.password && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.parent.password.message}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div>
-                <label
-                  htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700"
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="btn-primary"
                 >
-                  Last Name
-                </label>
-                <input
-                  {...registerField("lastName")}
-                  type="text"
-                  className="mt-1 input"
-                  placeholder="Last name"
-                />
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.lastName.message}
-                  </p>
-                )}
+                  Next: Add Children
+                </button>
               </div>
-            </div>
+            </section>
+          )}
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email Address
-              </label>
-              <input
-                {...registerField("email")}
-                type="email"
-                autoComplete="email"
-                className="mt-1 input"
-                placeholder="Email address"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <input
-                {...registerField("password")}
-                type="password"
-                autoComplete="new-password"
-                className="mt-1 input"
-                placeholder="Password (minimum 8 characters)"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="phoneNumber"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Phone Number (Optional)
-              </label>
-              <input
-                {...registerField("phoneNumber")}
-                type="tel"
-                className="mt-1 input"
-                placeholder="Phone number"
-              />
-              {errors.phoneNumber && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.phoneNumber.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="department"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Department (Optional)
-              </label>
-              <input
-                {...registerField("department")}
-                type="text"
-                className="mt-1 input"
-                placeholder="Department or team"
-              />
-              {errors.department && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.department.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Creating account..." : "Create account"}
-            </button>
-          </div>
+          {currentStep === 2 && (
+            <section>
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                Step 2: Children's Information
+              </h3>
+              <div className="space-y-6">
+                {fields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="p-4 border border-gray-200 rounded-lg space-y-4"
+                  >
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium text-gray-800">
+                        Child {index + 1}
+                      </h4>
+                      {fields.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => remove(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <TrashIcon className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        {...registerField(`children.${index}.firstName`)}
+                        placeholder="First Name"
+                        className="input"
+                      />
+                      <input
+                        {...registerField(`children.${index}.lastName`)}
+                        placeholder="Last Name"
+                        className="input"
+                      />
+                    </div>
+                    <input
+                      {...registerField(`children.${index}.grade`)}
+                      placeholder="Grade (e.g., 5th)"
+                      className="input"
+                    />
+                    <input
+                      {...registerField(`children.${index}.school`)}
+                      placeholder="School Name"
+                      className="input"
+                    />
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() =>
+                    append({
+                      firstName: "",
+                      lastName: "",
+                      grade: "",
+                      school: "",
+                    })
+                  }
+                  className="btn-secondary"
+                >
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Add Another Child
+                </button>
+              </div>
+              <div className="mt-6 flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="btn-secondary"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Creating Account..." : "Create Account"}
+                </button>
+              </div>
+            </section>
+          )}
         </form>
       </div>
     </div>

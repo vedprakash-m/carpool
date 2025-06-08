@@ -50,5 +50,8 @@
     "monorepo"
   ],
   "author": "Ved Prakash Mishra",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "lucide-react": "^0.513.0"
+  }
 }

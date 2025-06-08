@@ -1,52 +1,50 @@
-import { TripService } from './services/trip.service';
-import { AuthService } from './services/auth.service';
-import { EmailService } from './services/email.service';
-import { UserService } from './services/user.service';
-import { containers } from './config/database';
-import { TripRepository } from './repositories/trip.repository';
-import { UserRepository } from './repositories/user.repository';
-import { loggers, AzureLogger, ILogger } from './utils/logger';
+import "reflect-metadata";
+import { container as tsyringeContainer, singleton } from "tsyringe";
 
-export interface ServiceContainer {
-  tripService: TripService;
-  authService: AuthService;
-  emailService: EmailService;
-  userService: UserService;
-  repositories: {
-    tripRepository: TripRepository;
-    userRepository: UserRepository;
-  };
-  loggers: {
-    auth: ILogger;
-    trip: ILogger;
-    user: ILogger;
-    system: ILogger;
-    api: ILogger;
-  };
-}
+// Import your services and repositories here
+import { AuthService } from "./services/auth.service";
+import { UserService } from "./services/user.service";
+import { FamilyService } from "./services/family.service";
+import { ChildService } from "./services/child.service";
+import { PreferenceService } from "./services/preference.service";
+import { SchedulingService } from "./services/scheduling.service";
+import { UserRepository } from "./repositories/user.repository";
+import { FamilyRepository } from "./repositories/family.repository";
+import { ChildRepository } from "./repositories/child.repository";
+import { createLogger, ILogger } from "./utils/logger";
 
-export function createContainer(): ServiceContainer {
-  // Create repositories
-  const tripRepository = new TripRepository(containers.trips);
-  const userRepository = new UserRepository(containers.users);
-  
-  // Create services with proper dependencies
-  const emailService = new EmailService();
-  const userService = new UserService(userRepository, loggers.user);
-  const authService = new AuthService(userRepository, loggers.auth);
-  const tripService = new TripService(tripRepository, userRepository, emailService, loggers.trip);
-  
-  return {
-    tripService,
-    authService,
-    emailService,
-    userService,
-    repositories: {
-      tripRepository,
-      userRepository
-    },
-    loggers: loggers
-  };
-}
+// Register services and repositories
+tsyringeContainer.register<AuthService>("AuthService", {
+  useClass: AuthService,
+});
+tsyringeContainer.register<UserService>("UserService", {
+  useClass: UserService,
+});
+tsyringeContainer.register<FamilyService>("FamilyService", {
+  useClass: FamilyService,
+});
+tsyringeContainer.register<ChildService>("ChildService", {
+  useClass: ChildService,
+});
+tsyringeContainer.register<PreferenceService>("PreferenceService", {
+  useClass: PreferenceService,
+});
+tsyringeContainer.register<SchedulingService>("SchedulingService", {
+  useClass: SchedulingService,
+});
 
-export const container = createContainer();
+tsyringeContainer.register<UserRepository>("UserRepository", {
+  useClass: UserRepository,
+});
+tsyringeContainer.register<FamilyRepository>("FamilyRepository", {
+  useClass: FamilyRepository,
+});
+tsyringeContainer.register<ChildRepository>("ChildRepository", {
+  useClass: ChildRepository,
+});
+
+// Logger registration
+const logger = createLogger();
+tsyringeContainer.register<ILogger>("ILogger", { useValue: logger });
+
+export const container = tsyringeContainer;

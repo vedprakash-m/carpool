@@ -348,7 +348,7 @@ async function handleFamilyDeparture(groupId, requestData, context) {
           departure: departureDetails,
           updatedGroup: mockGroups[groupIndex],
         },
-        message: `Family departure completed. ${familyMembers.length} members removed from "${group.name}". Trip Admin has been notified.`,
+        message: `Family departure completed. ${familyMembers.length} members removed from "${group.name}". Group Admin has been notified.`,
       }),
     };
   } catch (error) {

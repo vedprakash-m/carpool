@@ -173,7 +173,7 @@ module.exports = async function (context, req) {
         success: false,
         error: {
           code: "FORBIDDEN",
-          message: "Trip Admin access required",
+          message: "Group Admin access required",
         },
       });
       return;
@@ -183,14 +183,14 @@ module.exports = async function (context, req) {
     const action = req.query.action;
     const requestId = req.query.id;
 
-    // Extract Trip Admin ID from token (mock)
+    // Extract Group Admin ID from token (mock)
     const tripAdminId = "trip-admin-1"; // In production, extract from JWT
 
     if (method === "GET" && !action) {
-      // Get all join requests for Trip Admin's groups
+      // Get all join requests for Group Admin's groups
       const { status, groupId, limit = 50, offset = 0 } = req.query;
 
-      // Get groups managed by this Trip Admin
+      // Get groups managed by this Group Admin
       const adminGroups = mockCarpoolGroups.filter(
         (g) => g.tripAdminId === tripAdminId
       );
@@ -257,7 +257,7 @@ module.exports = async function (context, req) {
         return;
       }
 
-      // Verify Trip Admin owns this group
+      // Verify Group Admin owns this group
       const group = mockCarpoolGroups.find((g) => g.id === request.groupId);
       if (!group || group.tripAdminId !== tripAdminId) {
         context.res.status = 403;
@@ -315,7 +315,7 @@ module.exports = async function (context, req) {
 
       const request = mockJoinRequests[requestIndex];
 
-      // Verify Trip Admin owns this group
+      // Verify Group Admin owns this group
       const group = mockCarpoolGroups.find((g) => g.id === request.groupId);
       if (!group || group.tripAdminId !== tripAdminId) {
         context.res.status = 403;
@@ -535,7 +535,7 @@ module.exports = async function (context, req) {
 
       const request = mockJoinRequests[requestIndex];
 
-      // Verify Trip Admin owns this group
+      // Verify Group Admin owns this group
       const group = mockCarpoolGroups.find((g) => g.id === request.groupId);
       if (!group || group.tripAdminId !== tripAdminId) {
         context.res.status = 403;
@@ -590,7 +590,7 @@ module.exports = async function (context, req) {
     }
 
     if (method === "GET" && action === "stats") {
-      // Get join request statistics for Trip Admin
+      // Get join request statistics for Group Admin
       const adminGroups = mockCarpoolGroups.filter(
         (g) => g.tripAdminId === tripAdminId
       );

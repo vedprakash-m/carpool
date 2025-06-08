@@ -482,14 +482,14 @@ module.exports = async function (context, req) {
     const action = req.query.action;
 
     if (method === "GET" && action === "schedules") {
-      // Get weekly schedules (Trip Admin only)
+      // Get weekly schedules (Group Admin only)
       if (!token.includes("trip_admin") && !token.includes("admin")) {
         context.res.status = 403;
         context.res.body = JSON.stringify({
           success: false,
           error: {
             code: "FORBIDDEN",
-            message: "Trip Admin access required",
+            message: "Group Admin access required",
           },
         });
         return;
@@ -523,14 +523,14 @@ module.exports = async function (context, req) {
     }
 
     if (method === "POST" && action === "create-schedule") {
-      // Create new weekly schedule (Trip Admin only)
+      // Create new weekly schedule (Group Admin only)
       if (!token.includes("trip_admin") && !token.includes("admin")) {
         context.res.status = 403;
         context.res.body = JSON.stringify({
           success: false,
           error: {
             code: "FORBIDDEN",
-            message: "Trip Admin access required",
+            message: "Group Admin access required",
           },
         });
         return;
@@ -703,7 +703,7 @@ module.exports = async function (context, req) {
         data: {
           preferences: newPreferences,
           message: isLateSubmission
-            ? "Preferences submitted after deadline. Trip Admin discretion applies."
+            ? "Preferences submitted after deadline. Group Admin discretion applies."
             : "Weekly preferences submitted successfully",
         },
       });
@@ -711,14 +711,14 @@ module.exports = async function (context, req) {
     }
 
     if (method === "POST" && action === "generate-assignments") {
-      // Generate weekly assignments using algorithm (Trip Admin only)
+      // Generate weekly assignments using algorithm (Group Admin only)
       if (!token.includes("trip_admin") && !token.includes("admin")) {
         context.res.status = 403;
         context.res.body = JSON.stringify({
           success: false,
           error: {
             code: "FORBIDDEN",
-            message: "Trip Admin access required",
+            message: "Group Admin access required",
           },
         });
         return;

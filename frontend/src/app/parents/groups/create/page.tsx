@@ -10,6 +10,7 @@ import {
   ClockIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 interface CreateGroupForm {
@@ -263,7 +264,7 @@ export default function CreateGroupPage() {
           </h1>
           <p className="text-gray-600">
             Start organizing safe, reliable transportation for your children and
-            neighborhood families. You'll automatically become the Trip Admin
+            neighborhood families. You'll automatically become the Group Admin
             while keeping your parent role.
           </p>
         </div>
@@ -707,24 +708,27 @@ export default function CreateGroupPage() {
                 )}
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">
-                  What happens next?
-                </h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>
-                    • You'll automatically become the Trip Admin for this group
-                  </li>
-                  <li>
-                    • You'll keep your parent role to participate in the carpool
-                  </li>
-                  <li>
-                    • You can start inviting other families from your school
-                  </li>
-                  <li>
-                    • Set up your first weekly schedule when you have members
-                  </li>
-                </ul>
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-8 rounded-r-lg">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <InformationCircleIcon
+                      className="h-5 w-5 text-blue-400"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-blue-700">
+                      • You'll automatically become the Group Admin for this
+                      group
+                      <br />
+                      • You can invite other families after the group is created
+                      <br />
+                      • You can start inviting other families from your school
+                      <br />• Set up your first weekly schedule when you have
+                      members
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}

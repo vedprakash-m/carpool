@@ -1,4 +1,30 @@
 // User types
+export type UserRole = "admin" | "group_admin" | "parent" | "child";
+
+export interface RolePermissions {
+  admin: {
+    platform_management: boolean;
+    group_admin_promotion: boolean;
+    system_configuration: boolean;
+  };
+  group_admin: {
+    group_management: boolean;
+    member_management: boolean;
+    trip_scheduling: boolean;
+    emergency_coordination: boolean;
+  };
+  parent: {
+    trip_participation: boolean;
+    preference_submission: boolean;
+    child_management: boolean;
+  };
+  child: {
+    schedule_viewing: boolean;
+    safety_reporting: boolean;
+    profile_management: boolean;
+  };
+}
+
 export interface User {
   id: string;
   email: string;
@@ -9,7 +35,8 @@ export interface User {
   emergencyContact?: string;
   phone?: string; // Alias for phoneNumber
   grade?: string;
-  role?: "student" | "parent" | "admin" | "trip_admin" | "faculty" | "staff";
+  role: UserRole; // Made required and updated to new role system
+  rolePermissions?: RolePermissions; // Added role permissions
   preferences: UserPreferences;
   // New fields from Product Spec
   isActiveDriver?: boolean;
@@ -54,8 +81,8 @@ export interface CarpoolGroup {
   id: string;
   name: string;
   description?: string;
-  tripAdminId: string;
-  tripAdmin: User;
+  groupAdminId: string;
+  groupAdmin: User;
   targetSchool: School;
   targetSchoolId: string;
   // Geographic boundaries
@@ -105,7 +132,7 @@ export interface CarpoolGroupMember {
   groupId: string;
   userId: string;
   user: User;
-  role: "trip_admin" | "parent" | "student";
+  role: UserRole; // Updated to use new role system
   joinedAt: Date;
   // Children in this group (for parents)
   children?: {
@@ -130,7 +157,7 @@ export interface CarpoolGroupInvitation {
   email: string;
   invitedBy: string;
   invitedByUser: User;
-  role: "parent" | "student";
+  role: "parent" | "child"; // Updated to use new role system
   status: "pending" | "accepted" | "declined" | "expired";
   message?: string;
   sentAt: Date;
@@ -180,12 +207,27 @@ export interface GroupSearchResult {
   canRequestToJoin: boolean;
 }
 
+// Family model, central to the new user experience
+export interface Family {
+  id: string;
+  name: string;
+  parentIds: string[];
+  childIds: string[];
+  // Represents the primary contact or head of the family unit
+  primaryParentId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Child model - NEW from Product Spec
 export interface Child {
   id: string;
-  parentId: string;
+  familyId: string; // Link to the family unit
+  firstName: string;
+  lastName: string;
+  // parentId: string; // This is now covered by the family link
   fullName: string;
-  studentId: string;
+  studentId?: string; // Made optional as per new schema
   grade?: string;
   emergencyContact?: string;
   pickupInstructions?: string;
@@ -394,7 +436,7 @@ export interface CreateUserRequest {
   password: string; // Initial password set by admin
   firstName: string;
   lastName: string;
-  role: "parent" | "student" | "trip_admin";
+  role: UserRole; // Updated to use new role system
   phoneNumber?: string;
   homeAddress?: string;
   isActiveDriver?: boolean;
@@ -725,7 +767,7 @@ export interface WeeklySchedule {
   swapRequests: SwapRequest[];
 
   // Metadata
-  createdBy: string; // Trip Admin ID
+  createdBy: string; // Group Admin ID
   createdAt: Date;
   updatedAt: Date;
   finalizedAt?: Date;
@@ -957,4 +999,14 @@ export interface CarpoolGroupSchedulingSettings {
   // Emergency procedures
   emergencyBackupParents: string[]; // Parent IDs willing to be emergency backup
   emergencyContactMethod: "phone" | "sms" | "app" | "all";
+}
+
+export interface RecurringSchedule {
+  id: string; // schedule-rec-123
+  groupId: string;
+  name: string; // e.g., "Morning School Run"
+  createdBy: string; // Group Admin ID
+  createdAt: string;
+  updatedAt: string;
+  // ...
 }

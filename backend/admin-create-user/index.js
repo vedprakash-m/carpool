@@ -195,19 +195,19 @@ module.exports = async function (context, req) {
       hashedPassword,
     });
 
+    // Determine display role for response message
+    const displayRole =
+      role === "group_admin"
+        ? "Group Admin"
+        : role.charAt(0).toUpperCase() + role.slice(1);
+
     // Return user data (without password)
     context.res.status = 201;
     context.res.body = JSON.stringify({
       success: true,
       data: {
         user: newUser,
-        message: `${
-          role === "parent"
-            ? "Parent"
-            : role === "student"
-            ? "Student"
-            : "Trip Admin"
-        } account created successfully. Initial password has been set.`,
+        message: `${displayRole} account created successfully. Initial password has been set.`,
       },
     });
   } catch (error) {

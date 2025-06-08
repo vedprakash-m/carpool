@@ -20,7 +20,7 @@ exports.adminFairnessTracking = functions.https.onCall(
     const { action, groupId, weekData, familyId } = data;
 
     try {
-      // Verify user is trip admin for the group
+      // Verify user is group admin for the group
       const groupRef = db.collection("carpool_groups").doc(groupId);
       const groupDoc = await groupRef.get();
 
@@ -35,7 +35,7 @@ exports.adminFairnessTracking = functions.https.onCall(
       if (groupData.trip_admin_id !== context.auth.uid) {
         throw new functions.https.HttpsError(
           "permission-denied",
-          "Only trip admin can access fairness tracking"
+          "Only group admin can access fairness tracking"
         );
       }
 

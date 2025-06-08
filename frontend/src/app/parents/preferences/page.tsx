@@ -216,7 +216,7 @@ export default function WeeklyPreferencesPage() {
     if (hoursUntilDeadline < 0) {
       return {
         type: "error",
-        message: "Deadline has passed - submissions at Trip Admin discretion",
+        message: "Deadline has passed - submissions at Group Admin discretion",
       };
     } else if (hoursUntilDeadline < 24) {
       return {

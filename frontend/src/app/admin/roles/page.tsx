@@ -10,14 +10,17 @@ import {
   ShieldCheckIcon,
   UsersIcon,
   ExclamationTriangleIcon,
+  ArrowUpOnSquareIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
+import { UserRole } from "@/types/shared";
 
 interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: "admin" | "trip_admin" | "parent" | "student";
+  role: UserRole;
   isActiveDriver?: boolean;
   homeAddress?: string;
   createdAt: string;
@@ -36,6 +39,7 @@ export default function RoleManagementPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [eligibleParents, setEligibleParents] = useState<User[]>([]);
+  const [currentAdmins, setCurrentAdmins] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [promoting, setPromoting] = useState<string | null>(null);
   const [message, setMessage] = useState<{
@@ -89,7 +93,7 @@ export default function RoleManagementPage() {
     try {
       const token = localStorage.getItem("vcarpool_token");
       const response = await fetch(
-        "/api/admin/roles?action=eligible-trip-admins",
+        "/api/admin/roles?action=eligible-group-admins",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -151,42 +155,42 @@ export default function RoleManagementPage() {
     }
   };
 
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
       case "admin":
         return "bg-red-100 text-red-800";
-      case "trip_admin":
+      case "group_admin":
         return "bg-purple-100 text-purple-800";
       case "parent":
         return "bg-blue-100 text-blue-800";
-      case "student":
+      case "child":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getRoleDisplayName = (role: string) => {
+  const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
       case "admin":
         return "Super Admin";
-      case "trip_admin":
-        return "Trip Admin";
+      case "group_admin":
+        return "Group Admin";
       case "parent":
         return "Parent";
-      case "student":
-        return "Student";
+      case "child":
+        return "Child";
       default:
         return role;
     }
   };
 
-  const canPromoteToTripAdmin = (user: User) => {
+  const canPromoteToGroupAdmin = (user: User) => {
     return user.role === "parent" && user.isActiveDriver;
   };
 
-  const canDemoteFromTripAdmin = (user: User) => {
-    return user.role === "trip_admin";
+  const canDemoteFromGroupAdmin = (user: User) => {
+    return user.role === "group_admin";
   };
 
   if (isLoading || loading) {
@@ -222,7 +226,7 @@ export default function RoleManagementPage() {
             Role Management
           </h1>
           <p className="text-gray-600 mt-2">
-            Promote parents to Trip Admin and manage user roles across the
+            Promote parents to Group Admin and manage user roles across the
             platform
           </p>
         </div>
@@ -247,14 +251,14 @@ export default function RoleManagementPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Eligible Parents for Trip Admin */}
+          {/* Eligible Parents for Group Admin */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
               <UserPlusIcon className="h-6 w-6 mr-2 text-purple-600" />
-              Promote to Trip Admin
+              Promote to Group Admin
             </h2>
             <p className="text-gray-600 mb-4">
-              Parents eligible for Trip Admin role (active drivers)
+              Parents eligible for Group Admin role (active drivers)
             </p>
 
             {eligibleParents.length === 0 ? (
@@ -278,7 +282,7 @@ export default function RoleManagementPage() {
                       )}
                     </div>
                     <button
-                      onClick={() => promoteUser(parent.id, "trip_admin")}
+                      onClick={() => promoteUser(parent.id, "group_admin")}
                       disabled={promoting === parent.id}
                       className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center"
                     >
@@ -289,7 +293,7 @@ export default function RoleManagementPage() {
                         </>
                       ) : (
                         <>
-                          <ChevronUpIcon className="h-4 w-4 mr-1" />
+                          <ArrowUpOnSquareIcon className="h-4 w-4 mr-1" />
                           Promote
                         </>
                       )}
@@ -300,46 +304,46 @@ export default function RoleManagementPage() {
             )}
           </div>
 
-          {/* Current Trip Admins */}
+          {/* Current Group Admins */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
               <UsersIcon className="h-6 w-6 mr-2 text-purple-600" />
-              Current Trip Admins
+              Current Group Admins
             </h2>
             <p className="text-gray-600 mb-4">
-              Users currently in Trip Admin role
+              Users currently in Group Admin role
             </p>
 
-            {users.filter((u) => u.role === "trip_admin").length === 0 ? (
-              <p className="text-gray-500 italic">No Trip Admins found</p>
+            {users.filter((u) => u.role === "group_admin").length === 0 ? (
+              <p className="text-gray-500 italic">No Group Admins found</p>
             ) : (
               <div className="space-y-3">
                 {users
-                  .filter((u) => u.role === "trip_admin")
-                  .map((tripAdmin) => (
+                  .filter((u) => u.role === "group_admin")
+                  .map((groupAdmin) => (
                     <div
-                      key={tripAdmin.id}
+                      key={groupAdmin.id}
                       className="flex items-center justify-between p-3 border border-purple-200 rounded-lg bg-purple-50"
                     >
                       <div>
                         <p className="font-medium text-gray-900">
-                          {tripAdmin.firstName} {tripAdmin.lastName}
+                          {groupAdmin.firstName} {groupAdmin.lastName}
                         </p>
                         <p className="text-sm text-gray-600">
-                          {tripAdmin.email}
+                          {groupAdmin.email}
                         </p>
-                        {tripAdmin.homeAddress && (
+                        {groupAdmin.homeAddress && (
                           <p className="text-xs text-gray-500">
-                            {tripAdmin.homeAddress}
+                            {groupAdmin.homeAddress}
                           </p>
                         )}
                       </div>
                       <button
-                        onClick={() => promoteUser(tripAdmin.id, "parent")}
-                        disabled={promoting === tripAdmin.id}
+                        onClick={() => promoteUser(groupAdmin.id, "parent")}
+                        disabled={promoting === groupAdmin.id}
                         className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center"
                       >
-                        {promoting === tripAdmin.id ? (
+                        {promoting === groupAdmin.id ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                             Demoting...
@@ -406,7 +410,7 @@ export default function RoleManagementPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {user.role === "parent" || user.role === "trip_admin" ? (
+                      {user.role === "parent" || user.role === "group_admin" ? (
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             user.isActiveDriver
@@ -422,18 +426,18 @@ export default function RoleManagementPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex space-x-2">
-                        {canPromoteToTripAdmin(user) && (
+                        {canPromoteToGroupAdmin(user) && (
                           <button
-                            onClick={() => promoteUser(user.id, "trip_admin")}
+                            onClick={() => promoteUser(user.id, "group_admin")}
                             disabled={promoting === user.id}
                             className="text-purple-600 hover:text-purple-900 text-sm font-medium disabled:opacity-50"
                           >
                             {promoting === user.id
                               ? "Promoting..."
-                              : "→ Trip Admin"}
+                              : "→ Group Admin"}
                           </button>
                         )}
-                        {canDemoteFromTripAdmin(user) && (
+                        {canDemoteFromGroupAdmin(user) && (
                           <button
                             onClick={() => promoteUser(user.id, "parent")}
                             disabled={promoting === user.id}
@@ -443,7 +447,7 @@ export default function RoleManagementPage() {
                           </button>
                         )}
                         {user.role !== "admin" &&
-                          user.role !== "trip_admin" &&
+                          user.role !== "group_admin" &&
                           user.role !== "parent" && (
                             <span className="text-gray-400 text-sm">
                               No actions

@@ -521,7 +521,7 @@ module.exports = async function (context, req) {
         data: {
           joinRequest,
           message:
-            "Join request submitted successfully. The Trip Admin will review your request.",
+            "Join request submitted successfully. The Group Admin will review your request.",
         },
       });
       return;

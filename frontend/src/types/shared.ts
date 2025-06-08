@@ -1,14 +1,37 @@
 // Local copy of shared types for deployment compatibility
 import { z } from "zod";
 
-// User roles
+// User roles - Updated to match user experience document
 export type UserRole =
-  | "student"
-  | "parent"
-  | "admin"
-  | "trip_admin"
-  | "faculty"
-  | "staff";
+  | "admin" // Super Admin
+  | "group_admin" // Group Admin
+  | "parent" // Parent
+  | "child"; // Child
+
+// Role permissions interface
+export interface RolePermissions {
+  admin: {
+    platform_management: boolean;
+    group_admin_promotion: boolean;
+    system_configuration: boolean;
+  };
+  group_admin: {
+    group_management: boolean;
+    member_management: boolean;
+    trip_scheduling: boolean;
+    emergency_coordination: boolean;
+  };
+  parent: {
+    trip_participation: boolean;
+    preference_submission: boolean;
+    child_management: boolean;
+  };
+  child: {
+    schedule_viewing: boolean;
+    safety_reporting: boolean;
+    profile_management: boolean;
+  };
+}
 
 // Trip status
 export type TripStatus = "planned" | "active" | "completed" | "cancelled";
@@ -45,7 +68,8 @@ export interface User {
   emergencyContact?: string;
   phone?: string; // Alias for phoneNumber
   grade?: string;
-  role?: UserRole;
+  role: UserRole; // Made required
+  rolePermissions?: RolePermissions; // Added role permissions
   preferences: UserPreferences;
   createdAt: Date;
   updatedAt: Date;
@@ -115,14 +139,15 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  department?: string;
-}
+// DEPRECATED - This will be replaced by the schema inference
+// export interface RegisterRequest {
+//   email: string;
+//   password: string;
+//   firstName: string;
+//   lastName: string;
+//   phoneNumber?: string;
+//   department?: string;
+// }
 
 export interface UpdateUserRequest {
   firstName?: string;
@@ -219,14 +244,73 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export const registerSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  phoneNumber: z.string().optional(),
-  department: z.string().optional(),
+export const childSchema = z.object({
+  firstName: z.string().min(1, "Child's first name is required"),
+  lastName: z.string().min(1, "Child's last name is required"),
+  grade: z.string().min(1, "Child's grade is required"),
+  school: z.string().min(1, "Child's school is required"),
 });
+
+export interface Family {
+  id: string;
+  name: string;
+  parentIds: string[];
+  childIds: string[];
+  primaryParentId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Child {
+  id: string;
+  familyId: string;
+  firstName: string;
+  lastName: string;
+  grade: string;
+  school: string;
+}
+
+export interface Preference {
+  familyId: string;
+  date: string;
+  canDrive: boolean;
+}
+
+export interface Assignment {
+  familyId: string;
+  driverId: string;
+  date: Date;
+  passengerFamilyIds: string[];
+}
+
+export interface RegisterRequest {
+  familyName: string;
+  parent: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  };
+  secondParent?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  };
+  children: {
+    firstName: string;
+    lastName: string;
+    grade: string;
+    school: string;
+  }[];
+}
+
+// Keep this in sync with backend/srcs/validations.ts
+// The actual Zod schema is defined in the backend package.
+// This is just for type inference on the frontend.
+import { registerSchema as backendRegisterSchema } from "@vcarpool/shared/src/validations";
+export const registerSchema: z.ZodType<RegisterRequest> =
+  backendRegisterSchema as any;
 
 // Utility types
 export type CreateUserRequest = z.infer<typeof createUserSchema>;

@@ -1,4 +1,4 @@
-import { logger } from '../utils/logger';
+import { logger } from "../utils/logger";
 
 /**
  * Cache entry interface
@@ -37,8 +37,8 @@ interface CacheMetrics {
 /**
  * High-performance in-memory cache with TTL, LRU eviction, and metrics
  */
-export class MemoryCache {
-  private cache = new Map<string, CacheEntry<any>>();
+export class MemoryCache<T = unknown> {
+  private cache = new Map<string, CacheEntry<T>>();
   private accessOrder = new Map<string, number>(); // For LRU tracking
   private options: Required<CacheOptions>;
   private metrics: CacheMetrics;
@@ -69,16 +69,16 @@ export class MemoryCache {
   /**
    * Get an item from the cache
    */
-  get<T>(key: string): T | null {
+  get(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       this.recordMiss();
       return null;
     }
 
     const now = Date.now();
-    
+
     // Check if entry has expired
     if (now - entry.timestamp > entry.ttl) {
       this.cache.delete(key);
@@ -92,7 +92,7 @@ export class MemoryCache {
     entry.accessCount++;
     entry.lastAccessed = now;
     this.accessOrder.set(key, ++this.accessCounter);
-    
+
     this.recordHit();
     return entry.data;
   }
@@ -100,7 +100,7 @@ export class MemoryCache {
   /**
    * Set an item in the cache
    */
-  set<T>(key: string, data: T, ttl?: number): void {
+  set(key: string, data: T, ttl?: number): void {
     const now = Date.now();
     const entryTtl = ttl || this.options.defaultTtl;
 
@@ -122,7 +122,7 @@ export class MemoryCache {
     this.updateCurrentSize();
     this.recordSet();
 
-    logger.debug('Cache entry set', { key, ttl: entryTtl });
+    logger.debug("Cache entry set", { key, ttl: entryTtl });
   }
 
   /**
@@ -131,13 +131,13 @@ export class MemoryCache {
   delete(key: string): boolean {
     const existed = this.cache.delete(key);
     this.accessOrder.delete(key);
-    
+
     if (existed) {
       this.updateCurrentSize();
       this.recordDelete();
-      logger.debug('Cache entry deleted', { key });
+      logger.debug("Cache entry deleted", { key });
     }
-    
+
     return existed;
   }
 
@@ -146,7 +146,7 @@ export class MemoryCache {
    */
   has(key: string): boolean {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return false;
     }
@@ -169,7 +169,7 @@ export class MemoryCache {
     this.cache.clear();
     this.accessOrder.clear();
     this.updateCurrentSize();
-    logger.debug('Cache cleared');
+    logger.debug("Cache cleared");
   }
 
   /**
@@ -212,7 +212,7 @@ export class MemoryCache {
       this.cache.delete(lruKey);
       this.accessOrder.delete(lruKey);
       this.metrics.evictions++;
-      logger.debug('LRU eviction', { key: lruKey });
+      logger.debug("LRU eviction", { key: lruKey });
     }
   }
 
@@ -236,7 +236,7 @@ export class MemoryCache {
 
     if (expiredKeys.length > 0) {
       this.updateCurrentSize();
-      logger.debug('Cache cleanup completed', { 
+      logger.debug("Cache cleanup completed", {
         expired: expiredKeys.length,
         remaining: this.cache.size,
       });
@@ -366,8 +366,8 @@ export class CacheKeyGenerator {
       .filter(([_, value]) => value !== undefined)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, value]) => `${key}:${value}`)
-      .join('|');
-    
+      .join("|");
+
     return `search:carpools:${paramStr}`;
   }
 
@@ -375,7 +375,7 @@ export class CacheKeyGenerator {
    * Generate a cache key for user's bookings
    */
   static userBookings(userId: string, status?: string): string {
-    return status 
+    return status
       ? `user:${userId}:bookings:${status}`
       : `user:${userId}:bookings`;
   }
@@ -384,7 +384,7 @@ export class CacheKeyGenerator {
    * Generate a cache key for user's notifications
    */
   static userNotifications(userId: string, unreadOnly = false): string {
-    return `user:${userId}:notifications:${unreadOnly ? 'unread' : 'all'}`;
+    return `user:${userId}:notifications:${unreadOnly ? "unread" : "all"}`;
   }
 
   /**
@@ -410,37 +410,37 @@ export class CacheKeyGenerator {
 }
 
 /**
- * Cache decorator for methods
+ * Cacheable decorator for methods
  */
-export function Cacheable(
-  keyGenerator: (args: any[]) => string,
+export function Cacheable<T = unknown>(
+  keyGenerator: (args: unknown[]) => string,
   ttl?: number
 ) {
   return function (
-    target: any,
+    target: unknown,
     propertyName: string,
     descriptor: PropertyDescriptor
   ) {
     const method = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]): Promise<unknown> {
       // Use the GlobalCache singleton instead of trying to access this.cache
-      const cache = globalCache;
+      const cache = globalCache as MemoryCache<T>; // Type assertion for singleton
       const cacheKey = keyGenerator(args);
 
       // Try to get from cache
       const cached = cache.get(cacheKey);
       if (cached !== null) {
-        logger.debug('Cache hit', { method: propertyName, key: cacheKey });
+        logger.debug("Cache hit", { method: propertyName, key: cacheKey });
         return cached;
       }
 
       // Execute method and cache result
       const result = await method.apply(this, args);
       cache.set(cacheKey, result, ttl);
-      
-      logger.debug('Cache miss - result cached', { 
-        method: propertyName, 
+
+      logger.debug("Cache miss - result cached", {
+        method: propertyName,
         key: cacheKey,
         ttl,
       });
@@ -472,7 +472,10 @@ export class CacheWarmer {
         globalCache.set(CacheKeyGenerator.user(userId), user, 15 * 60 * 1000); // 15 minutes
       }
     } catch (error) {
-      logger.warn('Failed to warm up user data', { userId, error: error instanceof Error ? error.message : 'Unknown error' });
+      logger.warn("Failed to warm up user data", {
+        userId,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   }
 
@@ -481,9 +484,9 @@ export class CacheWarmer {
    */
   static async warmupPopularSearches(carpoolService: any): Promise<void> {
     const popularSearches = [
-      { origin: 'Downtown', destination: 'University' },
-      { origin: 'Airport', destination: 'City Center' },
-      { origin: 'Mall', destination: 'Business District' },
+      { origin: "Downtown", destination: "University" },
+      { origin: "Airport", destination: "City Center" },
+      { origin: "Mall", destination: "Business District" },
     ];
 
     for (const search of popularSearches) {
@@ -492,7 +495,10 @@ export class CacheWarmer {
         const cacheKey = CacheKeyGenerator.carpoolSearch(search);
         globalCache.set(cacheKey, results, 10 * 60 * 1000); // 10 minutes
       } catch (error) {
-        logger.warn('Failed to warm up search data', { search, error: error instanceof Error ? error.message : 'Unknown error' });
+        logger.warn("Failed to warm up search data", {
+          search,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
       }
     }
   }

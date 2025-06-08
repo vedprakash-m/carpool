@@ -1,16 +1,24 @@
 module.exports = {
   env: {
     node: true,
-    es2020: true,
+    es2022: true,
   },
-  extends: ["eslint:recommended"],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+  ],
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 2020,
+    ecmaVersion: 2022,
     sourceType: "module",
+    project: "tsconfig.json",
   },
+  plugins: ["@typescript-eslint"],
   rules: {
-    // Basic rules that work without TypeScript parser
-    "no-unused-vars": ["warn"],
+    "@typescript-eslint/no-unused-vars": ["warn"],
+    "@typescript-eslint/explicit-function-return-type": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
     "no-console": ["warn"],
   },
   ignorePatterns: [

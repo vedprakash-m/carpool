@@ -165,7 +165,7 @@ module.exports = async function (context, req) {
         success: false,
         error: {
           code: "FORBIDDEN",
-          message: "Admin or Trip Admin access required",
+          message: "Admin or Group Admin access required",
         },
       });
       return;
@@ -281,7 +281,7 @@ module.exports = async function (context, req) {
     }
 
     if (method === "POST") {
-      // Create new school (Trip Admin only)
+      // Create new school (Group Admin only)
       const { name, address, district, type, grades, contactInfo } = req.body;
 
       // Validation

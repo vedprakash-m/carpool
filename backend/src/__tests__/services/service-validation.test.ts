@@ -100,14 +100,24 @@ describe("VCarpool Service Validation", () => {
           "generate_schedule",
           "view_all_data",
           "manage_system",
+          "manage_groups",
+          "manage_roles",
+        ],
+        group_admin: [
+          "manage_group",
+          "assign_trips",
+          "view_group_data",
+          "manage_group_members",
+          "submit_preferences",
         ],
         parent: [
           "submit_preferences",
           "view_own_trips",
           "manage_children",
           "edit_profile",
+          "view_group_schedule",
         ],
-        student: [
+        child: [
           "view_own_schedule",
           "update_limited_profile",
           "view_assignments",
@@ -116,15 +126,19 @@ describe("VCarpool Service Validation", () => {
 
       // Admin should have all permissions
       expect(rolePermissions.admin).toContain("generate_schedule");
-      expect(rolePermissions.admin).toContain("create_users");
+      expect(rolePermissions.admin).toContain("manage_groups");
+
+      // Group Admin should have group-specific permissions
+      expect(rolePermissions.group_admin).toContain("manage_group");
+      expect(rolePermissions.group_admin).toContain("assign_trips");
 
       // Parent should have carpool-specific permissions
       expect(rolePermissions.parent).toContain("submit_preferences");
       expect(rolePermissions.parent).toContain("manage_children");
 
-      // Student should have limited permissions
-      expect(rolePermissions.student).toContain("view_own_schedule");
-      expect(rolePermissions.student).not.toContain("create_users");
+      // Child should have limited permissions
+      expect(rolePermissions.child).toContain("view_own_schedule");
+      expect(rolePermissions.child).not.toContain("manage_groups");
     });
 
     it("should validate user profile update constraints", () => {
@@ -136,19 +150,31 @@ describe("VCarpool Service Validation", () => {
           "phoneNumber",
           "role",
           "preferences",
+          "group_settings",
+        ],
+        group_admin: [
+          "firstName",
+          "lastName",
+          "phoneNumber",
+          "preferences",
+          "group_settings",
         ],
         parent: ["firstName", "lastName", "phoneNumber", "preferences"],
-        student: ["phoneNumber"], // Very limited for students
+        child: ["phoneNumber"], // Very limited for children
       };
 
-      // Students should only update phone number
-      expect(allowedUpdates.student).toEqual(["phoneNumber"]);
-      expect(allowedUpdates.student).not.toContain("email");
-      expect(allowedUpdates.student).not.toContain("role");
+      // Children should only update phone number
+      expect(allowedUpdates.child).toEqual(["phoneNumber"]);
+      expect(allowedUpdates.child).not.toContain("email");
+      expect(allowedUpdates.child).not.toContain("role");
 
       // Parents should not be able to change role
       expect(allowedUpdates.parent).not.toContain("role");
       expect(allowedUpdates.parent).toContain("preferences");
+
+      // Group Admins can manage group settings
+      expect(allowedUpdates.group_admin).toContain("group_settings");
+      expect(allowedUpdates.group_admin).not.toContain("role");
     });
   });
 

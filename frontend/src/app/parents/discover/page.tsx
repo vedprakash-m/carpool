@@ -542,9 +542,8 @@ export default function GroupDiscoveryPage() {
                       </h4>
                       <p className="text-blue-800 mb-4">
                         Be the first to organize carpooling for your school and
-                        neighborhood! You'll automatically become the Trip Admin
-                        while keeping your parent role to participate in the
-                        group.
+                        neighborhood! You'll automatically become the Group
+                        Admin for the new group.
                       </p>
                       <button
                         onClick={() =>
@@ -707,21 +706,28 @@ export default function GroupDiscoveryPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Message to Trip Admin (Optional)
+                    <label
+                      htmlFor="message"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Message to Group Admin (Optional)
                     </label>
-                    <textarea
-                      value={joinRequestData.message}
-                      onChange={(e) =>
-                        setJoinRequestData((prev) => ({
-                          ...prev,
-                          message: e.target.value,
-                        }))
-                      }
-                      rows={3}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Tell the Trip Admin about yourself and why you'd like to join..."
-                    />
+                    <div className="mt-1">
+                      <textarea
+                        id="message"
+                        name="message"
+                        rows={4}
+                        className="input"
+                        placeholder="Tell the Group Admin about yourself and why you'd like to join..."
+                        value={joinRequestData.message}
+                        onChange={(e) =>
+                          setJoinRequestData((prev) => ({
+                            ...prev,
+                            message: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
                   </div>
 
                   <div>

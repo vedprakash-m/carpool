@@ -8,6 +8,8 @@ import { loginSchema, ApiResponse, AuthResponse } from "@vcarpool/shared";
 import { AuthService } from "../../services/auth.service";
 import { UserService } from "../../services/user.service";
 import { compose, cors, errorHandler, validateBody } from "../../middleware";
+import { UserRepository } from "../../repositories/user.repository";
+import { logger } from "../../utils/logger";
 
 async function loginHandler(
   request: HttpRequest & { validatedBody: any },
@@ -18,6 +20,11 @@ async function loginHandler(
     console.log("Request body:", request.validatedBody);
 
     const { email, password } = request.validatedBody;
+
+    const authService = new AuthService(
+      new UserRepository(null as any),
+      logger
+    );
 
     console.log("About to call UserService.getUserByEmail with:", email);
 
@@ -41,7 +48,7 @@ async function loginHandler(
 
     console.log("About to verify password");
     // Verify password
-    const isPasswordValid = await AuthService.verifyPassword(
+    const isPasswordValid = await authService.verifyPasswordInstance(
       password,
       userWithPassword.passwordHash
     );

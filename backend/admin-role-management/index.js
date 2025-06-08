@@ -233,7 +233,7 @@ module.exports = async function (context, req) {
         data: {
           eligibleParents,
           message:
-            "Eligible parents for Trip Admin role retrieved successfully",
+            "Eligible parents for Group Admin role retrieved successfully",
         },
       });
       return;

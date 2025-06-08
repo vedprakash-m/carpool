@@ -34,16 +34,21 @@ export async function handleRequest(
 
     // Call the actual handler
     return await handler(userId, request, context);
-  } catch (error: any) {
+  } catch (error: unknown) {
     context.error("Request handler error:", error);
 
     // Handle known error types
-    if (error.statusCode) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "statusCode" in error &&
+      typeof (error as { statusCode?: unknown }).statusCode === "number"
+    ) {
       return {
-        status: error.statusCode,
+        status: (error as { statusCode: number }).statusCode,
         jsonBody: {
           success: false,
-          error: error.message,
+          error: (error as { message?: string }).message || "Error",
         },
       };
     }
@@ -72,15 +77,20 @@ export async function handlePublicRequest(
 ): Promise<HttpResponseInit> {
   try {
     return await handler(request, context);
-  } catch (error: any) {
+  } catch (error: unknown) {
     context.error("Public request handler error:", error);
 
-    if (error.statusCode) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "statusCode" in error &&
+      typeof (error as { statusCode?: unknown }).statusCode === "number"
+    ) {
       return {
-        status: error.statusCode,
+        status: (error as { statusCode: number }).statusCode,
         jsonBody: {
           success: false,
-          error: error.message,
+          error: (error as { message?: string }).message || "Error",
         },
       };
     }
