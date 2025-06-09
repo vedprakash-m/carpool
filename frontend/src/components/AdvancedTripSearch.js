@@ -8,140 +8,172 @@ const zod_1 = require("@hookform/resolvers/zod");
 const zod_2 = require("zod");
 const outline_1 = require("@heroicons/react/24/outline");
 const advancedSearchSchema = zod_2.z.object({
-    searchQuery: zod_2.z.string().optional(),
-    destination: zod_2.z.string().optional(),
-    origin: zod_2.z.string().optional(),
-    dateFrom: zod_2.z.string().optional(),
-    dateTo: zod_2.z.string().optional(),
-    maxPrice: zod_2.z.number().min(0).optional(),
-    minSeats: zod_2.z.number().min(1).max(8).optional(),
-    sortBy: zod_2.z
-        .enum(["date", "price", "destination", "availableSeats", "departureTime"])
-        .optional(),
-    sortOrder: zod_2.z.enum(["asc", "desc"]).optional(),
+  searchQuery: zod_2.z.string().optional(),
+  destination: zod_2.z.string().optional(),
+  origin: zod_2.z.string().optional(),
+  dateFrom: zod_2.z.string().optional(),
+  dateTo: zod_2.z.string().optional(),
+  minSeats: zod_2.z.number().min(1).max(8).optional(),
+  sortBy: zod_2.z
+    .enum(["date", "destination", "availableSeats", "departureTime"])
+    .optional(),
+  sortOrder: zod_2.z.enum(["asc", "desc"]).optional(),
 });
-function AdvancedTripSearch({ onSearch, loading, }) {
-    const [isExpanded, setIsExpanded] = (0, react_1.useState)(false);
-    const [activeFilters, setActiveFilters] = (0, react_1.useState)([]);
-    const { register, handleSubmit, watch, reset, formState: { errors }, } = (0, react_hook_form_1.useForm)({
-        resolver: (0, zod_1.zodResolver)(advancedSearchSchema),
-        defaultValues: {
-            sortBy: "date",
-            sortOrder: "asc",
-        },
+function AdvancedTripSearch({ onSearch, loading }) {
+  const [isExpanded, setIsExpanded] = (0, react_1.useState)(false);
+  const [activeFilters, setActiveFilters] = (0, react_1.useState)([]);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = (0, react_hook_form_1.useForm)({
+    resolver: (0, zod_1.zodResolver)(advancedSearchSchema),
+    defaultValues: {
+      sortBy: "date",
+      sortOrder: "asc",
+    },
+  });
+  // Watch specific fields instead of all form values to avoid infinite re-renders
+  const destination = watch("destination");
+  const origin = watch("origin");
+  const dateFrom = watch("dateFrom");
+  const dateTo = watch("dateTo");
+  const minSeats = watch("minSeats");
+  (0, react_1.useEffect)(() => {
+    // Track active filters for display
+    const filters = [];
+    if (destination) filters.push("destination");
+    if (origin) filters.push("origin");
+    if (dateFrom || dateTo) filters.push("date");
+    if (minSeats) filters.push("seats");
+    setActiveFilters(filters);
+  }, [destination, origin, dateFrom, dateTo, minSeats]);
+  const onSubmit = (data) => {
+    // Remove empty string values
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(
+        ([_, value]) => value !== undefined && value !== "" && value !== null
+      )
+    );
+    onSearch(cleanData);
+  };
+  const clearFilters = () => {
+    reset({
+      searchQuery: "",
+      destination: "",
+      origin: "",
+      dateFrom: "",
+      dateTo: "",
+      minSeats: undefined,
+      sortBy: "date",
+      sortOrder: "asc",
     });
-    // Watch specific fields instead of all form values to avoid infinite re-renders
-    const destination = watch("destination");
-    const origin = watch("origin");
-    const dateFrom = watch("dateFrom");
-    const dateTo = watch("dateTo");
-    const maxPrice = watch("maxPrice");
-    const minSeats = watch("minSeats");
-    (0, react_1.useEffect)(() => {
-        // Track active filters for display
-        const filters = [];
-        if (destination)
-            filters.push("destination");
-        if (origin)
-            filters.push("origin");
-        if (dateFrom || dateTo)
-            filters.push("date");
-        if (maxPrice)
-            filters.push("price");
-        if (minSeats)
-            filters.push("seats");
-        setActiveFilters(filters);
-    }, [destination, origin, dateFrom, dateTo, maxPrice, minSeats]);
-    const onSubmit = (data) => {
-        // Remove empty string values
-        const cleanData = Object.fromEntries(Object.entries(data).filter(([_, value]) => value !== undefined && value !== "" && value !== null));
-        onSearch(cleanData);
-    };
-    const clearFilters = () => {
-        reset({
-            searchQuery: "",
-            destination: "",
-            origin: "",
-            dateFrom: "",
-            dateTo: "",
-            maxPrice: undefined,
-            minSeats: undefined,
-            sortBy: "date",
-            sortOrder: "asc",
-        });
-        onSearch({});
-    };
-    return (<div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    onSearch({});
+  };
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Basic Search Bar */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <div className="relative">
-                <outline_1.MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"/>
-                <input {...register("searchQuery")} type="text" placeholder="Search destinations, notes, or locations..." className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"/>
+                <outline_1.MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  {...register("searchQuery")}
+                  type="text"
+                  placeholder="Search destinations, notes, or locations..."
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                />
               </div>
             </div>
 
             <div className="flex gap-2">
-              <button type="button" onClick={() => setIsExpanded(!isExpanded)} className={`flex items-center px-4 py-3 border rounded-lg transition-colors ${isExpanded || activeFilters.length > 0
-            ? "border-primary-500 text-primary-600 bg-primary-50"
-            : "border-gray-300 text-gray-700 hover:border-gray-400"}`}>
-                <outline_1.AdjustmentsHorizontalIcon className="h-5 w-5 mr-2"/>
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={`flex items-center px-4 py-3 border rounded-lg transition-colors ${
+                  isExpanded || activeFilters.length > 0
+                    ? "border-primary-500 text-primary-600 bg-primary-50"
+                    : "border-gray-300 text-gray-700 hover:border-gray-400"
+                }`}
+              >
+                <outline_1.AdjustmentsHorizontalIcon className="h-5 w-5 mr-2" />
                 Filters
-                {activeFilters.length > 0 && (<span className="ml-2 px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded-full">
+                {activeFilters.length > 0 && (
+                  <span className="ml-2 px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded-full">
                     {activeFilters.length}
-                  </span>)}
-                {isExpanded ? (<outline_1.ChevronUpIcon className="h-4 w-4 ml-2"/>) : (<outline_1.ChevronDownIcon className="h-4 w-4 ml-2"/>)}
+                  </span>
+                )}
+                {isExpanded ? (
+                  <outline_1.ChevronUpIcon className="h-4 w-4 ml-2" />
+                ) : (
+                  <outline_1.ChevronDownIcon className="h-4 w-4 ml-2" />
+                )}
               </button>
 
-              <button type="submit" disabled={loading} className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                {loading ? (<div className="flex items-center">
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? (
+                  <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Searching...
-                  </div>) : ("Search")}
+                  </div>
+                ) : (
+                  "Search"
+                )}
               </button>
             </div>
           </div>
         </div>
 
         {/* Advanced Filters Panel */}
-        {isExpanded && (<div className="p-4 bg-gray-50 border-b border-gray-200">
+        {isExpanded && (
+          <div className="p-4 bg-gray-50 border-b border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Destination Filter */}
               <div>
                 <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <outline_1.MapPinIcon className="h-4 w-4 mr-1"/>
+                  <outline_1.MapPinIcon className="h-4 w-4 mr-1" />
                   Destination
                 </label>
-                <input {...register("destination")} type="text" placeholder="e.g., School, Downtown..." className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"/>
+                <input
+                  {...register("destination")}
+                  type="text"
+                  placeholder="e.g., School, Downtown..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
               </div>
 
               {/* Origin Filter */}
               <div>
                 <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <outline_1.MapPinIcon className="h-4 w-4 mr-1"/>
+                  <outline_1.MapPinIcon className="h-4 w-4 mr-1" />
                   Origin/Pickup Area
                 </label>
-                <input {...register("origin")} type="text" placeholder="e.g., Neighborhood, Street..." className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"/>
-              </div>
-
-              {/* Max Price Filter */}
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <outline_1.CurrencyDollarIcon className="h-4 w-4 mr-1"/>
-                  Max Price
-                </label>
-                <input {...register("maxPrice", { valueAsNumber: true })} type="number" min="0" step="0.50" placeholder="Max cost per trip" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"/>
+                <input
+                  {...register("origin")}
+                  type="text"
+                  placeholder="e.g., Neighborhood, Street..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
               </div>
 
               {/* Min Seats Filter */}
               <div>
                 <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <outline_1.UserGroupIcon className="h-4 w-4 mr-1"/>
+                  <outline_1.UserGroupIcon className="h-4 w-4 mr-1" />
                   Min Available Seats
                 </label>
-                <select {...register("minSeats", { valueAsNumber: true })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                <select
+                  {...register("minSeats", { valueAsNumber: true })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
                   <option value="">Any</option>
                   <option value="1">1+</option>
                   <option value="2">2+</option>
@@ -153,19 +185,29 @@ function AdvancedTripSearch({ onSearch, loading, }) {
               {/* Date From */}
               <div>
                 <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <outline_1.CalendarIcon className="h-4 w-4 mr-1"/>
+                  <outline_1.CalendarIcon className="h-4 w-4 mr-1" />
                   From Date
                 </label>
-                <input {...register("dateFrom")} type="date" min={new Date().toISOString().split("T")[0]} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"/>
+                <input
+                  {...register("dateFrom")}
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
               </div>
 
               {/* Date To */}
               <div>
                 <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <outline_1.CalendarIcon className="h-4 w-4 mr-1"/>
+                  <outline_1.CalendarIcon className="h-4 w-4 mr-1" />
                   To Date
                 </label>
-                <input {...register("dateTo")} type="date" min={dateFrom || new Date().toISOString().split("T")[0]} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"/>
+                <input
+                  {...register("dateTo")}
+                  type="date"
+                  min={dateFrom || new Date().toISOString().split("T")[0]}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
               </div>
             </div>
 
@@ -176,9 +218,11 @@ function AdvancedTripSearch({ onSearch, loading, }) {
                   <label className="text-sm font-medium text-gray-700">
                     Sort by:
                   </label>
-                  <select {...register("sortBy")} className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                  <select
+                    {...register("sortBy")}
+                    className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
                     <option value="date">Date</option>
-                    <option value="price">Price</option>
                     <option value="destination">Destination</option>
                     <option value="availableSeats">Available Seats</option>
                     <option value="departureTime">Departure Time</option>
@@ -189,33 +233,55 @@ function AdvancedTripSearch({ onSearch, loading, }) {
                   <label className="text-sm font-medium text-gray-700">
                     Order:
                   </label>
-                  <select {...register("sortOrder")} className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                  <select
+                    {...register("sortOrder")}
+                    className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
                     <option value="asc">Ascending</option>
                     <option value="desc">Descending</option>
                   </select>
                 </div>
 
                 {/* Clear Filters Button */}
-                {activeFilters.length > 0 && (<button type="button" onClick={clearFilters} className="flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors">
-                    <outline_1.XMarkIcon className="h-4 w-4 mr-1"/>
+                {activeFilters.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    <outline_1.XMarkIcon className="h-4 w-4 mr-1" />
                     Clear all filters
-                  </button>)}
+                  </button>
+                )}
               </div>
             </div>
-          </div>)}
+          </div>
+        )}
 
         {/* Active Filters Display */}
-        {activeFilters.length > 0 && !isExpanded && (<div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+        {activeFilters.length > 0 && !isExpanded && (
+          <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
             <div className="flex items-center flex-wrap gap-2">
               <span className="text-sm text-gray-600">Active filters:</span>
-              {activeFilters.map((filter) => (<span key={filter} className="inline-flex items-center px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded-full">
+              {activeFilters.map((filter) => (
+                <span
+                  key={filter}
+                  className="inline-flex items-center px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded-full"
+                >
                   {filter}
-                </span>))}
-              <button type="button" onClick={clearFilters} className="text-xs text-gray-500 hover:text-gray-700 underline">
+                </span>
+              ))}
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-xs text-gray-500 hover:text-gray-700 underline"
+              >
                 Clear all
               </button>
             </div>
-          </div>)}
+          </div>
+        )}
       </form>
-    </div>);
+    </div>
+  );
 }

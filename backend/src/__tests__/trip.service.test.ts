@@ -152,7 +152,6 @@ describe("TripService", () => {
     destination: "Lincoln Elementary School", // School-specific destination
     maxPassengers: 4, // Family-appropriate capacity
     availableSeats: 3,
-    cost: 0.0, // Free within family carpool groups
     status: "planned",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -164,7 +163,6 @@ describe("TripService", () => {
     arrivalTime: "08:15",
     destination: "Lincoln Elementary School",
     maxPassengers: 4,
-    cost: 0.0, // Free school carpool
   };
 
   beforeEach(() => {
@@ -217,7 +215,6 @@ describe("TripService", () => {
       expect(result).toBeDefined();
       expect(result.driverId).toBe("parent-family-123");
       expect(result.destination).toBe("Lincoln Elementary School");
-      expect(result.cost).toBe(0.0); // Free school carpool
       expect(mockTripRepository.create).toHaveBeenCalled();
     });
 
@@ -432,7 +429,6 @@ describe("TripService", () => {
 
       const result = await tripService.getTripById("trip-family-123");
       expect(result).toBeDefined();
-      expect(result?.cost).toBe(0.0); // Free school carpool
       expect(result?.maxPassengers).toBe(4); // Family-appropriate capacity
     });
   });

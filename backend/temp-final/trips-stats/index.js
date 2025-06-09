@@ -29,7 +29,7 @@ module.exports = async function (context, req) {
       tripsAsDriver: 5,
       tripsAsPassenger: 3,
       totalDistance: 1250,
-      costSavings: 245.5,
+      milesSaved: 750, // 60% of total distance saved through carpooling
       upcomingTrips: 2,
     };
 

@@ -50,7 +50,6 @@ export const createTripSchema = z.object({
     .regex(/^\d{2}:\d{2}$/, "Invalid time format, should be HH:MM"),
   destination: z.string().min(1, "Destination is required"),
   maxPassengers: z.number().int().min(1, "Max passengers must be at least 1"),
-  cost: z.number().optional(),
   notes: z.string().optional(),
 });
 
@@ -73,7 +72,6 @@ export const updateTripSchema = z.object({
     .int()
     .min(1, "Max passengers must be at least 1")
     .optional(),
-  cost: z.number().optional(),
   notes: z.string().optional(),
   status: z.enum(["planned", "active", "completed", "cancelled"]).optional(),
 });

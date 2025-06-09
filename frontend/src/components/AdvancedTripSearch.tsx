@@ -11,7 +11,6 @@ import {
   ChevronUpIcon,
   MapPinIcon,
   CalendarIcon,
-  CurrencyDollarIcon,
   UserGroupIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -22,10 +21,9 @@ const advancedSearchSchema = z.object({
   origin: z.string().optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
-  maxPrice: z.number().min(0).optional(),
   minSeats: z.number().min(1).max(8).optional(),
   sortBy: z
-    .enum(["date", "price", "destination", "availableSeats", "departureTime"])
+    .enum(["date", "destination", "availableSeats", "departureTime"])
     .optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });
@@ -63,7 +61,6 @@ export default function AdvancedTripSearch({
   const origin = watch("origin");
   const dateFrom = watch("dateFrom");
   const dateTo = watch("dateTo");
-  const maxPrice = watch("maxPrice");
   const minSeats = watch("minSeats");
 
   useEffect(() => {
@@ -72,10 +69,9 @@ export default function AdvancedTripSearch({
     if (destination) filters.push("destination");
     if (origin) filters.push("origin");
     if (dateFrom || dateTo) filters.push("date");
-    if (maxPrice) filters.push("price");
     if (minSeats) filters.push("seats");
     setActiveFilters(filters);
-  }, [destination, origin, dateFrom, dateTo, maxPrice, minSeats]);
+  }, [destination, origin, dateFrom, dateTo, minSeats]);
 
   const onSubmit = (data: AdvancedSearchForm) => {
     // Remove empty string values
@@ -94,7 +90,6 @@ export default function AdvancedTripSearch({
       origin: "",
       dateFrom: "",
       dateTo: "",
-      maxPrice: undefined,
       minSeats: undefined,
       sortBy: "date",
       sortOrder: "asc",
@@ -194,22 +189,6 @@ export default function AdvancedTripSearch({
                 />
               </div>
 
-              {/* Max Price Filter */}
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <CurrencyDollarIcon className="h-4 w-4 mr-1" />
-                  Max Price
-                </label>
-                <input
-                  {...register("maxPrice", { valueAsNumber: true })}
-                  type="number"
-                  min="0"
-                  step="0.50"
-                  placeholder="Max cost per trip"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
-              </div>
-
               {/* Min Seats Filter */}
               <div>
                 <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
@@ -269,7 +248,6 @@ export default function AdvancedTripSearch({
                     className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="date">Date</option>
-                    <option value="price">Price</option>
                     <option value="destination">Destination</option>
                     <option value="availableSeats">Available Seats</option>
                     <option value="departureTime">Departure Time</option>

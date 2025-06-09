@@ -1,48 +1,53 @@
 "use strict";
 "use client";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = DashboardPage;
 const react_1 = require("react");
 const navigation_1 = require("next/navigation");
-const DashboardLayout_1 = __importDefault(require("@/components/DashboardLayout"));
+const DashboardLayout_1 = __importDefault(
+  require("@/components/DashboardLayout")
+);
 const SectionErrorBoundary_1 = require("@/components/SectionErrorBoundary");
 const auth_store_1 = require("@/store/auth.store");
 const trip_store_1 = require("@/store/trip.store");
 const outline_1 = require("@heroicons/react/24/outline");
 function DashboardPage() {
-    const router = (0, navigation_1.useRouter)();
-    const { user, isAuthenticated } = (0, auth_store_1.useAuthStore)();
-    const { stats, loading, fetchTripStats } = (0, trip_store_1.useTripStore)();
-    (0, react_1.useEffect)(() => {
-        if (isAuthenticated && user) {
-            fetchTripStats().catch(console.error);
-        }
-    }, [isAuthenticated, user, fetchTripStats]);
-    // Don't render if not authenticated or user is missing
-    if (!isAuthenticated || !user) {
-        return null;
+  const router = (0, navigation_1.useRouter)();
+  const { user, isAuthenticated } = (0, auth_store_1.useAuthStore)();
+  const { stats, loading, fetchTripStats } = (0, trip_store_1.useTripStore)();
+  (0, react_1.useEffect)(() => {
+    if (isAuthenticated && user) {
+      fetchTripStats().catch(console.error);
     }
-    const handleScheduleSchoolRun = () => {
-        router.push("/trips/create?type=school");
-    };
-    const handleFindSchoolCarpool = () => {
-        router.push("/trips?filter=school");
-    };
-    const handleWeeklyPreferences = () => {
-        router.push("/parents/preferences");
-    };
-    const handleManageChildren = () => {
-        router.push("/family/children");
-    };
-    return (<DashboardLayout_1.default>
+  }, [isAuthenticated, user, fetchTripStats]);
+  // Don't render if not authenticated or user is missing
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+  const handleScheduleSchoolRun = () => {
+    router.push("/trips/create?type=school");
+  };
+  const handleFindSchoolCarpool = () => {
+    router.push("/trips?filter=school");
+  };
+  const handleWeeklyPreferences = () => {
+    router.push("/parents/preferences");
+  };
+  const handleManageChildren = () => {
+    router.push("/family/children");
+  };
+  return (
+    <DashboardLayout_1.default>
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
           <div className="flex items-center space-x-3">
-            <outline_1.AcademicCapIcon className="h-8 w-8 text-blue-600"/>
+            <outline_1.AcademicCapIcon className="h-8 w-8 text-blue-600" />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
                 Good morning, {user.firstName}! 👋
@@ -59,7 +64,7 @@ function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <outline_1.CalendarIcon className="h-8 w-8 text-blue-600"/>
+                <outline_1.CalendarIcon className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
                     This Week's School Runs
@@ -76,7 +81,7 @@ function DashboardPage() {
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <outline_1.UserGroupIcon className="h-8 w-8 text-green-600"/>
+                <outline_1.UserGroupIcon className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
                     Children in Carpool
@@ -93,24 +98,22 @@ function DashboardPage() {
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <outline_1.CurrencyDollarIcon className="h-8 w-8 text-yellow-600"/>
+                <outline_1.MapPinIcon className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Monthly Fuel Savings
+                    Miles Saved
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {loading
-            ? "..."
-            : `$${(stats?.monthlyFuelSavings || 0).toFixed(2)}`}
+                    {loading ? "..." : `${stats?.milesSaved || 0} miles`}
                   </p>
-                  <p className="text-sm text-gray-500">vs. driving alone</p>
+                  <p className="text-sm text-gray-500">through carpooling</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <outline_1.ClockIcon className="h-8 w-8 text-purple-600"/>
+                <outline_1.ClockIcon className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
                     Time Saved This Month
@@ -137,8 +140,11 @@ function DashboardPage() {
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button onClick={handleScheduleSchoolRun} className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                  <outline_1.TruckIcon className="h-8 w-8 text-blue-600 mb-2"/>
+                <button
+                  onClick={handleScheduleSchoolRun}
+                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                >
+                  <outline_1.TruckIcon className="h-8 w-8 text-blue-600 mb-2" />
                   <span className="font-medium text-gray-900">
                     Schedule School Run
                   </span>
@@ -147,8 +153,11 @@ function DashboardPage() {
                   </span>
                 </button>
 
-                <button onClick={handleFindSchoolCarpool} className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
-                  <outline_1.UserGroupIcon className="h-8 w-8 text-green-600 mb-2"/>
+                <button
+                  onClick={handleFindSchoolCarpool}
+                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
+                >
+                  <outline_1.UserGroupIcon className="h-8 w-8 text-green-600 mb-2" />
                   <span className="font-medium text-gray-900">
                     Find School Carpool
                   </span>
@@ -157,8 +166,11 @@ function DashboardPage() {
                   </span>
                 </button>
 
-                <button onClick={handleWeeklyPreferences} className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
-                  <outline_1.CalendarIcon className="h-8 w-8 text-purple-600 mb-2"/>
+                <button
+                  onClick={handleWeeklyPreferences}
+                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+                >
+                  <outline_1.CalendarIcon className="h-8 w-8 text-purple-600 mb-2" />
                   <span className="font-medium text-gray-900">
                     Weekly Preferences
                   </span>
@@ -167,8 +179,11 @@ function DashboardPage() {
                   </span>
                 </button>
 
-                <button onClick={handleManageChildren} className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-colors">
-                  <outline_1.AcademicCapIcon className="h-8 w-8 text-yellow-600 mb-2"/>
+                <button
+                  onClick={handleManageChildren}
+                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-colors"
+                >
+                  <outline_1.AcademicCapIcon className="h-8 w-8 text-yellow-600 mb-2" />
                   <span className="font-medium text-gray-900">
                     Manage Children
                   </span>
@@ -198,7 +213,7 @@ function DashboardPage() {
                       Morning Drop-off
                     </h3>
                     <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <outline_1.MapPinIcon className="h-4 w-4 mr-1"/>
+                      <outline_1.MapPinIcon className="h-4 w-4 mr-1" />
                       Lincoln Elementary
                     </div>
                   </div>
@@ -235,7 +250,7 @@ function DashboardPage() {
                       Afternoon Pickup
                     </h3>
                     <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <outline_1.MapPinIcon className="h-4 w-4 mr-1"/>
+                      <outline_1.MapPinIcon className="h-4 w-4 mr-1" />
                       Lincoln Elementary
                     </div>
                   </div>
@@ -267,7 +282,7 @@ function DashboardPage() {
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center">
-                  <outline_1.ChartBarIcon className="h-5 w-5 text-blue-600 mr-2"/>
+                  <outline_1.ChartBarIcon className="h-5 w-5 text-blue-600 mr-2" />
                   <h3 className="text-lg font-medium text-gray-900">
                     This Week's Impact
                   </h3>
@@ -290,8 +305,10 @@ function DashboardPage() {
                     <p className="text-sm text-gray-600">CO2 saved</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-yellow-600">$3.25</p>
-                    <p className="text-sm text-gray-600">Cost per trip</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {stats?.timeSavedHours || 0} hrs
+                    </p>
+                    <p className="text-sm text-gray-600">Time saved</p>
                   </div>
                 </div>
               </div>
@@ -301,7 +318,7 @@ function DashboardPage() {
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center">
-                  <outline_1.UserGroupIcon className="h-5 w-5 text-green-600 mr-2"/>
+                  <outline_1.UserGroupIcon className="h-5 w-5 text-green-600 mr-2" />
                   <h3 className="text-lg font-medium text-gray-900">
                     Community Connection
                   </h3>
@@ -333,5 +350,6 @@ function DashboardPage() {
           </div>
         </SectionErrorBoundary_1.SectionErrorBoundary>
       </div>
-    </DashboardLayout_1.default>);
+    </DashboardLayout_1.default>
+  );
 }

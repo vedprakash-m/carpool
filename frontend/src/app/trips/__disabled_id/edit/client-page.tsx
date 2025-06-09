@@ -41,7 +41,6 @@ export default function EditTripPageClient() {
         arrivalTime: foundTrip.arrivalTime,
         destination: foundTrip.destination,
         maxPassengers: foundTrip.maxPassengers,
-        cost: foundTrip.cost,
         notes: foundTrip.notes || "",
       });
     }
@@ -208,55 +207,30 @@ export default function EditTripPageClient() {
               )}
             </div>
 
-            {/* Max Passengers and Cost */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="maxPassengers"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Max Passengers *
-                </label>
-                <select
-                  id="maxPassengers"
-                  {...register("maxPassengers", { valueAsNumber: true })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                    <option key={num} value={num}>
-                      {num}
-                    </option>
-                  ))}
-                </select>
-                {errors.maxPassengers && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.maxPassengers.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="cost"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Cost per Person ($)
-                </label>
-                <input
-                  type="number"
-                  id="cost"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  {...register("cost", { valueAsNumber: true })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                />
-                {errors.cost && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.cost.message}
-                  </p>
-                )}
-              </div>
+            {/* Max Passengers */}
+            <div>
+              <label
+                htmlFor="maxPassengers"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Max Passengers *
+              </label>
+              <select
+                id="maxPassengers"
+                {...register("maxPassengers", { valueAsNumber: true })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))}
+              </select>
+              {errors.maxPassengers && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.maxPassengers.message}
+                </p>
+              )}
             </div>
 
             {/* Notes */}

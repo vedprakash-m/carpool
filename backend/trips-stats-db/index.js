@@ -94,8 +94,9 @@ module.exports = async function (context, req) {
         driverTrips.reduce((sum, trip) => sum + (trip.distance || 0), 0) +
         passengerTrips.reduce((sum, trip) => sum + (trip.distance || 0), 0);
 
-      // Cost savings calculation (assuming $0.50 per mile saved by carpooling)
-      const costSavings = totalDistance * 0.5;
+      // Calculate miles and time savings instead of cost
+      const milesSaved = Math.ceil(totalDistance * 0.6); // Estimated miles saved by carpooling
+      const timeSavedHours = Math.ceil(totalTrips * 0.5); // Estimate 30min saved per trip
 
       // Weekly school trips (filter for school-related trips)
       const schoolTrips = [...driverTrips, ...passengerTrips].filter(
@@ -128,13 +129,12 @@ module.exports = async function (context, req) {
         tripsAsDriver: driverTrips.length,
         tripsAsPassenger: passengerTrips.length,
         totalDistance: totalDistance,
-        costSavings: parseFloat(costSavings.toFixed(2)),
+        milesSaved: milesSaved,
         upcomingTrips: upcomingTrips.length,
         // School-focused statistics
         weeklySchoolTrips: weeklySchoolTrips,
         childrenCount: childrenCount,
-        monthlyFuelSavings: parseFloat((costSavings * 1.8).toFixed(2)), // Estimate monthly from total
-        timeSavedHours: Math.ceil(totalTrips * 0.5), // Rough estimate: 30 min saved per trip
+        timeSavedHours: timeSavedHours,
       };
 
       context.log(
@@ -160,13 +160,12 @@ module.exports = async function (context, req) {
         tripsAsDriver: 5,
         tripsAsPassenger: 3,
         totalDistance: 1250,
-        costSavings: 245.5,
+        milesSaved: 750, // 60% of total distance
         upcomingTrips: 2,
         // School-focused statistics for dashboard
         weeklySchoolTrips: 6,
         childrenCount: 2,
-        monthlyFuelSavings: 89.25,
-        timeSavedHours: 12,
+        timeSavedHours: 4, // 30min per trip estimate (8 trips * 0.5 hours)
       };
 
       context.res = {
@@ -187,13 +186,12 @@ module.exports = async function (context, req) {
       tripsAsDriver: 5,
       tripsAsPassenger: 3,
       totalDistance: 1250,
-      costSavings: 245.5,
+      milesSaved: 750, // 60% of total distance saved
       upcomingTrips: 2,
       // School-focused statistics for dashboard
       weeklySchoolTrips: 6,
       childrenCount: 2,
-      monthlyFuelSavings: 89.25,
-      timeSavedHours: 12,
+      timeSavedHours: 4, // 30min per trip estimate (8 trips * 0.5 hours)
     };
 
     context.res = {

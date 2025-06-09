@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-console.log('🔄 Creating Azure Static Web Apps deployment from standalone build...');
+console.log(
+  "🔄 Creating Azure Static Web Apps deployment from standalone build..."
+);
 
-const nextDir = path.join(__dirname, '.next');
-const standaloneDir = path.join(nextDir, 'standalone');
-const staticDir = path.join(nextDir, 'static');
-const outputDir = path.join(__dirname, 'out');
-const publicDir = path.join(__dirname, 'public');
+const nextDir = path.join(__dirname, ".next");
+const standaloneDir = path.join(nextDir, "standalone");
+const staticDir = path.join(nextDir, "static");
+const outputDir = path.join(__dirname, "out");
+const publicDir = path.join(__dirname, "public");
 
 // Create output directory
 if (!fs.existsSync(outputDir)) {
@@ -67,7 +69,7 @@ const indexHtml = `<!DOCTYPE html>
 </body>
 </html>`;
 
-fs.writeFileSync(path.join(outputDir, 'index.html'), indexHtml);
+fs.writeFileSync(path.join(outputDir, "index.html"), indexHtml);
 
 // Copy public assets
 if (fs.existsSync(publicDir)) {
@@ -76,7 +78,7 @@ if (fs.existsSync(publicDir)) {
       if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest, { recursive: true });
       }
-      fs.readdirSync(src).forEach(file => {
+      fs.readdirSync(src).forEach((file) => {
         copyRecursive(path.join(src, file), path.join(dest, file));
       });
     } else {
@@ -84,26 +86,26 @@ if (fs.existsSync(publicDir)) {
     }
   };
 
-  fs.readdirSync(publicDir).forEach(file => {
+  fs.readdirSync(publicDir).forEach((file) => {
     copyRecursive(path.join(publicDir, file), path.join(outputDir, file));
   });
-  console.log('✅ Copied public assets');
+  console.log("✅ Copied public assets");
 }
 
 // Copy the standalone application to api directory for Azure Functions
-const apiDir = path.join(outputDir, 'api');
+const apiDir = path.join(outputDir, "api");
 if (fs.existsSync(standaloneDir)) {
   if (!fs.existsSync(apiDir)) {
     fs.mkdirSync(apiDir, { recursive: true });
   }
-  
+
   // Copy standalone files
   const copyStandalone = (src, dest) => {
     if (fs.statSync(src).isDirectory()) {
       if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest, { recursive: true });
       }
-      fs.readdirSync(src).forEach(file => {
+      fs.readdirSync(src).forEach((file) => {
         copyStandalone(path.join(src, file), path.join(dest, file));
       });
     } else {
@@ -112,29 +114,32 @@ if (fs.existsSync(standaloneDir)) {
   };
 
   copyStandalone(standaloneDir, apiDir);
-  console.log('✅ Copied standalone application');
+  console.log("✅ Copied standalone application");
 }
 
 // Create a simple routes configuration for SWA
 const routes = [
   {
-    "route": "/api/app*",
-    "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    "allowedRoles": ["anonymous"]
+    route: "/api/app*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedRoles: ["anonymous"],
   },
   {
-    "route": "/*",
-    "serve": "/index.html",
-    "statusCode": 200
-  }
+    route: "/*",
+    serve: "/index.html",
+    statusCode: 200,
+  },
 ];
 
-fs.writeFileSync(path.join(outputDir, 'staticwebapp.config.json'), JSON.stringify({ routes }, null, 2));
+fs.writeFileSync(
+  path.join(outputDir, "staticwebapp.config.json"),
+  JSON.stringify({ routes }, null, 2)
+);
 
-console.log('✅ Azure Static Web Apps deployment ready!');
+console.log("✅ Azure Static Web Apps deployment ready!");
 console.log(`📁 Output directory: ${outputDir}`);
-console.log('📋 Files created:');
-console.log('   - index.html (entry point)');
-console.log('   - staticwebapp.config.json (routing config)');
-console.log('   - api/ (Next.js standalone app)');
-console.log('   - public assets');
+console.log("📋 Files created:");
+console.log("   - index.html (entry point)");
+console.log("   - staticwebapp.config.json (routing config)");
+console.log("   - api/ (Next.js standalone app)");
+console.log("   - public assets");

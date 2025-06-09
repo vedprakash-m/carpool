@@ -185,11 +185,7 @@ export class TripService {
         });
       }
 
-      // Price range filter
-      if (filters.maxPrice !== undefined) {
-        query += " AND (c.cost <= @maxPrice OR c.cost IS NULL)";
-        parameters.push({ name: "@maxPrice", value: filters.maxPrice });
-      }
+      // Price range filter removed - cost fields no longer used
 
       // Minimum available seats filter
       if (filters.minSeats) {
@@ -483,13 +479,11 @@ export class TripService {
           trip.passengers.includes(userId) && trip.driverId !== userId
       );
 
-      // Calculate approximate cost savings (simplified calculation)
-      const costSavings = tripsAsPassenger.reduce(
-        (total: number, trip: Trip) => {
-          return total + (trip.cost || 0);
-        },
-        0
-      );
+      // Calculate miles and time savings instead of cost
+      const totalMiles = trips.reduce((total: number, trip: Trip) => {
+        return total + (trip.distance || 0);
+      }, 0);
+      const timeSavedHours = Math.ceil(trips.length * 0.5); // Estimate 30min saved per trip
 
       // Get upcoming trips
       const upcomingTrips = await this.getUserUpcomingTrips(userId);
@@ -498,8 +492,9 @@ export class TripService {
         totalTrips: trips.length,
         tripsAsDriver: tripsAsDriver.length,
         tripsAsPassenger: tripsAsPassenger.length,
-        totalDistance: 0, // TODO: Implement distance calculation
-        costSavings,
+        totalDistance: totalMiles,
+        milesSaved: Math.ceil(totalMiles * 0.6), // Estimated miles saved by carpooling
+        timeSavedHours,
         upcomingTrips: upcomingTrips.length,
       };
     } catch (error) {

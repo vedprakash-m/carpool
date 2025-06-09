@@ -232,7 +232,6 @@ export const createTripSchema = z.object({
   arrivalTime: z.string().min(1, "Arrival time is required"),
   destination: z.string().min(1, "Destination is required"),
   maxPassengers: z.number().min(1).max(8),
-  cost: z.number().min(0).optional(),
   notes: z.string().optional(),
 });
 
@@ -242,7 +241,6 @@ export const updateTripSchema = z.object({
   arrivalTime: z.string().optional(),
   destination: z.string().min(1).optional(),
   maxPassengers: z.number().min(1).max(8).optional(),
-  cost: z.number().min(0).optional(),
   notes: z.string().optional(),
   status: z.enum(["planned", "active", "completed", "cancelled"]).optional(),
 });

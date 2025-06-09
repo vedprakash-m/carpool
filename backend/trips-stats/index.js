@@ -29,13 +29,12 @@ module.exports = async function (context, req) {
       tripsAsDriver: 5,
       tripsAsPassenger: 3,
       totalDistance: 1250,
-      costSavings: 245.5,
+      milesSaved: 750, // 60% of total distance saved through carpooling
       upcomingTrips: 2,
       // School-focused statistics for dashboard
       weeklySchoolTrips: 6,
       childrenCount: 2,
-      monthlyFuelSavings: 89.25,
-      timeSavedHours: 12,
+      timeSavedHours: 4, // 30min per trip estimate (8 trips * 0.5 hours)
     };
 
     context.log("Returning stats:", stats);

@@ -107,17 +107,15 @@ export default function DashboardPage() {
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <CurrencyDollarIcon className="h-8 w-8 text-yellow-600" />
+                <MapPinIcon className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Monthly Fuel Savings
+                    Miles Saved
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {loading
-                      ? "..."
-                      : `$${(stats?.monthlyFuelSavings || 0).toFixed(2)}`}
+                    {loading ? "..." : `${stats?.milesSaved || 0} miles`}
                   </p>
-                  <p className="text-sm text-gray-500">vs. driving alone</p>
+                  <p className="text-sm text-gray-500">through carpooling</p>
                 </div>
               </div>
             </div>
@@ -316,8 +314,10 @@ export default function DashboardPage() {
                     <p className="text-sm text-gray-600">CO2 saved</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-yellow-600">$3.25</p>
-                    <p className="text-sm text-gray-600">Cost per trip</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {stats?.timeSavedHours || 0} hrs
+                    </p>
+                    <p className="text-sm text-gray-600">Time saved</p>
                   </div>
                 </div>
               </div>

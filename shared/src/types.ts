@@ -629,13 +629,12 @@ export interface TripStats {
   tripsAsDriver: number;
   tripsAsPassenger: number;
   totalDistance: number;
-  costSavings: number;
+  milesSaved: number;
+  timeSavedHours: number;
   upcomingTrips: number;
   // School-focused statistics for dashboard
   weeklySchoolTrips?: number;
   childrenCount?: number;
-  monthlyFuelSavings?: number;
-  timeSavedHours?: number;
 }
 
 // Notification types
