@@ -9,13 +9,6 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
-// Generate static params for export compatibility
-export async function generateStaticParams() {
-  // Return empty array since this is a dynamic admin page
-  // that will be handled client-side
-  return [];
-}
-
 // Mock Data
 const mockRequests = [
   {
@@ -52,7 +45,7 @@ const mockRequests = [
   },
 ];
 
-export default function JoinRequestsPage() {
+export default function JoinRequestsPageClient() {
   const params = useParams();
   const groupId = params.groupId as string;
   const [requests, setRequests] = useState(mockRequests);

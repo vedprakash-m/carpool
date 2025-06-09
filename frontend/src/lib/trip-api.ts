@@ -173,13 +173,12 @@ class TripApiService {
         tripsAsDriver: 5,
         tripsAsPassenger: 3,
         totalDistance: 1250,
-        costSavings: 245.5,
+        milesSaved: 750, // 60% of total distance
+        timeSavedHours: 4, // 30min per trip * 8 trips = 4 hours
         upcomingTrips: 2,
         // School-focused statistics for dashboard
         weeklySchoolTrips: 6,
         childrenCount: 2,
-        monthlyFuelSavings: 89.25,
-        timeSavedHours: 12,
       };
     }
   }

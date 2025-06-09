@@ -480,9 +480,9 @@ export class TripService {
       );
 
       // Calculate miles and time savings instead of cost
-      const totalMiles = trips.reduce((total: number, trip: Trip) => {
-        return total + (trip.distance || 0);
-      }, 0);
+      // Estimate average trip distance (can be enhanced with actual distance calculation later)
+      const averageTripMiles = 10; // Estimate 10 miles per trip
+      const totalMiles = trips.length * averageTripMiles;
       const timeSavedHours = Math.ceil(trips.length * 0.5); // Estimate 30min saved per trip
 
       // Get upcoming trips

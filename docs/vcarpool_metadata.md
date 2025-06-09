@@ -2,12 +2,20 @@
 
 ## 🎯 Project Overview
 
-**VCarpool** is a comprehensive carpool management application designed specifically for school communities, starting with Tesla Stem High School in Redmond, WA. The platform connects families within a 25-mile radius for organized, safe, and reliable carpooling arrangements.
+**VCarpool** is a compr### 6. Security & Monitoring
+
+- **Rate Limiting**: Auth (5/15min), API (100/15min), Strict (20/15min)
+- **Input Validation**: XSS prevention, SQL injection protection
+- **Health Monitoring**: Application health checks and logging
+- **Geographic Enforcement**: Service area validation
+
+### 7. Family Unit Model carpool management application designed specifically for school communities, starting with Tesla Stem High School in Redmond, WA. The platform connects families within a 25-mile radius for organized, safe, and reliable carpooling arrangements.
 
 ### Key Goals
 
 - **Primary**: Enable safe, organized carpool management for Tesla Stem High School families
 - **Geographic**: Serve families within 25 miles of Tesla Stem High School in Redmond, WA
+- **Environmental Focus**: Promote sustainability through miles saved and time efficiency (not cost savings)
 - **Fairness**: Implement traveling parent support with flexible makeup scheduling
 - **Technical**: Deliver a scalable, secure TypeScript-based application on Azure
 
@@ -55,21 +63,108 @@
 
 - **CRUD Operations**: Create, read, update, delete trips with validation
 - **Passenger Management**: Join/leave with seat tracking and pickup locations
-- **Search & Filter**: By destination, date, capacity
+- **Search & Filter**: By destination, date, capacity (cost filters removed)
 - **Status Management**: planned, active, cancelled, completed states
+- **Environmental Metrics**: Miles saved (60% of total miles) and time saved (30min per trip)
 
-### 5. Security & Monitoring
+### 5. Simplified User Experience (NEW - June 2025)
+
+- **Cost-Free Operations**: All payment/cost functionality removed for simplified UX
+- **Environmental Focus**: Dashboard shows miles saved and time efficiency benefits
+- **Streamlined Forms**: Trip creation without cost fields or payment complexity
+- **Clear Value Proposition**: Focus on environmental impact and time savings
+
+### 5. Simplified User Experience (NEW - June 2025)
+
+- **Cost-Free Operations**: All payment/cost functionality removed for simplified UX
+- **Environmental Focus**: Dashboard shows miles saved and time efficiency benefits
+- **Streamlined Forms**: Trip creation without cost fields or payment complexity
+- **Clear Value Proposition**: Focus on environmental impact and time savings
+
+### 6. Security & Monitoring
 
 - **Rate Limiting**: Auth (5/15min), API (100/15min), Strict (20/15min)
 - **Input Validation**: XSS prevention, SQL injection protection
 - **Health Monitoring**: Application health checks and logging
 - **Geographic Enforcement**: Service area validation
 
-### 6. Family Unit Model
+### 7. Family Unit Model
 
 - **Single Group Membership**: Each child in one carpool group at a time
 - **Family Cohesion**: Carpool memberships operate at family level
 - **Driving Parent Cascade**: When driving parent leaves, entire family exits
+
+## 🔄 Recent Major Changes (June 2025)
+
+### Cost/Payment System Removal (Completed - June 8, 2025)
+
+**Decision**: Removed all cost/payment functionality to simplify user experience and focus on environmental benefits
+
+**Rationale**:
+
+- Eliminate payment processing complexity and maintenance burden
+- Focus on environmental impact and time savings rather than financial incentives
+- Provide cleaner, more mission-focused user experience for school communities
+- Reduce liability and compliance requirements
+
+**Implementation Details**:
+
+- **Backend**: Removed cost fields from trip creation, statistics calculations, service logic
+- **Frontend**: Replaced cost displays with miles/time savings, removed payment forms
+- **Type System**: Updated interfaces to replace `costSavings` with `milesSaved`
+- **Calculations**: Miles saved = 60% of total carpooling miles, Time saved = 30min per trip
+- **UI Changes**: Replaced currency icons with map icons, updated all text references
+
+**Impact**:
+
+- Simplified trip creation and management workflows
+- Dashboard now shows environmental benefits instead of cost savings
+- No breaking changes to existing user data
+- Cleaner value proposition for families
+
+**Files Modified**: 45 files across backend services, frontend components, type definitions, and documentation
+
+## 📋 Key Decisions & Architecture Changes
+
+### 1. Environmental Focus Over Financial Incentives (June 2025)
+
+**Decision**: Completely remove payment/cost system in favor of environmental benefits tracking
+
+**Rationale**:
+
+- School carpool programs should focus on community and environmental benefits
+- Payment processing adds complexity, liability, and maintenance overhead
+- Families prefer simplified coordination without financial transactions
+- Environmental metrics (miles saved, time saved) provide clearer value proposition
+
+**Technical Impact**:
+
+- Simplified data models without cost fields
+- Cleaner user interfaces without payment forms
+- Reduced security surface area (no payment data handling)
+- Better focus on core carpooling functionality
+
+### 2. Registration-First Access Model
+
+**Decision**: Require complete registration before group discovery or search
+
+**Rationale**:
+
+- Ensures data quality and commitment from users
+- Protects member privacy from casual browsers
+- Creates verified community of engaged families
+- Enables proper geographic restriction enforcement
+
+### 3. Family-Centric Group Model
+
+**Decision**: Single carpool group membership per family unit
+
+**Rationale**:
+
+- Prevents scheduling conflicts between multiple groups
+- Simplifies fairness algorithms and trip assignments
+- Maintains family cohesion in carpool arrangements
+- Reduces administrative complexity for group management
 
 ## 🚧 Partially Implemented Features
 
@@ -112,6 +207,7 @@
 - Security framework with rate limiting
 - CI/CD pipeline with Azure deployment
 - Health monitoring and error handling
+- **Cost/Payment System Removal** (June 8, 2025) - Complete environmental focus transition
 
 ### 🔄 In Progress
 
@@ -120,12 +216,13 @@
 - Voice message transcription
 - Mobile app service worker
 
-### 📋 Planned
+### 📋 Planned (Updated June 2025)
 
 - Real-time coordination with traffic integration
 - Enhanced discovery with compatibility matching
-- Advanced analytics and performance insights
+- Advanced analytics and performance insights (environmental metrics focus)
 - Accessibility features and multilingual support
+- Enhanced mobile PWA experience
 
 ## 🔒 Security Framework
 
@@ -289,7 +386,13 @@ npm test
 - `AZURE_STORAGE_CONNECTION_STRING`: Blob storage connection
 - `REDIS_CONNECTION_STRING`: Cache connection string
 
-## 🏁 Current Focus Areas
+## 🏁 Current Focus Areas & Next Steps
+
+### Recently Completed (June 2025)
+
+1. **✅ Cost/Payment System Removal** - Complete transition to environmental benefits focus
+2. **✅ UI/UX Simplification** - Streamlined forms and cleaner user experience
+3. **✅ Documentation Updates** - Updated gap analysis, implementation plans, and completion reports
 
 ### Phase 1: Foundation (Current - 3 months)
 
@@ -299,15 +402,35 @@ npm test
 - Basic group creation ✅
 - Simple scheduling ✅
 - PWA mobile experience ✅
+- **Environmental focus implementation** ✅
 - Communication system enhancement 🔄
 
-### Next Phase Priorities
+### Immediate Next Priorities (June-July 2025)
 
-1. Complete frontend-backend integration
-2. Real-time communication features
-3. Enhanced mobile experience
-4. Advanced analytics dashboard
-5. Trust and community features
+1. **Complete Real-time Communication System**
+
+   - WebSocket/SignalR implementation for live updates
+   - Push notifications for schedule changes
+   - Emergency broadcast functionality
+
+2. **Enhanced Mobile Experience**
+
+   - Service worker improvements
+   - Offline capability for core features
+   - Better touch interface optimization
+
+3. **Advanced Analytics Dashboard**
+   - Environmental impact tracking (miles saved, carbon footprint)
+   - Group performance metrics
+   - Usage analytics and insights
+
+### Next Phase Priorities (August-September 2025)
+
+1. Enhanced frontend-backend integration
+2. Voice message transcription features
+3. Advanced scheduling algorithms
+4. Trust and community features
+5. Accessibility improvements
 
 ## 🔗 Key Resources
 
@@ -320,9 +443,10 @@ npm test
 ### API Documentation
 
 - **Authentication**: `/api/v1/auth/token` (login), `/api/v1/auth/register` (signup)
-- **Trip Management**: CRUD operations with passenger management
+- **Trip Management**: CRUD operations with passenger management (cost fields removed)
 - **User Management**: Profile management with role-based access
 - **Admin Functions**: Group management, scheduling, and analytics
+- **Statistics**: Environmental metrics (miles saved, time saved) instead of cost savings
 
 ### Development Resources
 
@@ -333,4 +457,4 @@ npm test
 
 ---
 
-_Last Updated: June 2025 | Status: Production-ready core features with ongoing enhancements_
+_Last Updated: June 8, 2025 | Status: Production-ready core features with environmental focus | Recent: Cost/payment system removal completed_

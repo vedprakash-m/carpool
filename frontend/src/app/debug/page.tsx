@@ -173,8 +173,8 @@ export default function DebugPage() {
                     <span>{stats.tripsAsPassenger}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Cost Savings:</span>
-                    <span>${stats.costSavings}</span>
+                    <span>Miles Saved:</span>
+                    <span>{stats.milesSaved} miles</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Upcoming:</span>
