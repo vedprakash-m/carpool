@@ -47,27 +47,28 @@ export type HttpHandler = (
 export function compose(
   ...middlewares: Middleware[]
 ): (handler: HttpHandler) => HttpHandler {
-  return (finalHandler) => async (request, context): Promise<HttpResponseInit | HttpResponse> => {
-    for (const middleware of middlewares) {
-      const response = await middleware(request, context);
-      if (response) {
-        // If a middleware returns a response, stop processing and return it
-        return response as HttpResponseInit;
+  return (finalHandler) =>
+    async (request, context): Promise<HttpResponseInit | HttpResponse> => {
+      for (const middleware of middlewares) {
+        const response = await middleware(request, context);
+        if (response) {
+          // If a middleware returns a response, stop processing and return it
+          return response as HttpResponseInit;
+        }
       }
-    }
-    // If all middlewares pass, call the final handler
-    const finalResponse = await finalHandler(request, context);
+      // If all middlewares pass, call the final handler
+      const finalResponse = await finalHandler(request, context);
 
-    // The final handler must return a response. If it doesn't, something is wrong.
-    if (!finalResponse) {
-      return handleError(
-        new Error("The final handler did not return a response."),
-        request
-      ) as HttpResponseInit;
-    }
+      // The final handler must return a response. If it doesn't, something is wrong.
+      if (!finalResponse) {
+        return handleError(
+          new Error("The final handler did not return a response."),
+          request
+        ) as HttpResponseInit;
+      }
 
-    return finalResponse;
-  };
+      return finalResponse;
+    };
 }
 
 // Middleware to add a request ID to each request
