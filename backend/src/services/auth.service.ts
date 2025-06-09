@@ -1,9 +1,20 @@
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
+import * as jwt from "jsonwebtoken";
+import * as bcrypt from "bcryptjs";
 import { User, UserRole } from "@vcarpool/shared";
 import { UserRepository } from "../repositories/user.repository";
 import { Errors } from "../utils/error-handler";
 import { ILogger } from "../utils/logger";
+
+// Internal type for database records that include password hash
+interface UserRecord extends User {
+  passwordHash: string;
+}
+
+// Helper function to convert UserRecord to User (removes passwordHash)
+function sanitizeUser(userRecord: UserRecord): User {
+  const { passwordHash, ...user } = userRecord;
+  return user;
+}
 
 // JWT Configuration
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret";
@@ -40,6 +51,18 @@ const ROLE_PERMISSIONS: Record<UserRole, readonly string[]> = {
     "view_own_schedule",
     "update_limited_profile",
     "view_assignments",
+  ] as const,
+  student: [
+    "view_own_schedule",
+    "update_limited_profile",
+    "view_assignments",
+  ] as const,
+  trip_admin: [
+    "manage_trip",
+    "assign_passengers",
+    "view_trip_data",
+    "manage_trip_schedule",
+    "submit_preferences",
   ] as const,
 };
 
@@ -215,13 +238,16 @@ export class AuthService {
     email: string,
     password: string
   ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
-    const user = await this.userRepository.findByEmail(email);
-    if (!user) throw Errors.Unauthorized("Invalid credentials");
+    const userRecord = (await this.userRepository.findByEmail(
+      email
+    )) as UserRecord | null;
+    if (!userRecord) throw Errors.Unauthorized("Invalid credentials");
     const valid = await this.verifyPasswordInstance(
       password,
-      user.passwordHash
+      userRecord.passwordHash
     );
     if (!valid) throw Errors.Unauthorized("Invalid credentials");
+    const user = sanitizeUser(userRecord);
     const accessToken = this.generateAccessTokenInstance(user);
     const refreshToken = this.generateRefreshTokenInstance(user);
     return { user, accessToken, refreshToken };
@@ -257,14 +283,16 @@ export class AuthService {
     oldPassword: string,
     newPassword: string
   ): Promise<void> {
-    const user = await this.userRepository.findById(userId);
-    if (!user) throw Errors.NotFound("User not found");
+    const userRecord = (await this.userRepository.findById(
+      userId
+    )) as UserRecord | null;
+    if (!userRecord) throw Errors.NotFound("User not found");
     const valid = await this.verifyPasswordInstance(
       oldPassword,
-      user.passwordHash
+      userRecord.passwordHash
     );
     if (!valid) throw Errors.Unauthorized("Invalid current password");
-    user.passwordHash = await this.hashPassword(newPassword);
-    await this.userRepository.update(userId, user);
+    userRecord.passwordHash = await this.hashPassword(newPassword);
+    await this.userRepository.update(userId, userRecord);
   }
 }

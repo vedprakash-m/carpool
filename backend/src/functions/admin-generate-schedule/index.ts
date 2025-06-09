@@ -4,13 +4,14 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { compose, authenticate, validateBody } from "../../middleware";
+import { compose, authenticate } from "../../middleware";
 import { hasRole } from "../../middleware/hasRole";
 import { SchedulingService } from "../../services/scheduling.service";
 
 async function generateScheduleHandler(
   request: HttpRequest,
-  context: InvocationContext
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _context: InvocationContext
 ): Promise<HttpResponseInit> {
   const groupId = request.params.groupId;
   const { weekStartDate } = (await request.json()) as { weekStartDate: string };

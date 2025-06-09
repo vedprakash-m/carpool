@@ -19,22 +19,23 @@ async function refreshTokenHandler(
   const authService = container.resolve<AuthService>("AuthService");
 
   try {
-    const { refreshToken } = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
-    if (!refreshToken) {
+    if (!body || typeof body.refreshToken !== "string") {
       throw new Error("Refresh token is required.");
     }
 
-    const { newAccessToken, newRefreshToken } =
-      await authService.refreshAccessToken(refreshToken);
+    const { refreshToken } = body;
+    const result = await authService.refreshAccessToken(refreshToken);
 
     return {
       jsonBody: {
         success: true,
         message: "Token refreshed successfully",
         data: {
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken,
+          accessToken: result.accessToken,
+          refreshToken: refreshToken, // Return the original refresh token
+          user: result.user,
         },
       },
     };

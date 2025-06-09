@@ -13,6 +13,7 @@ export class AppError extends Error {
     public message: string,
     public statusCode: number = 500,
     public code: string = "INTERNAL_ERROR",
+    public isOperational: boolean = true,
     public details?: any
   ) {
     super(message);
@@ -23,7 +24,7 @@ export class AppError extends Error {
 // Specific error types
 export class ValidationError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(message, 400, "VALIDATION_ERROR", details);
+    super(message, 400, "VALIDATION_ERROR", true, details);
   }
 }
 
@@ -65,19 +66,19 @@ export class DatabaseError extends AppError {
 
 export const Errors = {
   BadRequest: (msg: string, details?: any) =>
-    new AppError(msg, 400, "BAD_REQUEST", details),
+    new AppError(msg, 400, "BAD_REQUEST", true, details),
   Unauthorized: (msg: string, details?: any) =>
-    new AppError(msg, 401, "UNAUTHORIZED", details),
+    new AppError(msg, 401, "UNAUTHORIZED", true, details),
   Forbidden: (msg: string, details?: any) =>
-    new AppError(msg, 403, "FORBIDDEN", details),
+    new AppError(msg, 403, "FORBIDDEN", true, details),
   NotFound: (msg: string, details?: any) =>
-    new AppError(msg, 404, "NOT_FOUND", details),
+    new AppError(msg, 404, "NOT_FOUND", true, details),
   Conflict: (msg: string, details?: any) =>
-    new AppError(msg, 409, "CONFLICT", details),
+    new AppError(msg, 409, "CONFLICT", true, details),
   InternalServerError: (msg: string, details?: any) =>
-    new AppError(msg, 500, "INTERNAL_ERROR", details),
+    new AppError(msg, 500, "INTERNAL_ERROR", true, details),
   ValidationError: (msg: string, details?: any) =>
-    new AppError(msg, 422, "VALIDATION_ERROR", details),
+    new AppError(msg, 422, "VALIDATION_ERROR", true, details),
 };
 
 /**
@@ -87,15 +88,15 @@ export function handleError(
   error: unknown,
   requestOrLogger: HttpRequest | ILogger,
   loggerMaybe?: ILogger
-): HttpResponseInit | void {
+): HttpResponseInit {
   let logger: ILogger;
   let request: HttpRequest | undefined;
 
   if (isHttpRequest(requestOrLogger)) {
     request = requestOrLogger;
-    logger = loggerMaybe as ILogger;
+    logger = loggerMaybe || new AzureLogger();
   } else {
-    logger = requestOrLogger as ILogger;
+    logger = requestOrLogger;
   }
 
   // Default error response
@@ -116,42 +117,47 @@ export function handleError(
     (response.jsonBody as ApiResponse<any>).error = {
       code: error.code,
       message: error.message,
-    };
+    } as any;
     if (error.details) {
-      (response.jsonBody as any).details = error.details;
+      response.jsonBody.details = error.details;
     }
   } else if (error instanceof Error) {
     (response.jsonBody as ApiResponse<any>).error = {
       code: "INTERNAL_SERVER_ERROR",
       message: "An unexpected internal error occurred.",
-    };
+    } as any;
   }
 
   // Add stack in development
   if (process.env.NODE_ENV === "development" && error instanceof Error) {
-    (response.jsonBody as any).stack = error.stack;
+    response.jsonBody.stack = error.stack;
   }
 
   // Log the error
-  const errorObj = (response.jsonBody as ApiResponse<any>).error;
-  const logMsg =
-    errorObj &&
-    typeof errorObj === "object" &&
-    "message" in errorObj &&
-    typeof errorObj.message === "string"
-      ? errorObj.message
-      : "Unknown error";
+  const errorObj = (response.jsonBody as ApiResponse<unknown>).error;
+  let logMsg = "Unknown error";
+
+  if (
+    errorObj !== null &&
+    errorObj !== undefined &&
+    typeof errorObj === "object"
+  ) {
+    const typedErrorObj = errorObj as Record<string, unknown>;
+    if (
+      "message" in typedErrorObj &&
+      typeof typedErrorObj.message === "string"
+    ) {
+      logMsg = typedErrorObj.message;
+    }
+  }
   logger.error(logMsg, {
     error,
     requestId: request?.requestId,
     statusCode: response.status,
   });
 
-  // If we have a request, return an HTTP response
-  if (request) {
-    return response;
-  }
-  // Otherwise, just log (for background jobs, etc.)
+  // Always return HTTP response
+  return response;
 }
 
 /**
@@ -176,6 +182,13 @@ function sanitizeHeaders(
   return sanitized;
 }
 
-function isHttpRequest(obj: any): obj is HttpRequest {
-  return obj && typeof obj.method === "string" && typeof obj.url === "string";
+function isHttpRequest(obj: unknown): obj is HttpRequest {
+  return (
+    obj !== null &&
+    typeof obj === "object" &&
+    "method" in obj &&
+    "url" in obj &&
+    typeof (obj as { method: unknown }).method === "string" &&
+    typeof (obj as { url: unknown }).url === "string"
+  );
 }
