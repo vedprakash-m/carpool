@@ -1,57 +1,38 @@
-module.exports = async function (context, req) {
-  context.log("Trips stats function started");
-  context.log("Request method:", req.method);
-
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Access-Control-Max-Age": "86400",
-    "Content-Type": "application/json",
-  };
-
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
-    return;
-  }
-
-  try {
-    // Return mock stats data for the dashboard
-    // In a real app, this would query the database
-    const stats = {
-      totalTrips: 8,
-      tripsAsDriver: 5,
-      tripsAsPassenger: 3,
-      totalDistance: 1250,
-      costSavings: 245.5,
-      upcomingTrips: 2,
-    };
-
-    context.log("Returning stats:", stats);
-
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: {
-        success: true,
-        data: stats,
-      },
-    };
-  } catch (error) {
-    context.log("Stats error:", error);
-    context.res = {
-      status: 500,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: error.message,
-      },
-    };
-  }
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const functions_1 = require("@azure/functions");
+const container_1 = require("../../container");
+const error_handler_1 = require("../../utils/error-handler");
+const httpTrigger = async function (request, context) {
+    const tripService = container_1.container.resolve("TripService");
+    const logger = container_1.container
+        .resolve("ILogger")
+        .child({ requestId: context.invocationId });
+    try {
+        // For now, using mock authentication until middleware is fixed
+        const mockUser = { userId: "user-123", role: "parent" };
+        // Parse query parameters manually since middleware isn't working
+        const url = new URL(request.url);
+        const timeRange = url.searchParams.get("timeRange") || "week";
+        const stats = await tripService.getTripStats(mockUser.userId);
+        const response = {
+            success: true,
+            data: stats,
+        };
+        return {
+            status: 200,
+            jsonBody: response,
+        };
+    }
+    catch (error) {
+        logger.error(`[trips-stats] Error getting trip stats: ${error}`, {
+            error,
+        });
+        return (0, error_handler_1.handleError)(error, request);
+    }
 };
+functions_1.app.http("trips-stats", {
+    methods: ["GET"],
+    authLevel: "anonymous",
+    handler: httpTrigger,
+});

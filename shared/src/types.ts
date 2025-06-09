@@ -1,5 +1,11 @@
 // User types
-export type UserRole = "admin" | "group_admin" | "parent" | "child";
+export type UserRole =
+  | "admin"
+  | "group_admin"
+  | "parent"
+  | "child"
+  | "student"
+  | "trip_admin";
 
 export interface RolePermissions {
   admin: {
@@ -22,6 +28,17 @@ export interface RolePermissions {
     schedule_viewing: boolean;
     safety_reporting: boolean;
     profile_management: boolean;
+  };
+  student: {
+    schedule_viewing: boolean;
+    safety_reporting: boolean;
+    profile_management: boolean;
+  };
+  trip_admin: {
+    group_management: boolean;
+    member_management: boolean;
+    trip_scheduling: boolean;
+    emergency_coordination: boolean;
   };
 }
 

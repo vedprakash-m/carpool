@@ -2,10 +2,8 @@ import {
   Notification,
   NotificationType,
   CreateNotificationRequest,
-  ApiResponse,
   User,
   Trip,
-  RealTimeEvent,
 } from "@vcarpool/shared";
 import { v4 as uuidv4 } from "uuid";
 import { Container } from "@azure/cosmos";
@@ -231,7 +229,10 @@ export class NotificationService {
       });
       return notification;
     } catch (error) {
-      this.logger.error("Error creating notification", error);
+      this.logger.error(
+        "Error creating notification",
+        error as Record<string, unknown>
+      );
       throw error;
     }
   }
@@ -418,7 +419,10 @@ export class NotificationService {
       this.logger.info("Cleaned up expired notifications", { deletedCount });
       return deletedCount;
     } catch (error) {
-      this.logger.error("Error cleaning up notifications", error);
+      this.logger.error(
+        "Error cleaning up notifications",
+        error as Record<string, unknown>
+      );
       throw error;
     }
   }

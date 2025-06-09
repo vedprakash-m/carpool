@@ -1,6 +1,7 @@
 import {
   Trip,
   TripStatus,
+  TripStats,
   CreateTripRequest,
   UpdateTripRequest,
   ApiResponse,
@@ -259,7 +260,7 @@ export class TripService {
       });
 
       // Calculate total count for pagination
-      let countQuery = query
+      const countQuery = query
         .replace("SELECT * FROM c", "SELECT VALUE COUNT(1) FROM c")
         .replace(/ORDER BY .+$/, "");
 
@@ -461,13 +462,7 @@ export class TripService {
   /**
    * Get trip statistics for a user
    */
-  async getTripStats(userId: string): Promise<{
-    totalTrips: number;
-    tripsAsDriver: number;
-    tripsAsPassenger: number;
-    totalDistance: number;
-    costSavings: number;
-  }> {
+  async getTripStats(userId: string): Promise<TripStats> {
     try {
       const query = {
         query: `
@@ -496,12 +491,16 @@ export class TripService {
         0
       );
 
+      // Get upcoming trips
+      const upcomingTrips = await this.getUserUpcomingTrips(userId);
+
       return {
         totalTrips: trips.length,
         tripsAsDriver: tripsAsDriver.length,
         tripsAsPassenger: tripsAsPassenger.length,
         totalDistance: 0, // TODO: Implement distance calculation
         costSavings,
+        upcomingTrips: upcomingTrips.length,
       };
     } catch (error) {
       console.error(

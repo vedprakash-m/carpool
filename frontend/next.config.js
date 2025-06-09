@@ -8,8 +8,8 @@ const nextConfig = {
   swcMinify: true,
   poweredByHeader: false,
 
-  // Standalone output for Azure Static Web Apps
-  output: "export",
+  // Use standalone output instead of export for dynamic routes
+  output: "standalone",
   trailingSlash: false,
   distDir: "out",
 

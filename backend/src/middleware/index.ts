@@ -46,7 +46,7 @@ export type HttpHandler = (
  */
 export function compose(
   ...middlewares: Middleware[]
-): (handler: Middleware) => HttpHandler {
+): (handler: HttpHandler) => HttpHandler {
   return (finalHandler) => async (request, context) => {
     for (const middleware of middlewares) {
       const response = await middleware(request, context);

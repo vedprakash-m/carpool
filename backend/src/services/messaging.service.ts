@@ -10,6 +10,7 @@ import {
   RealTimeEvent,
   User,
   Trip,
+  MessageType,
 } from "@vcarpool/shared";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -441,7 +442,7 @@ export class MessagingService {
       chatId,
       senderId: "system",
       senderName: "System",
-      type: "system",
+      type: "system" as MessageType,
       content,
       metadata: {
         systemEventType: "chat_created",

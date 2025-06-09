@@ -9,7 +9,8 @@ export interface Family {
 }
 
 export interface Preference {
+  id: string;
   familyId: string;
-  date: Date;
+  date: string;
   canDrive: boolean;
 }

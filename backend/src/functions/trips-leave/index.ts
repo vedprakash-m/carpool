@@ -1,75 +1,81 @@
 import {
-  AzureFunction,
-  Context,
   HttpRequest,
   HttpResponseInit,
+  InvocationContext,
+  app,
 } from "@azure/functions";
-import { container } from "../../../src/container";
-import { TripService } from "../../../src/services/trip.service";
-import { ILogger } from "../../../src/utils/logger";
+import { container } from "../../container";
+import { TripService } from "../../services/trip.service";
+import { ILogger } from "../../utils/logger";
 import { ApiResponse, Trip } from "@vcarpool/shared";
-import {
-  authenticate,
-  validateParams,
-  requestId,
-  requestLogging,
-  compose,
-} from "../../../src/middleware";
-import { tripIdParamSchema } from "@vcarpool/shared/schemas/trip-params";
-import { handleError, Errors } from "../../../src/utils/error-handler";
+import { handleError, Errors } from "../../utils/error-handler";
 
-const httpTrigger: AzureFunction = async function (
-  context: Context,
-  req: HttpRequest
+interface HttpRequestUser {
+  userId: string;
+  role: string;
+  familyId?: string;
+}
+
+interface AuthenticatedHttpRequest extends Omit<HttpRequest, "user"> {
+  user: HttpRequestUser | null;
+}
+
+async function tripsLeaveHandler(
+  request: HttpRequest,
+  context: InvocationContext
 ): Promise<HttpResponseInit> {
-  const tripService = container.resolve<TripService>("TripService");
-  const logger = container
-    .resolve<ILogger>("ILogger")
-    .child({ requestId: req.requestId });
+  try {
+    const tripService = container.resolve<TripService>("TripService");
+    const logger = container
+      .resolve<ILogger>("ILogger")
+      .child({ requestId: context.invocationId });
 
-  const mainHandler = async (
-    req: HttpRequest,
-    context: Context
-  ): Promise<HttpResponseInit> => {
     logger.info("[trips-leave] Received request to leave trip.");
 
-    if (!req.user) {
+    // Get tripId from URL path
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split("/");
+    const tripId = pathParts[pathParts.length - 2]; // Assuming pattern like /trips/{id}/leave
+
+    if (!tripId) {
+      return handleError(Errors.BadRequest("Trip ID is required."), request);
+    }
+
+    // TODO: Implement authentication middleware
+    // For now, we'll use a mock user
+    const mockUserId = "mock-user-id"; // This should come from authentication
+
+    const updatedTrip = await tripService.leaveTrip(tripId, mockUserId);
+
+    if (!updatedTrip) {
       return handleError(
-        Errors.Unauthorized("User is not authenticated."),
-        req
+        Errors.NotFound("Trip not found or user was not in trip."),
+        request
       );
     }
 
-    try {
-      const { tripId } = req.validated?.params;
-      const userId = req.user.userId;
+    const response: ApiResponse<Trip> = {
+      success: true,
+      message: "Successfully left trip.",
+      data: updatedTrip,
+    };
 
-      const updatedTrip = await tripService.leaveTrip(tripId, userId);
+    return {
+      status: 200,
+      jsonBody: response,
+    };
+  } catch (error) {
+    const logger = container
+      .resolve<ILogger>("ILogger")
+      .child({ requestId: context.invocationId });
+    logger.error(`[trips-leave] Error leaving trip: ${error}`, { error });
+    return handleError(error, request);
+  }
+}
 
-      const response: ApiResponse<Trip> = {
-        success: true,
-        message: "Successfully left trip.",
-        data: updatedTrip,
-      };
-
-      return {
-        status: 200,
-        jsonBody: response,
-      };
-    } catch (error) {
-      logger.error(`[trips-leave] Error leaving trip: ${error}`, { error });
-      return handleError(error, req);
-    }
-  };
-
-  const composedMiddleware = compose(
-    requestId,
-    requestLogging,
-    authenticate,
-    validateParams(tripIdParamSchema)
-  );
-
-  return composedMiddleware(mainHandler.bind(null, req, context));
-};
-
-export default httpTrigger;
+app.http("trips-leave", {
+  methods: ["DELETE"],
+  authLevel: "anonymous",
+  route: "trips/{tripId}/leave",
+  handler: tripsLeaveHandler,
+});

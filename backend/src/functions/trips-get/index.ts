@@ -6,11 +6,7 @@ import {
 } from "@azure/functions";
 import { ApiResponse, Trip, tripIdParamSchema } from "@vcarpool/shared";
 import { container } from "../../container";
-import { compose, authenticate } from "../../middleware";
-import {
-  validatePathParams,
-  extractPathParam,
-} from "../../middleware/validation.middleware";
+import { compose, authenticate, validateParams } from "../../middleware";
 import { trackExecutionTime } from "../../utils/monitoring";
 
 async function getTripHandler(
@@ -24,7 +20,7 @@ async function getTripHandler(
   }
 
   const userId = request.auth?.userId;
-  const tripId = request.validatedParams?.tripId;
+  const tripId = request.validated?.params?.tripId;
 
   logger.info("Processing get trip request", { userId, tripId });
 
@@ -75,12 +71,60 @@ async function getTripHandler(
   }
 }
 
+// Custom middleware to extract tripId from URL path
+function extractTripId(): (
+  request: HttpRequest,
+  context: InvocationContext
+) => Promise<HttpResponseInit | void> {
+  return async (request, context) => {
+    try {
+      // Extract tripId from URL path - assuming URL is like /trips/{tripId}
+      const url = new URL(request.url);
+      const pathSegments = url.pathname.split("/");
+      const tripIdIndex =
+        pathSegments.findIndex((segment) => segment === "trips") + 1;
+
+      if (tripIdIndex >= pathSegments.length) {
+        return {
+          status: 400,
+          jsonBody: {
+            success: false,
+            error: "Trip ID is required",
+          },
+        };
+      }
+
+      const tripId = pathSegments[tripIdIndex];
+
+      // Validate using the schema
+      const result = tripIdParamSchema.safeParse({ tripId });
+      if (!result.success) {
+        return {
+          status: 400,
+          jsonBody: {
+            success: false,
+            error: "Invalid trip ID format",
+          },
+        };
+      }
+
+      // Add validated params to request
+      request.validated = { ...request.validated, params: result.data };
+    } catch (error) {
+      return {
+        status: 400,
+        jsonBody: {
+          success: false,
+          error: "Invalid request URL",
+        },
+      };
+    }
+  };
+}
+
 app.http("trips-get", {
   methods: ["GET"],
   authLevel: "anonymous",
   route: "trips/{tripId}",
-  handler: compose(
-    authenticate,
-    validatePathParams(tripIdParamSchema, extractPathParam("tripId"))
-  )(getTripHandler),
+  handler: compose(authenticate, extractTripId())(getTripHandler),
 });

@@ -36,6 +36,17 @@ const defaultPermissions: RolePermissions = {
     safety_reporting: true,
     profile_management: true,
   },
+  student: {
+    schedule_viewing: true,
+    safety_reporting: true,
+    profile_management: true,
+    trip_participation: true,
+  },
+  trip_admin: {
+    trip_scheduling: true,
+    emergency_coordination: true,
+    member_management: true,
+  },
 };
 
 export function RBACProvider({ children }: { children: React.ReactNode }) {

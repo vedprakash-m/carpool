@@ -1,80 +1,40 @@
-module.exports = async function (context, req) {
-  context.log("Users me function started");
-  context.log("Request method:", req.method);
-
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Access-Control-Max-Age": "86400",
-    "Content-Type": "application/json",
-  };
-
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
-    return;
-  }
-
-  try {
-    // Return current user data
-    // In a real app, this would verify the JWT token and get user from DB
-    const user = {
-      id: "mock-admin-id",
-      email: "admin@example.com", // Mock email - not a real address
-      firstName: "Test",
-      lastName: "Admin",
-      role: "admin",
-      profilePicture: null,
-      phoneNumber: null,
-      organizationId: null,
-      preferences: {
-        notifications: {
-          email: true,
-          push: true,
-          sms: false,
-          tripReminders: true,
-          swapRequests: true,
-          scheduleChanges: true,
-        },
-        privacy: {
-          showPhoneNumber: true,
-          showEmail: false,
-        },
-        pickupLocation: "Home",
-        dropoffLocation: "School",
-        preferredTime: "08:00",
-        isDriver: true,
-        smokingAllowed: false,
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    context.log("Returning user data for:", user.email);
-
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: {
-        success: true,
-        data: user,
-      },
-    };
-  } catch (error) {
-    context.log("Users me error:", error);
-    context.res = {
-      status: 500,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: error.message,
-      },
-    };
-  }
-};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const functions_1 = require("@azure/functions");
+require("reflect-metadata");
+const container_1 = require("../../container");
+const middleware_1 = require("../../middleware");
+const error_handler_1 = require("../../utils/error-handler");
+async function usersMeHandler(request, context) {
+    const logger = container_1.container.resolve("ILogger");
+    const userService = container_1.container.resolve("UserService");
+    try {
+        const userId = request.auth?.userId;
+        if (!userId) {
+            // This should technically be caught by the authenticate middleware,
+            // but it's good practice to check.
+            throw new Error("User not authenticated.");
+        }
+        const user = await userService.getUserById(userId);
+        if (!user) {
+            throw new Error("Authenticated user not found.");
+        }
+        logger.info("Fetched current user profile successfully", { userId });
+        return {
+            jsonBody: {
+                success: true,
+                message: "User profile fetched successfully.",
+                data: user,
+            },
+        };
+    }
+    catch (error) {
+        return (0, error_handler_1.handleError)(error, request);
+    }
+}
+functions_1.app.http("users-me", {
+    methods: ["GET"],
+    authLevel: "anonymous", // Handled by middleware
+    route: "users/me",
+    handler: (0, middleware_1.compose)(middleware_1.requestId, middleware_1.requestLogging, middleware_1.authenticate)(usersMeHandler),
+});

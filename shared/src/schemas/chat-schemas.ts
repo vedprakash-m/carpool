@@ -11,4 +11,5 @@ export const chatsQuerySchema = z.object({
   tripId: z.string().uuid("Invalid trip ID format").optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(10),
+  includeInactive: z.coerce.boolean().optional().default(false),
 });

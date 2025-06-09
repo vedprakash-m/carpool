@@ -119,7 +119,10 @@ export class UserService {
       const { passwordHash, ...user } = userWithPassword as any;
       return user as User;
     } catch (error) {
-      this.logger.error(`Error finding user by email ${email}:`, error);
+      this.logger.error(
+        `Error finding user by email ${email}:`,
+        error as Record<string, unknown>
+      );
       throw Errors.InternalServerError(
         `Error finding user: ${
           error instanceof Error ? error.message : "Unknown error"

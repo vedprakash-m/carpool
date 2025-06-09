@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Accessible UI Components
  * WCAG 2.1 AA compliant components for VCarpool

@@ -52,7 +52,7 @@ async function resetPasswordHandler(
         message: "Your password has been reset successfully.",
       },
     };
-  } catch (error) {
+  } catch (error: any) {
     // Catch specific token errors for better messages
     if (error.name === "TokenExpiredError") {
       return handleError(

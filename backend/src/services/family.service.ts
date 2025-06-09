@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { Family } from "@vcarpool/shared/src/types";
+import { Family } from "@vcarpool/shared";
 import { FamilyRepository } from "../repositories/family.repository";
 import { ILogger } from "../utils/logger";
 
