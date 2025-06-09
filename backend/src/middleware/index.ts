@@ -47,12 +47,12 @@ export type HttpHandler = (
 export function compose(
   ...middlewares: Middleware[]
 ): (handler: HttpHandler) => HttpHandler {
-  return (finalHandler) => async (request, context) => {
+  return (finalHandler) => async (request, context): Promise<HttpResponseInit | HttpResponse> => {
     for (const middleware of middlewares) {
       const response = await middleware(request, context);
       if (response) {
         // If a middleware returns a response, stop processing and return it
-        return response;
+        return response as HttpResponseInit;
       }
     }
     // If all middlewares pass, call the final handler
@@ -63,7 +63,7 @@ export function compose(
       return handleError(
         new Error("The final handler did not return a response."),
         request
-      );
+      ) as HttpResponseInit;
     }
 
     return finalResponse;
