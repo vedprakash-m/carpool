@@ -52,7 +52,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     errorHandler
       .handleError(error, {
         errorBoundary: "ErrorBoundary",
-        componentStack: errorInfo.componentStack,
+        componentStack: errorInfo.componentStack || undefined,
       })
       .catch(console.error);
 

@@ -68,7 +68,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         const { user, token, refreshToken } = response.data;
 
         // Store tokens securely instead of localStorage
-        setTokens({ token, refreshToken });
+        setTokens(token, refreshToken);
 
         // Set token in API client with refresh token
         apiClient.setToken(token, refreshToken);
@@ -102,7 +102,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         const { user, token, refreshToken } = response.data;
 
         // Store tokens securely instead of localStorage
-        setTokens({ token, refreshToken });
+        setTokens(token, refreshToken);
 
         // Set token in API client with refresh token
         apiClient.setToken(token, refreshToken);
@@ -149,7 +149,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         // Update tokens in secure storage
         const tokens = getTokens();
         if (tokens) {
-          setTokens({ token, refreshToken: tokens.refreshToken });
+          setTokens(token, tokens.refreshToken);
         }
 
         set({

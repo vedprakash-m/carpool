@@ -152,7 +152,7 @@ export class ApiErrorHandler {
 export interface ApiInterceptors {
   request?: (
     config: RequestInit & { url: string }
-  ) => RequestInit & { url: string };
+  ) => (RequestInit & { url: string }) | Promise<RequestInit & { url: string }>;
   response?: (response: Response) => Response | Promise<Response>;
   error?: (error: unknown) => Promise<never> | never;
 }
@@ -212,7 +212,11 @@ export class ApiClient {
 
     // Apply request interceptor
     if (this.interceptors.request) {
-      config = this.interceptors.request(config);
+      const interceptedConfig = await this.interceptors.request(config);
+      config = {
+        ...interceptedConfig,
+        headers: interceptedConfig.headers || {},
+      };
     }
 
     try {

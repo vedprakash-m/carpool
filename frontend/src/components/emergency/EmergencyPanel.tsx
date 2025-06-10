@@ -505,4 +505,4 @@ export default memo(function EmergencyPanel({
       )}
     </div>
   );
-}
+});

@@ -103,6 +103,15 @@ export default memo(function CalendarView({
     return result;
   }, [assignments, weekDates, user]);
 
+  // Function to get assignments for a specific date
+  const getAssignmentsForDate = useCallback(
+    (date: Date): CalendarAssignment[] => {
+      const dateString = date.toISOString().split("T")[0];
+      return filteredAssignmentsByDate[dateString] || [];
+    },
+    [filteredAssignmentsByDate]
+  );
+
   // Optimized load assignments function
   const loadAssignments = useCallback(async () => {
     try {

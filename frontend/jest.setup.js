@@ -49,5 +49,23 @@ jest.mock("next/navigation", () => ({
   },
 }));
 
+// Mock matchMedia for accessibility tests
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: jest.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
+// Mock scrollIntoView for accessibility tests
+Element.prototype.scrollIntoView = jest.fn();
+
 // Mock environment variables
 process.env.NEXT_PUBLIC_API_BASE_URL = "http://localhost:3001";
