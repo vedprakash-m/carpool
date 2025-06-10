@@ -13,19 +13,37 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useRouter } from "next/navigation";
 import DashboardPage from "../../app/dashboard/page";
-import { useAuthStore } from "../../store/auth.store";
-import { useTripStore } from "../../store/trip.store";
+import { useAuthStore } from "@/store/auth.store";
+import { useTripStore } from "@/store/trip.store";
 
 // Mock Next.js router
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 
-// Mock stores
-jest.mock("../../store/auth.store", () => ({
+// Mock stores - create proper inline mocks
+const mockFetchTripStats = jest.fn().mockResolvedValue({
+  weeklySchoolTrips: 8,
+  childrenCount: 2,
+  monthlyFuelSavings: 45.5,
+  timeSavedHours: 12,
+  upcomingTrips: 3,
+  totalTrips: 25,
+  costSavings: 125.75,
+  familyGroupsCount: 2,
+  emergencyContactsActive: true,
+});
+
+// Create actual mock functions that will be used
+const mockUseAuthStore = jest.fn();
+const mockUseTripStore = jest.fn();
+
+// Mock the store modules properly
+jest.mock("@/store/auth.store", () => ({
   useAuthStore: jest.fn(),
 }));
-jest.mock("../../store/trip.store", () => ({
+
+jest.mock("@/store/trip.store", () => ({
   useTripStore: jest.fn(),
 }));
 
@@ -125,14 +143,39 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
   const mockTripStore = {
     stats: mockFamilyStats,
     loading: false,
-    fetchTripStats: jest.fn().mockResolvedValue(mockFamilyStats),
+    fetchTripStats: jest
+      .fn()
+      .mockImplementation(() => Promise.resolve(mockFamilyStats)),
+    // Add other properties that might be expected by the component
+    trips: [],
+    currentTrip: null,
+    error: null,
+    pagination: {
+      page: 1,
+      limit: 20,
+      total: 0,
+      totalPages: 0,
+    },
+    fetchTrips: jest.fn(),
+    createTrip: jest.fn(),
+    updateTrip: jest.fn(),
+    deleteTrip: jest.fn(),
+    joinTrip: jest.fn(),
+    leaveTrip: jest.fn(),
+    setCurrentTrip: jest.fn(),
+    clearError: jest.fn(),
+    reset: jest.fn(),
+    searchTrips: jest.fn(),
   };
 
   beforeEach(() => {
-    (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    (useAuthStore as unknown as jest.Mock).mockReturnValue(mockAuthStore);
-    (useTripStore as unknown as jest.Mock).mockReturnValue(mockTripStore);
+    // Clear all mocks first
     jest.clearAllMocks();
+
+    // Set up mocks - use the mocked imports directly
+    (useRouter as jest.Mock).mockReturnValue(mockRouter);
+    (useAuthStore as jest.Mock).mockReturnValue(mockAuthStore);
+    (useTripStore as jest.Mock).mockReturnValue(mockTripStore);
   });
 
   describe("Family Authentication and Context", () => {
@@ -146,7 +189,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should render admin dashboard with system-wide context", () => {
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
@@ -160,7 +203,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should not render dashboard content when user is not authenticated", () => {
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         isAuthenticated: false,
         user: null,
@@ -171,7 +214,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should not render dashboard content when user is missing", () => {
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: null,
       });
@@ -187,7 +230,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should not fetch trip stats when not authenticated", () => {
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         isAuthenticated: false,
       });
@@ -236,7 +279,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should display role-appropriate welcome for admin users", () => {
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
@@ -298,12 +341,12 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
         systemWideTrips: 150,
       };
 
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
 
-      (useTripStore as unknown as jest.Mock).mockReturnValue({
+      mockUseTripStore.mockReturnValue({
         ...mockTripStore,
         stats: mockAdminStats,
       });
@@ -315,7 +358,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should show loading state for family statistics", () => {
-      (useTripStore as unknown as jest.Mock).mockReturnValue({
+      mockUseTripStore.mockReturnValue({
         ...mockTripStore,
         loading: true,
         stats: null,
@@ -327,7 +370,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should handle missing stats gracefully", () => {
-      (useTripStore as unknown as jest.Mock).mockReturnValue({
+      mockUseTripStore.mockReturnValue({
         ...mockTripStore,
         stats: null,
       });
@@ -378,7 +421,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should display admin-specific actions for admin users", () => {
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
@@ -595,7 +638,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
 
     it("should handle different user roles appropriately", () => {
       const studentUser = { ...mockFamilyParentUser, role: "student" };
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: studentUser,
       });
@@ -608,7 +651,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should handle missing trip stats gracefully", () => {
-      (useTripStore as unknown as jest.Mock).mockReturnValue({
+      mockUseTripStore.mockReturnValue({
         ...mockTripStore,
         stats: undefined,
       });
@@ -619,7 +662,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     it("should handle fetchTripStats errors gracefully", () => {
       const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-      (useTripStore as unknown as jest.Mock).mockReturnValue({
+      mockUseTripStore.mockReturnValue({
         ...mockTripStore,
         fetchTripStats: jest.fn().mockRejectedValue(new Error("API Error")),
       });
@@ -670,7 +713,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       ).toBeInTheDocument();
 
       // Switch to admin role
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
@@ -689,7 +732,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
         familyId: null,
       };
 
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: incompleteUser,
       });
@@ -709,7 +752,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
         emergencyContact: true,
       };
 
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: emergencyUser,
       });
@@ -731,7 +774,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
         ],
       };
 
-      (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      mockUseAuthStore.mockReturnValue({
         ...mockAuthStore,
         user: multiChildUser,
       });
