@@ -24,9 +24,14 @@ export default function DashboardPage() {
   const { stats, loading, fetchTripStats } = useTripStore();
 
   useEffect(() => {
-    if (isAuthenticated && user && fetchTripStats && typeof fetchTripStats === 'function') {
+    if (
+      isAuthenticated &&
+      user &&
+      fetchTripStats &&
+      typeof fetchTripStats === "function"
+    ) {
       const result = fetchTripStats();
-      if (result && typeof result.catch === 'function') {
+      if (result && typeof result.catch === "function") {
         result.catch(console.error);
       }
     }
