@@ -1,21 +1,21 @@
 "use client";
 
-import { useTravelingParentData } from '@/hooks/useTravelingParentData';
-import { ErrorState } from './traveling-parent/ErrorState';
-import { LoadingState, NoGroupState } from './traveling-parent/LoadingState';
-import { DashboardHeader } from './traveling-parent/DashboardHeader';
-import { TravelScheduleCard } from './traveling-parent/TravelScheduleCard';
-import { StatisticsGrid } from './traveling-parent/StatisticsGrid';
-import { MakeupProposalForm } from './traveling-parent/MakeupProposalForm';
-import { MakeupOptionsList } from './traveling-parent/MakeupOptionsList';
+import { useTravelingParentData } from "@/hooks/useTravelingParentData";
+import { ErrorState } from "./traveling-parent/ErrorState";
+import { LoadingState, NoGroupState } from "./traveling-parent/LoadingState";
+import { DashboardHeader } from "./traveling-parent/DashboardHeader";
+import { TravelScheduleCard } from "./traveling-parent/TravelScheduleCard";
+import { StatisticsGrid } from "./traveling-parent/StatisticsGrid";
+import { MakeupProposalForm } from "./traveling-parent/MakeupProposalForm";
+import { MakeupOptionsList } from "./traveling-parent/MakeupOptionsList";
 
 /**
  * TravelingParentMakeupDashboard - Container Component
- * 
+ *
  * Refactored to follow container/presentational pattern for better maintainability.
  * This component handles state management and business logic while delegating
  * UI rendering to smaller, focused presentational components.
- * 
+ *
  * Original file was 551 lines - now reduced to ~60 lines with better separation of concerns.
  */
 export default function TravelingParentMakeupDashboard() {
@@ -32,12 +32,12 @@ export default function TravelingParentMakeupDashboard() {
   // Handle error state
   if (error) {
     return (
-      <ErrorState 
-        error={error} 
+      <ErrorState
+        error={error}
         onRetry={() => {
           setError(null);
           refetch();
-        }} 
+        }}
       />
     );
   }
@@ -55,7 +55,7 @@ export default function TravelingParentMakeupDashboard() {
   // Main dashboard render
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardHeader 
+      <DashboardHeader
         groupName={dashboardData.group.name}
         makeupBalance={dashboardData.user.makeupBalance}
       />
@@ -75,7 +75,7 @@ export default function TravelingParentMakeupDashboard() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Travel Schedule
             </h2>
-            <TravelScheduleCard 
+            <TravelScheduleCard
               hasUpcomingTravel={dashboardData.travelSchedule.hasUpcomingTravel}
               travelPeriods={dashboardData.travelSchedule.travelPeriods}
             />
@@ -88,13 +88,13 @@ export default function TravelingParentMakeupDashboard() {
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
-                <MakeupProposalForm 
+                <MakeupProposalForm
                   onSubmit={submitMakeupProposal}
                   availableDates={dashboardData.availableDates}
                 />
               </div>
               <div>
-                <MakeupOptionsList 
+                <MakeupOptionsList
                   makeupOptions={dashboardData.makeupOptions}
                   onDelete={deleteMakeupProposal}
                 />

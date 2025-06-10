@@ -1,6 +1,6 @@
 /**
  * Secure token storage utility
- * 
+ *
  * This module provides secure storage for authentication tokens.
  * It uses httpOnly cookies for production and localStorage with encryption for development.
  */
@@ -12,20 +12,28 @@ interface TokenData {
 }
 
 class SecureStorage {
-  private readonly TOKEN_KEY = 'vcarpool_token';
-  private readonly REFRESH_TOKEN_KEY = 'vcarpool_refresh_token';
-  private readonly EXPIRES_KEY = 'vcarpool_token_expires';
+  private readonly TOKEN_KEY = "vcarpool_token";
+  private readonly REFRESH_TOKEN_KEY = "vcarpool_refresh_token";
+  private readonly EXPIRES_KEY = "vcarpool_token_expires";
 
   /**
    * Store tokens securely
    */
-  setTokens(token: string, refreshToken: string, expiresIn: number = 24 * 60 * 60 * 1000): void {
+  setTokens(
+    token: string,
+    refreshToken: string,
+    expiresIn: number = 24 * 60 * 60 * 1000
+  ): void {
     const expiresAt = Date.now() + expiresIn;
 
     if (this.isProduction()) {
       // In production, use httpOnly cookies (requires server-side implementation)
       this.setCookie(this.TOKEN_KEY, token, expiresIn);
-      this.setCookie(this.REFRESH_TOKEN_KEY, refreshToken, 7 * 24 * 60 * 60 * 1000); // 7 days
+      this.setCookie(
+        this.REFRESH_TOKEN_KEY,
+        refreshToken,
+        7 * 24 * 60 * 60 * 1000
+      ); // 7 days
       this.setCookie(this.EXPIRES_KEY, expiresAt.toString(), expiresIn);
     } else {
       // In development, use sessionStorage (more secure than localStorage)
@@ -59,7 +67,7 @@ class SecureStorage {
       }
 
       const expiration = parseInt(expiresAt, 10);
-      
+
       // Check if token is expired
       if (Date.now() > expiration) {
         this.clearTokens();
@@ -72,7 +80,7 @@ class SecureStorage {
         expiresAt: expiration,
       };
     } catch (error) {
-      console.error('Failed to retrieve tokens:', error);
+      console.error("Failed to retrieve tokens:", error);
       return null;
     }
   }
@@ -106,11 +114,13 @@ class SecureStorage {
   private setCookie(name: string, value: string, maxAge: number): void {
     // This would typically be handled server-side via API calls
     // For now, we'll use regular cookies with secure flags
-    const secure = this.isProduction() ? '; Secure' : '';
-    const sameSite = '; SameSite=Strict';
-    const httpOnly = ''; // Note: httpOnly can only be set server-side
-    
-    document.cookie = `${name}=${value}; Max-Age=${Math.floor(maxAge / 1000)}; Path=/${secure}${sameSite}${httpOnly}`;
+    const secure = this.isProduction() ? "; Secure" : "";
+    const sameSite = "; SameSite=Strict";
+    const httpOnly = ""; // Note: httpOnly can only be set server-side
+
+    document.cookie = `${name}=${value}; Max-Age=${Math.floor(
+      maxAge / 1000
+    )}; Path=/${secure}${sameSite}${httpOnly}`;
   }
 
   /**
@@ -120,7 +130,7 @@ class SecureStorage {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) {
-      const cookieValue = parts.pop()?.split(';').shift();
+      const cookieValue = parts.pop()?.split(";").shift();
       return cookieValue || null;
     }
     return null;
@@ -137,7 +147,7 @@ class SecureStorage {
    * Check if running in production
    */
   private isProduction(): boolean {
-    return process.env.NODE_ENV === 'production';
+    return process.env.NODE_ENV === "production";
   }
 }
 
@@ -145,8 +155,11 @@ class SecureStorage {
 export const secureStorage = new SecureStorage();
 
 // Helper functions for easy access
-export const setTokens = (token: string, refreshToken: string, expiresIn?: number) =>
-  secureStorage.setTokens(token, refreshToken, expiresIn);
+export const setTokens = (
+  token: string,
+  refreshToken: string,
+  expiresIn?: number
+) => secureStorage.setTokens(token, refreshToken, expiresIn);
 
 export const getTokens = () => secureStorage.getTokens();
 

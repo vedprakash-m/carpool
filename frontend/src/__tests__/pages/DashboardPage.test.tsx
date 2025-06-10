@@ -203,7 +203,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should not render dashboard content when user is not authenticated", () => {
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         isAuthenticated: false,
         user: null,
@@ -214,7 +214,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should not render dashboard content when user is missing", () => {
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: null,
       });
@@ -230,7 +230,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should not fetch trip stats when not authenticated", () => {
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         isAuthenticated: false,
       });
@@ -279,7 +279,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should display role-appropriate welcome for admin users", () => {
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
@@ -341,12 +341,12 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
         systemWideTrips: 150,
       };
 
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
 
-      mockUseTripStore.mockReturnValue({
+      (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
         stats: mockAdminStats,
       });
@@ -358,7 +358,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should show loading state for family statistics", () => {
-      mockUseTripStore.mockReturnValue({
+      (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
         loading: true,
         stats: null,
@@ -370,7 +370,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should handle missing stats gracefully", () => {
-      mockUseTripStore.mockReturnValue({
+      (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
         stats: null,
       });
@@ -421,7 +421,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should display admin-specific actions for admin users", () => {
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
@@ -638,7 +638,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
 
     it("should handle different user roles appropriately", () => {
       const studentUser = { ...mockFamilyParentUser, role: "student" };
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: studentUser,
       });
@@ -651,7 +651,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
 
     it("should handle missing trip stats gracefully", () => {
-      mockUseTripStore.mockReturnValue({
+      (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
         stats: undefined,
       });
@@ -662,7 +662,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     it("should handle fetchTripStats errors gracefully", () => {
       const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-      mockUseTripStore.mockReturnValue({
+      (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
         fetchTripStats: jest.fn().mockRejectedValue(new Error("API Error")),
       });
@@ -677,28 +677,26 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     it("should display school-specific terminology throughout", () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText(/school runs/i)).toBeInTheDocument();
-      expect(screen.getByText(/school carpool/i)).toBeInTheDocument();
-      expect(screen.getByText(/children/i)).toBeInTheDocument();
-      expect(screen.getByText(/parent/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/school runs/i)).toHaveLength(2); // Multiple instances expected
+      expect(screen.getByText(/children in carpool/i)).toBeInTheDocument();
+      expect(screen.getByText(/active student profiles/i)).toBeInTheDocument();
     });
 
     it("should focus on family and school community aspects", () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText(/family/i)).toBeInTheDocument();
-      expect(screen.getByText(/community/i)).toBeInTheDocument();
-      expect(screen.getByText(/parents/i)).toBeInTheDocument();
-      expect(screen.getByText(/students/i)).toBeInTheDocument();
+      expect(screen.getByText(/carpooling/i)).toBeInTheDocument();
+      expect(screen.getByText(/coordinated pickups/i)).toBeInTheDocument();
+      expect(screen.getByText(/children in carpool/i)).toBeInTheDocument();
     });
 
     it("should emphasize cost savings and efficiency", () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText(/fuel savings/i)).toBeInTheDocument();
-      expect(screen.getByText(/time saved/i)).toBeInTheDocument();
-      expect(screen.getByText(/cost/i)).toBeInTheDocument();
-      expect(screen.getByText(/efficiency/i)).toBeInTheDocument();
+      expect(screen.getByText(/miles saved/i)).toBeInTheDocument();
+      expect(screen.getByText(/time saved this month/i)).toBeInTheDocument();
+      expect(screen.getByText(/through carpooling/i)).toBeInTheDocument();
+      expect(screen.getByText(/coordinated pickups/i)).toBeInTheDocument();
     });
   });
 
@@ -713,7 +711,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       ).toBeInTheDocument();
 
       // Switch to admin role
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
       });
@@ -732,7 +730,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
         familyId: null,
       };
 
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: incompleteUser,
       });
@@ -752,7 +750,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
         emergencyContact: true,
       };
 
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: emergencyUser,
       });
@@ -774,7 +772,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
         ],
       };
 
-      mockUseAuthStore.mockReturnValue({
+      (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: multiChildUser,
       });

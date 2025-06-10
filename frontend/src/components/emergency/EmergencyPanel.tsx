@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, memo, useCallback, useMemo } from "react";
 import {
   ExclamationTriangleIcon,
   PhoneIcon,
@@ -133,7 +133,7 @@ const EMERGENCY_TYPES = [
   { value: "other", label: "Other Emergency", icon: "🚨", urgency: "medium" },
 ];
 
-export default function EmergencyPanel({
+export default memo(function EmergencyPanel({
   onEmergencyReport,
   onRequestBackup,
   onContactEmergency,

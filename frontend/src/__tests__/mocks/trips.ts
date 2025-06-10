@@ -1,5 +1,6 @@
 import { Trip } from "@/types/shared";
 
+// Mock trips data for testing
 export const mockTrips: Trip[] = [
   {
     id: "trip-1",
@@ -42,3 +43,12 @@ export const mockTrips: Trip[] = [
     passengers: [],
   },
 ];
+
+// Simple test to make this a valid test file
+describe("Trip Mocks", () => {
+  it("should provide valid mock trip data", () => {
+    expect(mockTrips).toBeDefined();
+    expect(mockTrips.length).toBeGreaterThan(0);
+    expect(mockTrips[0].id).toBe("trip-1");
+  });
+});

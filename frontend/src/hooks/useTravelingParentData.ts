@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export interface MakeupOption {
   id: string;
@@ -55,7 +55,8 @@ export interface MakeupProposal {
 }
 
 export function useTravelingParentData() {
-  const [dashboardData, setDashboardData] = useState<TravelingParentDashboardData | null>(null);
+  const [dashboardData, setDashboardData] =
+    useState<TravelingParentDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -102,7 +103,10 @@ export function useTravelingParentData() {
         await fetchDashboardData();
         return { success: true };
       } else {
-        return { success: false, error: data.error || "Failed to submit proposal" };
+        return {
+          success: false,
+          error: data.error || "Failed to submit proposal",
+        };
       }
     } catch (err) {
       console.error("Proposal submission error:", err);
@@ -112,9 +116,12 @@ export function useTravelingParentData() {
 
   const deleteMakeupProposal = async (proposalId: string) => {
     try {
-      const response = await fetch(`/api/traveling-parent/makeup/${proposalId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/traveling-parent/makeup/${proposalId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       const data = await response.json();
 
@@ -122,7 +129,10 @@ export function useTravelingParentData() {
         await fetchDashboardData();
         return { success: true };
       } else {
-        return { success: false, error: data.error || "Failed to delete proposal" };
+        return {
+          success: false,
+          error: data.error || "Failed to delete proposal",
+        };
       }
     } catch (err) {
       console.error("Proposal deletion error:", err);

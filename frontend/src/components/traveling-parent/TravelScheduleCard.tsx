@@ -12,12 +12,15 @@ interface TravelScheduleCardProps {
   travelPeriods: TravelPeriod[];
 }
 
-export function TravelScheduleCard({ hasUpcomingTravel, travelPeriods }: TravelScheduleCardProps) {
+export function TravelScheduleCard({
+  hasUpcomingTravel,
+  travelPeriods,
+}: TravelScheduleCardProps) {
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -31,10 +34,11 @@ export function TravelScheduleCard({ hasUpcomingTravel, travelPeriods }: TravelS
               Travel Schedule
             </h3>
             <p className="text-sm text-gray-600">
-              {hasUpcomingTravel 
-                ? `${travelPeriods.length} upcoming travel period${travelPeriods.length !== 1 ? 's' : ''}` 
-                : 'No upcoming travel scheduled'
-              }
+              {hasUpcomingTravel
+                ? `${travelPeriods.length} upcoming travel period${
+                    travelPeriods.length !== 1 ? "s" : ""
+                  }`
+                : "No upcoming travel scheduled"}
             </p>
           </div>
         </div>
@@ -42,11 +46,15 @@ export function TravelScheduleCard({ hasUpcomingTravel, travelPeriods }: TravelS
         {hasUpcomingTravel && travelPeriods.length > 0 && (
           <div className="mt-6 space-y-4">
             {travelPeriods.map((period, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4">
+              <div
+                key={index}
+                className="border border-gray-200 rounded-lg p-4"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-gray-900">
-                      {formatDate(period.startDate)} - {formatDate(period.endDate)}
+                      {formatDate(period.startDate)} -{" "}
+                      {formatDate(period.endDate)}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
                       {period.reason}
@@ -68,7 +76,8 @@ export function TravelScheduleCard({ hasUpcomingTravel, travelPeriods }: TravelS
             <div className="flex items-center">
               <Clock className="h-5 w-5 text-green-600" />
               <p className="ml-2 text-sm text-green-700">
-                No upcoming travel scheduled. Your regular carpool schedule is active.
+                No upcoming travel scheduled. Your regular carpool schedule is
+                active.
               </p>
             </div>
           </div>

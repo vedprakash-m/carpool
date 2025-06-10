@@ -1,5 +1,13 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios";
 import { ApiResponse, PaginatedResponse, AuthResponse } from "@vcarpool/shared";
+import {
+  ApiErrorHandler,
+  TimeoutError,
+  ApiError,
+  createTimeoutController,
+  handleApiError,
+} from "./api-error-handling";
+import { errorHandler } from "./error-handling";
 
 // Mock data for development
 const MOCK_USER = {
@@ -83,12 +91,13 @@ export class ApiClient {
       }
     );
 
-    // Response interceptor to handle token refresh
+    // Response interceptor to handle token refresh and errors
     this.client.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
 
+        // Handle 401 errors with token refresh
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
@@ -97,16 +106,39 @@ export class ApiClient {
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return this.client(originalRequest);
           } catch (refreshError) {
-            // Refresh failed, redirect to login
+            // Refresh failed, clear tokens and redirect to login
             this.clearToken();
             if (typeof window !== "undefined") {
               window.location.href = "/login";
             }
-            return Promise.reject(refreshError);
+
+            const handledError = handleApiError(
+              refreshError as AxiosError,
+              "Token refresh"
+            );
+            await errorHandler.handleError(handledError, {
+              errorBoundary: "ApiClient",
+              componentStack: "Token refresh",
+            });
+            return Promise.reject(handledError);
           }
         }
 
-        return Promise.reject(error);
+        // Handle other errors using centralized error handling
+        const handledError = handleApiError(
+          error,
+          `${originalRequest?.method?.toUpperCase()} ${originalRequest?.url}`
+        );
+
+        // Only report errors that aren't handled by specific API calls
+        if (!originalRequest._skipErrorReporting) {
+          await errorHandler.handleError(handledError, {
+            errorBoundary: "ApiClient",
+            componentStack: "Response interceptor",
+          });
+        }
+
+        return Promise.reject(handledError);
       }
     );
   }
@@ -378,11 +410,23 @@ export class ApiClient {
     }
 
     try {
-      const response = await this.client.get(url, config);
+      // Create timeout controller
+      const { controller, cleanup } = createTimeoutController(10000);
+      const requestConfig = {
+        ...config,
+        signal: controller.signal,
+      };
+
+      const response = await this.client.get(url, requestConfig);
+      cleanup();
       return response.data;
     } catch (error) {
-      console.error("API GET request failed:", error);
-      throw error;
+      const handledError = handleApiError(error as AxiosError, `GET ${url}`);
+      await errorHandler.handleError(handledError, {
+        errorBoundary: "ApiClient",
+        componentStack: `GET ${url}`,
+      });
+      throw handledError;
     }
   }
 
@@ -409,11 +453,23 @@ export class ApiClient {
     }
 
     try {
-      const response = await this.client.post(url, data, config);
+      // Create timeout controller
+      const { controller, cleanup } = createTimeoutController(15000); // Longer timeout for POST requests
+      const requestConfig = {
+        ...config,
+        signal: controller.signal,
+      };
+
+      const response = await this.client.post(url, data, requestConfig);
+      cleanup();
       return response.data;
     } catch (error) {
-      console.error("API POST request failed:", error);
-      throw error;
+      const handledError = handleApiError(error as AxiosError, `POST ${url}`);
+      await errorHandler.handleError(handledError, {
+        errorBoundary: "ApiClient",
+        componentStack: `POST ${url}`,
+      });
+      throw handledError;
     }
   }
 
@@ -422,16 +478,50 @@ export class ApiClient {
     data?: any,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    const response = await this.client.put(url, data, config);
-    return response.data;
+    try {
+      // Create timeout controller
+      const { controller, cleanup } = createTimeoutController(15000);
+      const requestConfig = {
+        ...config,
+        signal: controller.signal,
+      };
+
+      const response = await this.client.put(url, data, requestConfig);
+      cleanup();
+      return response.data;
+    } catch (error) {
+      const handledError = handleApiError(error as AxiosError, `PUT ${url}`);
+      await errorHandler.handleError(handledError, {
+        errorBoundary: "ApiClient",
+        componentStack: `PUT ${url}`,
+      });
+      throw handledError;
+    }
   }
 
   async delete<T>(
     url: string,
     config?: AxiosRequestConfig
   ): Promise<ApiResponse<T>> {
-    const response = await this.client.delete(url, config);
-    return response.data;
+    try {
+      // Create timeout controller
+      const { controller, cleanup } = createTimeoutController(10000);
+      const requestConfig = {
+        ...config,
+        signal: controller.signal,
+      };
+
+      const response = await this.client.delete(url, requestConfig);
+      cleanup();
+      return response.data;
+    } catch (error) {
+      const handledError = handleApiError(error as AxiosError, `DELETE ${url}`);
+      await errorHandler.handleError(handledError, {
+        errorBoundary: "ApiClient",
+        componentStack: `DELETE ${url}`,
+      });
+      throw handledError;
+    }
   }
 
   async getPaginated<T>(
@@ -439,11 +529,29 @@ export class ApiClient {
     params?: Record<string, any>,
     config?: AxiosRequestConfig
   ): Promise<PaginatedResponse<T>> {
-    const response = await this.client.get(url, {
-      ...config,
-      params: { ...config?.params, ...params },
-    });
-    return response.data;
+    try {
+      // Create timeout controller
+      const { controller, cleanup } = createTimeoutController(10000);
+      const requestConfig = {
+        ...config,
+        signal: controller.signal,
+        params: { ...config?.params, ...params },
+      };
+
+      const response = await this.client.get(url, requestConfig);
+      cleanup();
+      return response.data;
+    } catch (error) {
+      const handledError = handleApiError(
+        error as AxiosError,
+        `GET ${url} (paginated)`
+      );
+      await errorHandler.handleError(handledError, {
+        errorBoundary: "ApiClient",
+        componentStack: `GET ${url} (paginated)`,
+      });
+      throw handledError;
+    }
   }
 }
 

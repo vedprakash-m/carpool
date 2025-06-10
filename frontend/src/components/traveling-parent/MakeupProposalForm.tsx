@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
-import type { MakeupProposal } from '@/hooks/useTravelingParentData';
+import { useState } from "react";
+import { Plus, X } from "lucide-react";
+import type { MakeupProposal } from "@/hooks/useTravelingParentData";
 
 interface MakeupProposalFormProps {
-  onSubmit: (proposal: MakeupProposal) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    proposal: MakeupProposal
+  ) => Promise<{ success: boolean; error?: string }>;
   availableDates: Array<{
     date: string;
     dayOfWeek: string;
@@ -12,7 +14,10 @@ interface MakeupProposalFormProps {
   }>;
 }
 
-export function MakeupProposalForm({ onSubmit, availableDates }: MakeupProposalFormProps) {
+export function MakeupProposalForm({
+  onSubmit,
+  availableDates,
+}: MakeupProposalFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +36,7 @@ export function MakeupProposalForm({ onSubmit, availableDates }: MakeupProposalF
 
     try {
       const result = await onSubmit(proposal);
-      
+
       if (result.success) {
         // Reset form and close
         setProposal({
@@ -53,9 +58,7 @@ export function MakeupProposalForm({ onSubmit, availableDates }: MakeupProposalF
   };
 
   const getAvailableDatesForSelect = () => {
-    return availableDates
-      .filter(date => date.available)
-      .slice(0, 30); // Limit to next 30 available dates
+    return availableDates.filter((date) => date.available).slice(0, 30); // Limit to next 30 available dates
   };
 
   if (!isOpen) {
@@ -106,24 +109,29 @@ export function MakeupProposalForm({ onSubmit, availableDates }: MakeupProposalF
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="proposedDate" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="proposedDate"
+              className="block text-sm font-medium text-gray-700"
+            >
               Proposed Date
             </label>
             <select
               id="proposedDate"
               value={proposal.proposedDate}
-              onChange={(e) => setProposal({ ...proposal, proposedDate: e.target.value })}
+              onChange={(e) =>
+                setProposal({ ...proposal, proposedDate: e.target.value })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
               <option value="">Select a date...</option>
               {getAvailableDatesForSelect().map((date) => (
                 <option key={date.date} value={date.date}>
-                  {new Date(date.date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
+                  {new Date(date.date).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
                   })}
                 </option>
               ))}
@@ -131,13 +139,18 @@ export function MakeupProposalForm({ onSubmit, availableDates }: MakeupProposalF
           </div>
 
           <div>
-            <label htmlFor="proposedTime" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="proposedTime"
+              className="block text-sm font-medium text-gray-700"
+            >
               Proposed Time
             </label>
             <select
               id="proposedTime"
               value={proposal.proposedTime}
-              onChange={(e) => setProposal({ ...proposal, proposedTime: e.target.value })}
+              onChange={(e) =>
+                setProposal({ ...proposal, proposedTime: e.target.value })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
@@ -151,13 +164,18 @@ export function MakeupProposalForm({ onSubmit, availableDates }: MakeupProposalF
           </div>
 
           <div>
-            <label htmlFor="makeupType" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="makeupType"
+              className="block text-sm font-medium text-gray-700"
+            >
               Makeup Type
             </label>
             <select
               id="makeupType"
               value={proposal.makeupType}
-              onChange={(e) => setProposal({ ...proposal, makeupType: e.target.value as any })}
+              onChange={(e) =>
+                setProposal({ ...proposal, makeupType: e.target.value as any })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
@@ -168,31 +186,46 @@ export function MakeupProposalForm({ onSubmit, availableDates }: MakeupProposalF
           </div>
 
           <div>
-            <label htmlFor="tripsToMakeup" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="tripsToMakeup"
+              className="block text-sm font-medium text-gray-700"
+            >
               Number of Trips to Makeup
             </label>
             <select
               id="tripsToMakeup"
               value={proposal.tripsToMakeup}
-              onChange={(e) => setProposal({ ...proposal, tripsToMakeup: parseInt(e.target.value) })}
+              onChange={(e) =>
+                setProposal({
+                  ...proposal,
+                  tripsToMakeup: parseInt(e.target.value),
+                })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
-              {[1, 2, 3, 4, 5].map(num => (
-                <option key={num} value={num}>{num}</option>
+              {[1, 2, 3, 4, 5].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="notes"
+              className="block text-sm font-medium text-gray-700"
+            >
               Notes (optional)
             </label>
             <textarea
               id="notes"
               rows={3}
               value={proposal.notes}
-              onChange={(e) => setProposal({ ...proposal, notes: e.target.value })}
+              onChange={(e) =>
+                setProposal({ ...proposal, notes: e.target.value })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               placeholder="Any additional information..."
             />

@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
 import { useAuthStore } from "@/store/auth.store";
 import { useTripStore } from "@/store/trip.store";
+import {
+  useRenderPerformance,
+  useThrottle,
+} from "@/hooks/usePerformanceOptimization";
 import {
   CalendarIcon,
   TruckIcon,
@@ -18,10 +22,27 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
-export default function DashboardPage() {
+export default memo(function DashboardPage() {
+  useRenderPerformance("DashboardPage");
+
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const { stats, loading, fetchTripStats } = useTripStore();
+
+  // Throttled navigation functions to prevent rapid clicks
+  const handleScheduleSchoolRun = useThrottle(
+    useCallback(() => {
+      router.push("/trips/create?type=school");
+    }, [router]),
+    1000
+  );
+
+  const handleFindSchoolCarpool = useThrottle(
+    useCallback(() => {
+      router.push("/trips?filter=school");
+    }, [router]),
+    1000
+  );
 
   useEffect(() => {
     if (
@@ -42,21 +63,19 @@ export default function DashboardPage() {
     return null;
   }
 
-  const handleScheduleSchoolRun = () => {
-    router.push("/trips/create?type=school");
-  };
+  const handleWeeklyPreferences = useThrottle(
+    useCallback(() => {
+      router.push("/parents/preferences");
+    }, [router]),
+    1000
+  );
 
-  const handleFindSchoolCarpool = () => {
-    router.push("/trips?filter=school");
-  };
-
-  const handleWeeklyPreferences = () => {
-    router.push("/parents/preferences");
-  };
-
-  const handleManageChildren = () => {
-    router.push("/family/children");
-  };
+  const handleManageChildren = useThrottle(
+    useCallback(() => {
+      router.push("/family/children");
+    }, [router]),
+    1000
+  );
 
   return (
     <DashboardLayout>
@@ -369,4 +388,4 @@ export default function DashboardPage() {
       </div>
     </DashboardLayout>
   );
-}
+});

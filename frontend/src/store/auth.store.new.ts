@@ -8,7 +8,12 @@ import {
   UpdateUserRequest,
 } from "../types/shared";
 import { apiClient } from "../lib/api-client";
-import { setTokens, getTokens, hasValidTokens, clearTokens } from "../lib/secure-storage";
+import {
+  setTokens,
+  getTokens,
+  hasValidTokens,
+  clearTokens,
+} from "../lib/secure-storage";
 
 interface AuthState {
   user: User | null;
@@ -224,10 +229,10 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ loading: true, error: null });
 
-      const response = await apiClient.put<boolean>(
-        "/v1/users/me/password",
-        { currentPassword, newPassword }
-      );
+      const response = await apiClient.put<boolean>("/v1/users/me/password", {
+        currentPassword,
+        newPassword,
+      });
 
       if (response.success && response.data) {
         set({
@@ -257,10 +262,10 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     const tokens = getTokens();
     if (tokens && hasValidTokens()) {
       apiClient.setToken(tokens.token, tokens.refreshToken);
-      set({ 
+      set({
         token: tokens.token,
         refreshToken: tokens.refreshToken,
-        isAuthenticated: true 
+        isAuthenticated: true,
       });
     }
   },

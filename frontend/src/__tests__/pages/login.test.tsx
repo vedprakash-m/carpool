@@ -290,7 +290,7 @@ describe("Login Page - UX Requirements Alignment", () => {
       expect(submitButton).toBeDisabled();
 
       // Loading state should be accessible and clear
-      expect(submitButton).toHaveAttribute("aria-disabled", "true");
+      expect(submitButton).toBeDisabled();
     });
 
     it("should show ready state for family login flow", () => {

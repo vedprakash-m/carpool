@@ -44,7 +44,10 @@ export function StatisticsGrid({ statistics }: StatisticsGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat) => (
-        <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg">
+        <div
+          key={stat.name}
+          className="bg-white overflow-hidden shadow rounded-lg"
+        >
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center">
               <div className={`flex-shrink-0 p-3 rounded-md ${stat.bgColor}`}>

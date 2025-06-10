@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useCallback, useMemo } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import {
   ChevronLeftIcon,
@@ -60,7 +60,7 @@ const STATUS_COLORS = {
   cancelled: "bg-red-100 text-red-800",
 };
 
-export default function CalendarView({
+export default memo(function CalendarView({
   className = "",
   showCreateButton = false,
   onDateClick,
@@ -70,16 +70,16 @@ export default function CalendarView({
   const [assignments, setAssignments] = useState<CalendarAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get start of week (Monday)
-  const getWeekStart = (date: Date) => {
+  // Memoized helper functions for performance
+  const getWeekStart = useCallback((date: Date) => {
     const d = new Date(date);
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
     return new Date(d.setDate(diff));
-  };
+  }, []);
 
-  // Get week dates
-  const getWeekDates = () => {
+  // Memoized week dates calculation
+  const weekDates = useMemo(() => {
     const start = getWeekStart(currentWeek);
     const dates = [];
     for (let i = 0; i < 7; i++) {
@@ -88,17 +88,25 @@ export default function CalendarView({
       dates.push(date);
     }
     return dates;
-  };
+  }, [currentWeek, getWeekStart]);
 
-  // Load assignments for current week
-  useEffect(() => {
-    loadAssignments();
-  }, [currentWeek, user]);
+  // Memoized assignment filtering
+  const filteredAssignmentsByDate = useMemo(() => {
+    const result: Record<string, CalendarAssignment[]> = {};
+    weekDates.forEach((date) => {
+      const dateString = date.toISOString().split("T")[0];
+      const dayAssignments = assignments.filter(
+        (assignment) => assignment.date === dateString
+      );
+      result[dateString] = filterAssignmentsByRole(dayAssignments);
+    });
+    return result;
+  }, [assignments, weekDates, user]);
 
-  const loadAssignments = async () => {
+  // Optimized load assignments function
+  const loadAssignments = useCallback(async () => {
     try {
       setIsLoading(true);
-
       // For now, use mock data since assignments API isn't fully integrated
       const mockAssignments = getMockAssignments();
       setAssignments(mockAssignments);
@@ -107,71 +115,80 @@ export default function CalendarView({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const navigateWeek = (direction: "prev" | "next") => {
-    const newWeek = new Date(currentWeek);
-    newWeek.setDate(currentWeek.getDate() + (direction === "next" ? 7 : -7));
-    setCurrentWeek(newWeek);
-  };
+  // Optimized navigation function
+  const navigateWeek = useCallback(
+    (direction: "prev" | "next") => {
+      const newWeek = new Date(currentWeek);
+      newWeek.setDate(currentWeek.getDate() + (direction === "next" ? 7 : -7));
+      setCurrentWeek(newWeek);
+    },
+    [currentWeek]
+  );
 
-  const isToday = (date: Date) => {
+  // Optimized date check function
+  const isToday = useCallback((date: Date) => {
     const today = new Date();
     return date.toDateString() === today.toDateString();
-  };
+  }, []);
 
-  const formatWeekRange = () => {
+  // Optimized week range formatting
+  const weekRangeText = useMemo(() => {
     const start = getWeekStart(currentWeek);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
-
-    const options: Intl.DateTimeFormatOptions = {
-      month: "short",
-      day: "numeric",
-    };
 
     if (start.getMonth() === end.getMonth()) {
       return `${start.toLocaleDateString("en-US", {
         month: "long",
       })} ${start.getDate()} - ${end.getDate()}, ${start.getFullYear()}`;
     } else {
+      const options: Intl.DateTimeFormatOptions = {
+        month: "short",
+        day: "numeric",
+      };
       return `${start.toLocaleDateString(
         "en-US",
         options
       )} - ${end.toLocaleDateString("en-US", options)}, ${start.getFullYear()}`;
     }
-  };
+  }, [currentWeek, getWeekStart]);
 
-  const getAssignmentsForDate = (date: Date) => {
-    const dateString = date.toISOString().split("T")[0];
-    return assignments.filter((assignment) => assignment.date === dateString);
-  };
+  // Optimized role-based assignment filtering
+  const filterAssignmentsByRole = useCallback(
+    (assignments: CalendarAssignment[]) => {
+      if (!user) return assignments;
 
-  const filterAssignmentsByRole = (assignments: CalendarAssignment[]) => {
-    if (!user) return assignments;
-
-    switch (user.role) {
-      case "admin":
-        return assignments; // Admin sees all assignments
-      case "parent":
-        return assignments.filter(
-          (assignment) =>
-            assignment.driverName === `${user.firstName} ${user.lastName}` ||
+      switch (user.role) {
+        case "admin":
+          return assignments; // Admin sees all assignments
+        case "parent":
+          return assignments.filter(
+            (assignment) =>
+              assignment.driverName === `${user.firstName} ${user.lastName}` ||
+              assignment.passengers?.includes(
+                `${user.firstName} ${user.lastName}`
+              ) ||
+              assignment.passengers?.some((p) => p.includes("Child")) // Simplistic parent-child matching
+          );
+        case "student":
+          return assignments.filter((assignment) =>
             assignment.passengers?.includes(
               `${user.firstName} ${user.lastName}`
-            ) ||
-            assignment.passengers?.some((p) => p.includes("Child")) // Simplistic parent-child matching
-        );
-      case "student":
-        return assignments.filter((assignment) =>
-          assignment.passengers?.includes(`${user.firstName} ${user.lastName}`)
-        );
-      default:
-        return [];
-    }
-  };
+            )
+          );
+        default:
+          return [];
+      }
+    },
+    [user]
+  );
 
-  const weekDates = getWeekDates();
+  // Load assignments for current week
+  useEffect(() => {
+    loadAssignments();
+  }, [loadAssignments, currentWeek, user]);
 
   return (
     <div className={`bg-white shadow rounded-lg ${className}`}>
@@ -182,7 +199,7 @@ export default function CalendarView({
             <h2 className="text-lg font-medium text-gray-900">
               📅 Weekly Schedule
             </h2>
-            <p className="text-sm text-gray-600 mt-1">{formatWeekRange()}</p>
+            <p className="text-sm text-gray-600 mt-1">{weekRangeText}</p>
           </div>
 
           <div className="flex items-center space-x-3">
@@ -392,7 +409,7 @@ export default function CalendarView({
       </div>
     </div>
   );
-}
+});
 
 // Mock data for demonstration
 function getMockAssignments(): CalendarAssignment[] {

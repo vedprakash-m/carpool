@@ -8,9 +8,7 @@ export function LoadingState() {
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
           Loading Dashboard
         </h2>
-        <p className="text-gray-600">
-          Please wait while we load your data...
-        </p>
+        <p className="text-gray-600">Please wait while we load your data...</p>
       </div>
     </div>
   );
