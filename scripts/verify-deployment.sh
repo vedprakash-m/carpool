@@ -8,7 +8,7 @@ API_BASE="https://vcarpool-api-prod.azurewebsites.net/api"
 
 # Test credentials
 TEST_EMAIL="admin@vcarpool.com"
-TEST_PASSWORD="Admin123!"
+TEST_PASSWORD="${TEST_PASSWORD:-test-admin-password}"
 
 echo ""
 echo "📡 Testing Required Endpoints..."

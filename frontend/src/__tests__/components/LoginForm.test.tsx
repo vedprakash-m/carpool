@@ -9,6 +9,9 @@ import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import LoginPage from "../../app/login/page";
 
+// Test constants
+const TEST_ADMIN_PASSWORD = "test-admin-pass";
+
 // Mock dependencies for login page
 const mockLogin = jest.fn();
 const mockPush = jest.fn();
@@ -129,13 +132,13 @@ describe("Login Form Component", () => {
       const submitButton = screen.getByRole("button", { name: /sign in/i });
 
       await user.type(emailInput, "admin@vcarpool.com");
-      await user.type(passwordInput, "Admin123!");
+      await user.type(passwordInput, TEST_ADMIN_PASSWORD);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
           email: "admin@vcarpool.com",
-          password: "Admin123!",
+          password: TEST_ADMIN_PASSWORD,
         });
       });
     });
@@ -153,13 +156,13 @@ describe("Login Form Component", () => {
       const submitButton = screen.getByRole("button", { name: /sign in/i });
 
       await user.type(emailInput, "admin@vcarpool.com");
-      await user.type(passwordInput, "Admin123!");
+      await user.type(passwordInput, TEST_ADMIN_PASSWORD);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
           email: "admin@vcarpool.com",
-          password: "Admin123!",
+          password: TEST_ADMIN_PASSWORD,
         });
       });
     });
@@ -239,7 +242,7 @@ describe("Login Form Component", () => {
       const passwordInput = screen.getByPlaceholderText("Password");
 
       await user.type(emailInput, "admin@vcarpool.com");
-      await user.type(passwordInput, "Admin123!");
+      await user.type(passwordInput, TEST_ADMIN_PASSWORD);
       await user.keyboard("{Enter}");
 
       await waitFor(() => {

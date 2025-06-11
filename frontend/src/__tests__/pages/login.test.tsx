@@ -15,6 +15,14 @@ import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import LoginPage from "../../app/login/page";
 
+// Test constants
+const TEST_PASSWORDS = {
+  ADMIN: "test-admin-pass",
+  USER: "test-user-pass",
+  FAMILY: "test-family-pass",
+  SECURE: "test-secure-pass",
+};
+
 // Mock the auth store
 const mockLogin = jest.fn();
 const mockAuthStore = {
@@ -133,13 +141,13 @@ describe("Login Page - UX Requirements Alignment", () => {
       const submitButton = screen.getByRole("button", { name: /sign in/i });
 
       await user.type(emailInput, "newparent@school.edu");
-      await user.type(passwordInput, "Password123!");
+      await user.type(passwordInput, TEST_PASSWORDS.USER);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
           email: "newparent@school.edu",
-          password: "Password123!",
+          password: TEST_PASSWORDS.USER,
         });
       });
     });
@@ -167,13 +175,13 @@ describe("Login Page - UX Requirements Alignment", () => {
       const submitButton = screen.getByRole("button", { name: /sign in/i });
 
       await user.type(emailInput, "parent@school.edu");
-      await user.type(passwordInput, "SecurePass456!");
+      await user.type(passwordInput, TEST_PASSWORDS.SECURE);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
           email: "parent@school.edu",
-          password: "SecurePass456!",
+          password: TEST_PASSWORDS.SECURE,
         });
       });
     });
@@ -201,13 +209,13 @@ describe("Login Page - UX Requirements Alignment", () => {
       const submitButton = screen.getByRole("button", { name: /sign in/i });
 
       await user.type(emailInput, "parent@family.edu");
-      await user.type(passwordInput, "FamilyPass123!");
+      await user.type(passwordInput, TEST_PASSWORDS.FAMILY);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
           email: "parent@family.edu",
-          password: "FamilyPass123!",
+          password: TEST_PASSWORDS.FAMILY,
         });
       });
     });
@@ -233,13 +241,13 @@ describe("Login Page - UX Requirements Alignment", () => {
       const submitButton = screen.getByRole("button", { name: /sign in/i });
 
       await user.type(emailInput, "admin@school.edu");
-      await user.type(passwordInput, "AdminSecure123!");
+      await user.type(passwordInput, TEST_PASSWORDS.ADMIN);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
           email: "admin@school.edu",
-          password: "AdminSecure123!",
+          password: TEST_PASSWORDS.ADMIN,
         });
       });
     });

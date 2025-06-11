@@ -63,7 +63,7 @@ async function simpleLoginHandler(
     }
 
     // For now, let's just test with our known admin user
-    if (email === "admin@vcarpool.com" && password === "Admin123!") {
+    if (email === "admin@vcarpool.com" && password === (process.env.ADMIN_PASSWORD || "test-admin-password")) {
       console.log("Returning success for admin user");
       return {
         status: 200,

@@ -34,7 +34,7 @@ module.exports = async function (context, req) {
       // Simple authentication check - allow multiple admin accounts
       if (
         (email === "admin@example.com" || email === "test-user@example.com") &&
-        password === "Admin123!"
+        password === (process.env.ADMIN_PASSWORD || "test-admin-password")
       ) {
         context.res = {
           status: 200,
@@ -82,9 +82,12 @@ module.exports = async function (context, req) {
         };
       } else {
         context.log("Authentication failed for:", email);
-        context.log("Expected: admin@example.com / Admin123!");
+        context.log("Expected: admin@example.com / [ADMIN_PASSWORD]");
         context.log(
-          "Received: " + email + " / " + (password ? password : "NO_PASSWORD")
+          "Received: " +
+            email +
+            " / " +
+            (password ? "[PASSWORD_PROVIDED]" : "NO_PASSWORD")
         );
 
         context.res = {

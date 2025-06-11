@@ -176,7 +176,8 @@ module.exports = async function (context, req) {
     const { email, password } = req.body || {};
 
     if (
-      (email === "admin@example.com" && password === "Admin123!") ||
+      (email === "admin@example.com" &&
+        password === (process.env.ADMIN_PASSWORD || "test-admin-password")) ||
       (email === "test-user@example.com" && password)
     ) {
       context.log("Fallback to mock authentication for:", email);

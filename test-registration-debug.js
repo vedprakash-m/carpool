@@ -8,7 +8,7 @@ async function testRegistration() {
       name: "Valid Registration",
       data: {
         email: `test-${Date.now()}@example.com`,
-        password: "Test123!",
+        password: process.env.TEST_PASSWORD || "test-password-placeholder",
         firstName: "Test",
         lastName: "User",
         phoneNumber: "+1234567890",
@@ -18,7 +18,7 @@ async function testRegistration() {
       name: "Minimal Required Fields",
       data: {
         email: `minimal-${Date.now()}@example.com`,
-        password: "Test123!",
+        password: process.env.TEST_PASSWORD || "test-password-placeholder",
         firstName: "Min",
         lastName: "User",
       },

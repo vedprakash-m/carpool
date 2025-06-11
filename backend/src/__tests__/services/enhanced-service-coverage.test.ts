@@ -651,7 +651,7 @@ describe("Family-Oriented User Service Coverage", () => {
     it("should create family user with complete onboarding context", async () => {
       const familyCreationData = {
         email: "newfamily@vcarpool.com",
-        password: "SecurePassword123!",
+        password: "test-secure-password",
         firstName: "Jennifer",
         lastName: "Davis",
         role: "parent" as const,

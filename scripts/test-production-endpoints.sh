@@ -8,7 +8,7 @@ set -e
 # Configuration
 API_BASE_URL="https://vcarpool-api-prod.azurewebsites.net/api/v1"
 ADMIN_EMAIL="admin@vcarpool.com"
-ADMIN_PASSWORD="Admin123!"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-test-admin-password}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -211,7 +211,7 @@ test_admin_user_creation() {
     
     # Generate unique test user email
     local test_email="testuser-$(date +%s)@example.com"
-    local user_data="{\"email\":\"$test_email\",\"password\":\"TestPass123!\",\"fullName\":\"Test User\",\"role\":\"parent\"}"
+    local user_data="{\"email\":\"$test_email\",\"password\":\"${TEST_PASSWORD:-test-password-placeholder}\",\"fullName\":\"Test User\",\"role\":\"parent\"}"
     
     local response=$(api_request "POST" "/admin/users" "$user_data" "$AUTH_TOKEN")
     local status_code=$(get_status_code "$response")

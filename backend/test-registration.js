@@ -11,7 +11,7 @@ const axios = require("axios");
 const API_BASE_URL = "https://vcarpool-api-prod.azurewebsites.net/api";
 const TEST_USER = {
   email: `test-${Date.now()}@example.com`,
-  password: "TestPassword123!",
+  password: process.env.TEST_PASSWORD || "test-password-placeholder",
   firstName: "Test",
   lastName: "User",
   phoneNumber: "+1234567890",
@@ -171,7 +171,7 @@ async function testRegistration() {
 
     const incompleteUser = {
       email: `test-incomplete-${Date.now()}@example.com`,
-      password: "TestPassword123!",
+      password: process.env.TEST_PASSWORD || "test-password-placeholder",
       // Missing firstName and lastName
     };
 

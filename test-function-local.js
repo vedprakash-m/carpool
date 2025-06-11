@@ -12,7 +12,7 @@ const mockRequest = {
   method: "POST",
   body: {
     email: "test@example.com",
-    password: "Test123!",
+    password: process.env.TEST_PASSWORD || "test-password-placeholder",
     firstName: "Test",
     lastName: "User",
     phoneNumber: "+1234567890",

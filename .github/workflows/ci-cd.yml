@@ -444,7 +444,7 @@ jobs:
             echo "4. Testing auth login endpoint..."
             AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 -X POST "$API_BASE/auth/login" \
               -H "Content-Type: application/json" \
-              -d '{"email":"admin@vcarpool.com","password":"Admin123!"}')
+              -d '{"email":"admin@vcarpool.com","password":"${{ secrets.TEST_ADMIN_PASSWORD }}"}')
             if [ "$AUTH_STATUS" = "200" ]; then
               echo "   ✅ Auth login working ($AUTH_STATUS)"
             else
