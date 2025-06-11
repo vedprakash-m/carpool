@@ -17,7 +17,7 @@ import {
   Plus,
   X,
   MapPinIcon,
-  AcademicCapIcon,
+  GraduationCap,
 } from "lucide-react";
 
 interface SmartChild {
@@ -656,7 +656,7 @@ export default function SmartRegistrationForm() {
                   {child.grade && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <div className="flex items-center space-x-2">
-                        <AcademicCapIcon className="h-5 w-5 text-green-600" />
+                        <GraduationCap className="h-5 w-5 text-green-600" />
                         <span className="text-green-800 text-sm">
                           <strong>Inferred Grade:</strong>{" "}
                           {child.grade === "K"

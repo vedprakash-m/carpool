@@ -27,8 +27,8 @@ describe("Universal School Support System", () => {
       DEFAULT_SCHOOLS.forEach((school) => {
         expect(school.id).toBeTruthy();
         expect(school.name).toBeTruthy();
-        expect(school.location.latitude).toBeTypeOf("number");
-        expect(school.location.longitude).toBeTypeOf("number");
+        expect(typeof school.location.latitude).toBe("number");
+        expect(typeof school.location.longitude).toBe("number");
         expect(school.serviceRadius).toBeGreaterThan(0);
         expect(school.grades.length).toBeGreaterThan(0);
         expect(school.isActive).toBe(true);
