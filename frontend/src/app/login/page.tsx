@@ -6,9 +6,17 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { loginSchema, LoginRequest } from "../../types/shared";
+import { z } from "zod";
 import { useAuthStore } from "@/store/auth.store";
 import { TruckIcon as CarIcon } from "@heroicons/react/24/outline";
+
+// Define the login schema directly to avoid import issues
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginRequest = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();

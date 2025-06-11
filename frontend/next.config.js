@@ -18,6 +18,8 @@ const nextConfig = {
     unoptimized: true,
   },
 
+
+
   // Build-time optimizations
   eslint: {
     ignoreDuringBuilds: true,

@@ -107,7 +107,17 @@ class PWAService {
     }
 
     try {
-      const registration = await navigator.serviceWorker.register("/sw.js");
+      // Try to register service worker with fallback for static exports
+      let swPath = "/sw.js";
+      
+      // For production static export deployments, check if SW exists
+      const swResponse = await fetch(swPath, { method: 'HEAD' }).catch(() => null);
+      if (!swResponse || !swResponse.ok) {
+        console.warn("Service worker not found, PWA features disabled");
+        return null;
+      }
+
+      const registration = await navigator.serviceWorker.register(swPath);
       console.log("Service worker registered:", registration);
 
       // Listen for updates
