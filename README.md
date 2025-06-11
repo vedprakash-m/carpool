@@ -323,7 +323,7 @@ graph TB
 **Demo Admin Credentials**:
 
 - **Email**: `admin@vcarpool.com`
-- **Password**: `Admin123!`
+- **Password**: `[Use environment variable ADMIN_PASSWORD]`
 
 **Available Features**:
 

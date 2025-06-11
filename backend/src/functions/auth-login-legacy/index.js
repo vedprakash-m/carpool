@@ -33,7 +33,8 @@ module.exports = async function (context, req) {
 
     // Check for both test admin and original admin
     if (
-      (email === "admin@vcarpool.com" && password === (process.env.ADMIN_PASSWORD || "test-admin-password")) ||
+      (email === "admin@vcarpool.com" &&
+        password === (process.env.ADMIN_PASSWORD || "test-admin-password")) ||
       (email === "mi.vedprakash@gmail.com" && password)
     ) {
       context.log("Login successful for email:", email);

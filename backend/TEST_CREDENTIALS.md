@@ -8,7 +8,7 @@
 
 - **URL**: https://lively-stone-016bfa20f.6.azurestaticapps.net/
 - **Email**: `admin@vcarpool.com`
-- **Password**: `Admin123!` ⚠️ _(Original credentials still active)_
+- **Password**: `[Set via ADMIN_PASSWORD environment variable]` ⚠️ _(Use environment variables for security)_
 
 ### Alternative Test Account
 
@@ -21,7 +21,7 @@
 # Test authentication endpoint
 curl -X POST https://vcarpool-api-prod.azurewebsites.net/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@vcarpool.com","password":"Admin123!"}'
+  -d '{"email":"admin@vcarpool.com","password":"${ADMIN_PASSWORD}"}'
 
 # Test other endpoints
 curl https://vcarpool-api-prod.azurewebsites.net/api/health
