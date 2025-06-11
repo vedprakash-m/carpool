@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import toast from "react-hot-toast";
-import { RegisterRequest, registerSchema } from "../../types/shared";
+import { RegisterRequest } from "@/types/shared";
 import { useAuthStore } from "@/store/auth.store";
 import {
   SchoolSelect,
@@ -19,6 +20,35 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
+
+// Local schema definition to avoid import issues
+const registerSchema = z.object({
+  familyName: z.string().min(1, "Family name is required"),
+  parent: z.object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+  }),
+  secondParent: z
+    .object({
+      firstName: z.string().min(1, "First name is required"),
+      lastName: z.string().min(1, "Last name is required"),
+      email: z.string().email("Invalid email address"),
+      password: z.string().min(8, "Password must be at least 8 characters"),
+    })
+    .optional(),
+  children: z
+    .array(
+      z.object({
+        firstName: z.string().min(1, "First name is required"),
+        lastName: z.string().min(1, "Last name is required"),
+        grade: z.string().min(1, "Grade is required"),
+        school: z.string().min(1, "School is required"),
+      })
+    )
+    .min(1, "At least one child is required"),
+});
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -34,6 +64,7 @@ export default function RegisterPage() {
     watch,
   } = useForm<RegisterRequest>({
     resolver: zodResolver(registerSchema),
+    mode: "onChange",
     defaultValues: {
       children: [
         {
@@ -53,7 +84,7 @@ export default function RegisterPage() {
 
   // Ensure fields array is never empty
   const safeFields =
-    fields.length > 0
+    fields && fields.length > 0
       ? fields
       : [
           {
