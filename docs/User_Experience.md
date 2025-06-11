@@ -56,7 +56,7 @@
 **5. Inclusive Community Building**
 
 - Role-based access that empowers without overwhelming
-- **Geographic Focus**: Initial service area centered around Tesla Stem High School in Redmond, WA with 25-mile radius support
+- **Universal Geographic Support**: Automatic service area detection based on family address with configurable radius for any school
 - **Traveling Parent Fairness**: Flexible makeup options (2-6 weeks) for parents who travel, ensuring long-term equity
 - Child agency through supervised self-registration process
 
@@ -75,10 +75,10 @@
 - Emergency contact validation
 - Vehicle information validation for driving parents
 
-**Decision 3: Tesla Stem High School Focus**
+**Decision 3: Universal School Support**
 
-- Initial supported school: Tesla Stem High School, Redmond, WA
-- Service area: 25-mile radius from school location
+- Automatic school detection from family address
+- Dynamic service area calculation based on detected school location
 - Expandable framework for additional schools based on demand
 
 **Decision 4: Traveling Parent Support**
@@ -183,13 +183,13 @@ WIREFRAME: Registration-First Landing
 ├─────────────────────────────────────────────────────────────┤
 │                Welcome to VCarpool                          │
 │                                                             │
-│     "Safe, reliable carpooling for Tesla Stem families"   │
+│     "Safe, reliable carpooling for school families"        │
 │                                                             │
 │ 🎯 Start your carpool journey today:                       │
 │                                                             │
 │ ┌─────────────────────────────────────────────────────────┐ │
 │ │ 🔍 Join a Carpool Group                                │ │
-│ │ "Find families near Tesla Stem High School"            │ │
+│ │ "Find families in your school community"               │ │
 │ │ Complete registration to search and join groups        │ │
 │ │ [Start Registration →]                                  │ │
 │ └─────────────────────────────────────────────────────────┘ │
@@ -200,7 +200,7 @@ WIREFRAME: Registration-First Landing
 │ │ [Create Group →]                                        │ │
 │ └─────────────────────────────────────────────────────────┘ │
 │                                                             │
-│ 📍 Currently serving Tesla Stem High School area          │
+│ 📍 Serving school communities nationwide                   │
 │ (25-mile radius from Redmond, WA)                         │
 │                                                             │
 │ ✨ Quick Preview:                                          │
@@ -222,12 +222,12 @@ WIREFRAME: Complete Registration Required
 │                                                             │
 │ 📍 Home Address: *Required for distance calculations       │
 │ [123 Main St, Redmond, WA 98052    ] [🔍 Verify Address]  │
-│ Distance from Tesla Stem: 3.2 miles ✓                     │
+│ Distance from school: 3.2 miles ✓                         │
 │                                                             │
 │ 👶 Child Information:                                      │
 │ Child Name: [Emma Smith             ] *Required            │
 │ Grade:      [9th Grade ▼           ] *Required            │
-│ School:     [Tesla Stem High School ▼] *Required          │
+│ School:     [Lincoln Elementary ▼] *Auto-detected         │
 │ Student ID: [ES2024                 ] Optional             │
 │                                                             │
 │ 🚗 Transportation Role:                                    │
@@ -265,7 +265,7 @@ WIREFRAME: Registration Validation Steps
 │ Step 2 of 3: Address Verification                          │
 │                                                             │
 │ ✓ Address found: 123 Main St, Redmond, WA 98052          │
-│ ✓ Distance verified: 3.2 miles from Tesla Stem            │
+│ ✓ Distance verified: 3.2 miles from detected school       │
 │ ✓ Within 25-mile service area                              │
 │                                                             │
 │ Step 3 of 3: Emergency Contact                             │

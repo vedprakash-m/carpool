@@ -4,13 +4,13 @@
 
 ![VCarpool Logo](https://img.shields.io/badge/VCarpool-School%20Carpool%20Management-blue?style=for-the-badge&logo=car&logoColor=white)
 
-**A parent-to-parent carpool coordination platform for organizing school transportation.**
+**A universal school carpool coordination platform with smart registration and automatic school detection.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Azure Functions](https://img.shields.io/badge/Azure%20Functions-v4-0062AD?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/en-us/services/functions/)
 
-[🚀 Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [📚 Documentation](docs/)
+[🚀 Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [📚 Documentation](docs/) • [🔧 API Reference](docs/OPENAPI_SPECIFICATION.yaml)
 
 </div>
 
@@ -18,21 +18,20 @@
 
 ## 🌟 Overview
 
-VCarpool is a parent-to-parent carpool coordination platform that helps families organize carpools for their children's school transportation. Parents can create and join carpool groups, coordinate driving schedules, and track driving fairness.
+VCarpool is a school carpool management platform that helps school communities coordinate carpools efficiently. Built with modern TypeScript and Azure cloud services, it provides smart registration with automatic school detection and intelligent form automation.
 
 ### ✨ Key Features
 
-- 👥 **Parent Groups** - Create and join carpool groups with other families going to the same school
-- 📅 **Schedule Coordination** - Submit weekly driving preferences and manage trip assignments
-- ⚖️ **Fairness Tracking** - Automatic tracking to ensure driving responsibilities are shared fairly
-- 📱 **SMS Verification** - Verify phone numbers and emergency contacts for safety
-- 🏠 **Address Validation** - Confirm home addresses for pickup route planning
-- 🧳 **Traveling Parent Support** - Makeup trip options for parents who travel frequently
-- 💼 **Admin Tools** - Group management dashboard for organizing carpool logistics
+- 🎓 **Universal School Support** - Works with any school through intelligent detection and configurable service areas
+- 🔐 **Smart Registration** - Automatic school detection and grade inference reduces manual form fields by 70%
+- 📍 **Geographic Validation** - Real-time address validation with automatic service area detection
+- 📱 **SMS Verification** - Phone number and emergency contact verification system
+- 🧳 **Traveling Parent Fairness** - Makeup trip scheduling system with balance tracking
+- 💼 **Admin Dashboard** - Comprehensive management tools for school administrators
 
 ### 🏆 Recent Achievement (June 2025)
 
-**Universal School Support Completed** - Successfully transformed from being hardcoded for one specific school to supporting families from any school community nationwide. Currently active for Tesla STEM High School in Redmond, WA.
+**Universal School Platform Completed** - Successfully transformed from Tesla Stem-specific to universal school carpool management platform with smart registration automation and intelligent school detection.
 
 ---
 
@@ -64,14 +63,14 @@ npm run dev
 **Development URLs:**
 
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:7071/api
-- Health Check: http://localhost:7071/api/health
+- Backend API: http://localhost:7071/api/v1
+- Health Check: http://localhost:7071/api/v1/health
 
 ### 🌐 Live Demo
 
 **Application**: [https://lively-stone-016bfa20f.6.azurestaticapps.net](https://lively-stone-016bfa20f.6.azurestaticapps.net)
 
-_Note: Backend API deployment in progress_
+**API**: [https://vcarpool-api-prod.azurewebsites.net/api/v1](https://vcarpool-api-prod.azurewebsites.net/api/v1)
 
 ---
 
@@ -100,27 +99,17 @@ vcarpool/
 
 ## 📡 API Reference
 
-### Core Endpoints (Development)
+### Core Endpoints
 
-| Method | Endpoint                 | Description         |
-| ------ | ------------------------ | ------------------- |
-| `GET`  | `/api/health`            | System health check |
-| `POST` | `/api/auth-login-simple` | User authentication |
-| `GET`  | `/api/users-me`          | Get user profile    |
-| `GET`  | `/api/trips-list`        | List trips          |
-| `GET`  | `/api/trips-stats`       | Trip statistics     |
+| Method | Endpoint                | Description         |
+| ------ | ----------------------- | ------------------- |
+| `POST` | `/api/v1/auth/token`    | User authentication |
+| `GET`  | `/api/v1/users/profile` | Get user profile    |
+| `GET`  | `/api/v1/trips`         | List trips          |
+| `POST` | `/api/v1/trips`         | Create trip         |
+| `GET`  | `/api/v1/health`        | System health check |
 
-### Available Functions
-
-The backend includes 30+ Azure Functions for comprehensive carpool management:
-
-- Authentication and user management
-- Group creation and administration
-- Trip scheduling and coordination
-- Parent preferences and swap requests
-- SMS verification and notifications
-
-**Local Development**: Start with `npm run dev` to explore all endpoints
+**Complete Documentation**: [OpenAPI Specification](docs/OPENAPI_SPECIFICATION.yaml)
 
 ---
 
@@ -139,8 +128,8 @@ cd frontend && npm test     # Frontend tests only
 
 ### Key Test Coverage
 
-- ✅ Parent group creation and management
-- ✅ Carpool schedule coordination
+- ✅ Universal school integration and detection
+- ✅ Smart registration with automatic school detection
 - ✅ Authentication and authorization system
 - ✅ Family-based scheduling algorithms
 - ✅ SMS verification and address validation

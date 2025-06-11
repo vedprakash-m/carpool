@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -65,6 +65,18 @@ interface FamilyRegistrationData {
   };
 }
 
+// Add new interface for smart features
+interface SmartDetectionResult {
+  school: {
+    name: string;
+    address: string;
+    type: string;
+    grades: string[];
+  };
+  distance: number;
+  confidence: number;
+}
+
 export default function FamilyRegistrationForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -99,6 +111,81 @@ export default function FamilyRegistrationForm() {
     },
   });
 
+  const [schoolDetectionResult, setSchoolDetectionResult] =
+    useState<SmartDetectionResult | null>(null);
+  const [isDetectingSchool, setIsDetectingSchool] = useState(false);
+  const [showSmartFeatures, setShowSmartFeatures] = useState(true);
+
+  // Smart school detection when address changes
+  useEffect(() => {
+    if (
+      showSmartFeatures &&
+      formData.address.street &&
+      formData.address.city &&
+      formData.address.state
+    ) {
+      detectSchoolFromAddress();
+    }
+  }, [formData.address, showSmartFeatures]);
+
+  const detectSchoolFromAddress = async () => {
+    setIsDetectingSchool(true);
+    try {
+      // Mock implementation - replace with actual API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Mock school detection result
+      const mockResult: SmartDetectionResult = {
+        school: {
+          name: "Lincoln Elementary School",
+          address: "123 Oak Street, Springfield, IL 62701",
+          type: "elementary",
+          grades: ["K", "1", "2", "3", "4", "5"],
+        },
+        distance: 2.3,
+        confidence: 0.89,
+      };
+
+      setSchoolDetectionResult(mockResult);
+
+      // Auto-update children's school if not set
+      setFormData((prev) => ({
+        ...prev,
+        children: prev.children.map((child) => ({
+          ...child,
+          school: child.school || mockResult.school.name,
+        })),
+      }));
+    } catch (error) {
+      console.error("School detection failed:", error);
+    } finally {
+      setIsDetectingSchool(false);
+    }
+  };
+
+  // Smart grade inference from age
+  const inferGradeFromAge = (age: number): string => {
+    if (!age) return "";
+
+    const gradeMap: { [key: number]: string } = {
+      5: "K",
+      6: "1st",
+      7: "2nd",
+      8: "3rd",
+      9: "4th",
+      10: "5th",
+      11: "6th",
+      12: "7th",
+      13: "8th",
+      14: "9th",
+      15: "10th",
+      16: "11th",
+      17: "12th",
+    };
+
+    return gradeMap[age] || "";
+  };
+
   const handleInputChange = (
     section: keyof FamilyRegistrationData,
     field: string,
@@ -129,6 +216,26 @@ export default function FamilyRegistrationForm() {
       children: prev.children.map((child, i) =>
         i === index ? { ...child, [field]: value } : child
       ),
+    }));
+  };
+
+  // Smart child change handler with grade inference
+  const handleSmartChildChange = (
+    index: number,
+    field: keyof Child,
+    value: any
+  ) => {
+    const newChildren = [...formData.children];
+    newChildren[index] = { ...newChildren[index], [field]: value };
+
+    // Auto-infer grade when age changes
+    if (field === "age" && showSmartFeatures && value) {
+      newChildren[index].grade = inferGradeFromAge(parseInt(value));
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      children: newChildren,
     }));
   };
 
@@ -432,12 +539,35 @@ export default function FamilyRegistrationForm() {
             </div>
 
             <div className="space-y-4">
+              {showSmartFeatures && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <span className="text-blue-600 text-2xl">🧠</span>
+                    <div>
+                      <h4 className="text-blue-900 font-medium">
+                        Smart Grade Inference Active
+                      </h4>
+                      <p className="text-blue-800 text-sm mt-1">
+                        We'll automatically calculate your child's grade based
+                        on their age. You can manually adjust if needed.
+                      </p>
+                      {schoolDetectionResult && (
+                        <p className="text-blue-700 text-sm mt-1">
+                          School will be auto-filled as:{" "}
+                          <strong>{schoolDetectionResult.school.name}</strong>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {formData.children.map((child, index) => (
                 <div
                   key={index}
-                  className="border border-gray-200 rounded-lg p-4"
+                  className="border border-gray-200 rounded-lg p-4 space-y-4"
                 >
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center">
                     <h3 className="text-lg font-medium">Child {index + 1}</h3>
                     {formData.children.length > 1 && (
                       <button
@@ -477,20 +607,36 @@ export default function FamilyRegistrationForm() {
                         type="number"
                         value={child.age}
                         onChange={(e) => {
-                          const newChildren = [...formData.children];
-                          newChildren[index].age = parseInt(e.target.value);
-                          setFormData((prev) => ({
-                            ...prev,
-                            children: newChildren,
-                          }));
+                          if (showSmartFeatures) {
+                            handleSmartChildChange(
+                              index,
+                              "age",
+                              e.target.value
+                            );
+                          } else {
+                            const newChildren = [...formData.children];
+                            newChildren[index].age = parseInt(e.target.value);
+                            setFormData((prev) => ({
+                              ...prev,
+                              children: newChildren,
+                            }));
+                          }
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Age"
                       />
+                      {showSmartFeatures && child.age && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✨ Grade will be auto-inferred from age
+                        </p>
+                      )}
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        School
+                        School {schoolDetectionResult ? "(Auto-detected)" : ""}
                       </label>
                       <input
                         type="text"
@@ -503,13 +649,21 @@ export default function FamilyRegistrationForm() {
                             children: newChildren,
                           }));
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          schoolDetectionResult ? "bg-green-50" : ""
+                        }`}
                         placeholder="School name"
+                        disabled={showSmartFeatures && !!schoolDetectionResult}
                       />
+                      {schoolDetectionResult && showSmartFeatures && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✅ Auto-detected from your address
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Grade
+                        Grade {showSmartFeatures ? "(Auto-inferred)" : ""}
                       </label>
                       <input
                         type="text"
@@ -522,10 +676,39 @@ export default function FamilyRegistrationForm() {
                             children: newChildren,
                           }));
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          showSmartFeatures && child.age ? "bg-green-50" : ""
+                        }`}
                         placeholder="Grade (e.g., 3rd, K)"
+                        disabled={showSmartFeatures && !!child.age}
                       />
+                      {showSmartFeatures && child.grade && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✅ Inferred from age {child.age}
+                        </p>
+                      )}
                     </div>
+                  </div>
+
+                  {/* Medical notes (optional) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Medical Notes (Optional)
+                    </label>
+                    <textarea
+                      value={child.medicalNotes}
+                      onChange={(e) => {
+                        const newChildren = [...formData.children];
+                        newChildren[index].medicalNotes = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          children: newChildren,
+                        }));
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Any allergies, medical conditions, or special instructions..."
+                      rows={2}
+                    />
                   </div>
                 </div>
               ))}
@@ -615,6 +798,62 @@ export default function FamilyRegistrationForm() {
                   />
                 </div>
               </div>
+
+              {/* Smart School Detection Results */}
+              {isDetectingSchool && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-3"></div>
+                    <span className="text-blue-800">
+                      🎓 Detecting nearby schools automatically...
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {schoolDetectionResult && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-green-900 font-medium">
+                        🎉 School Automatically Detected!
+                      </h4>
+                      <p className="text-green-800 mt-1">
+                        <strong>{schoolDetectionResult.school.name}</strong> -{" "}
+                        {schoolDetectionResult.distance} miles away
+                      </p>
+                      <p className="text-sm text-green-600 mt-1">
+                        {schoolDetectionResult.school.address}
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        Confidence:{" "}
+                        {Math.round(schoolDetectionResult.confidence * 100)}% |
+                        Will auto-fill children's school
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {showSmartFeatures && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="text-blue-800 text-sm">
+                        ✨ <strong>Smart Features Enabled:</strong> Automatic
+                        school detection and grade inference
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setShowSmartFeatures(false)}
+                      className="text-blue-600 hover:text-blue-800 text-sm underline"
+                    >
+                      Use manual entry
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="border-t pt-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">

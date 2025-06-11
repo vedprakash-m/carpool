@@ -1129,34 +1129,86 @@ export interface RegistrationData {
   };
 }
 
-// Tesla STEM High School Configuration
-export const TESLA_STEM_HIGH_SCHOOL: School = {
-  id: "tesla-stem-redmond",
-  name: "Tesla STEM High School",
-  address: "4301 228th Ave NE, Redmond, WA 98053",
-  location: {
-    address: "4301 228th Ave NE, Redmond, WA 98053",
-    latitude: 47.674,
-    longitude: -122.1215,
-    zipCode: "98053",
-    city: "Redmond",
-    state: "WA",
-    country: "USA",
-    formattedAddress: "4301 228th Ave NE, Redmond, WA 98053, USA",
-  },
-  district: "Lake Washington School District",
-  type: "high",
-  grades: ["9", "10", "11", "12"],
+// Universal School Configuration System
+export interface SchoolConfiguration {
+  id: string;
+  name: string;
+  address: string;
+  location: GeographicLocation;
+  district: string;
+  type: "elementary" | "middle" | "high" | "k12" | "other";
+  grades: string[];
+  serviceRadius: number; // miles
   contactInfo: {
-    phone: "(425) 936-2410",
-    email: "tesla@lwsd.org",
-    website: "https://tesla.lwsd.org",
-  },
-  createdAt: new Date("2025-01-01"),
-  updatedAt: new Date("2025-01-01"),
-};
+    phone: string;
+    email: string;
+    website?: string;
+  };
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
-// Service Area Configuration
+// Default school configurations for demonstration
+export const DEFAULT_SCHOOLS: SchoolConfiguration[] = [
+  {
+    id: "lincoln-elementary",
+    name: "Lincoln Elementary School",
+    address: "123 Oak Street, Springfield, IL 62701",
+    location: {
+      address: "123 Oak Street, Springfield, IL 62701",
+      latitude: 39.7817,
+      longitude: -89.6501,
+      zipCode: "62701",
+      city: "Springfield",
+      state: "IL",
+      country: "USA",
+      formattedAddress: "123 Oak Street, Springfield, IL 62701, USA",
+    },
+    district: "Springfield School District 186",
+    type: "elementary",
+    grades: ["K", "1", "2", "3", "4", "5"],
+    serviceRadius: 20,
+    contactInfo: {
+      phone: "(217) 555-0123",
+      email: "info@lincolnelementary.edu",
+      website: "https://lincolnelementary.edu",
+    },
+    isActive: true,
+  },
+  {
+    id: "tesla-stem-redmond",
+    name: "Tesla STEM High School",
+    address: "4301 228th Ave NE, Redmond, WA 98053",
+    location: {
+      address: "4301 228th Ave NE, Redmond, WA 98053",
+      latitude: 47.674,
+      longitude: -122.1215,
+      zipCode: "98053",
+      city: "Redmond",
+      state: "WA",
+      country: "USA",
+      formattedAddress: "4301 228th Ave NE, Redmond, WA 98053, USA",
+    },
+    district: "Lake Washington School District",
+    type: "high",
+    grades: ["9", "10", "11", "12"],
+    serviceRadius: 25,
+    contactInfo: {
+      phone: "(425) 936-2410",
+      email: "tesla@lwsd.org",
+      website: "https://tesla.lwsd.org",
+    },
+    isActive: true,
+  },
+];
+
+// Legacy compatibility - use Tesla STEM as default for existing code
+export const TESLA_STEM_HIGH_SCHOOL: SchoolConfiguration = DEFAULT_SCHOOLS.find(
+  (school) => school.id === "tesla-stem-redmond"
+)!;
+
+// Service Area Configuration (deprecated - use school-specific serviceRadius)
 export const SERVICE_AREA_RADIUS_MILES = 25;
 
 // Traveling Parent Types
