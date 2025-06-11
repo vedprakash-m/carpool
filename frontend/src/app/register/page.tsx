@@ -6,8 +6,11 @@ import Link from "next/link";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { registerSchema, RegisterRequest } from "../../types/shared";
+import { z } from "zod";
+import { RegisterRequest } from "../../types/shared";
 import { useAuthStore } from "@/store/auth.store";
+import { SchoolSelect, GradeSelect } from "@/components/shared/SchoolGradeSelects";
+import { TESLA_STEM_HIGH_SCHOOL } from "@/config/schools";
 import {
   UserIcon,
   UsersIcon,
@@ -15,6 +18,28 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
+
+// Define validation schema inline to avoid import issues
+const childSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  grade: z.string().min(1, "Grade is required"),
+  school: z.string().min(1, "School is required"),
+});
+
+const parentSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+const registerSchema = z.object({
+  familyName: z.string().min(1, "Family name is required"),
+  parent: parentSchema,
+  secondParent: parentSchema.optional(),
+  children: z.array(childSchema).min(1, "At least one child is required"),
+});
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,10 +52,11 @@ export default function RegisterPage() {
     control,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<RegisterRequest>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      children: [{ firstName: "", lastName: "", grade: "", school: "" }],
+      children: [{ firstName: "", lastName: "", grade: "", school: TESLA_STEM_HIGH_SCHOOL.name }],
     },
   });
 
@@ -173,6 +199,7 @@ export default function RegisterPage() {
                     type="password"
                     className="mt-1 input"
                     placeholder="Minimum 8 characters"
+                    autoComplete="new-password"
                   />
                   {errors.parent?.password && (
                     <p className="mt-1 text-sm text-red-600">
@@ -223,23 +250,63 @@ export default function RegisterPage() {
                         {...registerField(`children.${index}.firstName`)}
                         placeholder="First Name"
                         className="input"
+                        autoComplete="given-name"
                       />
                       <input
                         {...registerField(`children.${index}.lastName`)}
                         placeholder="Last Name"
                         className="input"
+                        autoComplete="family-name"
                       />
                     </div>
-                    <input
-                      {...registerField(`children.${index}.grade`)}
-                      placeholder="Grade (e.g., 5th)"
-                      className="input"
-                    />
-                    <input
-                      {...registerField(`children.${index}.school`)}
-                      placeholder="School Name"
-                      className="input"
-                    />
+                    
+                    {/* Grade Dropdown */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Grade *
+                      </label>
+                      <Controller
+                        name={`children.${index}.grade`}
+                        control={control}
+                        render={({ field }) => (
+                          <GradeSelect
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select Grade"
+                            required
+                          />
+                        )}
+                      />
+                      {errors.children?.[index]?.grade && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.children[index]?.grade?.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* School Dropdown */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        School *
+                      </label>
+                      <Controller
+                        name={`children.${index}.school`}
+                        control={control}
+                        render={({ field }) => (
+                          <SchoolSelect
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select School"
+                            required
+                          />
+                        )}
+                      />
+                      {errors.children?.[index]?.school && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.children[index]?.school?.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ))}
                 <button
@@ -249,7 +316,7 @@ export default function RegisterPage() {
                       firstName: "",
                       lastName: "",
                       grade: "",
-                      school: "",
+                      school: TESLA_STEM_HIGH_SCHOOL.name,
                     })
                   }
                   className="btn-secondary"
