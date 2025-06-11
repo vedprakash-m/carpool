@@ -29,10 +29,19 @@ VCarpool is a parent-to-parent carpool coordination platform that helps families
 - 🏠 **Address Validation** - Confirm home addresses for pickup route planning
 - 🧳 **Traveling Parent Support** - Makeup trip options for parents who travel frequently
 - 💼 **Admin Tools** - Group management dashboard for organizing carpool logistics
+- 🎓 **Smart Registration** - Pre-populated school and grade dropdowns with admin configuration
+- 🏫 **Multi-School Support** - Configurable for any school district with admin interface
 
-### 🏆 Recent Achievement (June 2025)
+### 🏆 Recent Achievements (June 2025)
 
-**Universal School Support Completed** - Successfully transformed from being hardcoded for one specific school to supporting families from any school community nationwide. Currently active for Tesla STEM High School in Redmond, WA.
+**✅ Registration System Overhaul** - Completely redesigned parent registration with:
+- **Professional Dropdowns**: Pre-populated grade (8th-12th) and school selections
+- **Tesla STEM Ready**: Pre-configured for Tesla STEM High School, Redmond, WA
+- **Admin Configuration**: Complete school and grade management interface
+- **Enhanced UX**: Eliminated manual typing for grades and schools
+- **Production Ready**: All CI/CD issues resolved, Zod validation fixed
+
+**✅ Universal School Support** - Successfully transformed from being hardcoded for one specific school to supporting families from any school community nationwide. Currently active for Tesla STEM High School in Redmond, WA.
 
 ---
 
@@ -79,18 +88,25 @@ _Note: Backend API deployment in progress_
 
 ### Technology Stack
 
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS, React Hook Form
 - **Backend**: Azure Functions v4, Node.js 22, TypeScript
 - **Database**: Azure Cosmos DB (9 containers)
 - **Security**: JWT authentication, Azure Key Vault, SMS verification
 - **Monitoring**: Azure Application Insights
+- **Admin Tools**: School configuration interface, grade management system
 
 ### Project Structure
 
 ```
 vcarpool/
 ├── backend/           # Azure Functions API
-├── frontend/          # Next.js application
+├── frontend/          # Next.js application  
+│   ├── src/
+│   │   ├── app/       # Next.js App Router pages
+│   │   ├── components/ # Reusable React components
+│   │   │   ├── admin/ # Admin configuration interfaces
+│   │   │   └── shared/ # Shared UI components (dropdowns, etc.)
+│   │   └── config/    # Configuration files (schools, grades)
 ├── shared/            # Shared TypeScript types
 ├── docs/              # Documentation
 └── infra/             # Azure infrastructure (Bicep)
@@ -109,6 +125,35 @@ vcarpool/
 | `GET`  | `/api/users-me`          | Get user profile    |
 | `GET`  | `/api/trips-list`        | List trips          |
 | `GET`  | `/api/trips-stats`       | Trip statistics     |
+
+## 🎓 Registration System
+
+### Smart Registration Features
+
+**Pre-populated Dropdowns**:
+- **Grades**: 8th, 9th, 10th, 11th, 12th (Tesla STEM specific)
+- **Schools**: Tesla STEM High School pre-configured as default
+- **Addresses**: 15641 Bel-Red Rd, Redmond, WA 98052
+- **Service Radius**: 25 miles from Tesla STEM
+
+**Admin Configuration** (`/admin/school-config`):
+- Add/edit schools with full address and grade configuration
+- Activate/deactivate schools for registration
+- Configure supported grades per school type
+- Set service radius and geographic boundaries
+
+**Technical Implementation**:
+- Inline Zod validation to prevent import errors
+- React Hook Form with Controller components
+- TypeScript-first configuration system
+- Reusable dropdown components
+
+### Registration Flow
+
+1. **Family Information**: Parent name, email, phone with validation
+2. **Children Details**: Names with grade/school dropdowns (no manual typing)
+3. **Validation**: Form validation with proper error messages
+4. **Submission**: Secure registration with Tesla STEM defaults
 
 ### Available Functions
 
