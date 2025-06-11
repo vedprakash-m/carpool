@@ -34,14 +34,6 @@ VCarpool is a parent-to-parent carpool coordination platform that helps families
 
 ### 🏆 Recent Achievements (June 2025)
 
-**✅ Registration System Overhaul** - Completely redesigned parent registration with:
-
-- **Professional Dropdowns**: Pre-populated grade (8th-12th) and school selections
-- **Tesla STEM Ready**: Pre-configured for Tesla STEM High School, Redmond, WA
-- **Admin Configuration**: Complete school and grade management interface
-- **Enhanced UX**: Eliminated manual typing for grades and schools
-- **Production Ready**: All CI/CD issues resolved, Zod validation fixed
-
 **✅ Universal School Support** - Successfully transformed from being hardcoded for one specific school to supporting families from any school community nationwide. Currently active for Tesla STEM High School in Redmond, WA.
 
 ---

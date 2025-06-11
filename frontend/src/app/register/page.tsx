@@ -6,8 +6,7 @@ import Link from "next/link";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { z } from "zod";
-import { RegisterRequest } from "../../types/shared";
+import { RegisterRequest, registerSchema } from "../../types/shared";
 import { useAuthStore } from "@/store/auth.store";
 import {
   SchoolSelect,
@@ -17,32 +16,9 @@ import { TESLA_STEM_HIGH_SCHOOL } from "@/config/schools";
 import {
   UserIcon,
   UsersIcon,
-  AcademicCapIcon,
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-
-// Define validation schema inline to avoid import issues
-const childSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  grade: z.string().min(1, "Grade is required"),
-  school: z.string().min(1, "School is required"),
-});
-
-const parentSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-const registerSchema = z.object({
-  familyName: z.string().min(1, "Family name is required"),
-  parent: parentSchema,
-  secondParent: parentSchema.optional(),
-  children: z.array(childSchema).min(1, "At least one child is required"),
-});
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -74,6 +50,20 @@ export default function RegisterPage() {
     control,
     name: "children",
   });
+
+  // Ensure fields array is never empty
+  const safeFields =
+    fields.length > 0
+      ? fields
+      : [
+          {
+            id: "default-child",
+            firstName: "",
+            lastName: "",
+            grade: "",
+            school: TESLA_STEM_HIGH_SCHOOL.name,
+          },
+        ];
 
   const onSubmit = async (data: RegisterRequest) => {
     try {
@@ -189,6 +179,7 @@ export default function RegisterPage() {
                     type="email"
                     className="mt-1 input"
                     placeholder="Parent's Email Address"
+                    autoComplete="email"
                   />
                   {errors.parent?.email && (
                     <p className="mt-1 text-sm text-red-600">
@@ -236,7 +227,7 @@ export default function RegisterPage() {
                 Step 2: Children's Information
               </h3>
               <div className="space-y-6">
-                {fields.map((field, index) => (
+                {safeFields.map((field, index) => (
                   <div
                     key={field.id}
                     className="p-4 border border-gray-200 rounded-lg space-y-4"
@@ -245,7 +236,7 @@ export default function RegisterPage() {
                       <h4 className="font-medium text-gray-800">
                         Child {index + 1}
                       </h4>
-                      {fields.length > 1 && (
+                      {safeFields.length > 1 && (
                         <button
                           type="button"
                           onClick={() => remove(index)}

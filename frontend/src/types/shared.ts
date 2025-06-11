@@ -319,9 +319,34 @@ export interface RegisterRequest {
 // Keep this in sync with backend/srcs/validations.ts
 // The actual Zod schema is defined in the backend package.
 // This is just for type inference on the frontend.
-import { registerSchema as backendRegisterSchema } from "@vcarpool/shared/src/validations";
-export const registerSchema: z.ZodType<RegisterRequest> =
-  backendRegisterSchema as any;
+// Note: Importing backend schema may cause build issues, so using local schema
+export const registerSchema = z.object({
+  familyName: z.string().min(1, "Family name is required"),
+  parent: z.object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+  }),
+  secondParent: z
+    .object({
+      firstName: z.string().min(1, "First name is required"),
+      lastName: z.string().min(1, "Last name is required"),
+      email: z.string().email("Invalid email address"),
+      password: z.string().min(8, "Password must be at least 8 characters"),
+    })
+    .optional(),
+  children: z
+    .array(
+      z.object({
+        firstName: z.string().min(1, "First name is required"),
+        lastName: z.string().min(1, "Last name is required"),
+        grade: z.string().min(1, "Grade is required"),
+        school: z.string().min(1, "School is required"),
+      })
+    )
+    .min(1, "At least one child is required"),
+});
 
 // Utility types
 export type CreateUserRequest = z.infer<typeof createUserSchema>;
