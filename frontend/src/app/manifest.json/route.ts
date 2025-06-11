@@ -14,6 +14,11 @@ export async function GET() {
     scope: "/",
     icons: [
       {
+        src: "/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+      },
+      {
         src: "/favicon.ico",
         sizes: "16x16",
         type: "image/x-icon",

@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     title: "VCarpool",
   },
   icons: {
-    icon: "/icon",
-    apple: "/icon",
+    icon: "/icon.svg",
+    apple: "/icon.svg",
   },
 };
 
@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="apple-touch-icon" href="/icon" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
       </head>
       <body className={inter.className}>
         <SkipLink targetId="main-content" />
