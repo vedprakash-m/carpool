@@ -9,9 +9,9 @@ const nextConfig = {
   poweredByHeader: false,
 
   // Use static export for Azure Static Web Apps
-  // output: "export",
+  output: "export",
   trailingSlash: true,
-  // distDir: "out",
+  distDir: "out",
 
   // Image optimization disabled for better compatibility
   images: {
