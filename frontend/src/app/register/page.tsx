@@ -9,7 +9,10 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { RegisterRequest } from "../../types/shared";
 import { useAuthStore } from "@/store/auth.store";
-import { SchoolSelect, GradeSelect } from "@/components/shared/SchoolGradeSelects";
+import {
+  SchoolSelect,
+  GradeSelect,
+} from "@/components/shared/SchoolGradeSelects";
 import { TESLA_STEM_HIGH_SCHOOL } from "@/config/schools";
 import {
   UserIcon,
@@ -56,7 +59,14 @@ export default function RegisterPage() {
   } = useForm<RegisterRequest>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      children: [{ firstName: "", lastName: "", grade: "", school: TESLA_STEM_HIGH_SCHOOL.name }],
+      children: [
+        {
+          firstName: "",
+          lastName: "",
+          grade: "",
+          school: TESLA_STEM_HIGH_SCHOOL.name,
+        },
+      ],
     },
   });
 
@@ -259,7 +269,7 @@ export default function RegisterPage() {
                         autoComplete="family-name"
                       />
                     </div>
-                    
+
                     {/* Grade Dropdown */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">

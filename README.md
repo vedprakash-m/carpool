@@ -35,6 +35,7 @@ VCarpool is a parent-to-parent carpool coordination platform that helps families
 ### 🏆 Recent Achievements (June 2025)
 
 **✅ Registration System Overhaul** - Completely redesigned parent registration with:
+
 - **Professional Dropdowns**: Pre-populated grade (8th-12th) and school selections
 - **Tesla STEM Ready**: Pre-configured for Tesla STEM High School, Redmond, WA
 - **Admin Configuration**: Complete school and grade management interface
@@ -100,7 +101,7 @@ _Note: Backend API deployment in progress_
 ```
 vcarpool/
 ├── backend/           # Azure Functions API
-├── frontend/          # Next.js application  
+├── frontend/          # Next.js application
 │   ├── src/
 │   │   ├── app/       # Next.js App Router pages
 │   │   ├── components/ # Reusable React components
@@ -131,18 +132,21 @@ vcarpool/
 ### Smart Registration Features
 
 **Pre-populated Dropdowns**:
+
 - **Grades**: 8th, 9th, 10th, 11th, 12th (Tesla STEM specific)
 - **Schools**: Tesla STEM High School pre-configured as default
 - **Addresses**: 15641 Bel-Red Rd, Redmond, WA 98052
 - **Service Radius**: 25 miles from Tesla STEM
 
 **Admin Configuration** (`/admin/school-config`):
+
 - Add/edit schools with full address and grade configuration
 - Activate/deactivate schools for registration
 - Configure supported grades per school type
 - Set service radius and geographic boundaries
 
 **Technical Implementation**:
+
 - Inline Zod validation to prevent import errors
 - React Hook Form with Controller components
 - TypeScript-first configuration system

@@ -1,7 +1,13 @@
 "use client";
 
-import React from 'react';
-import { School, GradeConfig, getAllActiveSchools, getGradesForSchool, TESLA_STEM_GRADES } from '@/config/schools';
+import React from "react";
+import {
+  School,
+  GradeConfig,
+  getAllActiveSchools,
+  getGradesForSchool,
+  TESLA_STEM_GRADES,
+} from "@/config/schools";
 
 interface SchoolSelectProps {
   value: string;
@@ -28,7 +34,7 @@ export const SchoolSelect: React.FC<SchoolSelectProps> = ({
   className = "",
   placeholder = "Select School",
   required = false,
-  schools
+  schools,
 }) => {
   const availableSchools = schools || getAllActiveSchools();
 
@@ -56,15 +62,15 @@ export const GradeSelect: React.FC<GradeSelectProps> = ({
   placeholder = "Select Grade",
   required = false,
   schoolId,
-  grades
+  grades,
 }) => {
   // Use provided grades or Tesla STEM grades as default
   let availableGrades = grades || TESLA_STEM_GRADES;
-  
+
   // If school is specified, filter grades by school
   if (schoolId) {
     const allSchools = getAllActiveSchools();
-    const school = allSchools.find(s => s.id === schoolId);
+    const school = allSchools.find((s) => s.id === schoolId);
     if (school) {
       availableGrades = getGradesForSchool(school);
     }
