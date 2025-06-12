@@ -104,16 +104,30 @@ export default function RegisterPage() {
       ];
     }
 
-    // Return fields as-is if it's properly populated
-    return fields.map((field, index) => ({
-      ...field,
-      // Ensure each field has required properties
-      id: field.id || `child-${index}`,
-      firstName: field.firstName || "",
-      lastName: field.lastName || "",
-      grade: field.grade || "",
-      school: field.school || TESLA_STEM_HIGH_SCHOOL.name,
-    }));
+    // Return fields with safety checks for each individual field
+    return fields.map((field, index) => {
+      // Handle null, undefined, or invalid field objects
+      if (!field || typeof field !== "object") {
+        console.warn(`Invalid field at index ${index}:`, field);
+        return {
+          id: `fallback-child-${index}`,
+          firstName: "",
+          lastName: "",
+          grade: "",
+          school: TESLA_STEM_HIGH_SCHOOL.name,
+        };
+      }
+
+      return {
+        ...field,
+        // Ensure each field has required properties with fallbacks
+        id: field.id || `child-${index}`,
+        firstName: field.firstName || "",
+        lastName: field.lastName || "",
+        grade: field.grade || "",
+        school: field.school || TESLA_STEM_HIGH_SCHOOL.name,
+      };
+    });
   }, [fields]);
 
   const onSubmit = async (data: RegisterRequest) => {
@@ -297,107 +311,163 @@ export default function RegisterPage() {
                 Step 2: Children's Information
               </h3>
               <div className="space-y-6">
-                {safeFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="p-4 border border-gray-200 rounded-lg space-y-4"
-                  >
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-medium text-gray-800">
-                        Child {index + 1}
-                      </h4>
-                      {safeFields.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            // Enhanced safety checks for remove operation
-                            if (
-                              index >= 0 &&
-                              index < safeFields.length &&
-                              fields &&
-                              fields.length > 1 &&
-                              index < fields.length
-                            ) {
-                              console.log(
-                                `Removing child at index ${index}, current fields length: ${fields.length}`
-                              );
-                              remove(index);
-                            } else {
-                              console.warn(
-                                `Cannot remove child at index ${index}. Fields length: ${fields?.length}, SafeFields length: ${safeFields.length}`
-                              );
-                            }
-                          }}
-                          className="text-red-500 hover:text-red-700"
+                {(() => {
+                  try {
+                    // Extra safety check for rendering children
+                    if (
+                      !safeFields ||
+                      !Array.isArray(safeFields) ||
+                      safeFields.length === 0
+                    ) {
+                      console.error(
+                        "SafeFields is not a valid array:",
+                        safeFields
+                      );
+                      return (
+                        <div className="text-red-600 p-4 border border-red-200 rounded">
+                          Error loading children form. Please refresh the page.
+                        </div>
+                      );
+                    }
+
+                    return safeFields.map((field, index) => {
+                      // Safety check for each field
+                      if (!field || typeof field !== "object") {
+                        console.error(
+                          `Invalid field at index ${index}:`,
+                          field
+                        );
+                        return null;
+                      }
+
+                      return (
+                        <div
+                          key={field.id || `fallback-${index}`}
+                          className="p-4 border border-gray-200 rounded-lg space-y-4"
                         >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <input
-                        {...registerField(`children.${index}.firstName`)}
-                        placeholder="First Name"
-                        className="input"
-                        autoComplete="given-name"
-                      />
-                      <input
-                        {...registerField(`children.${index}.lastName`)}
-                        placeholder="Last Name"
-                        className="input"
-                        autoComplete="family-name"
-                      />
-                    </div>
+                          <div className="flex justify-between items-center">
+                            <h4 className="font-medium text-gray-800">
+                              Child {index + 1}
+                            </h4>
+                            {safeFields.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  // Enhanced safety checks for remove operation
+                                  try {
+                                    if (
+                                      index >= 0 &&
+                                      index < safeFields.length &&
+                                      fields &&
+                                      Array.isArray(fields) &&
+                                      fields.length > 1 &&
+                                      index < fields.length
+                                    ) {
+                                      console.log(
+                                        `Removing child at index ${index}, current fields length: ${fields.length}`
+                                      );
+                                      remove(index);
+                                    } else {
+                                      console.warn(
+                                        `Cannot remove child at index ${index}. Fields length: ${fields?.length}, SafeFields length: ${safeFields.length}`
+                                      );
+                                    }
+                                  } catch (error) {
+                                    console.error(
+                                      "Error removing child:",
+                                      error
+                                    );
+                                    toast.error(
+                                      "Failed to remove child. Please try again."
+                                    );
+                                  }
+                                }}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <TrashIcon className="h-5 w-5" />
+                              </button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <input
+                              {...registerField(`children.${index}.firstName`)}
+                              placeholder="First Name"
+                              className="input"
+                              autoComplete="given-name"
+                            />
+                            <input
+                              {...registerField(`children.${index}.lastName`)}
+                              placeholder="Last Name"
+                              className="input"
+                              autoComplete="family-name"
+                            />
+                          </div>
 
-                    {/* Grade Dropdown */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Grade *
-                      </label>
-                      <Controller
-                        name={`children.${index}.grade`}
-                        control={control}
-                        render={({ field }) => (
-                          <GradeSelect
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select Grade"
-                            required
-                          />
-                        )}
-                      />
-                      {errors.children?.[index]?.grade && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {errors.children?.[index]?.grade?.message}
-                        </p>
-                      )}
-                    </div>
+                          {/* Grade Dropdown */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Grade *
+                            </label>
+                            <Controller
+                              name={`children.${index}.grade`}
+                              control={control}
+                              render={({ field }) => (
+                                <GradeSelect
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder="Select Grade"
+                                  required
+                                />
+                              )}
+                            />
+                            {errors.children &&
+                              Array.isArray(errors.children) &&
+                              errors.children[index] &&
+                              errors.children[index]?.grade && (
+                                <p className="mt-1 text-sm text-red-600">
+                                  {errors.children[index]?.grade?.message}
+                                </p>
+                              )}
+                          </div>
 
-                    {/* School Dropdown */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        School *
-                      </label>
-                      <Controller
-                        name={`children.${index}.school`}
-                        control={control}
-                        render={({ field }) => (
-                          <SchoolSelect
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select School"
-                            required
-                          />
-                        )}
-                      />
-                      {errors.children?.[index]?.school && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {errors.children?.[index]?.school?.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                          {/* School Dropdown */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              School *
+                            </label>
+                            <Controller
+                              name={`children.${index}.school`}
+                              control={control}
+                              render={({ field }) => (
+                                <SchoolSelect
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder="Select School"
+                                  required
+                                />
+                              )}
+                            />
+                            {errors.children &&
+                              Array.isArray(errors.children) &&
+                              errors.children[index] &&
+                              errors.children[index]?.school && (
+                                <p className="mt-1 text-sm text-red-600">
+                                  {errors.children[index]?.school?.message}
+                                </p>
+                              )}
+                          </div>
+                        </div>
+                      );
+                    });
+                  } catch (error) {
+                    console.error("Error rendering children form:", error);
+                    return (
+                      <div className="text-red-600 p-4 border border-red-200 rounded">
+                        Error rendering form. Please refresh the page.
+                      </div>
+                    );
+                  }
+                })()}
                 <button
                   type="button"
                   onClick={() => {
