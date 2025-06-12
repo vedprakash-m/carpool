@@ -143,6 +143,12 @@ class AccessibilityService {
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     ) as NodeListOf<HTMLElement>;
 
+    // Safety check for empty focusable elements
+    if (focusableElements.length === 0) {
+      console.warn("No focusable elements found in container");
+      return () => {}; // Return empty cleanup function
+    }
+
     const firstFocusable = focusableElements[0];
     const lastFocusable = focusableElements[focusableElements.length - 1];
 

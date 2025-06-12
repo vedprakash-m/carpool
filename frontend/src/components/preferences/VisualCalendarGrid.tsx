@@ -84,7 +84,11 @@ export default function VisualCalendarGrid({
   const getPreferenceStyle = (slotId: string) => {
     const preference = preferences[slotId];
     const level = PREFERENCE_LEVELS.find((l) => l.value === preference);
-    return level ? level.color : PREFERENCE_LEVELS[0].color;
+    return level
+      ? level.color
+      : PREFERENCE_LEVELS.length > 0
+      ? PREFERENCE_LEVELS[0].color
+      : "#gray-200";
   };
 
   const isPreferenceLimitReached = (level: string, currentSlotId: string) => {
