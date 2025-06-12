@@ -20,6 +20,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
+import { useMemo } from "react";
 
 // Local schema definition to avoid import issues
 const registerSchema = z.object({
@@ -82,27 +83,65 @@ export default function RegisterPage() {
     name: "children",
   });
 
-  // Ensure fields array is never empty
-  const safeFields =
-    fields && fields.length > 0
-      ? fields
-      : [
-          {
-            id: "default-child",
-            firstName: "",
-            lastName: "",
-            grade: "",
-            school: TESLA_STEM_HIGH_SCHOOL.name,
-          },
-        ];
+  // Debug logging for fields array
+  console.log("Current fields array:", fields);
+  console.log("Fields length:", fields?.length);
+  console.log("Fields type:", typeof fields);
+
+  // Ensure fields array is never empty with comprehensive safety checks
+  const safeFields = useMemo(() => {
+    // If fields is undefined or empty, return a default child to prevent crashes
+    if (!fields || !Array.isArray(fields) || fields.length === 0) {
+      console.warn("Fields array is empty or undefined, using default child");
+      return [
+        {
+          id: "default-child",
+          firstName: "",
+          lastName: "",
+          grade: "",
+          school: TESLA_STEM_HIGH_SCHOOL.name,
+        },
+      ];
+    }
+
+    // Return fields as-is if it's properly populated
+    return fields.map((field, index) => ({
+      ...field,
+      // Ensure each field has required properties
+      id: field.id || `child-${index}`,
+      firstName: field.firstName || "",
+      lastName: field.lastName || "",
+      grade: field.grade || "",
+      school: field.school || TESLA_STEM_HIGH_SCHOOL.name,
+    }));
+  }, [fields]);
 
   const onSubmit = async (data: RegisterRequest) => {
     try {
+      // Add validation to ensure children array is properly populated
+      if (!data.children || data.children.length === 0) {
+        toast.error("Please add at least one child");
+        return;
+      }
+
+      // Validate each child has required fields
+      const invalidChild = data.children.find(
+        (child) =>
+          !child.firstName || !child.lastName || !child.grade || !child.school
+      );
+
+      if (invalidChild) {
+        toast.error("Please fill in all required fields for each child");
+        return;
+      }
+
+      console.log("Submitting registration data:", data);
       await register(data);
       toast.success("Account created successfully!");
       router.push("/dashboard");
     } catch (error: any) {
-      toast.error(error.message || "Registration failed");
+      console.error("Registration error:", error);
+      toast.error(error.message || "Registration failed. Please try again.");
     }
   };
 
@@ -270,7 +309,25 @@ export default function RegisterPage() {
                       {safeFields.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => remove(index)}
+                          onClick={() => {
+                            // Enhanced safety checks for remove operation
+                            if (
+                              index >= 0 &&
+                              index < safeFields.length &&
+                              fields &&
+                              fields.length > 1 &&
+                              index < fields.length
+                            ) {
+                              console.log(
+                                `Removing child at index ${index}, current fields length: ${fields.length}`
+                              );
+                              remove(index);
+                            } else {
+                              console.warn(
+                                `Cannot remove child at index ${index}. Fields length: ${fields?.length}, SafeFields length: ${safeFields.length}`
+                              );
+                            }
+                          }}
                           className="text-red-500 hover:text-red-700"
                         >
                           <TrashIcon className="h-5 w-5" />
@@ -311,7 +368,7 @@ export default function RegisterPage() {
                       />
                       {errors.children?.[index]?.grade && (
                         <p className="mt-1 text-sm text-red-600">
-                          {errors.children[index]?.grade?.message}
+                          {errors.children?.[index]?.grade?.message}
                         </p>
                       )}
                     </div>
@@ -335,7 +392,7 @@ export default function RegisterPage() {
                       />
                       {errors.children?.[index]?.school && (
                         <p className="mt-1 text-sm text-red-600">
-                          {errors.children[index]?.school?.message}
+                          {errors.children?.[index]?.school?.message}
                         </p>
                       )}
                     </div>
@@ -343,14 +400,20 @@ export default function RegisterPage() {
                 ))}
                 <button
                   type="button"
-                  onClick={() =>
-                    append({
-                      firstName: "",
-                      lastName: "",
-                      grade: "",
-                      school: TESLA_STEM_HIGH_SCHOOL.name,
-                    })
-                  }
+                  onClick={() => {
+                    try {
+                      console.log("Adding new child to form");
+                      append({
+                        firstName: "",
+                        lastName: "",
+                        grade: "",
+                        school: TESLA_STEM_HIGH_SCHOOL.name,
+                      });
+                    } catch (error) {
+                      console.error("Error adding child:", error);
+                      toast.error("Failed to add child. Please try again.");
+                    }
+                  }}
                   className="btn-secondary"
                 >
                   <PlusIcon className="h-5 w-5 mr-2" />

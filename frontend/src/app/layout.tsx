@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "VCarpool",
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",

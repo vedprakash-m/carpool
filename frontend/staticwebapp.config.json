@@ -4,6 +4,27 @@
   },
   "routes": [
     {
+      "route": "/sw.js",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "route": "/manifest.json",
+      "headers": {
+        "Cache-Control": "public, max-age=86400",
+        "Content-Type": "application/manifest+json"
+      }
+    },
+    {
+      "route": "/icon.svg",
+      "headers": {
+        "Cache-Control": "public, max-age=86400",
+        "Content-Type": "image/svg+xml"
+      }
+    },
+    {
       "route": "/health",
       "methods": ["GET"],
       "rewrite": "https://vcarpool-api-prod.azurewebsites.net/api/health"
@@ -66,6 +87,7 @@
       "/js/*",
       "/_next/*",
       "/favicon.ico",
+      "/sw.js",
       "/*.json",
       "/*.xml",
       "/*.txt",

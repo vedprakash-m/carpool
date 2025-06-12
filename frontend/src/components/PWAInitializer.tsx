@@ -16,34 +16,42 @@ export function PWAInitializer() {
 
   useEffect(() => {
     // Initialize accessibility features on app load
-    if (config.screenReader) {
-      console.log("Screen reader detected, accessibility features enabled");
-    }
+    try {
+      if (config.screenReader) {
+        console.log("Screen reader detected, accessibility features enabled");
+      }
 
-    if (config.keyboardNavigation) {
-      console.log("Keyboard navigation preference detected");
-    }
+      if (config.keyboardNavigation) {
+        console.log("Keyboard navigation preference detected");
+      }
 
-    if (config.reducedMotion) {
-      console.log("Reduced motion preference detected");
-    }
+      if (config.reducedMotion) {
+        console.log("Reduced motion preference detected");
+      }
 
-    if (config.highContrast) {
-      console.log("High contrast preference detected");
+      if (config.highContrast) {
+        console.log("High contrast preference detected");
+      }
+    } catch (error) {
+      console.warn("Accessibility initialization error:", error);
     }
   }, [config]);
 
   useEffect(() => {
     // Log PWA capabilities for debugging
     if (process.env.NODE_ENV === "development") {
-      console.log("PWA Capabilities:", {
-        isInstallable: capabilities.isInstallable,
-        isInstalled: capabilities.isInstalled,
-        isOnline: capabilities.isOnline,
-        isServiceWorkerSupported: capabilities.isServiceWorkerSupported,
-        isStandalone: capabilities.isStandalone,
-        registration: !!registration,
-      });
+      try {
+        console.log("PWA Capabilities:", {
+          isInstallable: capabilities.isInstallable,
+          isInstalled: capabilities.isInstalled,
+          isOnline: capabilities.isOnline,
+          isServiceWorkerSupported: capabilities.isServiceWorkerSupported,
+          isStandalone: capabilities.isStandalone,
+          registration: !!registration,
+        });
+      } catch (error) {
+        console.warn("PWA capabilities logging error:", error);
+      }
     }
   }, [capabilities, registration]);
 

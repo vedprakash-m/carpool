@@ -111,10 +111,13 @@ class PWAService {
       let swPath = "/sw.js";
 
       // For production static export deployments, check if SW exists
-      const swResponse = await fetch(swPath, { method: "HEAD" }).catch(
-        () => null
-      );
-      if (!swResponse || !swResponse.ok) {
+      try {
+        const swResponse = await fetch(swPath, { method: "HEAD" });
+        if (!swResponse.ok) {
+          console.warn("Service worker not found, PWA features disabled");
+          return null;
+        }
+      } catch (fetchError) {
         console.warn("Service worker not found, PWA features disabled");
         return null;
       }
