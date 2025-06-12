@@ -27,10 +27,6 @@ export default function Navigation() {
     router.push("/");
   };
 
-  const handleCreateTrip = () => {
-    router.push("/trips/create");
-  };
-
   return (
     <nav className="bg-white shadow-sm border-r border-gray-200">
       <div className="px-4 py-6">
@@ -62,16 +58,7 @@ export default function Navigation() {
           </div>
         )}
 
-        {/* Quick Actions */}
-        <div className="mb-6">
-          <button
-            onClick={handleCreateTrip}
-            className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Create Trip
-          </button>
-        </div>
+        {/* Note: Individual trip creation removed - VCarpool uses group-based scheduling */}
 
         {/* Navigation Links */}
         <ul className="space-y-1">

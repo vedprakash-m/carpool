@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import AddressValidation from "@/components/AddressValidation";
 import {
   Users,
   User,
@@ -77,6 +78,7 @@ export default function SmartRegistrationForm() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [addressValidated, setAddressValidated] = useState(false);
   const [schoolDetectionResult, setSchoolDetectionResult] =
     useState<SchoolDetectionResult | null>(null);
   const [showManualOverride, setShowManualOverride] = useState(false);
@@ -499,6 +501,12 @@ export default function SmartRegistrationForm() {
                 </div>
               </div>
 
+              {/* Address Validation Component */}
+              <AddressValidation
+                onValidationComplete={(isValid) => setAddressValidated(isValid)}
+                required={true}
+              />
+
               {/* School Detection Result */}
               {isLoading && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -569,7 +577,8 @@ export default function SmartRegistrationForm() {
                   disabled={
                     !formData.primaryParent.name ||
                     !formData.primaryParent.email ||
-                    !formData.address.street
+                    !formData.address.street ||
+                    !addressValidated
                   }
                   className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >

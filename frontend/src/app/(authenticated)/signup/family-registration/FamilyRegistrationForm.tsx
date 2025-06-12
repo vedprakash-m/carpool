@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import AddressValidation from "@/components/AddressValidation";
 import {
   Users,
   User,
@@ -115,6 +116,7 @@ export default function FamilyRegistrationForm() {
     useState<SmartDetectionResult | null>(null);
   const [isDetectingSchool, setIsDetectingSchool] = useState(false);
   const [showSmartFeatures, setShowSmartFeatures] = useState(true);
+  const [addressValidated, setAddressValidated] = useState(false);
 
   // Smart school detection when address changes
   useEffect(() => {
@@ -835,6 +837,12 @@ export default function FamilyRegistrationForm() {
                   </div>
                 </div>
               )}
+
+              {/* Address Validation Component */}
+              <AddressValidation
+                onValidationComplete={(isValid) => setAddressValidated(isValid)}
+                required={true}
+              />
 
               {showSmartFeatures && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
