@@ -31,12 +31,16 @@ module.exports = async function (context, req) {
   }
 
   try {
-    // Mock trip data for now
+    // Get configurable school name from environment or use default
+    const primarySchool =
+      process.env.PRIMARY_SCHOOL_NAME || "Main Elementary School";
+
+    // Mock trip data for now - using configurable school names
     const mockTrips = [
       {
         id: "trip1",
         driverId: "user1",
-        destination: "Downtown Office",
+        destination: `${primarySchool}`,
         date: new Date("2025-01-10"),
         departureTime: "08:00",
         arrivalTime: "08:30",
@@ -45,7 +49,7 @@ module.exports = async function (context, req) {
         availableSeats: 2,
         cost: 5.5,
         status: "planned",
-        notes: "Regular morning commute",
+        notes: "Regular morning school run",
       },
       {
         id: "trip2",

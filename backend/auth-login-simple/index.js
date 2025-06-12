@@ -31,11 +31,15 @@ module.exports = async function (context, req) {
       context.log("Login attempt for:", email);
       context.log("Password provided:", password ? "YES" : "NO");
 
-      // Simple authentication check - allow multiple admin accounts
+      // Simple authentication check - support both admin and parent accounts
       if (
         (email === "admin@example.com" || email === "test-user@example.com") &&
         password === (process.env.ADMIN_PASSWORD || "test-admin-password")
       ) {
+        // Determine role based on email - admin@example.com gets admin role, others get parent role
+        const isAdmin = email === "admin@example.com";
+        const userRole = isAdmin ? "admin" : "parent";
+
         context.res = {
           status: 200,
           headers: corsHeaders,
@@ -45,12 +49,12 @@ module.exports = async function (context, req) {
               user: {
                 id:
                   email === "test-user@example.com"
-                    ? "test-admin-id"
+                    ? "test-parent-id"
                     : "admin-id",
                 email: email,
                 firstName: email === "test-user@example.com" ? "Test" : "Admin",
-                lastName: email === "test-user@example.com" ? "User" : "User",
-                role: "admin",
+                lastName: email === "test-user@example.com" ? "Parent" : "User",
+                role: userRole,
                 phoneNumber: null,
                 preferences: {
                   notifications: {

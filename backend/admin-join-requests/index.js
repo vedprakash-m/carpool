@@ -10,7 +10,7 @@ let mockJoinRequests = [
       name: "Lincoln Morning Riders",
       targetSchool: {
         id: "school-1",
-        name: "Lincoln Elementary School",
+        name: "Tesla STEM High School",
       },
     },
     requesterId: "parent-123",
@@ -23,7 +23,7 @@ let mockJoinRequests = [
     },
     status: "pending",
     message:
-      "Hi! I'm looking for a reliable carpool for my daughter Emma (Grade 2). I live 2 miles from Lincoln Elementary and would love to join your group. I have a clean driving record and can help with driving duties.",
+      "Hi! I'm looking for a reliable carpool for my daughter Emma (Grade 2). I live 2 miles from the school and would love to join your group. I have a clean driving record and can help with driving duties.",
     childrenInfo: [{ name: "Emma Parent", grade: "2" }],
     matchScore: 85,
     matchReasons: [
@@ -42,7 +42,7 @@ let mockJoinRequests = [
       name: "Lincoln Morning Riders",
       targetSchool: {
         id: "school-1",
-        name: "Lincoln Elementary School",
+        name: "Tesla STEM High School",
       },
     },
     requesterId: "parent-456",

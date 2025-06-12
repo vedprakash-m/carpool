@@ -152,20 +152,22 @@ module.exports = async function (context, req) {
         },
       };
     } else {
-      // Fallback to mock data when no user authentication
-      context.log("No valid user token, returning mock stats");
+      // Return zero stats for unauthenticated users or new users without groups
+      context.log(
+        "No valid user token, returning zero stats to trigger onboarding"
+      );
 
-      const mockStats = {
-        totalTrips: 8,
-        tripsAsDriver: 5,
-        tripsAsPassenger: 3,
-        totalDistance: 1250,
-        milesSaved: 750, // 60% of total distance
-        upcomingTrips: 2,
-        // School-focused statistics for dashboard
-        weeklySchoolTrips: 6,
-        childrenCount: 2,
-        timeSavedHours: 4, // 30min per trip estimate (8 trips * 0.5 hours)
+      const zeroStats = {
+        totalTrips: 0,
+        tripsAsDriver: 0,
+        tripsAsPassenger: 0,
+        totalDistance: 0,
+        milesSaved: 0,
+        upcomingTrips: 0,
+        // School-focused statistics for dashboard - zero for new users
+        weeklySchoolTrips: 0,
+        childrenCount: 0,
+        timeSavedHours: 0,
       };
 
       context.res = {
@@ -173,25 +175,25 @@ module.exports = async function (context, req) {
         headers: corsHeaders,
         body: {
           success: true,
-          data: mockStats,
+          data: zeroStats,
         },
       };
     }
   } catch (error) {
     context.log("Database stats error:", error);
 
-    // Fallback to mock data on any error
+    // Return zero stats on any error to prevent showing incorrect data
     const fallbackStats = {
-      totalTrips: 8,
-      tripsAsDriver: 5,
-      tripsAsPassenger: 3,
-      totalDistance: 1250,
-      milesSaved: 750, // 60% of total distance saved
-      upcomingTrips: 2,
-      // School-focused statistics for dashboard
-      weeklySchoolTrips: 6,
-      childrenCount: 2,
-      timeSavedHours: 4, // 30min per trip estimate (8 trips * 0.5 hours)
+      totalTrips: 0,
+      tripsAsDriver: 0,
+      tripsAsPassenger: 0,
+      totalDistance: 0,
+      milesSaved: 0,
+      upcomingTrips: 0,
+      // School-focused statistics for dashboard - zero for safety
+      weeklySchoolTrips: 0,
+      childrenCount: 0,
+      timeSavedHours: 0,
     };
 
     context.res = {
