@@ -20,6 +20,9 @@ import {
   AcademicCapIcon,
   HomeIcon,
   ChartBarIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 export default memo(function DashboardPage() {
@@ -30,19 +33,6 @@ export default memo(function DashboardPage() {
   const { stats, loading, fetchTripStats } = useTripStore();
 
   // Throttled navigation functions to prevent rapid clicks
-  const handleScheduleSchoolRun = useThrottle(
-    useCallback(() => {
-      router.push("/trips/create?type=school");
-    }, [router]),
-    1000
-  );
-
-  const handleFindSchoolCarpool = useThrottle(
-    useCallback(() => {
-      router.push("/trips?filter=school");
-    }, [router]),
-    1000
-  );
 
   useEffect(() => {
     if (
@@ -88,302 +78,377 @@ export default memo(function DashboardPage() {
               <h1 className="text-2xl font-bold text-gray-900">
                 Good morning, {user.firstName}! 👋
               </h1>
-              <p className="text-gray-600 mt-1">
-                2 school runs are scheduled for tomorrow - all pickups confirmed
-              </p>
+              {stats && (stats.weeklySchoolTrips || 0) > 0 ? (
+                <p className="text-gray-600 mt-1">
+                  You have {stats.weeklySchoolTrips} school runs scheduled this
+                  week
+                </p>
+              ) : (
+                <p className="text-gray-600 mt-1">
+                  Ready to start your carpool journey? Discover groups in your
+                  area or create your own.
+                </p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* School Statistics */}
-        <SectionErrorBoundary sectionName="School Statistics">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <CalendarIcon className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    This Week's School Runs
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {loading ? "..." : stats?.weeklySchoolTrips || 0}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Morning + afternoon trips
-                  </p>
+        {/* Conditional Statistics Display */}
+        <SectionErrorBoundary sectionName="User Statistics">
+          {stats && (stats.weeklySchoolTrips || 0) > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <CalendarIcon className="h-8 w-8 text-blue-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">
+                      This Week's School Runs
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {loading ? "..." : stats?.weeklySchoolTrips || 0}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Morning + afternoon trips
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <UserGroupIcon className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Children in Carpool
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {loading ? "..." : stats?.childrenCount || 0}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Active student profiles
-                  </p>
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <UserGroupIcon className="h-8 w-8 text-green-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">
+                      Children in Carpool
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {loading ? "..." : stats?.childrenCount || 0}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Active student profiles
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <MapPinIcon className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Miles Saved
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {loading ? "..." : `${stats?.milesSaved || 0} miles`}
-                  </p>
-                  <p className="text-sm text-gray-500">through carpooling</p>
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <MapPinIcon className="h-8 w-8 text-green-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">
+                      Miles Saved
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {loading ? "..." : `${stats?.milesSaved || 0} miles`}
+                    </p>
+                    <p className="text-sm text-gray-500">through carpooling</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <ClockIcon className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Time Saved This Month
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {loading ? "..." : `${stats?.timeSavedHours || 0}h`}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    from coordinated pickups
-                  </p>
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <ClockIcon className="h-8 w-8 text-purple-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">
+                      Time Saved This Month
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {loading ? "..." : `${stats?.timeSavedHours || 0}h`}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      from coordinated pickups
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-8">
+              <ChartBarIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No Activity Yet
+              </h3>
+              <p className="text-gray-600">
+                Join a carpool group to start tracking your transportation
+                statistics.
+              </p>
+            </div>
+          )}
         </SectionErrorBoundary>
 
-        {/* School-Specific Quick Actions */}
-        <SectionErrorBoundary sectionName="School Quick Actions">
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
-                Quick Actions
-              </h2>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button
-                  onClick={handleScheduleSchoolRun}
-                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                >
-                  <TruckIcon className="h-8 w-8 text-blue-600 mb-2" />
-                  <span className="font-medium text-gray-900">
-                    Schedule School Run
-                  </span>
-                  <span className="text-sm text-gray-500 text-center mt-1">
-                    Create morning or afternoon school trip
-                  </span>
-                </button>
+        {/* Dynamic Content Based on User Engagement */}
+        <SectionErrorBoundary sectionName="Dashboard Content">
+          {stats && (stats.weeklySchoolTrips || 0) > 0 ? (
+            // User has active carpool participation - show group-based actions
+            <div className="bg-white rounded-lg shadow">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">
+                  Your Carpool Actions
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <button
+                    onClick={handleWeeklyPreferences}
+                    className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+                  >
+                    <CalendarIcon className="h-8 w-8 text-purple-600 mb-2" />
+                    <span className="font-medium text-gray-900">
+                      Weekly Preferences
+                    </span>
+                    <span className="text-sm text-gray-500 text-center mt-1">
+                      Submit your weekly driving preferences
+                    </span>
+                  </button>
 
-                <button
-                  onClick={handleFindSchoolCarpool}
-                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
-                >
-                  <UserGroupIcon className="h-8 w-8 text-green-600 mb-2" />
-                  <span className="font-medium text-gray-900">
-                    Find School Carpool
-                  </span>
-                  <span className="text-sm text-gray-500 text-center mt-1">
-                    Join existing school trips in your area
-                  </span>
-                </button>
+                  <button
+                    onClick={handleManageChildren}
+                    className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-colors"
+                  >
+                    <AcademicCapIcon className="h-8 w-8 text-yellow-600 mb-2" />
+                    <span className="font-medium text-gray-900">
+                      Manage Children
+                    </span>
+                    <span className="text-sm text-gray-500 text-center mt-1">
+                      Add or edit student profiles
+                    </span>
+                  </button>
 
-                <button
-                  onClick={handleWeeklyPreferences}
-                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
-                >
-                  <CalendarIcon className="h-8 w-8 text-purple-600 mb-2" />
-                  <span className="font-medium text-gray-900">
-                    Weekly Preferences
-                  </span>
-                  <span className="text-sm text-gray-500 text-center mt-1">
-                    Submit your weekly driving preferences
-                  </span>
-                </button>
-
-                <button
-                  onClick={handleManageChildren}
-                  className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-colors"
-                >
-                  <AcademicCapIcon className="h-8 w-8 text-yellow-600 mb-2" />
-                  <span className="font-medium text-gray-900">
-                    Manage Children
-                  </span>
-                  <span className="text-sm text-gray-500 text-center mt-1">
-                    Add or edit student profiles
-                  </span>
-                </button>
+                  <button
+                    onClick={() => router.push("/parents/groups")}
+                    className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  >
+                    <UserGroupIcon className="h-8 w-8 text-blue-600 mb-2" />
+                    <span className="font-medium text-gray-900">
+                      Manage Groups
+                    </span>
+                    <span className="text-sm text-gray-500 text-center mt-1">
+                      View and manage your carpool groups
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            // User hasn't joined groups - show onboarding
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-8 text-center">
+              <UserGroupIcon className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Welcome to VCarpool! 🚗
+              </h2>
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                Get started by discovering carpool groups in your area or
+                creating your own. Join a community of families making school
+                transportation easier, safer, and more sustainable.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div className="bg-white rounded-lg p-6 shadow-sm border">
+                  <MagnifyingGlassIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Find Carpool Groups
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Search for existing carpool groups near your school and
+                    neighborhood.
+                  </p>
+                  <button
+                    onClick={() => router.push("/parents/discover")}
+                    className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Discover Groups
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-lg p-6 shadow-sm border">
+                  <PlusIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Start Your Own Group
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Be the first to organize carpooling for your school and
+                    become a Group Admin.
+                  </p>
+                  <button
+                    onClick={() => router.push("/parents/groups/create")}
+                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Create Group
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-8 p-4 bg-yellow-50 rounded-lg">
+                <div className="flex items-center justify-center">
+                  <InformationCircleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+                  <span className="text-sm text-yellow-800">
+                    <strong>Next Steps:</strong> Complete your profile setup,
+                    verify your address, and add your children's information to
+                    get personalized group recommendations.
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </SectionErrorBoundary>
 
-        {/* Upcoming School Trips */}
-        <SectionErrorBoundary sectionName="Upcoming School Trips">
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
-                Today's School Schedule
-              </h2>
-            </div>
-            <div className="p-6 space-y-4">
-              {/* Morning Drop-off */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      Morning Drop-off
-                    </h3>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <MapPinIcon className="h-4 w-4 mr-1" />
-                      Lincoln Elementary
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">7:45 AM</p>
-                    <p className="text-sm text-gray-600">Tomorrow</p>
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">
-                      Children: Emma, Jake
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Passengers: Tom (Grade 3), Lisa (Grade 2)
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      ✓ Confirmed
-                    </span>
-                    <p className="text-sm text-gray-600 mt-1">
-                      🚗 You're driving
-                    </p>
-                  </div>
-                </div>
+        {/* Conditional Schedule Display */}
+        <SectionErrorBoundary sectionName="Schedule Overview">
+          {stats && (stats.weeklySchoolTrips || 0) > 0 ? (
+            <div className="bg-white rounded-lg shadow">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">
+                  Schedule Overview
+                </h2>
               </div>
-
-              {/* Afternoon Pickup */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      Afternoon Pickup
-                    </h3>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <MapPinIcon className="h-4 w-4 mr-1" />
-                      Lincoln Elementary
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">3:15 PM</p>
-                    <p className="text-sm text-gray-600">Tomorrow</p>
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Children: Emma</p>
-                    <p className="text-sm text-gray-600">Driver: You</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      ✓ Confirmed
-                    </span>
-                  </div>
+              <div className="p-6">
+                <div className="text-center py-8">
+                  <CalendarIcon className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    View Your Schedule
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Check your upcoming carpool assignments and manage your
+                    weekly schedule.
+                  </p>
+                  <button
+                    onClick={() => router.push("/parents/schedule")}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    View Full Schedule
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-blue-50 rounded-lg p-6 text-center">
+              <CalendarIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No Scheduled Trips
+              </h3>
+              <p className="text-gray-600">
+                Join a carpool group to start coordinating school
+                transportation.
+              </p>
+            </div>
+          )}
         </SectionErrorBoundary>
 
         {/* Family Efficiency Metrics */}
         <SectionErrorBoundary sectionName="Family Efficiency Metrics">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* This Week's Impact */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center">
-                  <ChartBarIcon className="h-5 w-5 text-blue-600 mr-2" />
-                  <h3 className="text-lg font-medium text-gray-900">
-                    This Week's Impact
-                  </h3>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">8</p>
-                    <p className="text-sm text-gray-600">Trips coordinated</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">
-                      45 miles
-                    </p>
-                    <p className="text-sm text-gray-600">Miles shared</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-purple-600">12 lbs</p>
-                    <p className="text-sm text-gray-600">CO2 saved</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">
-                      {stats?.timeSavedHours || 0} hrs
-                    </p>
-                    <p className="text-sm text-gray-600">Time saved</p>
+          {stats && (stats.weeklySchoolTrips || 0) > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* This Week's Impact */}
+              <div className="bg-white rounded-lg shadow">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <div className="flex items-center">
+                    <ChartBarIcon className="h-5 w-5 text-blue-600 mr-2" />
+                    <h3 className="text-lg font-medium text-gray-900">
+                      This Week's Impact
+                    </h3>
                   </div>
                 </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">
+                        {stats?.weeklySchoolTrips || 0}
+                      </p>
+                      <p className="text-sm text-gray-600">Trips coordinated</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">
+                        {stats?.milesSaved || 0} miles
+                      </p>
+                      <p className="text-sm text-gray-600">Miles shared</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-purple-600">
+                        {Math.round((stats?.milesSaved || 0) * 0.89)} lbs
+                      </p>
+                      <p className="text-sm text-gray-600">CO2 saved</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">
+                        {stats?.timeSavedHours || 0} hrs
+                      </p>
+                      <p className="text-sm text-gray-600">Time saved</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Community Connection */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center">
-                  <UserGroupIcon className="h-5 w-5 text-green-600 mr-2" />
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Community Connection
-                  </h3>
+              {/* Community Connection */}
+              <div className="bg-white rounded-lg shadow">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <div className="flex items-center">
+                    <UserGroupIcon className="h-5 w-5 text-green-600 mr-2" />
+                    <h3 className="text-lg font-medium text-gray-900">
+                      Your Carpool Activity
+                    </h3>
+                  </div>
                 </div>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">98%</p>
-                    <p className="text-sm text-gray-600">Reliability</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">6</p>
-                    <p className="text-sm text-gray-600">Families connected</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-orange-600">2</p>
-                    <p className="text-sm text-gray-600">Emergency pickups</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-yellow-600">
-                      ⭐ 4.8/5
-                    </p>
-                    <p className="text-sm text-gray-600">Parent rating</p>
+                <div className="p-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">
+                        {stats?.totalTrips || 0}
+                      </p>
+                      <p className="text-sm text-gray-600">Total trips</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">
+                        {stats?.childrenCount || 0}
+                      </p>
+                      <p className="text-sm text-gray-600">Children enrolled</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-orange-600">
+                        {stats?.upcomingTrips || 0}
+                      </p>
+                      <p className="text-sm text-gray-600">Upcoming trips</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-yellow-600">
+                        {stats?.tripsAsDriver || 0}
+                      </p>
+                      <p className="text-sm text-gray-600">As driver</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow p-8 text-center">
+              <ChartBarIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Track Your Impact
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Once you join a carpool group, you'll see your environmental
+                impact, time savings, and community connections here.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <p className="text-lg font-bold text-gray-400">0</p>
+                  <p className="text-sm text-gray-500">Trips</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-gray-400">0 miles</p>
+                  <p className="text-sm text-gray-500">Saved</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-gray-400">0 lbs</p>
+                  <p className="text-sm text-gray-500">CO2 Reduced</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-gray-400">0 hrs</p>
+                  <p className="text-sm text-gray-500">Time Saved</p>
+                </div>
+              </div>
+            </div>
+          )}
         </SectionErrorBoundary>
       </div>
     </DashboardLayout>
