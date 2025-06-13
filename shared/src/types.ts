@@ -435,12 +435,31 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  department?: string;
+  familyName: string;
+  parent: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  };
+  secondParent?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  };
+  homeAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  children: {
+    firstName: string;
+    lastName: string;
+    grade: string;
+    school: string;
+  }[];
 }
 
 export interface UpdateUserRequest {

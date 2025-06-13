@@ -308,6 +308,12 @@ export interface RegisterRequest {
     email: string;
     password: string;
   };
+  homeAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
   children: {
     firstName: string;
     lastName: string;

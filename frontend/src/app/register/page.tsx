@@ -13,12 +13,14 @@ import {
   SchoolSelect,
   GradeSelect,
 } from "@/components/shared/SchoolGradeSelects";
+import AddressValidation from "@/components/AddressValidation";
 import { TESLA_STEM_HIGH_SCHOOL } from "@/config/schools";
 import {
   UserIcon,
   UsersIcon,
   PlusIcon,
   TrashIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { useMemo } from "react";
 
@@ -30,6 +32,12 @@ const registerSchema = z.object({
     lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
+  }),
+  homeAddress: z.object({
+    street: z.string().min(1, "Street address is required"),
+    city: z.string().min(1, "City is required"),
+    state: z.string().min(1, "State is required"),
+    zipCode: z.string().min(5, "Valid ZIP code is required"),
   }),
   secondParent: z
     .object({
@@ -56,6 +64,7 @@ export default function RegisterPage() {
   const register = useAuthStore((state) => state.register);
   const isLoading = useAuthStore((state) => state.isLoading);
   const [currentStep, setCurrentStep] = useState(1);
+  const [addressValidated, setAddressValidated] = useState(false);
 
   const {
     register: registerField,
@@ -67,6 +76,12 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     mode: "onChange",
     defaultValues: {
+      homeAddress: {
+        street: "",
+        city: "",
+        state: "",
+        zipCode: "",
+      },
       children: [
         {
           firstName: "",
@@ -148,6 +163,21 @@ export default function RegisterPage() {
         toast.error("Please fill in all required fields for each child");
         return;
       }
+
+      // Validate address is provided
+      if (
+        !data.homeAddress ||
+        !data.homeAddress.street ||
+        !data.homeAddress.city ||
+        !data.homeAddress.state ||
+        !data.homeAddress.zipCode
+      ) {
+        toast.error("Please provide a complete home address");
+        return;
+      }
+
+      // Note: Address validation is handled by the AddressValidation component
+      // The actual geographic validation happens during the address validation step
 
       console.log("Submitting registration data:", data);
       await register(data);
@@ -299,13 +329,66 @@ export default function RegisterPage() {
                   onClick={nextStep}
                   className="btn-primary"
                 >
-                  Next: Add Children
+                  Next: Home Address
                 </button>
               </div>
             </section>
           )}
 
           {currentStep === 2 && (
+            <section>
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                <MapPinIcon className="h-5 w-5 inline mr-2" />
+                Step 2: Home Address Verification
+              </h3>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600 mb-4">
+                  Your home address is used to verify eligibility and optimize
+                  carpool routes. We validate that your address is within the
+                  Tesla STEM High School service area.
+                </p>
+
+                <AddressValidation
+                  onValidationComplete={(verified: boolean) => {
+                    setAddressValidated(verified);
+                  }}
+                  required={true}
+                />
+
+                {!addressValidated && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                    <div className="flex">
+                      <MapPinIcon className="h-5 w-5 text-yellow-400 mr-2" />
+                      <p className="text-sm text-yellow-800">
+                        Please validate your home address to continue with
+                        registration.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="btn-secondary"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="btn-primary"
+                  disabled={!addressValidated}
+                >
+                  Next: Add Children
+                </button>
+              </div>
+            </section>
+          )}
+
+          {currentStep === 3 && (
             <section>
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Step 2: Children's Information

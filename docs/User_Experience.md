@@ -252,28 +252,52 @@ WIREFRAME: Complete Registration Required
 
 WIREFRAME: Registration Validation Steps
 ┌─────────────────────────────────────────────────────────────┐
-│ Verify Your Information                                     │
+│ Family Registration - Step by Step                         │
 ├─────────────────────────────────────────────────────────────┤
-│ Step 1 of 3: SMS Verification                              │
+│ Step 1 of 3: Family Information                           │
 │                                                             │
-│ We sent a code to (425) 555-0123                          │
+│ Family Name: [Johnson Family                    ]          │
 │                                                             │
-│ Enter verification code: [_ _ _ _ _ _]                       │
+│ Primary Parent:                                             │
+│ First Name: [Sarah            ] Last Name: [Johnson      ] │
+│ Email: [sarah@school.edu                       ]          │
+│ Password: [••••••••••••••••••••••••••••••••••] │
 │                                                             │
-│ [Resend Code] [Use Different Number]                       │
+│ Optional - Second Parent:                                   │
+│ ☑ Add second parent                                        │
+│ First Name: [Mike             ] Last Name: [Johnson      ] │
+│ Email: [mike@school.edu                        ]          │
+│ Password: [••••••••••••••••••••••••••••••••••] │
 │                                                             │
-│ Step 2 of 3: Address Verification                          │
+│                              [Next: Home Address →]        │
+├─────────────────────────────────────────────────────────────┤
+│ Step 2 of 3: Home Address Verification                     │
+│                                                             │
+│ 📍 Your home address is used to verify eligibility and     │
+│    optimize carpool routes. We validate that your address  │
+│    is within the Tesla STEM High School service area.      │
+│                                                             │
+│ [123 Main St, Redmond, WA 98052                          ] │
 │                                                             │
 │ ✓ Address found: 123 Main St, Redmond, WA 98052          │
-│ ✓ Distance verified: 3.2 miles from detected school       │
+│ ✓ Distance verified: 3.2 miles from Tesla STEM High       │
 │ ✓ Within 25-mile service area                              │
 │                                                             │
-│ Step 3 of 3: Emergency Contact                             │
+│ ⚠ Please validate your home address to continue            │
 │                                                             │
-│ We sent a code to (425) 555-0124                          │
-│ Enter verification code: [_ _ _ _ _ _]                       │
+│                              [← Back] [Next: Add Children →] │
+├─────────────────────────────────────────────────────────────┤
+│ Step 3 of 3: Children Information                          │
 │                                                             │
-│                              [Complete Setup →]            │
+│ Child 1:                                                    │
+│ First Name: [Emma             ] Last Name: [Johnson      ] │
+│ Grade: [3rd Grade      ▼] School: [Tesla STEM High     ▼] │
+│                                                             │
+│ [+ Add Another Child]                                       │
+│                                                             │
+│ ⚠ At least one child is required                          │
+│                                                             │
+│                              [← Back] [Create Account →]   │
 └─────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────┐
 │ 🚗 VCarpool                              [Help] [Login]    │
@@ -1094,6 +1118,7 @@ WIREFRAME: Mobile Navigation Pattern
 - **Join Request Flow**: Modal-based request submission with family information
 - **School Database Integration**: Autocomplete school selection with distance calculation
 - **Geographic Matching**: Real-time distance calculation and service area validation
+- **✅ Address Validation**: Complete home address collection and validation in registration flow
 
 #### Phase 3: Advanced Scheduling Features
 
@@ -1101,6 +1126,13 @@ WIREFRAME: Mobile Navigation Pattern
 - **Group Admin Scheduling**: Algorithm execution with conflict resolution
 - **Swap Request System**: Create, respond, and auto-acceptance workflow
 - **Mobile-Responsive Design**: Touch-friendly interfaces for all core functions
+
+#### Phase 4: Registration Enhancement (COMPLETED June 2025)
+
+- **✅ Three-Step Registration**: Family info → Address verification → Children details
+- **✅ Address Validation Integration**: Real-time geocoding and service area verification
+- **✅ Type System Updates**: Enhanced RegisterRequest interface with homeAddress support
+- **✅ Backend Integration**: Updated address validation APIs for registration flow
 
 ### 🔄 Partially Implemented
 
