@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock data storage (replace with actual database in production)
 let mockJoinRequests = [
@@ -134,49 +135,31 @@ let mockCarpoolGroups = [
 
 module.exports = async function (context, req) {
   try {
-    // Set CORS headers
-    context.res = {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json",
-      },
-    };
-
     // Handle preflight requests
     if (req.method === "OPTIONS") {
-      context.res.status = 200;
-      context.res.body = "";
-      return;
+      return UnifiedResponseHandler.preflight(context);
     }
 
     // Authentication check
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Authentication required",
-        },
-      });
-      return;
+      return UnifiedResponseHandler.error(
+        context,
+        "UNAUTHORIZED",
+        "Authentication required",
+        401
+      );
     }
 
     // Simple token validation (replace with actual JWT validation)
     const token = authHeader.split(" ")[1];
     if (!token.includes("trip_admin") && !token.includes("admin")) {
-      context.res.status = 403;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "FORBIDDEN",
-          message: "Group Admin access required",
-        },
-      });
-      return;
+      return UnifiedResponseHandler.error(
+        context,
+        "FORBIDDEN",
+        "Group Admin access required",
+        403
+      );
     }
 
     const method = req.method;

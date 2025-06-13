@@ -1,25 +1,24 @@
 const { CosmosClient } = require("@azure/cosmos");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const { MockDataFactory } = require("../src/utils/mock-data-wrapper");
+const {
+  handlePreflight,
+  createSuccessResponse,
+  createErrorResponse,
+  validateAuth,
+  handleError,
+  isValidDate,
+  getCurrentMondayDate,
+  logRequest,
+} = require("../src/utils/unified-response");
 
 module.exports = async function (context, req) {
   context.log("Parent Assignments API called");
+  logRequest(req, context, "admin-parent-assignments");
 
   // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+  const preflightResponse = handlePreflight(req);
+  if (preflightResponse) {
+    context.res = preflightResponse;
     return;
   }
 
@@ -27,24 +26,15 @@ module.exports = async function (context, req) {
     const { weekStartDate } = req.params;
     const method = req.method;
 
-    // Get authorization token
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        }),
-      };
+    // Validate authorization
+    const authError = validateAuth(req);
+    if (authError) {
+      context.res = authError;
+      return;
     }
 
     // TODO: Verify parent role from JWT token
-    const token = authHeader.split(" ")[1];
+    const token = req.headers.authorization.split(" ")[1];
 
     // Initialize Cosmos DB (use environment variables or fallback to mock)
     let assignmentsContainer = null;
@@ -65,43 +55,31 @@ module.exports = async function (context, req) {
 
     switch (method) {
       case "GET":
-        return await getParentAssignments(
+        const result = await getParentAssignments(
           assignmentsContainer,
           usersContainer,
           targetWeek,
           context
         );
+        context.res = result;
+        return;
       default:
-        return {
-          status: 405,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "METHOD_NOT_ALLOWED",
-              message: `Method ${method} not allowed`,
-            },
-          }),
-        };
+        context.res = createErrorResponse(
+          "METHOD_NOT_ALLOWED",
+          `Method ${method} not allowed`,
+          405
+        );
+        return;
     }
   } catch (error) {
-    context.log.error("Parent assignments error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error",
-          details: error.message,
-        },
-      }),
-    };
+    context.res = handleError(
+      error,
+      context,
+      "Failed to process parent assignments"
+    );
   }
 };
 
-// Get parent assignments for a specific week
 async function getParentAssignments(
   assignmentsContainer,
   usersContainer,
@@ -111,17 +89,11 @@ async function getParentAssignments(
   try {
     // Validate week start date format
     if (!weekStartDate || !isValidDate(weekStartDate)) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid week start date format. Expected YYYY-MM-DD.",
-          },
-        }),
-      };
+      return createErrorResponse(
+        "VALIDATION_ERROR",
+        "Invalid week start date format. Expected YYYY-MM-DD.",
+        400
+      );
     }
 
     if (assignmentsContainer && usersContainer) {
@@ -171,29 +143,15 @@ async function getParentAssignments(
         };
       });
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
-            weekStartDate,
-            assignments: enhancedAssignments,
-            totalAssignments: enhancedAssignments.length,
-          },
-        }),
-      };
+      return createSuccessResponse({
+        weekStartDate,
+        assignments: enhancedAssignments,
+        totalAssignments: enhancedAssignments.length,
+      });
     } else {
-      // Return mock assignments for development
+      // Return mock assignments for development using centralized factory
       const mockAssignments = getMockParentAssignments(weekStartDate);
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: mockAssignments,
-        }),
-      };
+      return createSuccessResponse(mockAssignments);
     }
   } catch (error) {
     context.log.error("Get parent assignments error:", error);
@@ -220,127 +178,25 @@ function isValidDate(dateString) {
   return date instanceof Date && !isNaN(date);
 }
 
-// Mock data for development and testing - all emails and data are fake examples
+// Mock data for development using centralized factory
 function getMockParentAssignments(weekStartDate) {
+  const assignments = MockDataFactory.createWeeklyAssignments(weekStartDate);
+
   return {
     weekStartDate,
-    assignments: [
-      {
-        id: "assignment-1",
-        templateSlotId: "template-monday-morning-dropoff",
-        date: "2025-01-06",
-        dayOfWeek: 1,
-        startTime: "07:30",
-        endTime: "08:30",
-        routeType: "school_dropoff",
-        description: "Monday Morning School Drop-off",
-        driverId: "parent-1",
-        driverName: "Sarah Johnson",
-        driverContact: {
-          email: "mock.driver@example.com",
-          phoneNumber: "555-0123",
-        },
-        passengerIds: ["child-1", "child-2", "child-3"],
-        passengers: [
-          {
-            id: "child-1",
-            name: "Emma Wilson",
-            phoneNumber: "555-0126",
-          },
-          {
-            id: "child-2",
-            name: "Lucas Chen",
-            phoneNumber: "555-0124",
-          },
-          {
-            id: "child-3",
-            name: "Sophie Davis",
-            phoneNumber: "555-0125",
-          },
-        ],
-        passengerCount: 3,
-        pickupLocation: "123 Maple Street",
-        dropoffLocation: "Lincoln Elementary School",
-        status: "confirmed",
-        assignmentMethod: "automatic",
-        createdAt: "2025-01-03T10:00:00.000Z",
-        updatedAt: "2025-01-03T10:00:00.000Z",
-      },
-      {
-        id: "assignment-2",
-        templateSlotId: "template-wednesday-afternoon-pickup",
-        date: "2025-01-08",
-        dayOfWeek: 3,
-        startTime: "15:00",
-        endTime: "16:00",
-        routeType: "school_pickup",
-        description: "Wednesday Afternoon School Pick-up",
-        driverId: "parent-1",
-        driverName: "Sarah Johnson",
-        driverContact: {
-          email: "mock.driver@example.com",
-          phoneNumber: "555-0123",
-        },
-        passengerIds: ["child-4", "child-5"],
-        passengers: [
-          {
-            id: "child-4",
-            name: "Alex Thompson",
-            phoneNumber: "555-0127",
-          },
-          {
-            id: "child-5",
-            name: "Maya Patel",
-            phoneNumber: "555-0128",
-          },
-        ],
-        passengerCount: 2,
-        pickupLocation: "Lincoln Elementary School",
-        dropoffLocation: "456 Oak Avenue",
-        status: "confirmed",
-        assignmentMethod: "automatic",
-        createdAt: "2025-01-03T10:00:00.000Z",
-        updatedAt: "2025-01-03T10:00:00.000Z",
-      },
-      {
-        id: "assignment-3",
-        templateSlotId: "template-friday-morning-dropoff",
-        date: "2025-01-10",
-        dayOfWeek: 5,
-        startTime: "07:30",
-        endTime: "08:30",
-        routeType: "school_dropoff",
-        description: "Friday Morning School Drop-off",
-        driverId: "parent-1",
-        driverName: "Sarah Johnson",
-        driverContact: {
-          email: "mock.driver@example.com",
-          phoneNumber: "555-0123",
-        },
-        passengerIds: ["child-6"],
-        passengers: [
-          {
-            id: "child-6",
-            name: "Ryan Martinez",
-            phoneNumber: "555-0129",
-          },
-        ],
-        passengerCount: 1,
-        pickupLocation: "123 Maple Street",
-        dropoffLocation: "Lincoln Elementary School",
-        status: "confirmed",
-        assignmentMethod: "automatic",
-        createdAt: "2025-01-03T10:00:00.000Z",
-        updatedAt: "2025-01-03T10:00:00.000Z",
-      },
-    ],
-    totalAssignments: 3,
+    assignments,
+    totalAssignments: assignments.length,
     weekSummary: {
-      totalTrips: 3,
-      totalPassengers: 6,
-      dropoffTrips: 2,
-      pickupTrips: 1,
-      estimatedDrivingTime: "3 hours",
+      totalTrips: assignments.length,
+      totalPassengers: assignments.reduce(
+        (sum, assignment) => sum + assignment.passengerCount,
+        0
+      ),
+      dropoffTrips: assignments.filter((a) => a.routeType === "school_dropoff")
+        .length,
+      pickupTrips: assignments.filter((a) => a.routeType === "school_pickup")
+        .length,
+      estimatedDrivingTime: `${assignments.length} hours`,
     },
   };
 }

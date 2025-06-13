@@ -1,4 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock data storage (replace with actual database in production)
 let mockSwapRequests = [
@@ -179,20 +181,9 @@ function processAutoAcceptance() {
 
 module.exports = async function (context, req) {
   try {
-    // Set CORS headers
-    context.res = {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json",
-      },
-    };
-
     // Handle preflight requests
     if (req.method === "OPTIONS") {
-      context.res.status = 200;
-      context.res.body = "";
+      context.res = UnifiedResponseHandler.preflight();
       return;
     }
 
@@ -202,14 +193,7 @@ module.exports = async function (context, req) {
     // Authentication check
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Authentication required",
-        },
-      });
+      context.res = UnifiedResponseHandler.authError("Authentication required");
       return;
     }
 

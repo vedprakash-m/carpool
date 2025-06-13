@@ -4,12 +4,12 @@ const { v4: uuidv4 } = require("uuid");
 let mockSchools = [
   {
     id: "school-1",
-    name: "Lincoln Elementary School",
+    name: "Tesla STEM High School",
     address: "123 Oak Street, Springfield, IL 62701",
     location: {
       address: "123 Oak Street, Springfield, IL 62701",
-      latitude: 39.7817,
-      longitude: -89.6501,
+      latitude: 47.674,
+      longitude: -122.1215,
       zipCode: "62701",
       city: "Springfield",
       state: "IL",
@@ -99,7 +99,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 function mockGeocode(address) {
   // Simplified mock - in production, use Google Maps Geocoding API
   const mockCoordinates = {
-    springfield: { lat: 39.7817, lng: -89.6501 },
+    springfield: { lat: 47.674, lng: -122.1215 },
     lincoln: { lat: 39.7965, lng: -89.644 },
     washington: { lat: 39.8014, lng: -89.6298 },
     roosevelt: { lat: 39.77, lng: -89.65 },
@@ -118,8 +118,8 @@ function mockGeocode(address) {
 
   // Default to Springfield center
   return {
-    latitude: 39.7817,
-    longitude: -89.6501,
+    latitude: 47.674,
+    longitude: -122.1215,
     formattedAddress: address + ", Springfield, IL, USA",
   };
 }

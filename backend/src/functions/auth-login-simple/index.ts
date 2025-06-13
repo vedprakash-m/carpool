@@ -4,6 +4,9 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
+import { UnifiedAuthService } from "../../services/unified-auth.service";
+import UnifiedResponseHandler from "../../utils/unified-response.service";
+import { authCors } from "../../middleware";
 
 async function simpleLoginHandler(
   request: HttpRequest,
@@ -12,105 +15,49 @@ async function simpleLoginHandler(
   try {
     console.log("Simple login handler started");
 
-    // Add CORS headers
-    const headers = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Content-Type": "application/json",
-    };
-
-    // Handle preflight
+    // Handle CORS preflight
     if (request.method === "OPTIONS") {
-      return {
-        status: 200,
-        headers,
-      };
+      return UnifiedResponseHandler.preflight();
     }
 
-    console.log("Parsing request body");
-    const body = await request.text();
-    console.log("Raw body:", body);
+    // Parse request body
+    const body = await UnifiedResponseHandler.parseJsonBody(request);
+    const { email, password } = body;
 
-    let requestData;
-    try {
-      requestData = JSON.parse(body);
-    } catch (e) {
-      console.log("JSON parse error:", e);
-      return {
-        status: 400,
-        headers,
-        jsonBody: {
-          success: false,
-          error: "Invalid JSON",
-        },
-      };
+    console.log("Login attempt for:", email);
+
+    // Validate required fields
+    const validation = UnifiedResponseHandler.validateRequiredFields(
+      { email, password },
+      ["email", "password"]
+    );
+
+    if (!validation.isValid) {
+      return UnifiedResponseHandler.validationError(
+        "Email and password are required",
+        { missingFields: validation.missingFields }
+      );
     }
 
-    console.log("Parsed request data:", requestData);
-    const { email, password } = requestData;
+    // Authenticate user
+    const authResult = await UnifiedAuthService.authenticate(email, password);
 
-    if (!email || !password) {
-      console.log("Missing email or password");
-      return {
-        status: 400,
-        headers,
-        jsonBody: {
-          success: false,
-          error: "Email and password required",
-        },
-      };
+    if (authResult.success) {
+      return UnifiedResponseHandler.success({
+        user: authResult.user,
+        token: authResult.accessToken,
+        refreshToken: authResult.refreshToken,
+      });
+    } else {
+      return UnifiedResponseHandler.error(
+        authResult.error?.code || "AUTHENTICATION_FAILED",
+        authResult.error?.message || "Invalid credentials",
+        authResult.error?.statusCode || 401
+      );
     }
-
-    // For now, let's just test with our known admin user
-    if (
-      email === "admin@vcarpool.com" &&
-      password === (process.env.ADMIN_PASSWORD || "test-admin-password")
-    ) {
-      console.log("Returning success for admin user");
-      return {
-        status: 200,
-        headers,
-        jsonBody: {
-          success: true,
-          data: {
-            user: {
-              id: "test-admin-id",
-              email: "admin@vcarpool.com",
-              firstName: "Admin",
-              lastName: "User",
-              role: "admin",
-            },
-            token: "test-token",
-            refreshToken: "test-refresh-token",
-          },
-        },
-      };
-    }
-
-    console.log("Invalid credentials");
-    return {
-      status: 401,
-      headers,
-      jsonBody: {
-        success: false,
-        error: "Invalid email or password",
-      },
-    };
   } catch (error) {
     console.error("Simple login handler error:", error);
-    return {
-      status: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-      jsonBody: {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-      },
-    };
+    return UnifiedResponseHandler.handleException(error);
   }
 }
 

@@ -31,15 +31,15 @@ module.exports = async function (context, req) {
       password ? password.length : "undefined"
     );
 
-    // Check for both test admin and original admin
+    // Check for test admin accounts
     if (
       (email === "admin@vcarpool.com" &&
         password === (process.env.ADMIN_PASSWORD || "test-admin-password")) ||
       (email === "mi.vedprakash@gmail.com" && password)
     ) {
-      context.log("Login successful for email:", email);
+      context.log("Admin login successful for email:", email);
 
-      // Return the format expected by frontend: { success: true, data: { user, token, refreshToken } }
+      // Return admin user
       context.res = {
         status: 200,
         headers: corsHeaders,
@@ -81,6 +81,74 @@ module.exports = async function (context, req) {
               "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ2ZWQtYWRtaW4taWQiLCJlbWFpbCI6Im1pLnZlZHByYWthc2hAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzMzMzc5NjU4LCJleHAiOjE3MzMzODMyNTh9.test-signature",
             refreshToken:
               "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ2ZWQtYWRtaW4taWQiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTczMzM3OTY1OCwiZXhwIjoxNzM0MjQzNjU4fQ.test-refresh-signature",
+          },
+        },
+      };
+    }
+    // Handle new parent registrations - default role should be "parent"
+    else if (email && password && email.length > 0) {
+      context.log("New parent login for email:", email);
+
+      // Generate a new parent user
+      const parentId = `parent-${Date.now()}`;
+      const parentToken = Buffer.from(
+        JSON.stringify({
+          userId: parentId,
+          email: email,
+          role: "parent",
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+        })
+      ).toString("base64");
+
+      context.res = {
+        status: 200,
+        headers: corsHeaders,
+        body: {
+          success: true,
+          data: {
+            user: {
+              id: parentId,
+              email: email,
+              firstName: "New",
+              lastName: "Parent",
+              role: "parent",
+              profilePicture: null,
+              phoneNumber: null,
+              organizationId: null,
+              familyId: `family-${Date.now()}`,
+              onboardingCompleted: false,
+              preferences: {
+                notifications: {
+                  email: true,
+                  push: true,
+                  sms: false,
+                  tripReminders: true,
+                  swapRequests: true,
+                  scheduleChanges: true,
+                },
+                privacy: {
+                  showPhoneNumber: true,
+                  showEmail: false,
+                },
+                pickupLocation: "Home",
+                dropoffLocation: "School",
+                preferredTime: "08:00",
+                isDriver: false,
+                smokingAllowed: false,
+              },
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+            token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${parentToken}.parent-signature`,
+            refreshToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${Buffer.from(
+              JSON.stringify({
+                userId: parentId,
+                type: "refresh",
+                iat: Math.floor(Date.now() / 1000),
+                exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+              })
+            ).toString("base64")}.parent-refresh-signature`,
           },
         },
       };

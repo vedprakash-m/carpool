@@ -18,7 +18,7 @@ const mockAssignments = [
     respondedAt: null,
     confirmationNotes: "",
     children: ["Emma Smith", "Liam Smith"],
-    location: "Lincoln Elementary School",
+    location: "Tesla STEM High School",
     time: "3:30 PM",
   },
   {

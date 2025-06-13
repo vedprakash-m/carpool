@@ -1,37 +1,20 @@
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
+
 module.exports = async function (context, req) {
   context.log("Admin generate schedule function triggered");
 
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Content-Type": "application/json",
-  };
-
   // Handle preflight OPTIONS request
   if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
+    context.res = UnifiedResponseHandler.preflight();
     return;
   }
 
   // Only allow POST method
   if (req.method !== "POST") {
-    context.res = {
-      status: 405,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: {
-          code: "METHOD_NOT_ALLOWED",
-          message: "Only POST method is allowed",
-        },
-      },
-    };
+    context.res = UnifiedResponseHandler.methodNotAllowed(
+      "Only POST method is allowed"
+    );
     return;
   }
 
@@ -39,17 +22,9 @@ module.exports = async function (context, req) {
     // Get authorization token
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
-      context.res = {
-        status: 401,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        },
-      };
+      context.res = UnifiedResponseHandler.authError(
+        "Missing or invalid authorization token"
+      );
       return;
     }
 
@@ -57,17 +32,10 @@ module.exports = async function (context, req) {
     const generateRequest = req.body;
 
     if (!generateRequest.weekStartDate) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "weekStartDate is required",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "weekStartDate is required"
+      );
+      return;
     }
 
     // Implement the 5-step scheduling algorithm (simplified mock)
@@ -77,34 +45,18 @@ module.exports = async function (context, req) {
       context
     );
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          weekStartDate: generateRequest.weekStartDate,
-          assignmentsCreated: schedulingResult.assignmentsCreated,
-          slotsAssigned: schedulingResult.slotsAssigned,
-          unassignedSlots: schedulingResult.unassignedSlots,
-          algorithmSteps: schedulingResult.algorithmSteps,
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.success({
+      weekStartDate: generateRequest.weekStartDate,
+      assignmentsCreated: schedulingResult.assignmentsCreated,
+      slotsAssigned: schedulingResult.slotsAssigned,
+      unassignedSlots: schedulingResult.unassignedSlots,
+      algorithmSteps: schedulingResult.algorithmSteps,
+    });
   } catch (error) {
     context.log("Generate schedule error:", error);
-
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error occurred",
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };
 

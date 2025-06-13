@@ -1,4 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock data storage (replace with actual database in production)
 let mockSchools = [
@@ -13,8 +15,8 @@ let mockSchools = [
   },
   {
     id: "school-1",
-    name: "Lincoln Elementary School",
-    location: { latitude: 39.7817, longitude: -89.6501 },
+    name: "Tesla STEM High School",
+    location: { latitude: 47.674, longitude: -122.1215 },
   },
   {
     id: "school-2",
@@ -71,8 +73,8 @@ let mockCarpoolGroups = [
   },
   {
     id: "group-1",
-    name: "Lincoln Morning Riders",
-    description: "Friendly morning carpool for Lincoln Elementary families",
+    name: "Tesla STEM Morning Commute",
+    description: "Reliable morning carpool for Tesla STEM High School families",
     tripAdminId: "trip-admin-1",
     tripAdmin: {
       id: "trip-admin-1",
@@ -83,14 +85,14 @@ let mockCarpoolGroups = [
     targetSchoolId: "school-1",
     targetSchool: {
       id: "school-1",
-      name: "Lincoln Elementary School",
-      location: { latitude: 39.7817, longitude: -89.6501 },
+      name: "Tesla STEM High School",
+      location: { latitude: 47.674, longitude: -122.1215 },
     },
     serviceArea: {
       centerLocation: {
-        latitude: 39.7817,
-        longitude: -89.6501,
-        address: "Lincoln Elementary School area",
+        latitude: 47.674,
+        longitude: -122.1215,
+        address: "Tesla STEM High School area",
       },
       radiusMiles: 3.0,
     },
@@ -398,21 +400,12 @@ function calculateMatchScore(group, searchCriteria, userLocation) {
 }
 
 module.exports = async function (context, req) {
-  try {
-    // Set CORS headers
-    context.res = {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json",
-      },
-    };
+  context.log("Parent group search function started");
 
-    // Handle preflight requests
+  try {
+    // Handle CORS preflight
     if (req.method === "OPTIONS") {
-      context.res.status = 200;
-      context.res.body = "";
+      context.res = UnifiedResponseHandler.preflight();
       return;
     }
 
@@ -424,15 +417,9 @@ module.exports = async function (context, req) {
     if (method === "GET" && action === "search") {
       // GROUP SEARCH NOW REQUIRES REGISTRATION - Updated requirement
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        context.res.status = 401;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "AUTHENTICATION_REQUIRED",
-            message: "You must be logged in to search for carpool groups.",
-            requiresAuth: true,
-          },
-        });
+        context.res = UnifiedResponseHandler.authError(
+          "You must be logged in to search for carpool groups."
+        );
         return;
       }
 
@@ -444,11 +431,9 @@ module.exports = async function (context, req) {
       const registrationValidation = validateRegistrationRequirement(userId);
 
       if (!registrationValidation.isValid) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: registrationValidation,
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          registrationValidation.message || "Registration validation failed"
+        );
         return;
       }
 

@@ -188,3 +188,16 @@ export function validateParams<T>(schema: ZodSchema<T>): Middleware {
     request.validated = { ...request.validated, params: result.data };
   };
 }
+
+// Export additional middleware
+export { ValidationMiddleware } from "./enhanced-validation.middleware";
+export { SanitizationMiddleware } from "./sanitization.middleware";
+export {
+  CorsMiddleware,
+  corsMiddleware,
+  authCors,
+  apiCors,
+  publicCors,
+  adminCors,
+  createLegacyCorsHeaders,
+} from "./cors.middleware";

@@ -1,47 +1,49 @@
 const { CosmosClient } = require("@azure/cosmos");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, req) {
   context.log("Admin Driver Selection API called");
 
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
-    return;
-  }
-
   try {
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+      context.res = UnifiedResponseHandler.preflight();
+      return;
+    }
+
     // Get authorization token
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.error(
+        "UNAUTHORIZED",
+        "Missing or invalid authorization token",
+        401
+      );
+      return;
     }
 
-    // TODO: Verify admin role from JWT token
+    // Verify admin role
     const token = authHeader.split(" ")[1];
+    let user;
+    try {
+      user = UnifiedAuthService.verifyToken(token);
+      if (!user || (user.role !== "admin" && user.role !== "trip_admin")) {
+        context.res = UnifiedResponseHandler.error(
+          "FORBIDDEN",
+          "Admin access required",
+          403
+        );
+        return;
+      }
+    } catch (error) {
+      context.res = UnifiedResponseHandler.error(
+        "UNAUTHORIZED",
+        "Invalid or expired token",
+        401
+      );
+      return;
+    }
 
     // Initialize Cosmos DB (use environment variables or fallback to mock)
     let cosmosClient = null;
@@ -152,23 +154,17 @@ async function getAllPotentialDrivers(container, context) {
     } else {
       // Mock potential drivers
       const mockDrivers = getMockPotentialDrivers();
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: mockDrivers,
-          pagination: {
-            total: mockDrivers.length,
-            page: 1,
-            limit: mockDrivers.length,
-          },
-        }),
-      };
+      return UnifiedResponseHandler.success(mockDrivers, {
+        pagination: {
+          total: mockDrivers.length,
+          page: 1,
+          limit: mockDrivers.length,
+        },
+      });
     }
   } catch (error) {
     context.log.error("Get potential drivers error:", error);
-    throw error;
+    return UnifiedResponseHandler.handleException(error);
   }
 }
 
@@ -182,18 +178,9 @@ async function getWeekDriverDesignations(
   try {
     // Validate week start date format
     if (!isValidWeekStartDate(weekStartDate)) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message:
-              "Invalid week start date format. Expected YYYY-MM-DD for a Monday.",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Invalid week start date format. Expected YYYY-MM-DD for a Monday."
+      );
     }
 
     if (designationsContainer && usersContainer) {
@@ -384,7 +371,7 @@ function getMockPotentialDrivers() {
       email: "mock.driver@example.com",
       phoneNumber: "555-0123",
       pickupLocation: "123 Maple Street",
-      dropoffLocation: "Lincoln Elementary School",
+      dropoffLocation: "Tesla STEM High School",
       joinedDate: "2024-08-15T00:00:00.000Z",
     },
     {
@@ -393,7 +380,7 @@ function getMockPotentialDrivers() {
       email: "michael.chen@example.com",
       phoneNumber: "555-0124",
       pickupLocation: "456 Oak Avenue",
-      dropoffLocation: "Lincoln Elementary School",
+      dropoffLocation: "Tesla STEM High School",
       joinedDate: "2024-08-20T00:00:00.000Z",
     },
     {
@@ -402,7 +389,7 @@ function getMockPotentialDrivers() {
       email: "jennifer.davis@example.com",
       phoneNumber: "555-0125",
       pickupLocation: "789 Pine Road",
-      dropoffLocation: "Lincoln Elementary School",
+      dropoffLocation: "Tesla STEM High School",
       joinedDate: "2024-09-01T00:00:00.000Z",
     },
     {
@@ -411,7 +398,7 @@ function getMockPotentialDrivers() {
       email: "david.wilson@example.com",
       phoneNumber: "555-0126",
       pickupLocation: "321 Elm Drive",
-      dropoffLocation: "Lincoln Elementary School",
+      dropoffLocation: "Tesla STEM High School",
       joinedDate: "2024-09-05T00:00:00.000Z",
     },
     {
@@ -420,7 +407,7 @@ function getMockPotentialDrivers() {
       email: "lisa.thompson@example.com",
       phoneNumber: "555-0127",
       pickupLocation: "654 Cedar Lane",
-      dropoffLocation: "Lincoln Elementary School",
+      dropoffLocation: "Tesla STEM High School",
       joinedDate: "2024-09-10T00:00:00.000Z",
     },
   ];

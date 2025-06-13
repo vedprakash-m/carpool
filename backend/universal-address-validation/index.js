@@ -14,9 +14,9 @@ const corsHeaders = {
 const schoolDatabase = [
   {
     id: "lincoln-elementary",
-    name: "Lincoln Elementary School",
+    name: "Tesla STEM High School",
     address: "123 Oak Street, Springfield, IL 62701",
-    coordinates: { latitude: 39.7817, longitude: -89.6501 },
+    coordinates: { latitude: 47.674, longitude: -122.1215 },
     serviceRadius: 20, // miles
     district: "Springfield School District 186",
     type: "elementary",
@@ -49,7 +49,7 @@ const mockAddressDatabase = [
   // Springfield, IL area
   {
     address: "123 Main St, Springfield, IL 62701",
-    coordinates: { latitude: 39.7817, longitude: -89.6501 },
+    coordinates: { latitude: 47.674, longitude: -122.1215 },
     city: "Springfield",
     state: "IL",
     zipCode: "62701",

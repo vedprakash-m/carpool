@@ -1,4 +1,6 @@
 const { CosmosClient } = require("@azure/cosmos");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // CORS headers
 const corsHeaders = {
@@ -141,11 +143,7 @@ module.exports = async function (context, req) {
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+    context.res = UnifiedResponseHandler.preflight();
     return;
   }
 

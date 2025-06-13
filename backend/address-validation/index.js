@@ -1,14 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Tesla Stem High School location (Redmond, WA)
 const TESLA_STEM_HIGH_SCHOOL = {
@@ -71,12 +62,7 @@ module.exports = async function (context, req) {
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
-    return;
+    return UnifiedResponseHandler.preflight(context);
   }
 
   try {
@@ -86,17 +72,12 @@ module.exports = async function (context, req) {
     // Get authorization token
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.error(
+        context,
+        "UNAUTHORIZED",
+        "Missing or invalid authorization token",
+        401
+      );
     }
 
     // Extract user ID from token (mock - in production, decode JWT)
@@ -116,30 +97,15 @@ module.exports = async function (context, req) {
       return await getAddressStatus(userId, context);
     }
 
-    return {
-      status: 405,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "METHOD_NOT_ALLOWED",
-          message: "Method not allowed",
-        },
-      }),
-    };
+    return UnifiedResponseHandler.error(
+      context,
+      "METHOD_NOT_ALLOWED",
+      "Method not allowed",
+      405
+    );
   } catch (error) {
     context.log.error("Address Validation API error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error occurred",
-        },
-      }),
-    };
+    return UnifiedResponseHandler.handleException(context, error);
   }
 };
 
@@ -149,36 +115,23 @@ async function validateAddress(userId, requestData, context) {
     const { address } = requestData;
 
     if (!address || address.trim().length < 10) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Please provide a complete home address",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        context,
+        "Please provide a complete home address"
+      );
     }
 
     // Geocode the address (mock implementation)
     const geocodingResult = await mockGeocode(address);
 
     if (!geocodingResult.isValid) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "INVALID_ADDRESS",
-            message:
-              "Unable to verify this address. Please check the spelling and format.",
-            suggestions: geocodingResult.suggestions || [],
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        context,
+        "Unable to verify this address. Please check the spelling and format.",
+        {
+          suggestions: geocodingResult.suggestions || [],
+        }
+      );
     }
 
     // Check if address is within service area (25 miles of Tesla Stem High School)
@@ -190,24 +143,17 @@ async function validateAddress(userId, requestData, context) {
     );
 
     if (distanceToSchool > SERVICE_AREA_RADIUS_MILES) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "OUTSIDE_SERVICE_AREA",
-            message: `This address is ${distanceToSchool.toFixed(
-              1
-            )} miles from Tesla Stem High School. Our current service area is within ${SERVICE_AREA_RADIUS_MILES} miles.`,
-            details: {
-              distanceToSchool: distanceToSchool,
-              maxDistance: SERVICE_AREA_RADIUS_MILES,
-              schoolLocation: TESLA_STEM_HIGH_SCHOOL,
-            },
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        context,
+        `This address is ${distanceToSchool.toFixed(
+          1
+        )} miles from Tesla Stem High School. Our current service area is within ${SERVICE_AREA_RADIUS_MILES} miles.`,
+        {
+          distanceToSchool: distanceToSchool,
+          maxDistance: SERVICE_AREA_RADIUS_MILES,
+          schoolLocation: TESLA_STEM_HIGH_SCHOOL,
+        }
+      );
     }
 
     // Address is valid and within service area - save it
@@ -221,25 +167,21 @@ async function validateAddress(userId, requestData, context) {
       };
     }
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        message: "Home address verified successfully",
-        data: {
-          address: geocodingResult.formattedAddress,
-          coordinates: geocodingResult.coordinates,
-          distanceToSchool: distanceToSchool,
-          serviceArea: {
-            school: TESLA_STEM_HIGH_SCHOOL.name,
-            maxDistance: SERVICE_AREA_RADIUS_MILES,
-          },
-          verified: true,
-          verifiedAt: new Date().toISOString(),
+    return UnifiedResponseHandler.success(
+      context,
+      "Home address verified successfully",
+      {
+        address: geocodingResult.formattedAddress,
+        coordinates: geocodingResult.coordinates,
+        distanceToSchool: distanceToSchool,
+        serviceArea: {
+          school: TESLA_STEM_HIGH_SCHOOL.name,
+          maxDistance: SERVICE_AREA_RADIUS_MILES,
         },
-      }),
-    };
+        verified: true,
+        verifiedAt: new Date().toISOString(),
+      }
+    );
   } catch (error) {
     context.log.error("Validate address error:", error);
     throw error;
@@ -252,34 +194,24 @@ async function geocodeAddress(requestData, context) {
     const { address } = requestData;
 
     if (!address) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Address is required",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        context,
+        "Address is required"
+      );
     }
 
     const geocodingResult = await mockGeocode(address);
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          isValid: geocodingResult.isValid,
-          coordinates: geocodingResult.coordinates,
-          formattedAddress: geocodingResult.formattedAddress,
-          suggestions: geocodingResult.suggestions || [],
-        },
-      }),
-    };
+    return UnifiedResponseHandler.success(
+      context,
+      "Address geocoded successfully",
+      {
+        isValid: geocodingResult.isValid,
+        coordinates: geocodingResult.coordinates,
+        formattedAddress: geocodingResult.formattedAddress,
+        suggestions: geocodingResult.suggestions || [],
+      }
+    );
   } catch (error) {
     context.log.error("Geocode address error:", error);
     throw error;
@@ -291,35 +223,27 @@ async function getAddressStatus(userId, context) {
   try {
     const user = mockUsers.find((u) => u.id === userId);
     if (!user) {
-      return {
-        status: 404,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "USER_NOT_FOUND",
-            message: "User not found",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.error(
+        context,
+        "USER_NOT_FOUND",
+        "User not found",
+        404
+      );
     }
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          homeAddress: user.homeAddress,
-          verified: user.homeAddressVerified || false,
-          homeLocation: user.homeLocation,
-          serviceArea: {
-            school: TESLA_STEM_HIGH_SCHOOL.name,
-            maxDistance: SERVICE_AREA_RADIUS_MILES,
-          },
+    return UnifiedResponseHandler.success(
+      context,
+      "Address status retrieved successfully",
+      {
+        homeAddress: user.homeAddress,
+        verified: user.homeAddressVerified || false,
+        homeLocation: user.homeLocation,
+        serviceArea: {
+          school: TESLA_STEM_HIGH_SCHOOL.name,
+          maxDistance: SERVICE_AREA_RADIUS_MILES,
         },
-      }),
-    };
+      }
+    );
   } catch (error) {
     context.log.error("Get address status error:", error);
     throw error;

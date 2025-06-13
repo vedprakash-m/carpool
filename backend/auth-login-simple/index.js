@@ -1,128 +1,54 @@
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
+
 module.exports = async function (context, req) {
-  // Enhanced CORS headers for Azure Static Web Apps
-  const corsHeaders = {
-    "Access-Control-Allow-Origin":
-      "https://lively-stone-016bfa20f.6.azurestaticapps.net",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Access-Control-Max-Age": "86400",
-    "Content-Type": "application/json",
-  };
+  context.log("Simple login function started");
 
-  // Handle CORS preflight request
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: null,
-    };
-    return;
-  }
-
-  // Handle POST login request
-  if (req.method === "POST") {
-    try {
-      context.log("Full request body:", JSON.stringify(req.body));
-      context.log("Content-Type:", req.headers["content-type"]);
-
-      const { email, password } = req.body || {};
-
-      context.log("Login attempt for:", email);
-      context.log("Password provided:", password ? "YES" : "NO");
-
-      // Simple authentication check - support both admin and parent accounts
-      if (
-        (email === "admin@example.com" || email === "test-user@example.com") &&
-        password === (process.env.ADMIN_PASSWORD || "test-admin-password")
-      ) {
-        // Determine role based on email - admin@example.com gets admin role, others get parent role
-        const isAdmin = email === "admin@example.com";
-        const userRole = isAdmin ? "admin" : "parent";
-
-        context.res = {
-          status: 200,
-          headers: corsHeaders,
-          body: {
-            success: true,
-            data: {
-              user: {
-                id:
-                  email === "test-user@example.com"
-                    ? "test-parent-id"
-                    : "admin-id",
-                email: email,
-                firstName: email === "test-user@example.com" ? "Test" : "Admin",
-                lastName: email === "test-user@example.com" ? "Parent" : "User",
-                role: userRole,
-                phoneNumber: null,
-                preferences: {
-                  notifications: {
-                    email: true,
-                    push: true,
-                    sms: false,
-                    tripReminders: true,
-                    swapRequests: true,
-                    scheduleChanges: true,
-                  },
-                  privacy: {
-                    showPhoneNumber: true,
-                    showEmail: false,
-                  },
-                  pickupLocation: "Home",
-                  dropoffLocation: "School",
-                  preferredTime: "08:00",
-                  isDriver: true,
-                  smokingAllowed: false,
-                },
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              },
-              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock-token",
-              refreshToken:
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock-refresh-token",
-            },
-          },
-        };
-      } else {
-        context.log("Authentication failed for:", email);
-        context.log("Expected: admin@example.com / [ADMIN_PASSWORD]");
-        context.log(
-          "Received: " +
-            email +
-            " / " +
-            (password ? "[PASSWORD_PROVIDED]" : "NO_PASSWORD")
-        );
-
-        context.res = {
-          status: 401,
-          headers: corsHeaders,
-          body: {
-            success: false,
-            error: "Invalid credentials",
-          },
-        };
-      }
-    } catch (error) {
-      context.log("Login error:", error);
-      context.res = {
-        status: 500,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: "Internal server error",
-        },
-      };
+  try {
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+      context.res = UnifiedResponseHandler.preflight();
+      return;
     }
-  } else {
-    // Method not allowed
-    context.res = {
-      status: 405,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: "Method not allowed",
-      },
-    };
+
+    // Parse request body
+    const body = await UnifiedResponseHandler.parseJsonBody(req);
+    const { email, password } = body || {};
+
+    context.log("Login attempt for:", email);
+
+    // Validate required fields
+    const validation = UnifiedResponseHandler.validateRequiredFields(
+      { email, password },
+      ["email", "password"]
+    );
+
+    if (!validation.isValid) {
+      context.res = UnifiedResponseHandler.validationError(
+        "Email and password are required",
+        { missingFields: validation.missingFields }
+      );
+      return;
+    }
+
+    // Authenticate user
+    const authResult = await UnifiedAuthService.authenticate(email, password);
+
+    if (authResult.success) {
+      context.res = UnifiedResponseHandler.success({
+        user: authResult.user,
+        token: authResult.accessToken,
+        refreshToken: authResult.refreshToken,
+      });
+    } else {
+      context.res = UnifiedResponseHandler.error(
+        authResult.error?.code || "AUTHENTICATION_FAILED",
+        authResult.error?.message || "Invalid credentials",
+        authResult.error?.statusCode || 401
+      );
+    }
+  } catch (error) {
+    context.log("Simple login error:", error);
+    context.res = UnifiedResponseHandler.handleException(error);
   }
 };

@@ -1,176 +1,109 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-
-// Mock database for immediate functionality (replace with Cosmos DB later)
-let mockUsers = [
-  {
-    id: "admin-1",
-    email: "admin@example.com", // Mock admin for testing
-    hashedPassword:
-      "$2a$12$5P8P9P9P9P9P9P9P9P9P9O9P9P9P9P9P9P9P9P9P9P9P9P9P9P9P9P", // test-admin-password
-    firstName: "System",
-    lastName: "Administrator",
-    role: "admin",
-  },
-];
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, req) {
-  // Set CORS headers
-  context.res = {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "PUT, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "Content-Type, Authorization, X-Requested-With",
-      "Content-Type": "application/json",
-    },
-  };
-
-  // Handle preflight OPTIONS request
-  if (req.method === "OPTIONS") {
-    context.res.status = 200;
-    context.res.body = "";
-    return;
-  }
-
-  // Only allow PUT method
-  if (req.method !== "PUT") {
-    context.res.status = 405;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "METHOD_NOT_ALLOWED",
-        message: "Only PUT method is allowed",
-      },
-    });
-    return;
-  }
+  context.log("Users change password function started");
 
   try {
-    // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Missing or invalid authorization token",
-        },
-      });
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+      context.res = UnifiedResponseHandler.preflight();
       return;
     }
 
-    const token = authHeader.split(" ")[1];
-
-    // Verify JWT token
-    let currentUser;
-    try {
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || "temp-jwt-secret-vcarpool"
+    // Only allow PUT method
+    if (req.method !== "PUT") {
+      context.res = UnifiedResponseHandler.error(
+        "METHOD_NOT_ALLOWED",
+        "Only PUT method is allowed",
+        405
       );
-      currentUser = mockUsers.find((u) => u.id === decoded.userId);
-      if (!currentUser) {
-        context.res.status = 401;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "USER_NOT_FOUND",
-            message: "User not found",
-          },
-        });
-        return;
-      }
-    } catch (jwtError) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "INVALID_TOKEN",
-          message: "Invalid or expired token",
-        },
-      });
       return;
     }
 
-    // Validate request body
-    const { currentPassword, newPassword } = req.body;
+    // Parse request body
+    const body = await UnifiedResponseHandler.parseJsonBody(req);
+    const { currentPassword, newPassword } = body || {};
 
-    if (!currentPassword || !newPassword) {
-      context.res.status = 400;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Missing required fields: currentPassword, newPassword",
-        },
-      });
+    // Validate required fields
+    const validation = UnifiedResponseHandler.validateRequiredFields(
+      { currentPassword, newPassword },
+      ["currentPassword", "newPassword"]
+    );
+
+    if (!validation.isValid) {
+      context.res = UnifiedResponseHandler.validationError(
+        "Missing required fields: currentPassword, newPassword",
+        { missingFields: validation.missingFields }
+      );
       return;
     }
 
     // Validate new password strength
     if (newPassword.length < 8) {
-      context.res.status = 400;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "New password must be at least 8 characters long",
-        },
-      });
+      context.res = UnifiedResponseHandler.validationError(
+        "New password must be at least 8 characters long"
+      );
       return;
     }
 
-    // Verify current password
-    const isCurrentPasswordValid = await bcrypt.compare(
+    // Extract and verify token using UnifiedAuthService
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      context.res = UnifiedResponseHandler.error(
+        "UNAUTHORIZED",
+        "Missing or invalid authorization token",
+        401
+      );
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    // Verify JWT token using UnifiedAuthService
+    let decoded;
+    try {
+      decoded = UnifiedAuthService.verifyToken(token);
+      if (!decoded) {
+        context.res = UnifiedResponseHandler.error(
+          "INVALID_TOKEN",
+          "Invalid or expired token",
+          401
+        );
+        return;
+      }
+    } catch (jwtError) {
+      context.log("JWT verification error:", jwtError);
+      context.res = UnifiedResponseHandler.error(
+        "INVALID_TOKEN",
+        "Invalid or expired token",
+        401
+      );
+      return;
+    }
+
+    // Change password using UnifiedAuthService
+    const changeResult = await UnifiedAuthService.changePassword(
+      decoded.userId,
       currentPassword,
-      currentUser.hashedPassword
+      newPassword
     );
-    if (!isCurrentPasswordValid) {
-      context.res.status = 400;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "INVALID_CURRENT_PASSWORD",
-          message: "Current password is incorrect",
-        },
-      });
-      return;
-    }
 
-    // Hash new password
-    const saltRounds = 12;
-    const newHashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-    // Update user password
-    const userIndex = mockUsers.findIndex((u) => u.id === currentUser.id);
-    if (userIndex !== -1) {
-      mockUsers[userIndex] = {
-        ...mockUsers[userIndex],
-        hashedPassword: newHashedPassword,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-
-    // Return success response
-    context.res.status = 200;
-    context.res.body = JSON.stringify({
-      success: true,
-      data: {
+    if (changeResult.success) {
+      context.log("Password changed successfully for user:", decoded.userId);
+      context.res = UnifiedResponseHandler.success({
         message: "Password changed successfully",
-      },
-    });
+        userId: decoded.userId,
+      });
+    } else {
+      context.res = UnifiedResponseHandler.error(
+        changeResult.error?.code || "PASSWORD_CHANGE_FAILED",
+        changeResult.error?.message || "Failed to change password",
+        changeResult.error?.statusCode || 400
+      );
+    }
   } catch (error) {
-    context.log.error("Change password error:", error);
-
-    context.res.status = 500;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "INTERNAL_ERROR",
-        message: "Internal server error occurred",
-      },
-    });
+    context.log("Change password error:", error);
+    context.res = UnifiedResponseHandler.handleException(error);
   }
 };

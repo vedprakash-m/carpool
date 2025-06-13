@@ -1,25 +1,24 @@
 const { v4: uuidv4 } = require("uuid");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const { MockDataFactory } = require("../src/utils/mock-data-wrapper");
+const {
+  handlePreflight,
+  createSuccessResponse,
+  createErrorResponse,
+  validateAuth,
+  validateRequiredFields,
+  parseJsonBody,
+  handleError,
+  logRequest,
+} = require("../src/utils/unified-response");
 
 module.exports = async function (context, req) {
   context.log("Carpool Groups API called");
+  logRequest(req, context, "admin-carpool-groups");
 
   // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+  const preflightResponse = handlePreflight(req);
+  if (preflightResponse) {
+    context.res = preflightResponse;
     return;
   }
 
@@ -27,65 +26,57 @@ module.exports = async function (context, req) {
     const method = req.method;
     const { groupId } = req.params || {};
 
-    // Get authorization token
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        }),
-      };
+    // Validate authorization
+    const authError = validateAuth(req);
+    if (authError) {
+      context.res = authError;
+      return;
     }
 
     // Route based on method
     switch (method) {
       case "GET":
-        return groupId ? getGroupDetails(groupId, context) : getGroups(context);
+        const getResult = groupId
+          ? await getGroupDetails(groupId, context)
+          : await getGroups(context);
+        context.res = getResult;
+        return;
       case "POST":
-        const { action } = req.body;
+        const body = parseJsonBody(req);
+        const { action } = body;
         if (action === "family-departure") {
-          return handleFamilyDeparture(groupId, req.body, context);
+          context.res = await handleFamilyDeparture(groupId, body, context);
+        } else if (action === "intra-family-reassignment") {
+          context.res = await handleIntraFamilyReassignment(
+            groupId,
+            body,
+            context
+          );
+        } else {
+          context.res = await createGroup(body, context);
         }
-        if (action === "intra-family-reassignment") {
-          return handleIntraFamilyReassignment(groupId, req.body, context);
-        }
-        return createGroup(req.body, context);
+        return;
       case "PUT":
-        return updateGroup(groupId, req.body, context);
+        const updateBody = parseJsonBody(req);
+        context.res = await updateGroup(groupId, updateBody, context);
+        return;
       case "DELETE":
-        return deleteGroup(groupId, context);
+        context.res = await deleteGroup(groupId, context);
+        return;
       default:
-        return {
-          status: 405,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "METHOD_NOT_ALLOWED",
-              message: "Method not allowed",
-            },
-          }),
-        };
+        context.res = createErrorResponse(
+          "METHOD_NOT_ALLOWED",
+          "Method not allowed",
+          405
+        );
+        return;
     }
   } catch (error) {
-    context.log.error("Carpool Groups API error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error occurred",
-        },
-      }),
-    };
+    context.res = handleError(
+      error,
+      context,
+      "Failed to process carpool groups request"
+    );
   }
 };
 
@@ -93,11 +84,7 @@ module.exports = async function (context, req) {
 async function getGroups(context) {
   try {
     const mockGroups = getMockGroups();
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({ success: true, data: mockGroups }),
-    };
+    return createSuccessResponse(mockGroups);
   } catch (error) {
     context.log.error("Get groups error:", error);
     throw error;
@@ -111,24 +98,14 @@ async function getGroupDetails(groupId, context) {
     const group = mockGroups.find((g) => g.id === groupId);
 
     if (!group) {
-      return {
-        status: 404,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "GROUP_NOT_FOUND",
-            message: "Carpool group not found",
-          },
-        }),
-      };
+      return createErrorResponse(
+        "GROUP_NOT_FOUND",
+        "Carpool group not found",
+        404
+      );
     }
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({ success: true, data: group }),
-    };
+    return createSuccessResponse(group);
   } catch (error) {
     context.log.error("Get group details error:", error);
     throw error;
@@ -148,18 +125,14 @@ async function createGroup(groupData, context) {
       schedule,
     } = groupData;
 
-    if (!name || !school || !pickupLocation || !dropoffLocation) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Missing required fields",
-          },
-        }),
-      };
+    const validationError = validateRequiredFields(groupData, [
+      "name",
+      "school",
+      "pickupLocation",
+      "dropoffLocation",
+    ]);
+    if (validationError) {
+      return validationError;
     }
 
     const newGroup = {
@@ -180,15 +153,11 @@ async function createGroup(groupData, context) {
       invitations: [],
     };
 
-    return {
-      status: 201,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: newGroup,
-        message: "Carpool group created successfully",
-      }),
-    };
+    return createSuccessResponse(
+      newGroup,
+      "Carpool group created successfully",
+      201
+    );
   } catch (error) {
     context.log.error("Create group error:", error);
     throw error;
@@ -511,95 +480,7 @@ async function handleIntraFamilyReassignment(groupId, requestData, context) {
   }
 }
 
-// Mock data for development and testing - all emails and data are fake examples
+// Mock data for development using centralized factory
 function getMockGroups() {
-  return [
-    {
-      id: "group-1",
-      name: "Lincoln Elementary Morning Carpool",
-      description:
-        "Daily morning drop-off carpool for Lincoln Elementary School",
-      school: "Lincoln Elementary School",
-      pickupLocation: "Maple Street Neighborhood",
-      dropoffLocation: "Lincoln Elementary School",
-      maxMembers: 8,
-      currentMembers: 5,
-      status: "active",
-      schedule: {
-        days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        startTime: "07:30",
-        endTime: "08:30",
-      },
-      createdAt: "2025-01-01T00:00:00Z",
-      updatedAt: "2025-01-01T00:00:00Z",
-      adminId: "admin-123",
-      members: [
-        {
-          id: "member-1",
-          userId: "parent-1",
-          name: "Sarah Johnson",
-          email: "mock.parent1@example.com", // Mock data for testing
-          role: "parent",
-          joinedAt: "2025-01-01T00:00:00Z",
-          children: [
-            { id: "child-1", name: "Emma Johnson", grade: "3rd" },
-            { id: "child-2", name: "Jake Johnson", grade: "1st" },
-          ],
-        },
-        {
-          id: "member-2",
-          userId: "parent-2",
-          name: "Michael Chen",
-          email: "mock.parent2@example.com", // Mock data for testing
-          role: "parent",
-          joinedAt: "2025-01-02T00:00:00Z",
-          children: [{ id: "child-3", name: "Lucas Chen", grade: "2nd" }],
-        },
-      ],
-      invitations: [
-        {
-          id: "invite-1",
-          email: "mock.newparent@example.com", // Mock data for testing
-          name: "Jennifer Davis",
-          role: "parent",
-          status: "pending",
-          sentAt: "2025-01-05T00:00:00Z",
-          expiresAt: "2025-01-12T00:00:00Z",
-          message: "Join our morning carpool group!",
-        },
-      ],
-    },
-    {
-      id: "group-2",
-      name: "Lincoln Elementary Afternoon Pickup",
-      description:
-        "Daily afternoon pickup carpool for Lincoln Elementary School",
-      school: "Lincoln Elementary School",
-      pickupLocation: "Lincoln Elementary School",
-      dropoffLocation: "Oak Avenue Neighborhood",
-      maxMembers: 6,
-      currentMembers: 3,
-      status: "active",
-      schedule: {
-        days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        startTime: "15:00",
-        endTime: "16:00",
-      },
-      createdAt: "2025-01-02T00:00:00Z",
-      updatedAt: "2025-01-02T00:00:00Z",
-      adminId: "admin-123",
-      members: [
-        {
-          id: "member-3",
-          userId: "parent-3",
-          name: "Jennifer Davis",
-          email: "mock.parent3@example.com", // Mock data for testing
-          role: "parent",
-          joinedAt: "2025-01-02T00:00:00Z",
-          children: [{ id: "child-4", name: "Sophie Davis", grade: "4th" }],
-        },
-      ],
-      invitations: [],
-    },
-  ];
+  return MockDataFactory.createGroups();
 }

@@ -167,18 +167,18 @@ class TripApiService {
       return data.data;
     } catch (error) {
       console.error("Trip stats fetch error:", error);
-      // Fallback: return mock data if API fails
+      // Fallback: return zero stats for new users
       return {
-        totalTrips: 8,
-        tripsAsDriver: 5,
-        tripsAsPassenger: 3,
-        totalDistance: 1250,
-        milesSaved: 750, // 60% of total distance
-        timeSavedHours: 4, // 30min per trip * 8 trips = 4 hours
-        upcomingTrips: 2,
+        totalTrips: 0,
+        tripsAsDriver: 0,
+        tripsAsPassenger: 0,
+        totalDistance: 0,
+        milesSaved: 0,
+        timeSavedHours: 0,
+        upcomingTrips: 0,
         // School-focused statistics for dashboard
-        weeklySchoolTrips: 6,
-        childrenCount: 2,
+        weeklySchoolTrips: 0,
+        childrenCount: 0,
       };
     }
   }

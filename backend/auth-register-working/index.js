@@ -1,24 +1,13 @@
 const { v4: uuidv4 } = require("uuid");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, req) {
   context.log("Registration function triggered");
 
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Access-Control-Max-Age": "86400",
-    "Content-Type": "application/json",
-  };
-
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
+    context.res = UnifiedResponseHandler.preflight();
     return;
   }
 
@@ -30,28 +19,18 @@ module.exports = async function (context, req) {
 
     // Validate required fields
     if (!email || !password || !firstName || !lastName) {
-      context.res = {
-        status: 400,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: "Email, password, first name, and last name are required",
-        },
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "Email, password, first name, and last name are required"
+      );
       return;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      context.res = {
-        status: 400,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: "Invalid email format",
-        },
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "Invalid email format"
+      );
       return;
     }
 

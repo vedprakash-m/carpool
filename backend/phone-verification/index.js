@@ -1,14 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock phone verification storage (in production, use database/cache)
 let mockVerificationCodes = new Map();
@@ -35,11 +27,7 @@ module.exports = async function (context, req) {
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+    context.res = UnifiedResponseHandler.preflight();
     return;
   }
 
@@ -50,17 +38,10 @@ module.exports = async function (context, req) {
     // Get authorization token
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.authError(
+        "Missing or invalid authorization token"
+      );
+      return;
     }
 
     // Extract user ID from token (mock - in production, decode JWT)
@@ -111,19 +92,11 @@ module.exports = async function (context, req) {
 async function sendVerificationCode(userId, requestData, context) {
   try {
     const { phoneNumber } = requestData;
-
     if (!phoneNumber) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Phone number is required",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "Phone number is required"
+      );
+      return;
     }
 
     // Validate phone number format (basic validation)

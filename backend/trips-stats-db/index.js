@@ -1,5 +1,7 @@
 const { CosmosClient } = require("@azure/cosmos");
 const jwt = require("jsonwebtoken");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Initialize Cosmos DB client
 const cosmosClient = new CosmosClient({
@@ -17,22 +19,9 @@ module.exports = async function (context, req) {
   context.log("Database-integrated trips stats function started");
   context.log("Request method:", req.method);
 
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Access-Control-Max-Age": "86400",
-    "Content-Type": "application/json",
-  };
-
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
+    context.res = UnifiedResponseHandler.preflight();
     return;
   }
 
@@ -143,14 +132,7 @@ module.exports = async function (context, req) {
         stats
       );
 
-      context.res = {
-        status: 200,
-        headers: corsHeaders,
-        body: {
-          success: true,
-          data: stats,
-        },
-      };
+      context.res = UnifiedResponseHandler.success(stats);
     } else {
       // Return zero stats for unauthenticated users or new users without groups
       context.log(

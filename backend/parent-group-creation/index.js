@@ -1,31 +1,24 @@
 const { v4: uuidv4 } = require("uuid");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-};
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock data stores (in production, these would be database calls)
 let mockCarpoolGroups = [
   {
     id: "group-1",
     name: "Lincoln Morning Riders",
-    description: "Friendly morning carpool for Lincoln Elementary families",
+    description: "Friendly morning carpool for Tesla STEM families",
     tripAdminId: "user-trip-admin",
     targetSchoolId: "school-lincoln-elem",
     targetSchool: {
       id: "school-lincoln-elem",
-      name: "Lincoln Elementary School",
-      address: "123 School Street, Springfield, IL 62701",
-      location: { lat: 39.7817, lng: -89.6501 },
+      name: "Tesla STEM High School",
+      address: "13201 SE 140th Place, Renton, WA 98058",
+      location: { lat: 47.674, lng: -122.1215 },
       district: "Springfield School District",
       gradesServed: ["K", "1", "2", "3", "4", "5"],
     },
     serviceArea: {
-      centerLocation: { lat: 39.7817, lng: -89.6501 },
+      centerLocation: { lat: 47.674, lng: -122.1215 },
       radiusMiles: 5,
       includeZipCodes: ["62701", "62702"],
       excludeZipCodes: [],
@@ -73,9 +66,9 @@ let mockUsers = [
 let mockSchools = [
   {
     id: "school-lincoln-elem",
-    name: "Lincoln Elementary School",
-    address: "123 School Street, Springfield, IL 62701",
-    location: { lat: 39.7817, lng: -89.6501 },
+    name: "Tesla STEM High School",
+    address: "13201 SE 140th Place, Renton, WA 98058",
+    location: { lat: 47.674, lng: -122.1215 },
     district: "Springfield School District",
     gradesServed: ["K", "1", "2", "3", "4", "5"],
     contactInfo: {

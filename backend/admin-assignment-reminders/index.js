@@ -1,14 +1,16 @@
 const { CosmosClient } = require("@azure/cosmos");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const { MockDataFactory } = require("../src/utils/mock-data-wrapper");
+const {
+  handlePreflight,
+  createSuccessResponse,
+  createErrorResponse,
+  validateAuth,
+  validateRequiredFields,
+  parseJsonBody,
+  handleError,
+  formatDate,
+  logRequest,
+} = require("../src/utils/unified-response");
 
 module.exports = async function (context, reminderTimer, req) {
   context.log("Assignment Reminders function triggered");
@@ -22,32 +24,23 @@ module.exports = async function (context, reminderTimer, req) {
 
   // Handle HTTP-based execution
   if (req) {
+    logRequest(req, context, "admin-assignment-reminders");
+
     // Handle preflight requests
-    if (req.method === "OPTIONS") {
-      context.res = {
-        status: 200,
-        headers: corsHeaders,
-        body: "",
-      };
+    const preflightResponse = handlePreflight(req);
+    if (preflightResponse) {
+      context.res = preflightResponse;
       return;
     }
 
     try {
       context.res = await processManualReminders(req, context);
     } catch (error) {
-      context.log.error("Assignment reminders error:", error);
-      context.res = {
-        status: 500,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "INTERNAL_ERROR",
-            message: "Internal server error",
-            details: error.message,
-          },
-        }),
-      };
+      context.res = handleError(
+        error,
+        context,
+        "Failed to process assignment reminders"
+      );
     }
   }
 };
@@ -110,38 +103,26 @@ async function processScheduledReminders(context) {
 
 // Process manual reminders (HTTP-triggered)
 async function processManualReminders(req, context) {
-  const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+  const body = parseJsonBody(req);
   const { assignmentId, reminderType } = body;
 
-  if (!assignmentId || !reminderType) {
-    return {
-      status: 400,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "assignmentId and reminderType are required",
-        },
-      }),
-    };
+  const validationError = validateRequiredFields(body, [
+    "assignmentId",
+    "reminderType",
+  ]);
+  if (validationError) {
+    return validationError;
   }
 
   // Get specific assignment
   const assignment = await getAssignmentById(assignmentId, context);
 
   if (!assignment) {
-    return {
-      status: 404,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "ASSIGNMENT_NOT_FOUND",
-          message: "Assignment not found",
-        },
-      }),
-    };
+    return createErrorResponse(
+      "ASSIGNMENT_NOT_FOUND",
+      "Assignment not found",
+      404
+    );
   }
 
   // Send reminder
@@ -151,15 +132,7 @@ async function processManualReminders(req, context) {
     context
   );
 
-  return {
-    status: 200,
-    headers: corsHeaders,
-    body: JSON.stringify({
-      success: true,
-      data: result,
-      message: "Reminder sent successfully",
-    }),
-  };
+  return createSuccessResponse(result, "Reminder sent successfully");
 }
 
 // Get upcoming assignments that need reminders
@@ -233,49 +206,50 @@ function buildReminderNotificationData(reminderType, assignment) {
   };
 }
 
-// Mock data for development
+// Mock data for development using centralized factory
 function getMockUpcomingAssignments() {
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   const dayAfter = new Date(now.getTime() + 48 * 60 * 60 * 1000);
 
-  return [
-    {
-      id: "assignment-upcoming-1",
-      date: tomorrow.toISOString().split("T")[0],
-      startTime: "07:30",
-      endTime: "08:30",
-      description: "Monday Morning School Drop-off",
-      driverId: "parent-1",
-      driverName: "Sarah Johnson",
-      driverEmail: "mock.driver@example.com", // Mock data for testing
-      passengers: [
-        { id: "child-1", name: "Emma Wilson", phoneNumber: "555-0126" },
-        { id: "child-2", name: "Lucas Chen", phoneNumber: "555-0124" },
-      ],
-      pickupLocation: "123 Maple Street",
-      dropoffLocation: "Lincoln Elementary School",
-      reminder24hSent: false,
-      reminder2hSent: false,
+  // Use centralized factory to create consistent assignment data
+  const assignment1 = MockDataFactory.createAssignment({
+    id: "assignment-upcoming-1",
+    date: tomorrow.toISOString().split("T")[0],
+    driverContact: {
+      email: "parent@tesla.edu",
+      phoneNumber: "555-0123",
     },
-    {
-      id: "assignment-upcoming-2",
-      date: dayAfter.toISOString().split("T")[0],
-      startTime: "15:00",
-      endTime: "16:00",
-      description: "Tuesday Afternoon School Pick-up",
-      driverId: "parent-2",
-      driverName: "Michael Chen",
-      driverEmail: "mock.driver2@example.com", // Mock data for testing
-      passengers: [
-        { id: "child-3", name: "Sophie Davis", phoneNumber: "555-0125" },
-      ],
-      pickupLocation: "Lincoln Elementary School",
-      dropoffLocation: "456 Oak Avenue",
-      reminder24hSent: false,
-      reminder2hSent: false,
+    driverEmail: "parent@tesla.edu", // For compatibility
+    reminder24hSent: false,
+    reminder2hSent: false,
+  });
+
+  const assignment2 = MockDataFactory.createAssignment({
+    id: "assignment-upcoming-2",
+    date: dayAfter.toISOString().split("T")[0],
+    startTime: "15:00",
+    endTime: "16:00",
+    routeType: "school_pickup",
+    description: "Tuesday Afternoon School Pick-up",
+    driverId: "parent-2",
+    driverName: "Michael Chen",
+    driverContact: {
+      email: "parent2@tesla.edu",
+      phoneNumber: "555-0124",
     },
-  ];
+    driverEmail: "parent2@tesla.edu", // For compatibility
+    passengers: [
+      { id: "child-3", name: "Sophie Davis", phoneNumber: "555-0125" },
+    ],
+    passengerCount: 1,
+    pickupLocation: "Tesla STEM High School",
+    dropoffLocation: "456 Oak Avenue",
+    reminder24hSent: false,
+    reminder2hSent: false,
+  });
+
+  return [assignment1, assignment2];
 }
 
 // Helper function to format date

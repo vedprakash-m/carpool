@@ -1,6 +1,6 @@
 const { CosmosClient } = require("@azure/cosmos");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Initialize Cosmos DB client
 const cosmosClient = new CosmosClient({
@@ -15,45 +15,81 @@ const usersContainer = database.container("users");
 
 module.exports = async function (context, req) {
   context.log("Database-integrated login function started");
-  context.log("Request method:", req.method);
-  context.log("Request body:", req.body);
-
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Access-Control-Max-Age": "86400",
-    "Content-Type": "application/json",
-  };
-
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
-    return;
-  }
 
   try {
-    const { email, password } = req.body || {};
-
-    if (!email || !password) {
-      context.res = {
-        status: 400,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: "Email and password are required",
-        },
-      };
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+      context.res = UnifiedResponseHandler.preflight();
       return;
     }
 
-    context.log("Attempting login for email:", email);
+    // Parse request body
+    const body = await UnifiedResponseHandler.parseJsonBody(req);
+    const { email, password } = body || {};
 
+    context.log("Login attempt for email:", email);
+
+    // Validate required fields
+    const validation = UnifiedResponseHandler.validateRequiredFields(
+      { email, password },
+      ["email", "password"]
+    );
+
+    if (!validation.isValid) {
+      context.res = UnifiedResponseHandler.validationError(
+        "Email and password are required",
+        { missingFields: validation.missingFields }
+      );
+      return;
+    }
+
+    // Try database authentication first
+    const dbAuthResult = await authenticateWithDatabase(
+      email,
+      password,
+      context
+    );
+
+    if (dbAuthResult.success) {
+      context.res = UnifiedResponseHandler.success({
+        user: dbAuthResult.user,
+        token: dbAuthResult.accessToken,
+        refreshToken: dbAuthResult.refreshToken,
+      });
+      return;
+    }
+
+    // Fallback to unified mock authentication system
+    context.log("Database auth failed, falling back to unified mock auth");
+    const mockAuthResult = await UnifiedAuthService.authenticate(
+      email,
+      password
+    );
+
+    if (mockAuthResult.success) {
+      context.res = UnifiedResponseHandler.success({
+        user: mockAuthResult.user,
+        token: mockAuthResult.accessToken,
+        refreshToken: mockAuthResult.refreshToken,
+      });
+    } else {
+      context.res = UnifiedResponseHandler.error(
+        mockAuthResult.error?.code || "AUTHENTICATION_FAILED",
+        mockAuthResult.error?.message || "Invalid credentials",
+        mockAuthResult.error?.statusCode || 401
+      );
+    }
+  } catch (error) {
+    context.log("Database login error:", error);
+    context.res = UnifiedResponseHandler.handleException(error);
+  }
+};
+
+/**
+ * Authenticate user against Cosmos DB using unified auth patterns
+ */
+async function authenticateWithDatabase(email, password, context) {
+  try {
     // Query user by email
     const query = {
       query: "SELECT * FROM c WHERE c.email = @email",
@@ -65,20 +101,16 @@ module.exports = async function (context, req) {
       .fetchAll();
 
     if (users.length === 0) {
-      context.log("User not found for email:", email);
-      context.res = {
-        status: 401,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: "Invalid credentials",
-        },
+      context.log("User not found in database for email:", email);
+      return {
+        success: false,
+        error: "INVALID_CREDENTIALS",
+        message: "Invalid email or password",
       };
-      return;
     }
 
     const user = users[0];
-    context.log("User found:", {
+    context.log("User found in database:", {
       id: user.id,
       email: user.email,
       role: user.role,
@@ -88,170 +120,36 @@ module.exports = async function (context, req) {
     const isPasswordValid = await bcrypt.compare(password, user.hashedPassword);
 
     if (!isPasswordValid) {
-      context.log("Password verification failed for user:", user.id);
-      context.res = {
-        status: 401,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: "Invalid credentials",
-        },
+      context.log("Password verification failed for database user:", user.id);
+      return {
+        success: false,
+        error: "INVALID_CREDENTIALS",
+        message: "Invalid email or password",
       };
-      return;
     }
 
-    context.log("Password verified successfully for user:", user.id);
+    context.log("Database authentication successful for user:", user.id);
 
-    // Generate JWT tokens
-    const tokenPayload = {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    };
-
-    const token = jwt.sign(
-      tokenPayload,
-      process.env.JWT_SECRET || "default-jwt-secret",
-      { expiresIn: "24h" }
-    );
-
-    const refreshToken = jwt.sign(
-      { ...tokenPayload, type: "refresh" },
-      process.env.JWT_REFRESH_SECRET || "default-refresh-secret",
-      { expiresIn: "7d" }
-    );
+    // Generate tokens using unified auth system
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     // Prepare user response (exclude sensitive data)
-    const userResponse = {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      phoneNumber: user.phoneNumber,
-      homeAddress: user.homeAddress,
-      isActiveDriver: user.isActiveDriver,
-      preferences: user.preferences || {
-        notifications: {
-          email: true,
-          push: true,
-          sms: false,
-          tripReminders: true,
-          swapRequests: true,
-          scheduleChanges: true,
-        },
-        privacy: {
-          showPhoneNumber: true,
-          showEmail: false,
-        },
-        pickupLocation: "Home",
-        dropoffLocation: "School",
-        preferredTime: "08:00",
-        isDriver: user.isActiveDriver || false,
-        smokingAllowed: false,
-      },
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    const { hashedPassword, ...safeUser } = user;
 
-    context.log("Login successful for user:", user.id);
-
-    // Return the format expected by frontend
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: {
-        success: true,
-        data: {
-          user: userResponse,
-          token: token,
-          refreshToken: refreshToken,
-        },
-      },
+    return {
+      success: true,
+      user: safeUser,
+      accessToken,
+      refreshToken,
+      expiresIn: "24h",
     };
   } catch (error) {
-    context.log("Database login error:", error);
-
-    // Fallback to mock authentication for development
-    const { email, password } = req.body || {};
-
-    if (
-      (email === "admin@example.com" &&
-        password === (process.env.ADMIN_PASSWORD || "test-admin-password")) ||
-      (email === "test-user@example.com" && password)
-    ) {
-      context.log("Fallback to mock authentication for:", email);
-
-      const mockUser = {
-        id: email === "admin@example.com" ? "admin-id" : "test-admin-id",
-        email: email,
-        firstName: email === "admin@example.com" ? "Admin" : "Test",
-        lastName: email === "admin@example.com" ? "User" : "User",
-        role: "admin",
-        phoneNumber: null,
-        homeAddress: null,
-        isActiveDriver: true,
-        preferences: {
-          notifications: {
-            email: true,
-            push: true,
-            sms: false,
-            tripReminders: true,
-            swapRequests: true,
-            scheduleChanges: true,
-          },
-          privacy: {
-            showPhoneNumber: true,
-            showEmail: false,
-          },
-          pickupLocation: "Home",
-          dropoffLocation: "School",
-          preferredTime: "08:00",
-          isDriver: true,
-          smokingAllowed: false,
-        },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const mockToken = jwt.sign(
-        { userId: mockUser.id, email: mockUser.email, role: mockUser.role },
-        process.env.JWT_SECRET || "default-jwt-secret",
-        { expiresIn: "24h" }
-      );
-
-      const mockRefreshToken = jwt.sign(
-        {
-          userId: mockUser.id,
-          email: mockUser.email,
-          role: mockUser.role,
-          type: "refresh",
-        },
-        process.env.JWT_REFRESH_SECRET || "default-refresh-secret",
-        { expiresIn: "7d" }
-      );
-
-      context.res = {
-        status: 200,
-        headers: corsHeaders,
-        body: {
-          success: true,
-          data: {
-            user: mockUser,
-            token: mockToken,
-            refreshToken: mockRefreshToken,
-          },
-        },
-      };
-    } else {
-      context.res = {
-        status: 500,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: "Database connection failed. Please try again later.",
-        },
-      };
-    }
+    context.log("Database authentication error:", error);
+    return {
+      success: false,
+      error: "DATABASE_ERROR",
+      message: "Database authentication failed",
+    };
   }
-};
+}

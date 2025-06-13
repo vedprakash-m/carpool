@@ -1,36 +1,24 @@
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
+
 module.exports = async function (context, req) {
   context.log("Trips list function started");
 
-  // Set CORS headers
-  context.res = {
-    headers: {
-      "Access-Control-Allow-Credentials": "true",
-      "Access-Control-Allow-Origin":
-        "https://lively-stone-016bfa20f.6.azurestaticapps.net",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "Content-Type, Authorization, X-Requested-With",
-      "Content-Type": "application/json",
-    },
-  };
-
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    context.res.status = 200;
-    context.res.body = "";
-    return;
-  }
-
-  if (req.method !== "GET") {
-    context.res.status = 405;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: "Method not allowed",
-    });
-    return;
-  }
-
   try {
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+      context.res = UnifiedResponseHandler.preflight();
+      return;
+    }
+
+    if (req.method !== "GET") {
+      context.res = UnifiedResponseHandler.error(
+        "METHOD_NOT_ALLOWED",
+        "Method not allowed",
+        405
+      );
+      return;
+    }
+
     // Get configurable school name from environment or use default
     const primarySchool =
       process.env.PRIMARY_SCHOOL_NAME || "Main Elementary School";
@@ -67,10 +55,7 @@ module.exports = async function (context, req) {
       },
     ];
 
-    context.res.status = 200;
-    context.res.body = JSON.stringify({
-      success: true,
-      data: mockTrips,
+    context.res = UnifiedResponseHandler.success(mockTrips, {
       pagination: {
         page: 1,
         limit: 20,
@@ -80,10 +65,6 @@ module.exports = async function (context, req) {
     });
   } catch (error) {
     context.log.error("Error in trips list:", error);
-    context.res.status = 500;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: "Internal server error",
-    });
+    context.res = UnifiedResponseHandler.handleException(error);
   }
 };

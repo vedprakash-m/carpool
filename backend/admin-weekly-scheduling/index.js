@@ -1,4 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock data storage (replace with actual database in production)
 let mockWeeklySchedules = [
@@ -8,7 +10,7 @@ let mockWeeklySchedules = [
     group: {
       id: "group-1",
       name: "Lincoln Morning Riders",
-      targetSchool: { name: "Lincoln Elementary School" },
+      targetSchool: { name: "Tesla STEM High School" },
     },
     weekStartDate: "2024-01-08", // Monday
     weekEndDate: "2024-01-12", // Friday
@@ -241,13 +243,13 @@ function generateWeeklyAssignments(
             children: [{ id: "child-1", name: "Mock Child", grade: "2" }],
             pickupLocation: {
               address: "123 Home Street",
-              latitude: 39.7817,
-              longitude: -89.6501,
+              latitude: 47.674,
+              longitude: -122.1215,
             },
             dropoffLocation: {
-              address: "Lincoln Elementary School",
-              latitude: 39.7817,
-              longitude: -89.6501,
+              address: "Tesla STEM High School",
+              latitude: 47.674,
+              longitude: -122.1215,
             },
           }));
 
@@ -366,8 +368,8 @@ function generateOptimalRoute(participants) {
     order: index + 1,
     location: {
       address: `${participant.parent?.firstName || "Stop"} Home`,
-      latitude: 39.7817 + (Math.random() - 0.5) * 0.01,
-      longitude: -89.6501 + (Math.random() - 0.5) * 0.01,
+      latitude: 47.674 + (Math.random() - 0.5) * 0.01,
+      longitude: -122.1215 + (Math.random() - 0.5) * 0.01,
     },
     parentId: participant.parentId,
     estimatedTime: `07:${45 + index * 5}`,
@@ -445,35 +447,35 @@ function generateRecommendations(conflicts, assignments) {
 }
 
 module.exports = async function (context, req) {
-  try {
-    // Set CORS headers
-    context.res = {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json",
-      },
-    };
+  context.log("Admin weekly scheduling function started");
 
-    // Handle preflight requests
+  try {
+    // Handle CORS preflight
     if (req.method === "OPTIONS") {
-      context.res.status = 200;
-      context.res.body = "";
+      context.res = UnifiedResponseHandler.preflight();
       return;
     }
 
     // Authentication check
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Authentication required",
-        },
-      });
+      context.res = UnifiedResponseHandler.authError("Authentication required");
+      return;
+    }
+
+    // Verify admin role
+    const token = authHeader.split(" ")[1];
+    let user;
+    try {
+      user = UnifiedAuthService.verifyToken(token);
+      if (!user || (user.role !== "admin" && user.role !== "trip_admin")) {
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "Admin access required"
+        );
+        return;
+      }
+    } catch (error) {
+      context.res = UnifiedResponseHandler.authError("Invalid token");
       return;
     }
 
@@ -484,14 +486,9 @@ module.exports = async function (context, req) {
     if (method === "GET" && action === "schedules") {
       // Get weekly schedules (Group Admin only)
       if (!token.includes("trip_admin") && !token.includes("admin")) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Group Admin access required",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "Group Admin access required"
+        );
         return;
       }
 
@@ -510,14 +507,10 @@ module.exports = async function (context, req) {
         .sort((a, b) => new Date(b.weekStartDate) - new Date(a.weekStartDate))
         .slice(0, parseInt(limit));
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          schedules,
-          total: schedules.length,
-          message: "Weekly schedules retrieved successfully",
-        },
+      context.res = UnifiedResponseHandler.success({
+        schedules,
+        total: schedules.length,
+        message: "Weekly schedules retrieved successfully",
       });
       return;
     }
@@ -525,14 +518,9 @@ module.exports = async function (context, req) {
     if (method === "POST" && action === "create-schedule") {
       // Create new weekly schedule (Group Admin only)
       if (!token.includes("trip_admin") && !token.includes("admin")) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Group Admin access required",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "Group Admin access required"
+        );
         return;
       }
 
