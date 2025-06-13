@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "value": "vcarpool"
+    },
+    "environmentName": {
+      "value": "prod"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "functionAppName": {
+      "value": "vcarpool-api-prod"
+    },
+    "staticWebAppName": {
+      "value": "vcarpool-web-prod"
+    },
+    "appInsightsName": {
+      "value": "vcarpool-insights-prod"
+    },
+    "storageAccountName": {
+      "value": "vcarpoolsaprod"
+    },
+    "keyVaultName": {
+      "value": "vcarpool-kv-prod"
+    },
+    "databaseResourceGroup": {
+      "value": "vcarpool-db-rg"
+    },
+    "cosmosDbAccountName": {
+      "value": "vcarpool-cosmos-prod"
+    }
+  }
+}

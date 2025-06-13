@@ -44,7 +44,9 @@ CONFIG_FILES=(
   "backend/host.json"
   "frontend/next.config.js"
   "frontend/playwright.config.ts"
-  "infra/core-infrastructure.bicep"
+  "infra/main.bicep"
+  "infra/database.bicep"
+  "infra/main-compute.bicep"
   ".github/workflows/ci-cd.yml"
 )
 
