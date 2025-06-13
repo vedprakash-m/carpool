@@ -97,7 +97,66 @@ _Last Updated: June 12, 2025_
 
 ## 🚀 Deployment & Infrastructure
 
-### Azure Resources
+### Multi-Resource Group Architecture (NEW - June 2025)
+
+VCarpool now implements a **cost-optimized multi-resource group architecture** that separates persistent storage from compute resources, enabling significant cost savings during inactive development periods.
+
+#### 🗄️ Database Resource Group (`vcarpool-db-rg`)
+
+**Purpose**: Persistent data storage that runs continuously
+**Resources**:
+
+- Azure Cosmos DB account (`vcarpool-cosmos-prod`)
+- Database: `vcarpool`
+- Collections: `users`, `groups`, `trips`, `schedules`, `swapRequests`, etc.
+
+**Cost**: ~$24/month (400 RU/s provisioned throughput)
+**Status**: Always running (contains all user data)
+
+#### ⚡ Compute Resource Group (`vcarpool-rg`)
+
+**Purpose**: Application runtime that can be deleted/recreated
+**Resources**:
+
+- Azure Function App (`vcarpool-api-prod`) - Backend API
+- Static Web App (`vcarpool-web-prod`) - Frontend
+- Storage Account (`vcarpoolsaprod`) - Function storage
+- Application Insights (`vcarpool-insights-prod`) - Monitoring
+- Key Vault (`vcarpool-kv-prod`) - Secrets management
+
+**Cost**: ~$50-100/month (depending on usage)
+**Status**: Can be deleted when not actively developing
+
+#### 🛠️ Deployment Scripts
+
+- **`./scripts/deploy-multi-rg.sh`** - Deploy complete infrastructure
+- **`./scripts/cost-optimize.sh`** - Manage cost optimization
+  - `analyze` - Show current resources and costs
+  - `delete` - Delete compute resources (save ~$50-100/month)
+  - `restore` - Recreate compute resources from templates
+  - `status` - Check deletion progress
+
+#### 💰 Cost Optimization Strategy
+
+1. **Active Development**: Both resource groups running (~$75-125/month)
+2. **Inactive Period**: Delete compute resources (~$24/month, 70% savings)
+3. **Return to Development**: Restore compute resources in ~5 minutes
+4. **Data Safety**: Database remains untouched during optimization
+
+**Key Benefits**:
+
+- Zero data loss during cost optimization cycles
+- Quick restoration (5-minute deployment vs. hours of setup)
+- Separation of concerns (data vs. compute)
+- Granular cost control
+
+### Legacy Single Resource Group
+
+**Previous Architecture**: All resources in `vcarpool-rg`
+**Status**: Still supported via `infra/main.bicep`
+**Migration**: Automatic via CI/CD pipeline updates
+
+### Azure Resources (Current Production)
 
 - **Azure Functions App**: Backend API hosting
 - **Azure Static Web Apps**: Frontend hosting with CDN

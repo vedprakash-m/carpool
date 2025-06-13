@@ -36,6 +36,53 @@ VCarpool is a parent-to-parent carpool coordination platform that helps families
 
 **✅ Universal School Support** - Successfully transformed from being hardcoded for one specific school to supporting families from any school community nationwide. Currently active for Tesla STEM High School in Redmond, WA.
 
+**✅ Multi-Resource Group Architecture** - Implemented cost-optimized Azure infrastructure with separate database and compute resource groups, enabling cost savings of ~$50-100/month during inactive periods while preserving data integrity.
+
+---
+
+## 💰 Cost Optimization
+
+VCarpool uses a **multi-resource group architecture** for cost optimization:
+
+### 🗄️ Database Resource Group (`vcarpool-db-rg`)
+
+- **Contains**: Cosmos DB (your data)
+- **Status**: Always running
+- **Cost**: ~$24/month
+- **Purpose**: Persistent data storage
+
+### ⚡ Compute Resource Group (`vcarpool-rg`)
+
+- **Contains**: Function App, Static Web App, Storage, App Insights, Key Vault
+- **Status**: Can be deleted when not needed
+- **Cost**: ~$50-100/month
+- **Purpose**: Application runtime
+
+### 📋 Cost Management Commands
+
+```bash
+# Check current costs and resource status
+./scripts/cost-optimize.sh analyze
+
+# Delete compute resources (save $50-100/month)
+./scripts/cost-optimize.sh delete
+
+# Restore compute resources when needed
+./scripts/cost-optimize.sh restore
+
+# Check deletion status
+./scripts/cost-optimize.sh status
+```
+
+### 💡 Cost Optimization Strategy
+
+1. **Development Period**: Keep both resource groups running
+2. **Inactive Period**: Delete compute resources, keep database
+3. **Return to Development**: Restore compute resources in ~5 minutes
+4. **Data Safety**: Your database and all user data remain safe
+
+**Estimated Savings**: Up to $100/month during inactive periods with zero data loss.
+
 ---
 
 ## 🚀 Quick Start
@@ -191,18 +238,52 @@ cd frontend && npm test     # Frontend tests only
 
 ## 🚀 Deployment
 
-### Automated Deployment
+### Multi-Resource Group Deployment
+
+VCarpool uses a sophisticated multi-resource group deployment strategy optimized for cost efficiency:
+
+#### Automated Deployment (Recommended)
 
 ```bash
-# Deploy via GitHub Actions
+# Deploy both database and compute resources via GitHub Actions
 git push origin main
 ```
 
-### Manual Deployment
+#### Manual Multi-Resource Group Deployment
 
 ```bash
-# Backend
-cd backend && npm run deploy
+# Deploy complete infrastructure (database + compute)
+./scripts/deploy-multi-rg.sh
+
+# Deploy specific components
+./scripts/deploy-multi-rg.sh deploy    # Full deployment
+./scripts/deploy-multi-rg.sh verify    # Verify existing deployment
+./scripts/deploy-multi-rg.sh outputs   # Get deployment outputs
+```
+
+#### Resource Group Architecture
+
+**Database Resource Group** (`vcarpool-db-rg`):
+
+- Cosmos DB account, database, and containers
+- Persistent storage - always running
+- Contains all user data and configurations
+
+**Compute Resource Group** (`vcarpool-rg`):
+
+- Azure Function App (backend API)
+- Static Web App (frontend)
+- Storage Account, Application Insights, Key Vault
+- Can be deleted/recreated for cost optimization
+
+#### Legacy Single Resource Group
+
+```bash
+# Traditional single-RG deployment (if needed)
+az deployment group create \
+  --resource-group vcarpool-rg \
+  --template-file infra/main.bicep \
+  --parameters appName=vcarpool environmentName=prod
 
 # Frontend
 cd frontend && npm run build && npm run deploy

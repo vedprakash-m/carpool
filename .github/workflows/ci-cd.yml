@@ -7,9 +7,10 @@ on:
     branches: [main]
 
 env:
-  AZURE_LOCATION: "eastus2"
+  AZURE_LOCATION: "eastus"
   ENVIRONMENT: "prod"
-  RESOURCE_GROUP: "vcarpool-rg"
+  COMPUTE_RESOURCE_GROUP: "vcarpool-rg"
+  DATABASE_RESOURCE_GROUP: "vcarpool-db-rg"
   NODE_VERSION: "22"
 
 jobs:
@@ -238,46 +239,69 @@ jobs:
         run: npm run test:frontend || echo "⚠️ Frontend tests failed but continuing deployment"
         continue-on-error: true
 
-  # Simplified infrastructure (only for main branch)
+  # Multi-Resource Group Infrastructure (only for main branch)
   infrastructure:
-    name: Ensure Infrastructure
+    name: Deploy Multi-RG Infrastructure
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     environment: prod
     outputs:
-      function-app-name: ${{ steps.config.outputs.function-app-name }}
-      static-web-app-name: ${{ steps.config.outputs.static-web-app-name }}
+      function-app-name: ${{ steps.deploy.outputs.function-app-name }}
+      static-web-app-name: ${{ steps.deploy.outputs.static-web-app-name }}
+      cosmos-db-endpoint: ${{ steps.deploy.outputs.cosmos-db-endpoint }}
+      database-resource-group: ${{ steps.deploy.outputs.database-resource-group }}
+      compute-resource-group: ${{ steps.deploy.outputs.compute-resource-group }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Check existing resources
-        id: config
+      - name: Deploy Multi-Resource Group Infrastructure
+        id: deploy
         run: |
-          # Use existing resource names
-          FUNCTION_APP_NAME="vcarpool-api-prod"
-          STATIC_WEB_APP_NAME="vcarpool-web-prod"
+          echo "🚀 Deploying VCarpool multi-resource group infrastructure..."
 
-          # Quick health check for Function App
-          if az functionapp show --name "$FUNCTION_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} >/dev/null 2>&1; then
-            echo "✅ Function App exists: $FUNCTION_APP_NAME"
+          # Make script executable and run deployment
+          chmod +x ./scripts/deploy-multi-rg.sh
+          ENVIRONMENT=prod ./scripts/deploy-multi-rg.sh
+
+          echo "✅ Multi-resource group deployment completed"
+
+      - name: Verify Resources
+        run: |
+          echo "🔍 Verifying deployed resources..."
+
+          # Check database resource group
+          DB_RG="vcarpool-db-rg"
+          COMPUTE_RG="vcarpool-rg"
+
+          echo "Database Resource Group ($DB_RG):"
+          az resource list --resource-group "$DB_RG" --query "[].{Name:name, Type:type}" -o table || echo "No resources found"
+
+          echo ""
+          echo "Compute Resource Group ($COMPUTE_RG):"
+          az resource list --resource-group "$COMPUTE_RG" --query "[].{Name:name, Type:type}" -o table || echo "No resources found"
+
+          # Verify critical resources exist
+          FUNCTION_APP_NAME=$(echo "${{ steps.deploy.outputs.function-app-name }}")
+          STATIC_WEB_APP_NAME=$(echo "${{ steps.deploy.outputs.static-web-app-name }}")
+
+          if [ -n "$FUNCTION_APP_NAME" ] && az functionapp show --name "$FUNCTION_APP_NAME" --resource-group "$COMPUTE_RG" >/dev/null 2>&1; then
+            echo "✅ Function App verified: $FUNCTION_APP_NAME"
           else
-            echo "❌ Function App missing - will need manual intervention"
+            echo "❌ Function App verification failed"
             exit 1
           fi
 
-          # Quick health check for Static Web App
-          if az staticwebapp show --name "$STATIC_WEB_APP_NAME" --resource-group ${{ env.RESOURCE_GROUP }} >/dev/null 2>&1; then
-            echo "✅ Static Web App exists: $STATIC_WEB_APP_NAME"
+          if [ -n "$STATIC_WEB_APP_NAME" ] && az staticwebapp show --name "$STATIC_WEB_APP_NAME" --resource-group "$COMPUTE_RG" >/dev/null 2>&1; then
+            echo "✅ Static Web App verified: $STATIC_WEB_APP_NAME"
           else
-            echo "❌ Static Web App missing - will need manual intervention"
+            echo "❌ Static Web App verification failed"
             exit 1
           fi
-
-          echo "function-app-name=$FUNCTION_APP_NAME" >> $GITHUB_OUTPUT
-          echo "static-web-app-name=$STATIC_WEB_APP_NAME" >> $GITHUB_OUTPUT
 
   # Fast deployments in parallel
   deploy-backend:
@@ -359,7 +383,7 @@ jobs:
           # Use the actual Static Web App resource name
           TOKEN=$(az staticwebapp secrets list \
             --name "${{ needs.infrastructure.outputs.static-web-app-name }}" \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --resource-group ${{ env.COMPUTE_RESOURCE_GROUP }} \
             --query 'properties.apiKey' \
             --output tsv)
           echo "swa-token=$TOKEN" >> $GITHUB_OUTPUT
