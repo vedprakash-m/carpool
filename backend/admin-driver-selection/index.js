@@ -83,32 +83,16 @@ module.exports = async function (context, req) {
           context
         );
       default:
-        return {
-          status: 405,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "METHOD_NOT_ALLOWED",
-              message: `Method ${method} not allowed`,
-            },
-          }),
-        };
+        return UnifiedResponseHandler.methodNotAllowedError(
+          `Method ${method} not allowed`
+        );
     }
   } catch (error) {
     context.log.error("Driver selection error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error",
-          details: error.message,
-        },
-      }),
-    };
+    return UnifiedResponseHandler.internalError(
+      "Internal server error",
+      error.message
+    );
   }
 };
 
@@ -130,27 +114,22 @@ async function getAllPotentialDrivers(container, context) {
         )
         .fetchAll();
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: users.map((user) => ({
-            id: user.id,
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            pickupLocation: user.preferences?.pickupLocation,
-            dropoffLocation: user.preferences?.dropoffLocation,
-            joinedDate: user.createdAt,
-          })),
-          pagination: {
-            total: users.length,
-            page: 1,
-            limit: users.length,
-          },
-        }),
-      };
+      return UnifiedResponseHandler.success({
+        drivers: users.map((user) => ({
+          id: user.id,
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          pickupLocation: user.preferences?.pickupLocation,
+          dropoffLocation: user.preferences?.dropoffLocation,
+          joinedDate: user.createdAt,
+        })),
+        pagination: {
+          total: users.length,
+          page: 1,
+          limit: users.length,
+        },
+      });
     } else {
       // Mock potential drivers
       const mockDrivers = getMockPotentialDrivers();
@@ -215,30 +194,16 @@ async function getWeekDriverDesignations(
         designation: designations.find((d) => d.driverId === driver.id),
       }));
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
-            weekStartDate,
-            drivers: driversWithStatus,
-            activeDriverCount: activeDriverIds.size,
-            totalPotentialDrivers: potentialDrivers.length,
-          },
-        }),
-      };
+      return UnifiedResponseHandler.success({
+        weekStartDate,
+        drivers: driversWithStatus,
+        activeDriverCount: activeDriverIds.size,
+        totalPotentialDrivers: potentialDrivers.length,
+      });
     } else {
       // Mock week designations
       const mockDesignations = getMockWeekDesignations(weekStartDate);
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: mockDesignations,
-        }),
-      };
+      return UnifiedResponseHandler.success(mockDesignations);
     }
   } catch (error) {
     context.log.error("Get week designations error:", error);
@@ -253,33 +218,16 @@ async function setWeekDriverDesignations(container, req, context) {
 
     // Validate required fields
     if (!body.weekStartDate || !Array.isArray(body.activeDriverIds)) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "weekStartDate and activeDriverIds array are required",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "weekStartDate and activeDriverIds array are required"
+      );
     }
 
     // Validate week start date
     if (!isValidWeekStartDate(body.weekStartDate)) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message:
-              "Invalid week start date format. Expected YYYY-MM-DD for a Monday.",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Invalid week start date format. Expected YYYY-MM-DD for a Monday."
+      );
     }
 
     if (container) {
@@ -314,41 +262,31 @@ async function setWeekDriverDesignations(container, req, context) {
         newDesignations.push(created);
       }
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
-            weekStartDate: body.weekStartDate,
-            activeDriverCount: newDesignations.length,
-            designations: newDesignations,
-          },
-          message: `Driver designations updated for week of ${body.weekStartDate}`,
-        }),
-      };
+      return UnifiedResponseHandler.success(
+        {
+          weekStartDate: body.weekStartDate,
+          activeDriverCount: newDesignations.length,
+          designations: newDesignations,
+        },
+        `Driver designations updated for week of ${body.weekStartDate}`
+      );
     } else {
       // Mock designation update
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
+      return UnifiedResponseHandler.success(
+        {
+          weekStartDate: body.weekStartDate,
+          activeDriverCount: body.activeDriverIds.length,
+          designations: body.activeDriverIds.map((driverId) => ({
+            id: `mock-designation-${body.weekStartDate}-${driverId}`,
             weekStartDate: body.weekStartDate,
-            activeDriverCount: body.activeDriverIds.length,
-            designations: body.activeDriverIds.map((driverId) => ({
-              id: `mock-designation-${body.weekStartDate}-${driverId}`,
-              weekStartDate: body.weekStartDate,
-              driverId: driverId,
-              designatedBy: "admin",
-              designatedAt: new Date().toISOString(),
-              isActive: true,
-            })),
-          },
-          message: `Driver designations updated for week of ${body.weekStartDate} (mock mode)`,
-        }),
-      };
+            driverId: driverId,
+            designatedBy: "admin",
+            designatedAt: new Date().toISOString(),
+            isActive: true,
+          })),
+        },
+        `Driver designations updated for week of ${body.weekStartDate} (mock mode)`
+      );
     }
   } catch (error) {
     context.log.error("Set designations error:", error);

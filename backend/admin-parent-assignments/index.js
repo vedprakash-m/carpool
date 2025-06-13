@@ -1,22 +1,12 @@
 const { CosmosClient } = require("@azure/cosmos");
 const { MockDataFactory } = require("../src/utils/mock-data-wrapper");
-const {
-  handlePreflight,
-  createSuccessResponse,
-  createErrorResponse,
-  validateAuth,
-  handleError,
-  isValidDate,
-  getCurrentMondayDate,
-  logRequest,
-} = require("../src/utils/unified-response");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, req) {
   context.log("Parent Assignments API called");
-  logRequest(req, context, "admin-parent-assignments");
 
   // Handle preflight requests
-  const preflightResponse = handlePreflight(req);
+  const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
   if (preflightResponse) {
     context.res = preflightResponse;
     return;
@@ -27,7 +17,7 @@ module.exports = async function (context, req) {
     const method = req.method;
 
     // Validate authorization
-    const authError = validateAuth(req);
+    const authError = UnifiedResponseHandler.validateAuth(req);
     if (authError) {
       context.res = authError;
       return;
@@ -64,18 +54,15 @@ module.exports = async function (context, req) {
         context.res = result;
         return;
       default:
-        context.res = createErrorResponse(
-          "METHOD_NOT_ALLOWED",
-          `Method ${method} not allowed`,
-          405
+        context.res = UnifiedResponseHandler.methodNotAllowedError(
+          `Method ${method} not allowed`
         );
         return;
     }
   } catch (error) {
-    context.res = handleError(
-      error,
-      context,
-      "Failed to process parent assignments"
+    context.res = UnifiedResponseHandler.internalError(
+      "Failed to process parent assignments",
+      error.message
     );
   }
 };
@@ -88,11 +75,9 @@ async function getParentAssignments(
 ) {
   try {
     // Validate week start date format
-    if (!weekStartDate || !isValidDate(weekStartDate)) {
-      return createErrorResponse(
-        "VALIDATION_ERROR",
-        "Invalid week start date format. Expected YYYY-MM-DD.",
-        400
+    if (!weekStartDate || !UnifiedResponseHandler.isValidDate(weekStartDate)) {
+      return UnifiedResponseHandler.validationError(
+        "Invalid week start date format. Expected YYYY-MM-DD."
       );
     }
 
@@ -143,7 +128,7 @@ async function getParentAssignments(
         };
       });
 
-      return createSuccessResponse({
+      return UnifiedResponseHandler.success({
         weekStartDate,
         assignments: enhancedAssignments,
         totalAssignments: enhancedAssignments.length,
@@ -151,7 +136,7 @@ async function getParentAssignments(
     } else {
       // Return mock assignments for development using centralized factory
       const mockAssignments = getMockParentAssignments(weekStartDate);
-      return createSuccessResponse(mockAssignments);
+      return UnifiedResponseHandler.success(mockAssignments);
     }
   } catch (error) {
     context.log.error("Get parent assignments error:", error);

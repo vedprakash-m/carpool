@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
 const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock data storage (replace with actual database in production)
@@ -137,29 +138,24 @@ module.exports = async function (context, req) {
   try {
     // Handle preflight requests
     if (req.method === "OPTIONS") {
-      return UnifiedResponseHandler.preflight(context);
+      context.res = UnifiedResponseHandler.preflight();
+      return;
     }
 
     // Authentication check
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return UnifiedResponseHandler.error(
-        context,
-        "UNAUTHORIZED",
-        "Authentication required",
-        401
-      );
+      context.res = UnifiedResponseHandler.authError("Authentication required");
+      return;
     }
 
     // Simple token validation (replace with actual JWT validation)
     const token = authHeader.split(" ")[1];
     if (!token.includes("trip_admin") && !token.includes("admin")) {
-      return UnifiedResponseHandler.error(
-        context,
-        "FORBIDDEN",
-        "Group Admin access required",
-        403
+      context.res = UnifiedResponseHandler.forbiddenError(
+        "Group Admin access required"
       );
+      return;
     }
 
     const method = req.method;
@@ -206,10 +202,8 @@ module.exports = async function (context, req) {
         parseInt(offset) + parseInt(limit)
       );
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           requests: paginatedRequests,
           total,
           pending: filteredRequests.filter((r) => r.status === "pending")
@@ -218,9 +212,9 @@ module.exports = async function (context, req) {
             .length,
           denied: filteredRequests.filter((r) => r.status === "denied").length,
           groups: adminGroups,
-          message: "Join requests retrieved successfully",
         },
-      });
+        "Join requests retrieved successfully"
+      );
       return;
     }
 
@@ -229,39 +223,25 @@ module.exports = async function (context, req) {
       const request = mockJoinRequests.find((r) => r.id === requestId);
 
       if (!request) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Join request not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Join request not found"
+        );
         return;
       }
 
       // Verify Group Admin owns this group
       const group = mockCarpoolGroups.find((g) => g.id === request.groupId);
       if (!group || group.tripAdminId !== tripAdminId) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "You can only view requests for your own groups",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "You can only view requests for your own groups"
+        );
         return;
       }
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          request,
-          message: "Join request retrieved successfully",
-        },
-      });
+      context.res = UnifiedResponseHandler.success(
+        { request },
+        "Join request retrieved successfully"
+      );
       return;
     }
 
@@ -270,14 +250,9 @@ module.exports = async function (context, req) {
       const { requestId, reviewMessage } = req.body;
 
       if (!requestId) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Request ID is required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Request ID is required"
+        );
         return;
       }
 
@@ -285,14 +260,9 @@ module.exports = async function (context, req) {
         (r) => r.id === requestId
       );
       if (requestIndex === -1) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Join request not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Join request not found"
+        );
         return;
       }
 
@@ -301,27 +271,17 @@ module.exports = async function (context, req) {
       // Verify Group Admin owns this group
       const group = mockCarpoolGroups.find((g) => g.id === request.groupId);
       if (!group || group.tripAdminId !== tripAdminId) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "You can only approve requests for your own groups",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "You can only approve requests for your own groups"
+        );
         return;
       }
 
       // Check if request is still pending
       if (request.status !== "pending") {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "INVALID_STATUS",
-            message: "Only pending requests can be approved",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Only pending requests can be approved"
+        );
         return;
       }
 
@@ -345,50 +305,39 @@ module.exports = async function (context, req) {
       );
 
       if (existingChildMemberships.length > 0) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "CHILD_ALREADY_ENROLLED",
-            message:
-              "One or more children are already members of another carpool group. Each child can only be in one group at a time.",
-            details: {
-              conflictingGroups: existingChildMemberships
-                .map((r) => r.group?.name)
-                .filter(Boolean),
-              affectedChildren: existingChildMemberships.flatMap((r) =>
-                r.childrenInfo
-                  ?.filter((child) =>
-                    childrenNames.includes(child.name.toLowerCase())
-                  )
-                  .map((child) => child.name)
-              ),
-            },
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "One or more children are already members of another carpool group. Each child can only be in one group at a time.",
+          {
+            conflictingGroups: existingChildMemberships
+              .map((r) => r.group?.name)
+              .filter(Boolean),
+            affectedChildren: existingChildMemberships.flatMap((r) =>
+              r.childrenInfo
+                ?.filter((child) =>
+                  childrenNames.includes(child.name.toLowerCase())
+                )
+                .map((child) => child.name)
+            ),
+          }
+        );
         return;
       }
 
       // Check group capacity for entire family unit
       if (group.memberCount + totalFamilyMembers > group.maxChildren) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "CAPACITY_EXCEEDED",
-            message: `Adding the entire ${request.requester.firstName} family (${totalFamilyMembers} members) would exceed group capacity (${group.maxChildren} max).`,
-            details: {
-              currentCapacity: group.memberCount,
-              maxCapacity: group.maxChildren,
-              familySize: totalFamilyMembers,
-              breakdown: {
-                drivingParent: drivingParent,
-                nonDrivingParent: nonDrivingParent,
-                children: childrenCount,
-              },
+        context.res = UnifiedResponseHandler.validationError(
+          `Adding the entire ${request.requester.firstName} family (${totalFamilyMembers} members) would exceed group capacity (${group.maxChildren} max).`,
+          {
+            currentCapacity: group.memberCount,
+            maxCapacity: group.maxChildren,
+            familySize: totalFamilyMembers,
+            breakdown: {
+              drivingParent: drivingParent,
+              nonDrivingParent: nonDrivingParent,
+              children: childrenCount,
             },
-          },
-        });
+          }
+        );
         return;
       }
 
@@ -473,15 +422,10 @@ module.exports = async function (context, req) {
         });
       }
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          request: mockJoinRequests[requestIndex],
-          message:
-            "Join request approved successfully. Parent will be notified.",
-        },
-      });
+      context.res = UnifiedResponseHandler.success(
+        { request: mockJoinRequests[requestIndex] },
+        "Join request approved successfully. Parent will be notified."
+      );
       return;
     }
 
@@ -490,14 +434,9 @@ module.exports = async function (context, req) {
       const { requestId, reviewMessage } = req.body;
 
       if (!requestId) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Request ID is required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Request ID is required"
+        );
         return;
       }
 
@@ -505,14 +444,9 @@ module.exports = async function (context, req) {
         (r) => r.id === requestId
       );
       if (requestIndex === -1) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Join request not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Join request not found"
+        );
         return;
       }
 
@@ -521,27 +455,17 @@ module.exports = async function (context, req) {
       // Verify Group Admin owns this group
       const group = mockCarpoolGroups.find((g) => g.id === request.groupId);
       if (!group || group.tripAdminId !== tripAdminId) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "You can only deny requests for your own groups",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "You can only deny requests for your own groups"
+        );
         return;
       }
 
       // Check if request is still pending
       if (request.status !== "pending") {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "INVALID_STATUS",
-            message: "Only pending requests can be denied",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Only pending requests can be denied"
+        );
         return;
       }
 
@@ -561,14 +485,10 @@ module.exports = async function (context, req) {
         reviewedAt: new Date().toISOString(),
       };
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          request: mockJoinRequests[requestIndex],
-          message: "Join request denied. Parent will be notified.",
-        },
-      });
+      context.res = UnifiedResponseHandler.success(
+        { request: mockJoinRequests[requestIndex] },
+        "Join request denied. Parent will be notified."
+      );
       return;
     }
 
@@ -613,36 +533,21 @@ module.exports = async function (context, req) {
           .slice(0, 5),
       };
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          stats,
-          message: "Join request statistics retrieved successfully",
-        },
-      });
+      context.res = UnifiedResponseHandler.success(
+        { stats },
+        "Join request statistics retrieved successfully"
+      );
       return;
     }
 
     // Invalid method or action
-    context.res.status = 405;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "METHOD_NOT_ALLOWED",
-        message: `Method ${method} with action ${action} not allowed`,
-      },
-    });
+    context.res = UnifiedResponseHandler.methodNotAllowedError(
+      `Method ${method} with action ${action} not allowed`
+    );
   } catch (error) {
     context.log.error("Join request management error:", error);
-
-    context.res.status = 500;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "INTERNAL_ERROR",
-        message: "Internal server error occurred",
-      },
-    });
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };

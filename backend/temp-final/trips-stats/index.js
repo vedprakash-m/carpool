@@ -1,27 +1,23 @@
+const UnifiedResponseHandler = require("../../src/utils/unified-response.service");
+
 module.exports = async function (context, req) {
   context.log("Trips stats function started");
   context.log("Request method:", req.method);
 
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Access-Control-Max-Age": "86400",
-    "Content-Type": "application/json",
-  };
-
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
+  // Handle preflight requests
+  const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
+  if (preflightResponse) {
+    context.res = preflightResponse;
     return;
   }
 
   try {
+    // Validate authorization
+    const authError = UnifiedResponseHandler.validateAuth(req);
+    if (authError) {
+      context.res = authError;
+      return;
+    }
     // Return mock stats data for the dashboard
     // In a real app, this would query the database
     const stats = {
@@ -35,23 +31,12 @@ module.exports = async function (context, req) {
 
     context.log("Returning stats:", stats);
 
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: {
-        success: true,
-        data: stats,
-      },
-    };
+    context.res = UnifiedResponseHandler.success(stats);
   } catch (error) {
     context.log("Stats error:", error);
-    context.res = {
-      status: 500,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: error.message,
-      },
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "Error retrieving trip statistics",
+      error.message
+    );
   }
 };

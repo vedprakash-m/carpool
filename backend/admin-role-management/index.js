@@ -1,5 +1,7 @@
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock user storage (replace with actual database in production)
 let mockUsers = [
@@ -41,48 +43,25 @@ let mockUsers = [
 
 module.exports = async function (context, req) {
   try {
-    // Set CORS headers
-    context.res = {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json",
-      },
-    };
-
     // Handle preflight requests
     if (req.method === "OPTIONS") {
-      context.res.status = 200;
-      context.res.body = "";
+      context.res = UnifiedResponseHandler.preflight();
       return;
     }
 
     // Authentication check
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Authentication required",
-        },
-      });
+      context.res = UnifiedResponseHandler.authError("Authentication required");
       return;
     }
 
     // Simple token validation (replace with actual JWT validation)
     const token = authHeader.split(" ")[1];
     if (!token.includes("admin")) {
-      context.res.status = 403;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "FORBIDDEN",
-          message: "Super Admin access required",
-        },
-      });
+      context.res = UnifiedResponseHandler.forbiddenError(
+        "Super Admin access required"
+      );
       return;
     }
 
@@ -103,14 +82,10 @@ module.exports = async function (context, req) {
         updatedAt: user.updatedAt,
       }));
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          users,
-          message: "Users retrieved successfully",
-        },
-      });
+      context.res = UnifiedResponseHandler.success(
+        { users },
+        "Users retrieved successfully"
+      );
       return;
     }
 
@@ -119,43 +94,25 @@ module.exports = async function (context, req) {
 
       // Validation
       if (!userId || !newRole) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "userId and newRole are required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "userId and newRole are required"
+        );
         return;
       }
 
       // Validate role
       const validRoles = ["parent", "trip_admin", "admin", "student"];
       if (!validRoles.includes(newRole)) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message:
-              "Invalid role. Must be one of: parent, trip_admin, admin, student",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Invalid role. Must be one of: parent, trip_admin, admin, student"
+        );
         return;
       }
 
       // Find user
       const userIndex = mockUsers.findIndex((u) => u.id === userId);
       if (userIndex === -1) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "User not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError("User not found");
         return;
       }
 
@@ -166,14 +123,9 @@ module.exports = async function (context, req) {
       if (oldRole === "admin" && newRole !== "admin") {
         const adminCount = mockUsers.filter((u) => u.role === "admin").length;
         if (adminCount <= 1) {
-          context.res.status = 400;
-          context.res.body = JSON.stringify({
-            success: false,
-            error: {
-              code: "VALIDATION_ERROR",
-              message: "Cannot demote the last Super Admin",
-            },
-          });
+          context.res = UnifiedResponseHandler.validationError(
+            "Cannot demote the last Super Admin"
+          );
           return;
         }
       }
@@ -196,10 +148,8 @@ module.exports = async function (context, req) {
         updatedAt: mockUsers[userIndex].updatedAt,
       };
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           user: updatedUser,
           message: `User role updated from ${oldRole} to ${newRole}`,
           roleChange: {
@@ -209,7 +159,8 @@ module.exports = async function (context, req) {
             timestamp: new Date().toISOString(),
           },
         },
-      });
+        "User role updated successfully"
+      );
       return;
     }
 
@@ -227,37 +178,25 @@ module.exports = async function (context, req) {
           homeAddress: user.homeAddress,
         }));
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           eligibleParents,
           message:
             "Eligible parents for Group Admin role retrieved successfully",
         },
-      });
+        "Eligible parents retrieved successfully"
+      );
       return;
     }
 
     // Invalid method or action
-    context.res.status = 405;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "METHOD_NOT_ALLOWED",
-        message: `Method ${method} not allowed`,
-      },
-    });
+    context.res = UnifiedResponseHandler.methodNotAllowedError(
+      `Method ${method} not allowed`
+    );
   } catch (error) {
     context.log.error("Admin role management error:", error);
-
-    context.res.status = 500;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "INTERNAL_ERROR",
-        message: "Internal server error occurred",
-      },
-    });
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };

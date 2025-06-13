@@ -2,16 +2,6 @@ const { CosmosClient } = require("@azure/cosmos");
 const { UnifiedAuthService } = require("../src/services/unified-auth.service");
 const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
-
 // Email notification templates
 const EMAIL_TEMPLATES = {
   swap_request_created: {
@@ -153,49 +143,24 @@ module.exports = async function (context, req) {
     // Get authorization token
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.authError(
+        "Missing or invalid authorization token"
+      );
+      return;
     }
 
     switch (method) {
       case "POST":
         return await sendNotification(req, context);
       default:
-        return {
-          status: 405,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "METHOD_NOT_ALLOWED",
-              message: `Method ${method} not allowed`,
-            },
-          }),
-        };
+        context.res = UnifiedResponseHandler.methodNotAllowedError(
+          `Method ${method} not allowed`
+        );
+        return;
     }
   } catch (error) {
     context.log.error("Notifications error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error",
-          details: error.message,
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.internalError("Internal server error");
   }
 };
 
@@ -208,17 +173,10 @@ async function sendNotification(req, context) {
     const requiredFields = ["type", "recipientEmail", "data"];
     for (const field of requiredFields) {
       if (!body[field]) {
-        return {
-          status: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "VALIDATION_ERROR",
-              message: `Missing required field: ${field}`,
-            },
-          }),
-        };
+        context.res = UnifiedResponseHandler.validationError(
+          `Missing required field: ${field}`
+        );
+        return;
       }
     }
 
@@ -226,18 +184,11 @@ async function sendNotification(req, context) {
 
     // Validate notification type
     if (!EMAIL_TEMPLATES[type]) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "INVALID_TYPE",
-            message: `Invalid notification type: ${type}`,
-            supportedTypes: Object.keys(EMAIL_TEMPLATES),
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        `Invalid notification type: ${type}`,
+        { supportedTypes: Object.keys(EMAIL_TEMPLATES) }
+      );
+      return;
     }
 
     // Get email template
@@ -258,22 +209,18 @@ async function sendNotification(req, context) {
 
     context.log(`Notification sent: ${type} to ${recipientEmail}`);
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          notificationId: emailResult.id,
-          type,
-          recipient: recipientEmail,
-          subject: processedSubject,
-          sentAt: new Date().toISOString(),
-          status: "sent",
-        },
-        message: "Notification sent successfully",
-      }),
-    };
+    context.res = UnifiedResponseHandler.success(
+      {
+        notificationId: emailResult.id,
+        type,
+        recipient: recipientEmail,
+        subject: processedSubject,
+        sentAt: new Date().toISOString(),
+        status: "sent",
+      },
+      "Notification sent successfully"
+    );
+    return;
   } catch (error) {
     context.log.error("Send notification error:", error);
     throw error;

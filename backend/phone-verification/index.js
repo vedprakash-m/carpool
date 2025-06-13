@@ -61,30 +61,14 @@ module.exports = async function (context, req) {
       return await getVerificationStatus(userId, context);
     }
 
-    return {
-      status: 405,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "METHOD_NOT_ALLOWED",
-          message: "Method not allowed",
-        },
-      }),
-    };
+    context.res =
+      UnifiedResponseHandler.methodNotAllowedError("Method not allowed");
+    return;
   } catch (error) {
     context.log.error("Phone Verification API error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error occurred",
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };
 
@@ -102,17 +86,10 @@ async function sendVerificationCode(userId, requestData, context) {
     // Validate phone number format (basic validation)
     const phoneRegex = /^\+?1?[2-9]\d{2}[2-9]\d{2}\d{4}$/;
     if (!phoneRegex.test(phoneNumber.replace(/\D/g, ""))) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "INVALID_PHONE_FORMAT",
-            message: "Please enter a valid US phone number",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "Please enter a valid US phone number"
+      );
+      return;
     }
 
     // Generate 6-digit verification code
@@ -141,23 +118,17 @@ async function sendVerificationCode(userId, requestData, context) {
       mockUsers[userIndex].phoneNumber = phoneNumber;
     }
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        message: "Verification code sent successfully",
-        data: {
-          phoneNumber: phoneNumber,
-          expiresIn: 600, // 10 minutes in seconds
-          // In development, include the code for testing
-          verificationCode:
-            process.env.NODE_ENV === "development"
-              ? verificationCode
-              : undefined,
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.success(
+      {
+        phoneNumber: phoneNumber,
+        expiresIn: 600, // 10 minutes in seconds
+        // In development, include the code for testing
+        verificationCode:
+          process.env.NODE_ENV === "development" ? verificationCode : undefined,
+      },
+      "Verification code sent successfully"
+    );
+    return;
   } catch (error) {
     context.log.error("Send verification code error:", error);
     throw error;
@@ -170,66 +141,37 @@ async function verifyCode(userId, requestData, context) {
     const { phoneNumber, code } = requestData;
 
     if (!phoneNumber || !code) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Phone number and verification code are required",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "Phone number and verification code are required"
+      );
+      return;
     }
 
     // Get stored verification data
     const storedData = mockVerificationCodes.get(phoneNumber);
     if (!storedData) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "NO_VERIFICATION_PENDING",
-            message: "No verification code pending for this phone number",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "No verification code pending for this phone number"
+      );
+      return;
     }
 
     // Check if code has expired
     if (new Date() > storedData.expiresAt) {
       mockVerificationCodes.delete(phoneNumber);
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "CODE_EXPIRED",
-            message: "Verification code has expired. Please request a new one.",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "Verification code has expired. Please request a new one."
+      );
+      return;
     }
 
     // Check if too many attempts
     if (storedData.attempts >= storedData.maxAttempts) {
       mockVerificationCodes.delete(phoneNumber);
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "TOO_MANY_ATTEMPTS",
-            message:
-              "Too many verification attempts. Please request a new code.",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "Too many verification attempts. Please request a new code."
+      );
+      return;
     }
 
     // Verify the code
@@ -237,19 +179,12 @@ async function verifyCode(userId, requestData, context) {
       storedData.attempts++;
       mockVerificationCodes.set(phoneNumber, storedData);
 
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "INVALID_CODE",
-            message: `Invalid verification code. ${
-              storedData.maxAttempts - storedData.attempts
-            } attempts remaining.`,
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        `Invalid verification code. ${
+          storedData.maxAttempts - storedData.attempts
+        } attempts remaining.`
+      );
+      return;
     }
 
     // Code is valid - mark phone as verified
@@ -262,19 +197,15 @@ async function verifyCode(userId, requestData, context) {
       mockUsers[userIndex].phoneNumberVerified = true;
     }
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        message: "Phone number verified successfully",
-        data: {
-          phoneNumber: phoneNumber,
-          verified: true,
-          verifiedAt: new Date().toISOString(),
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.success(
+      {
+        phoneNumber: phoneNumber,
+        verified: true,
+        verifiedAt: new Date().toISOString(),
+      },
+      "Phone number verified successfully"
+    );
+    return;
   } catch (error) {
     context.log.error("Verify code error:", error);
     throw error;
@@ -286,33 +217,18 @@ async function getVerificationStatus(userId, context) {
   try {
     const user = mockUsers.find((u) => u.id === userId);
     if (!user) {
-      return {
-        status: 404,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "USER_NOT_FOUND",
-            message: "User not found",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.notFoundError("User not found");
+      return;
     }
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          phoneNumber: user.phoneNumber,
-          verified: user.phoneNumberVerified || false,
-          hasPendingVerification: user.phoneNumber
-            ? mockVerificationCodes.has(user.phoneNumber)
-            : false,
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.success({
+      phoneNumber: user.phoneNumber,
+      verified: user.phoneNumberVerified || false,
+      hasPendingVerification: user.phoneNumber
+        ? mockVerificationCodes.has(user.phoneNumber)
+        : false,
+    });
+    return;
   } catch (error) {
     context.log.error("Get verification status error:", error);
     throw error;

@@ -1,21 +1,12 @@
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
+
 module.exports = async function (context, req) {
   context.log("Parents weekly preferences function triggered");
 
-  // CORS headers
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Requested-With",
-    "Content-Type": "application/json",
-  };
-
   // Handle preflight OPTIONS request
   if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
+    context.res = UnifiedResponseHandler.preflight();
     return;
   }
 
@@ -23,17 +14,9 @@ module.exports = async function (context, req) {
     // Get authorization token
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
-      context.res = {
-        status: 401,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        },
-      };
+      context.res = UnifiedResponseHandler.authError(
+        "Missing or invalid authorization token"
+      );
       return;
     }
 
@@ -42,55 +25,31 @@ module.exports = async function (context, req) {
     const parentId = "parent-1"; // Should decode from JWT
 
     if (req.method === "GET") {
-      await getWeeklyPreferences(parentId, req, corsHeaders, context);
+      await getWeeklyPreferences(parentId, req, context);
     } else if (req.method === "POST") {
-      await submitWeeklyPreferences(parentId, req, corsHeaders, context);
+      await submitWeeklyPreferences(parentId, req, context);
     } else {
-      context.res = {
-        status: 405,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: {
-            code: "METHOD_NOT_ALLOWED",
-            message: "Only GET and POST methods are allowed",
-          },
-        },
-      };
+      context.res = UnifiedResponseHandler.methodNotAllowedError(
+        "Only GET and POST methods are allowed"
+      );
     }
   } catch (error) {
     context.log("Weekly preferences error:", error);
 
-    context.res = {
-      status: 500,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error occurred",
-        },
-      },
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };
 
-async function getWeeklyPreferences(parentId, req, corsHeaders, context) {
+async function getWeeklyPreferences(parentId, req, context) {
   // Get week start date from query params
   const weekStartDate = req.query.weekStartDate;
 
   if (!weekStartDate) {
-    context.res = {
-      status: 400,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "weekStartDate query parameter is required",
-        },
-      },
-    };
+    context.res = UnifiedResponseHandler.validationError(
+      "weekStartDate query parameter is required"
+    );
     return;
   }
 
@@ -114,55 +73,30 @@ async function getWeeklyPreferences(parentId, req, corsHeaders, context) {
     },
   ];
 
-  context.res = {
-    status: 200,
-    headers: corsHeaders,
-    body: {
-      success: true,
-      data: {
-        weekStartDate,
-        preferences,
-        submissionDeadline: getSubmissionDeadline(weekStartDate),
-        canEdit: canEditPreferences(weekStartDate),
-      },
-    },
-  };
+  context.res = UnifiedResponseHandler.success({
+    weekStartDate,
+    preferences,
+    submissionDeadline: getSubmissionDeadline(weekStartDate),
+    canEdit: canEditPreferences(weekStartDate),
+  });
 }
 
-async function submitWeeklyPreferences(parentId, req, corsHeaders, context) {
+async function submitWeeklyPreferences(parentId, req, context) {
   // Parse request body
   const submitRequest = req.body;
 
   // Validate request
   const validationError = validatePreferencesRequest(submitRequest);
   if (validationError) {
-    context.res = {
-      status: 400,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: validationError,
-        },
-      },
-    };
+    context.res = UnifiedResponseHandler.validationError(validationError);
     return;
   }
 
   // Check if submission is still allowed
   if (!canEditPreferences(submitRequest.weekStartDate)) {
-    context.res = {
-      status: 400,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: {
-          code: "SUBMISSION_DEADLINE_PASSED",
-          message: "Preference submission deadline has passed for this week",
-        },
-      },
-    };
+    context.res = UnifiedResponseHandler.validationError(
+      "Preference submission deadline has passed for this week"
+    );
     return;
   }
 
@@ -181,19 +115,12 @@ async function submitWeeklyPreferences(parentId, req, corsHeaders, context) {
     `Mock saving ${preferences.length} preferences for parent ${parentId}, week ${submitRequest.weekStartDate}`
   );
 
-  context.res = {
-    status: 200,
-    headers: corsHeaders,
-    body: {
-      success: true,
-      data: {
-        weekStartDate: submitRequest.weekStartDate,
-        preferencesSubmitted: preferences.length,
-        submissionTimestamp: new Date(),
-        message: "Weekly preferences submitted successfully (mock)",
-      },
-    },
-  };
+  context.res = UnifiedResponseHandler.success({
+    weekStartDate: submitRequest.weekStartDate,
+    preferencesSubmitted: preferences.length,
+    submissionTimestamp: new Date(),
+    message: "Weekly preferences submitted successfully (mock)",
+  });
 }
 
 function validatePreferencesRequest(request) {

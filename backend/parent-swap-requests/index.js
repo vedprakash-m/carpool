@@ -203,14 +203,9 @@ module.exports = async function (context, req) {
       !token.includes("trip_admin") &&
       !token.includes("admin")
     ) {
-      context.res.status = 403;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "FORBIDDEN",
-          message: "Parent access required",
-        },
-      });
+      context.res = UnifiedResponseHandler.forbiddenError(
+        "Parent access required"
+      );
       return;
     }
 
@@ -239,15 +234,13 @@ module.exports = async function (context, req) {
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           requests: userRequests,
           total: userRequests.length,
-          message: "Swap requests retrieved successfully",
         },
-      });
+        "Swap requests retrieved successfully"
+      );
       return;
     }
 
@@ -263,54 +256,33 @@ module.exports = async function (context, req) {
       } = req.body;
 
       if (!scheduleId || !originalAssignmentId || !proposedChange || !reason) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message:
-              "Schedule ID, assignment ID, proposed change, and reason are required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Schedule ID, assignment ID, proposed change, and reason are required"
+        );
         return;
       }
 
       // Find the schedule and assignment
       const schedule = mockWeeklySchedules.find((s) => s.id === scheduleId);
       if (!schedule) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Weekly schedule not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Weekly schedule not found"
+        );
         return;
       }
 
       // Check if swaps are still open
       if (schedule.status !== "swaps_open") {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "SWAPS_CLOSED",
-            message: "Swap request period has ended",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Swap request period has ended"
+        );
         return;
       }
 
       if (isSwapDeadlinePassed(schedule.swapsDeadline)) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "DEADLINE_PASSED",
-            message: "Swap request deadline has passed",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Swap request deadline has passed"
+        );
         return;
       }
 
@@ -318,28 +290,17 @@ module.exports = async function (context, req) {
         (a) => a.id === originalAssignmentId
       );
       if (!assignment) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "ASSIGNMENT_NOT_FOUND",
-            message: "Assignment not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Assignment not found"
+        );
         return;
       }
 
       // Verify user can request swap for this assignment
       if (!canUserMakeSwapRequest(parentId, assignment)) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "CANNOT_SWAP",
-            message:
-              "You can only request swaps for assignments you're involved in",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "You can only request swaps for assignments you're involved in"
+        );
         return;
       }
 
@@ -351,15 +312,9 @@ module.exports = async function (context, req) {
           r.status === "pending"
       );
       if (existingRequest) {
-        context.res.status = 409;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "REQUEST_EXISTS",
-            message:
-              "You already have a pending swap request for this assignment",
-          },
-        });
+        context.res = UnifiedResponseHandler.conflictError(
+          "You already have a pending swap request for this assignment"
+        );
         return;
       }
 
@@ -396,14 +351,12 @@ module.exports = async function (context, req) {
 
       mockSwapRequests.push(newRequest);
 
-      context.res.status = 201;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.created(
+        {
           request: newRequest,
-          message: "Swap request created successfully",
         },
-      });
+        "Swap request created successfully"
+      );
       return;
     }
 
@@ -412,26 +365,16 @@ module.exports = async function (context, req) {
       const { requestId, response, responseMessage } = req.body;
 
       if (!requestId || !response) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Request ID and response are required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Request ID and response are required"
+        );
         return;
       }
 
       if (!["accepted", "declined"].includes(response)) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "INVALID_RESPONSE",
-            message: "Response must be 'accepted' or 'declined'",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Response must be 'accepted' or 'declined'"
+        );
         return;
       }
 
@@ -439,14 +382,9 @@ module.exports = async function (context, req) {
         (r) => r.id === requestId
       );
       if (requestIndex === -1) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Swap request not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Swap request not found"
+        );
         return;
       }
 
@@ -457,41 +395,25 @@ module.exports = async function (context, req) {
         swapRequest.targetParentId &&
         swapRequest.targetParentId !== parentId
       ) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "CANNOT_RESPOND",
-            message: "You can only respond to requests directed to you",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "You can only respond to requests directed to you"
+        );
         return;
       }
 
       // Check if request is still pending
       if (swapRequest.status !== "pending") {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "REQUEST_NOT_PENDING",
-            message: "This request has already been responded to",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "This request has already been responded to"
+        );
         return;
       }
 
       // Check if deadline has passed
       if (isAutoAcceptanceTime(swapRequest.autoAcceptAt)) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "DEADLINE_PASSED",
-            message:
-              "Response deadline has passed - request will be auto-accepted",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Response deadline has passed - request will be auto-accepted"
+        );
         return;
       }
 
@@ -504,14 +426,12 @@ module.exports = async function (context, req) {
         updatedAt: new Date().toISOString(),
       };
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           request: mockSwapRequests[requestIndex],
-          message: `Swap request ${response} successfully`,
         },
-      });
+        `Swap request ${response} successfully`
+      );
       return;
     }
 
@@ -523,14 +443,9 @@ module.exports = async function (context, req) {
         (r) => r.id === requestId
       );
       if (requestIndex === -1) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Swap request not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Swap request not found"
+        );
         return;
       }
 
@@ -538,27 +453,17 @@ module.exports = async function (context, req) {
 
       // Check if user owns this request
       if (swapRequest.requesterId !== parentId) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_OWNER",
-            message: "You can only cancel your own requests",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "You can only cancel your own requests"
+        );
         return;
       }
 
       // Check if request can be cancelled
       if (swapRequest.status !== "pending") {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "CANNOT_CANCEL",
-            message: "Only pending requests can be cancelled",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Only pending requests can be cancelled"
+        );
         return;
       }
 
@@ -569,13 +474,10 @@ module.exports = async function (context, req) {
         updatedAt: new Date().toISOString(),
       };
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          message: "Swap request cancelled successfully",
-        },
-      });
+      context.res = UnifiedResponseHandler.success(
+        {},
+        "Swap request cancelled successfully"
+      );
       return;
     }
 
@@ -584,27 +486,16 @@ module.exports = async function (context, req) {
       const { scheduleId } = req.query;
 
       if (!scheduleId) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Schedule ID is required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Schedule ID is required"
+        );
         return;
       }
 
       const schedule = mockWeeklySchedules.find((s) => s.id === scheduleId);
       if (!schedule) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Schedule not found",
-          },
-        });
+        context.res =
+          UnifiedResponseHandler.notFoundError("Schedule not found");
         return;
       }
 
@@ -628,41 +519,28 @@ module.exports = async function (context, req) {
           ),
         }));
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           userAssignments,
           swapOpportunities,
           deadline: schedule.swapsDeadline,
           canRequestSwaps:
             schedule.status === "swaps_open" &&
             !isSwapDeadlinePassed(schedule.swapsDeadline),
-          message: "Swap opportunities retrieved successfully",
         },
-      });
+        "Swap opportunities retrieved successfully"
+      );
       return;
     }
 
     // Invalid method or action
-    context.res.status = 405;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "METHOD_NOT_ALLOWED",
-        message: `Method ${method} with action ${action} not allowed`,
-      },
-    });
+    context.res = UnifiedResponseHandler.methodNotAllowedError(
+      `Method ${method} with action ${action} not allowed`
+    );
   } catch (error) {
     context.log.error("Swap requests error:", error);
-
-    context.res.status = 500;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "INTERNAL_ERROR",
-        message: "Internal server error occurred",
-      },
-    });
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };

@@ -527,14 +527,9 @@ module.exports = async function (context, req) {
       const { groupId, weekStartDate } = req.body;
 
       if (!groupId || !weekStartDate) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Group ID and week start date are required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Group ID and week start date are required"
+        );
         return;
       }
 
@@ -543,14 +538,9 @@ module.exports = async function (context, req) {
         (s) => s.groupId === groupId && s.weekStartDate === weekStartDate
       );
       if (existingSchedule) {
-        context.res.status = 409;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "SCHEDULE_EXISTS",
-            message: "Schedule already exists for this week",
-          },
-        });
+        context.res = UnifiedResponseHandler.conflictError(
+          "Schedule already exists for this week"
+        );
         return;
       }
 
@@ -585,13 +575,9 @@ module.exports = async function (context, req) {
 
       mockWeeklySchedules.push(newSchedule);
 
-      context.res.status = 201;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          schedule: newSchedule,
-          message: "Weekly schedule created successfully",
-        },
+      context.res = UnifiedResponseHandler.created({
+        schedule: newSchedule,
+        message: "Weekly schedule created successfully",
       });
       return;
     }
@@ -599,14 +585,9 @@ module.exports = async function (context, req) {
     if (method === "POST" && action === "submit-preferences") {
       // Submit weekly preferences (Parent only)
       if (!token.includes("parent") && !token.includes("trip_admin")) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Parent access required",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "Parent access required"
+        );
         return;
       }
 
@@ -618,41 +599,26 @@ module.exports = async function (context, req) {
       } = req.body;
 
       if (!scheduleId || !drivingAvailability) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Schedule ID and driving availability are required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Schedule ID and driving availability are required"
+        );
         return;
       }
 
       // Find the schedule
       const schedule = mockWeeklySchedules.find((s) => s.id === scheduleId);
       if (!schedule) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Weekly schedule not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Weekly schedule not found"
+        );
         return;
       }
 
       // Check if preferences are still open
       if (schedule.status !== "preferences_open") {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "PREFERENCES_CLOSED",
-            message: "Preference submission period has ended",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Preference submission period has ended"
+        );
         return;
       }
 
@@ -685,15 +651,11 @@ module.exports = async function (context, req) {
 
       mockWeeklyPreferences.push(newPreferences);
 
-      context.res.status = 201;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          preferences: newPreferences,
-          message: isLateSubmission
-            ? "Preferences submitted after deadline. Group Admin discretion applies."
-            : "Weekly preferences submitted successfully",
-        },
+      context.res = UnifiedResponseHandler.created({
+        preferences: newPreferences,
+        message: isLateSubmission
+          ? "Preferences submitted after deadline. Group Admin discretion applies."
+          : "Weekly preferences submitted successfully",
       });
       return;
     }
@@ -701,28 +663,18 @@ module.exports = async function (context, req) {
     if (method === "POST" && action === "generate-assignments") {
       // Generate weekly assignments using algorithm (Group Admin only)
       if (!token.includes("trip_admin") && !token.includes("admin")) {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Group Admin access required",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "Group Admin access required"
+        );
         return;
       }
 
       const { scheduleId, forceRegenerate = false } = req.body;
 
       if (!scheduleId) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Schedule ID is required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Schedule ID is required"
+        );
         return;
       }
 
@@ -730,14 +682,9 @@ module.exports = async function (context, req) {
         (s) => s.id === scheduleId
       );
       if (scheduleIndex === -1) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "Weekly schedule not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Weekly schedule not found"
+        );
         return;
       }
 
@@ -745,15 +692,9 @@ module.exports = async function (context, req) {
 
       // Check if assignments already exist
       if (schedule.assignments.length > 0 && !forceRegenerate) {
-        context.res.status = 409;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "ASSIGNMENTS_EXIST",
-            message:
-              "Assignments already generated. Use forceRegenerate to override.",
-          },
-        });
+        context.res = UnifiedResponseHandler.conflictError(
+          "Assignments already generated. Use forceRegenerate to override."
+        );
         return;
       }
 
@@ -762,14 +703,9 @@ module.exports = async function (context, req) {
         (p) => p.scheduleId === scheduleId
       );
       if (preferences.length === 0) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NO_PREFERENCES",
-            message: "No preferences submitted for this week",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "No preferences submitted for this week"
+        );
         return;
       }
 
@@ -793,14 +729,10 @@ module.exports = async function (context, req) {
         updatedAt: new Date().toISOString(),
       };
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          schedule: mockWeeklySchedules[scheduleIndex],
-          algorithmOutput: result,
-          message: "Weekly assignments generated successfully",
-        },
+      context.res = UnifiedResponseHandler.success({
+        schedule: mockWeeklySchedules[scheduleIndex],
+        algorithmOutput: result,
+        message: "Weekly assignments generated successfully",
       });
       return;
     }
@@ -810,14 +742,9 @@ module.exports = async function (context, req) {
       const { scheduleId } = req.query;
 
       if (!scheduleId) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Schedule ID is required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Schedule ID is required"
+        );
         return;
       }
 
@@ -826,38 +753,24 @@ module.exports = async function (context, req) {
         (p) => p.scheduleId === scheduleId && p.parentId === parentId
       );
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
-          preferences,
-          message: preferences
-            ? "Preferences retrieved successfully"
-            : "No preferences found",
-        },
+      context.res = UnifiedResponseHandler.success({
+        preferences,
+        message: preferences
+          ? "Preferences retrieved successfully"
+          : "No preferences found",
       });
       return;
     }
 
     // Invalid method or action
-    context.res.status = 405;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "METHOD_NOT_ALLOWED",
-        message: `Method ${method} with action ${action} not allowed`,
-      },
-    });
+    context.res = UnifiedResponseHandler.methodNotAllowedError(
+      `Method ${method} with action ${action} not allowed`
+    );
   } catch (error) {
     context.log.error("Weekly scheduling error:", error);
 
-    context.res.status = 500;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "INTERNAL_ERROR",
-        message: "Internal server error occurred",
-      },
-    });
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };

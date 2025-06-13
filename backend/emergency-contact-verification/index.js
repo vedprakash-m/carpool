@@ -1,4 +1,6 @@
 const { app } = require("@azure/functions");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock emergency contact database
 const mockEmergencyContacts = new Map();
@@ -68,20 +70,9 @@ app.http("emergency-contact-verification", {
   route: "emergency-contacts/verify",
   handler: async (request, context) => {
     try {
-      // Add CORS headers
-      const headers = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, PUT, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json",
-      };
-
       // Handle OPTIONS preflight request
       if (request.method === "OPTIONS") {
-        return {
-          status: 200,
-          headers,
-        };
+        return UnifiedResponseHandler.preflight();
       }
 
       const body = await request.json();
@@ -89,15 +80,7 @@ app.http("emergency-contact-verification", {
 
       // Mock authentication - in production, validate JWT token
       if (!userId) {
-        return {
-          status: 401,
-          headers,
-          body: JSON.stringify({
-            success: false,
-            error: "Authentication required",
-            code: "AUTH_REQUIRED",
-          }),
-        };
+        return UnifiedResponseHandler.authError("Authentication required");
       }
 
       switch (action) {
@@ -105,14 +88,10 @@ app.http("emergency-contact-verification", {
           // Validate emergency contact data
           const validationErrors = validateEmergencyContact(contactData);
           if (validationErrors.length > 0) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                errors: validationErrors,
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Validation failed",
+              validationErrors
+            );
           }
 
           // Generate and send verification code
@@ -144,27 +123,20 @@ app.http("emergency-contact-verification", {
             contactData.name
           );
 
-          return {
-            status: 200,
-            headers,
-            body: JSON.stringify({
-              success: true,
+          return UnifiedResponseHandler.success(
+            {
               contactId,
               message: `Verification code sent to ${contactData.phoneNumber}`,
               expiresAt: verificationCodes.get(contactKey).expiresAt,
-            }),
-          };
+            },
+            200
+          );
 
         case "verify_contact":
           if (!verificationCode || !contactData?.phoneNumber) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "Verification code and phone number are required",
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Verification code and phone number are required"
+            );
           }
 
           const verifyKey = `${userId}_${contactData.phoneNumber}`;
@@ -172,42 +144,25 @@ app.http("emergency-contact-verification", {
           const storedContact = mockEmergencyContacts.get(verifyKey);
 
           if (!storedVerification || !storedContact) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "No verification in progress for this contact",
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "No verification in progress for this contact"
+            );
           }
 
           // Check if code expired
           if (new Date() > new Date(storedVerification.expiresAt)) {
             verificationCodes.delete(verifyKey);
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "Verification code has expired",
-                code: "CODE_EXPIRED",
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Verification code has expired"
+            );
           }
 
           // Check attempt limit
           if (storedVerification.attempts >= 3) {
             verificationCodes.delete(verifyKey);
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "Too many verification attempts",
-                code: "TOO_MANY_ATTEMPTS",
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Too many verification attempts"
+            );
           }
 
           // Increment attempts
@@ -215,15 +170,10 @@ app.http("emergency-contact-verification", {
 
           // Verify code
           if (storedVerification.code !== verificationCode) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "Invalid verification code",
-                attemptsRemaining: 3 - storedVerification.attempts,
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Invalid verification code",
+              { attemptsRemaining: 3 - storedVerification.attempts }
+            );
           }
 
           // Mark contact as verified
@@ -233,11 +183,8 @@ app.http("emergency-contact-verification", {
           // Clean up verification code
           verificationCodes.delete(verifyKey);
 
-          return {
-            status: 200,
-            headers,
-            body: JSON.stringify({
-              success: true,
+          return UnifiedResponseHandler.success(
+            {
               message: "Emergency contact verified successfully",
               contact: {
                 id: storedContact.id,
@@ -248,8 +195,9 @@ app.http("emergency-contact-verification", {
                 verified: true,
                 verifiedAt: storedContact.verifiedAt,
               },
-            }),
-          };
+            },
+            200
+          );
 
         case "get_contacts":
           // Get all verified emergency contacts for user
@@ -257,11 +205,8 @@ app.http("emergency-contact-verification", {
             mockEmergencyContacts.values()
           ).filter((contact) => contact.userId === userId && contact.verified);
 
-          return {
-            status: 200,
-            headers,
-            body: JSON.stringify({
-              success: true,
+          return UnifiedResponseHandler.success(
+            {
               contacts: userContacts.map((contact) => ({
                 id: contact.id,
                 name: contact.name,
@@ -271,19 +216,15 @@ app.http("emergency-contact-verification", {
                 verified: contact.verified,
                 verifiedAt: contact.verifiedAt,
               })),
-            }),
-          };
+            },
+            200
+          );
 
         case "resend_code":
           if (!contactData?.phoneNumber) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "Phone number is required",
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Phone number is required"
+            );
           }
 
           const resendKey = `${userId}_${contactData.phoneNumber}`;
@@ -291,14 +232,9 @@ app.http("emergency-contact-verification", {
           const existingVerification = verificationCodes.get(resendKey);
 
           if (!existingContact || existingContact.verified) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "No unverified contact found for this phone number",
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "No unverified contact found for this phone number"
+            );
           }
 
           // Generate new code
@@ -317,43 +253,27 @@ app.http("emergency-contact-verification", {
             existingContact.name
           );
 
-          return {
-            status: 200,
-            headers,
-            body: JSON.stringify({
-              success: true,
+          return UnifiedResponseHandler.success(
+            {
               message: `New verification code sent to ${contactData.phoneNumber}`,
               expiresAt: verificationCodes.get(resendKey).expiresAt,
-            }),
-          };
+            },
+            200
+          );
 
         default:
-          return {
-            status: 400,
-            headers,
-            body: JSON.stringify({
-              success: false,
-              error:
-                "Invalid action. Supported actions: add_contact, verify_contact, get_contacts, resend_code",
-            }),
-          };
+          return UnifiedResponseHandler.validationError(
+            "Invalid action. Supported actions: add_contact, verify_contact, get_contacts, resend_code"
+          );
       }
     } catch (error) {
       context.error("Emergency contact verification error:", error);
-
-      return {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          success: false,
-          error: "Internal server error",
-          details:
-            process.env.NODE_ENV === "development" ? error.message : undefined,
-        }),
-      };
+      return UnifiedResponseHandler.error(
+        "INTERNAL_ERROR",
+        "Internal server error",
+        500,
+        process.env.NODE_ENV === "development" ? error.message : undefined
+      );
     }
   },
 });

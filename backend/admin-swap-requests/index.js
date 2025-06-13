@@ -1,25 +1,13 @@
 const { CosmosClient } = require("@azure/cosmos");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, req) {
   context.log("Swap Requests API called");
 
   // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+  const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
+  if (preflightResponse) {
+    context.res = preflightResponse;
     return;
   }
 
@@ -27,24 +15,15 @@ module.exports = async function (context, req) {
     const { id: swapRequestId } = req.params;
     const method = req.method;
 
-    // Get authorization token
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        }),
-      };
+    // Validate authorization
+    const authError = UnifiedResponseHandler.validateAuth(req);
+    if (authError) {
+      context.res = authError;
+      return;
     }
 
-    // TODO: Verify user role from JWT token
-    const token = authHeader.split(" ")[1];
+    // Get token from auth header
+    const token = req.headers.authorization.split(" ")[1];
 
     // Initialize Cosmos DB (use environment variables or fallback to mock)
     let swapRequestsContainer = null;
@@ -65,61 +44,49 @@ module.exports = async function (context, req) {
     switch (method) {
       case "GET":
         if (swapRequestId) {
-          return await getSwapRequest(
+          context.res = await getSwapRequest(
             swapRequestsContainer,
             swapRequestId,
             context
           );
         } else {
-          return await getSwapRequests(
+          context.res = await getSwapRequests(
             swapRequestsContainer,
             usersContainer,
             req,
             context
           );
         }
+        return;
       case "POST":
-        return await createSwapRequest(
+        context.res = await createSwapRequest(
           swapRequestsContainer,
           assignmentsContainer,
           usersContainer,
           req,
           context
         );
+        return;
       case "PUT":
-        return await updateSwapRequest(
+        context.res = await updateSwapRequest(
           swapRequestsContainer,
           swapRequestId,
           req,
           context
         );
+        return;
       default:
-        return {
-          status: 405,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "METHOD_NOT_ALLOWED",
-              message: `Method ${method} not allowed`,
-            },
-          }),
-        };
+        context.res = UnifiedResponseHandler.methodNotAllowedError(
+          `Method ${method} not allowed`
+        );
+        return;
     }
   } catch (error) {
     context.log.error("Swap requests error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error",
-          details: error.message,
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error",
+      error.message
+    );
   }
 };
 
@@ -178,18 +145,11 @@ async function getSwapRequests(container, usersContainer, req, context) {
         })
       );
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
-            swapRequests: enhancedRequests,
-            total: enhancedRequests.length,
-            filters: { status, userId, adminView },
-          },
-        }),
-      };
+      return UnifiedResponseHandler.success({
+        swapRequests: enhancedRequests,
+        total: enhancedRequests.length,
+        filters: { status, userId, adminView },
+      });
     } else {
       // Return mock swap requests for development
       const mockRequests = getMockSwapRequests();
@@ -204,18 +164,11 @@ async function getSwapRequests(container, usersContainer, req, context) {
         return true;
       });
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
-            swapRequests: filteredRequests,
-            total: filteredRequests.length,
-            filters: { status, userId, adminView },
-          },
-        }),
-      };
+      return UnifiedResponseHandler.success({
+        swapRequests: filteredRequests,
+        total: filteredRequests.length,
+        filters: { status, userId, adminView },
+      });
     }
   } catch (error) {
     context.log.error("Get swap requests error:", error);
@@ -227,17 +180,9 @@ async function getSwapRequests(container, usersContainer, req, context) {
 async function getSwapRequest(container, swapRequestId, context) {
   try {
     if (!swapRequestId) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Swap request ID is required",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Swap request ID is required"
+      );
     }
 
     if (container) {
@@ -246,54 +191,20 @@ async function getSwapRequest(container, swapRequestId, context) {
         .read();
 
       if (!swapRequest) {
-        return {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "SWAP_REQUEST_NOT_FOUND",
-              message: "Swap request not found",
-            },
-          }),
-        };
+        return UnifiedResponseHandler.notFoundError("Swap request not found");
       }
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: swapRequest,
-        }),
-      };
+      return UnifiedResponseHandler.success(swapRequest);
     } else {
       // Mock single swap request
       const mockRequests = getMockSwapRequests();
       const swapRequest = mockRequests.find((r) => r.id === swapRequestId);
 
       if (!swapRequest) {
-        return {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "SWAP_REQUEST_NOT_FOUND",
-              message: "Swap request not found",
-            },
-          }),
-        };
+        return UnifiedResponseHandler.notFoundError("Swap request not found");
       }
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: swapRequest,
-        }),
-      };
+      return UnifiedResponseHandler.success(swapRequest);
     }
   } catch (error) {
     context.log.error("Get swap request error:", error);
@@ -322,33 +233,17 @@ async function createSwapRequest(
 
     for (const field of requiredFields) {
       if (!body[field]) {
-        return {
-          status: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "VALIDATION_ERROR",
-              message: `Missing required field: ${field}`,
-            },
-          }),
-        };
+        return UnifiedResponseHandler.validationError(
+          `Missing required field: ${field}`
+        );
       }
     }
 
     // Validate that users are not trying to swap with themselves
     if (body.requestingDriverId === body.receivingDriverId) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Cannot create swap request with yourself",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Cannot create swap request with yourself"
+      );
     }
 
     // Create swap request object
@@ -378,27 +273,17 @@ async function createSwapRequest(
       );
       context.log("Swap request created:", createdRequest.id);
 
-      return {
-        status: 201,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: createdRequest,
-          message: "Swap request created successfully",
-        }),
-      };
+      return UnifiedResponseHandler.created(
+        createdRequest,
+        "Swap request created successfully"
+      );
     } else {
       // Mock creation
       context.log("Mock swap request created:", swapRequest.id);
-      return {
-        status: 201,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: swapRequest,
-          message: "Swap request created successfully (mock mode)",
-        }),
-      };
+      return UnifiedResponseHandler.created(
+        swapRequest,
+        "Swap request created successfully (mock mode)"
+      );
     }
   } catch (error) {
     context.log.error("Create swap request error:", error);
@@ -410,17 +295,9 @@ async function createSwapRequest(
 async function updateSwapRequest(container, swapRequestId, req, context) {
   try {
     if (!swapRequestId) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Swap request ID is required for updates",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Swap request ID is required for updates"
+      );
     }
 
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -428,17 +305,9 @@ async function updateSwapRequest(container, swapRequestId, req, context) {
 
     // Validate action
     if (!action || !["accept", "decline", "cancel"].includes(action)) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Action must be 'accept', 'decline', or 'cancel'",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Action must be one of: accept, decline, cancel"
+      );
     }
 
     if (container) {
@@ -448,32 +317,14 @@ async function updateSwapRequest(container, swapRequestId, req, context) {
         .read();
 
       if (!existingRequest) {
-        return {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "SWAP_REQUEST_NOT_FOUND",
-              message: "Swap request not found",
-            },
-          }),
-        };
+        return UnifiedResponseHandler.notFoundError("Swap request not found");
       }
 
       // Validate that request is still pending
       if (existingRequest.status !== "pending") {
-        return {
-          status: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "INVALID_STATUS",
-              message: `Cannot ${action} swap request with status: ${existingRequest.status}`,
-            },
-          }),
-        };
+        return UnifiedResponseHandler.validationError(
+          `Cannot ${action} swap request with status: ${existingRequest.status}`
+        );
       }
 
       // Update the swap request
@@ -503,32 +354,17 @@ async function updateSwapRequest(container, swapRequestId, req, context) {
 
       context.log(`Swap request ${action}ed:`, result.id);
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: result,
-          message: `Swap request ${action}ed successfully`,
-        }),
-      };
+      return UnifiedResponseHandler.success(
+        result,
+        `Swap request ${action}ed successfully`
+      );
     } else {
       // Mock update
       const mockRequests = getMockSwapRequests();
       const swapRequest = mockRequests.find((r) => r.id === swapRequestId);
 
       if (!swapRequest) {
-        return {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "SWAP_REQUEST_NOT_FOUND",
-              message: "Swap request not found",
-            },
-          }),
-        };
+        return UnifiedResponseHandler.notFoundError("Swap request not found");
       }
 
       const updatedRequest = {
@@ -544,15 +380,10 @@ async function updateSwapRequest(container, swapRequestId, req, context) {
         updatedAt: new Date().toISOString(),
       };
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: updatedRequest,
-          message: `Swap request ${action}ed successfully (mock mode)`,
-        }),
-      };
+      return UnifiedResponseHandler.success(
+        updatedRequest,
+        `Swap request ${action}ed successfully (mock mode)`
+      );
     }
   } catch (error) {
     context.log.error("Update swap request error:", error);
@@ -694,7 +525,9 @@ async function sendSwapRequestNotification(type, swapRequest, context) {
 function getRecipientEmail(type, swapRequest) {
   switch (type) {
     case "swap_request_created":
-      return swapRequest.receivingDriver?.email || "receiving-driver@example.com";
+      return (
+        swapRequest.receivingDriver?.email || "receiving-driver@example.com"
+      );
     case "swap_request_accepted":
     case "swap_request_declined":
       return (

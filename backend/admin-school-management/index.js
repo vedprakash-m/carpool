@@ -1,4 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock school storage (replace with actual database in production)
 let mockSchools = [
@@ -126,48 +128,25 @@ function mockGeocode(address) {
 
 module.exports = async function (context, req) {
   try {
-    // Set CORS headers
-    context.res = {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json",
-      },
-    };
-
     // Handle preflight requests
     if (req.method === "OPTIONS") {
-      context.res.status = 200;
-      context.res.body = "";
+      context.res = UnifiedResponseHandler.preflight();
       return;
     }
 
     // Authentication check
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Authentication required",
-        },
-      });
+      context.res = UnifiedResponseHandler.authError("Authentication required");
       return;
     }
 
     // Simple token validation (replace with actual JWT validation)
     const token = authHeader.split(" ")[1];
     if (!token.includes("admin") && !token.includes("trip_admin")) {
-      context.res.status = 403;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "FORBIDDEN",
-          message: "Admin or Group Admin access required",
-        },
-      });
+      context.res = UnifiedResponseHandler.forbiddenError(
+        "Admin or Group Admin access required"
+      );
       return;
     }
 
@@ -227,15 +206,13 @@ module.exports = async function (context, req) {
         filteredSchools.sort((a, b) => a.distance - b.distance);
       }
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           schools: filteredSchools,
           total: filteredSchools.length,
-          message: "Schools retrieved successfully",
         },
-      });
+        "Schools retrieved successfully"
+      );
       return;
     }
 
@@ -269,14 +246,12 @@ module.exports = async function (context, req) {
           .sort((a, b) => a.distance - b.distance);
       }
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           schools: results,
-          message: "School search completed successfully",
         },
-      });
+        "School search completed successfully"
+      );
       return;
     }
 
@@ -286,28 +261,18 @@ module.exports = async function (context, req) {
 
       // Validation
       if (!name || !address || !type || !grades) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Name, address, type, and grades are required",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Name, address, type, and grades are required"
+        );
         return;
       }
 
       // Validate school type
       const validTypes = ["elementary", "middle", "high", "k12", "other"];
       if (!validTypes.includes(type)) {
-        context.res.status = 400;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid school type",
-          },
-        });
+        context.res = UnifiedResponseHandler.validationError(
+          "Invalid school type"
+        );
         return;
       }
 
@@ -348,14 +313,12 @@ module.exports = async function (context, req) {
       // Store school (mock storage for now)
       mockSchools.push(newSchool);
 
-      context.res.status = 201;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.created(
+        {
           school: newSchool,
-          message: "School created successfully",
         },
-      });
+        "School created successfully"
+      );
       return;
     }
 
@@ -365,47 +328,27 @@ module.exports = async function (context, req) {
       const school = mockSchools.find((s) => s.id === schoolId);
 
       if (!school) {
-        context.res.status = 404;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_FOUND",
-            message: "School not found",
-          },
-        });
+        context.res = UnifiedResponseHandler.notFoundError("School not found");
         return;
       }
 
-      context.res.status = 200;
-      context.res.body = JSON.stringify({
-        success: true,
-        data: {
+      context.res = UnifiedResponseHandler.success(
+        {
           school,
-          message: "School retrieved successfully",
         },
-      });
+        "School retrieved successfully"
+      );
       return;
     }
 
     // Invalid method or action
-    context.res.status = 405;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "METHOD_NOT_ALLOWED",
-        message: `Method ${method} not allowed`,
-      },
-    });
+    context.res = UnifiedResponseHandler.methodNotAllowedError(
+      `Method ${method} not allowed`
+    );
   } catch (error) {
     context.log.error("School management error:", error);
-
-    context.res.status = 500;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "INTERNAL_ERROR",
-        message: "Internal server error occurred",
-      },
-    });
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };

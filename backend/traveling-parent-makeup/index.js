@@ -1,4 +1,5 @@
 const { app } = require("@azure/functions");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock data for traveling parent schedules and makeup options
 const travelingParentSchedules = new Map();
@@ -149,20 +150,9 @@ app.http("traveling-parent-makeup", {
   route: "traveling-parent/makeup",
   handler: async (request, context) => {
     try {
-      // Add CORS headers
-      const headers = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Content-Type": "application/json",
-      };
-
       // Handle OPTIONS preflight request
       if (request.method === "OPTIONS") {
-        return {
-          status: 200,
-          headers,
-        };
+        return UnifiedResponseHandler.preflight();
       }
 
       const url = new URL(request.url);
@@ -172,33 +162,20 @@ app.http("traveling-parent-makeup", {
 
       // Mock authentication - in production, validate JWT token
       if (!userId) {
-        return {
-          status: 401,
-          headers,
-          body: JSON.stringify({
-            success: false,
-            error: "Authentication required",
-            code: "AUTH_REQUIRED",
-          }),
-        };
+        return UnifiedResponseHandler.authError("Authentication required");
       }
 
       switch (request.method) {
-        case "GET":
+        case "GET": {
           if (action === "get_dashboard") {
             // Get traveling parent dashboard data
             const membership = groupMemberships.get(userId);
             const userMakeupOptions = makeupOptions.get(userId) || [];
 
             if (!membership) {
-              return {
-                status: 404,
-                headers,
-                body: JSON.stringify({
-                  success: false,
-                  error: "User is not a member of any carpool group",
-                }),
-              };
+              return UnifiedResponseHandler.notFoundError(
+                "User is not a member of any carpool group"
+              );
             }
 
             const dashboard = {
@@ -227,68 +204,45 @@ app.http("traveling-parent-makeup", {
               },
             };
 
-            return {
-              status: 200,
-              headers,
-              body: JSON.stringify({
-                success: true,
-                dashboard,
-              }),
-            };
+            return UnifiedResponseHandler.success({ dashboard }, 200);
           }
 
           if (action === "get_makeup_options") {
             const userMakeupOptions = makeupOptions.get(userId) || [];
             const availableDates = getAvailableMakeupDates(groupId);
 
-            return {
-              status: 200,
-              headers,
-              body: JSON.stringify({
-                success: true,
+            return UnifiedResponseHandler.success(
+              {
                 makeupOptions: userMakeupOptions,
                 availableDates,
                 makeupBalance: calculateMakeupBalance(userId, groupId),
-              }),
-            };
+              },
+              200
+            );
           }
 
-          return {
-            status: 400,
-            headers,
-            body: JSON.stringify({
-              success: false,
-              error:
-                "Invalid GET action. Supported: get_dashboard, get_makeup_options",
-            }),
-          };
+          return UnifiedResponseHandler.validationError(
+            "Invalid GET action. Supported: get_dashboard, get_makeup_options"
+          );
+        }
 
-        case "POST":
+        case "POST": {
           const body = await request.json();
           const { makeupProposal } = body;
 
           if (!makeupProposal) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "Makeup proposal data is required",
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Makeup proposal data is required"
+            );
           }
 
           // Validate proposal
           const validationErrors = validateMakeupProposal(makeupProposal);
           if (validationErrors.length > 0) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                errors: validationErrors,
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Validation failed",
+              validationErrors
+            );
           }
 
           // Create new makeup option
@@ -311,29 +265,23 @@ app.http("traveling-parent-makeup", {
           const existingOptions = makeupOptions.get(userId) || [];
           makeupOptions.set(userId, [...existingOptions, newMakeup]);
 
-          return {
-            status: 201,
-            headers,
-            body: JSON.stringify({
-              success: true,
+          return UnifiedResponseHandler.success(
+            {
               message: "Makeup proposal created successfully",
               makeupOption: newMakeup,
-            }),
-          };
+            },
+            201
+          );
+        }
 
-        case "PUT":
+        case "PUT": {
           const updateBody = await request.json();
           const { makeupId, status, adminNotes } = updateBody;
 
           if (!makeupId || !status) {
-            return {
-              status: 400,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "Makeup ID and status are required",
-              }),
-            };
+            return UnifiedResponseHandler.validationError(
+              "Makeup ID and status are required"
+            );
           }
 
           // Find and update makeup option
@@ -343,14 +291,9 @@ app.http("traveling-parent-makeup", {
           );
 
           if (makeupIndex === -1) {
-            return {
-              status: 404,
-              headers,
-              body: JSON.stringify({
-                success: false,
-                error: "Makeup option not found",
-              }),
-            };
+            return UnifiedResponseHandler.notFoundError(
+              "Makeup option not found"
+            );
           }
 
           // Update the makeup option
@@ -373,42 +316,28 @@ app.http("traveling-parent-makeup", {
 
           makeupOptions.set(userId, userOptions);
 
-          return {
-            status: 200,
-            headers,
-            body: JSON.stringify({
-              success: true,
+          return UnifiedResponseHandler.success(
+            {
               message: "Makeup option updated successfully",
               makeupOption: userOptions[makeupIndex],
-            }),
-          };
+            },
+            200
+          );
+        }
 
         default:
-          return {
-            status: 405,
-            headers,
-            body: JSON.stringify({
-              success: false,
-              error: "Method not allowed",
-            }),
-          };
+          return UnifiedResponseHandler.methodNotAllowedError(
+            "Method not allowed"
+          );
       }
     } catch (error) {
       context.error("Traveling parent makeup error:", error);
-
-      return {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          success: false,
-          error: "Internal server error",
-          details:
-            process.env.NODE_ENV === "development" ? error.message : undefined,
-        }),
-      };
+      return UnifiedResponseHandler.error(
+        "INTERNAL_ERROR",
+        "Internal server error",
+        500,
+        process.env.NODE_ENV === "development" ? error.message : undefined
+      );
     }
   },
 });

@@ -1,22 +1,12 @@
 const { v4: uuidv4 } = require("uuid");
 const { MockDataFactory } = require("../src/utils/mock-data-wrapper");
-const {
-  handlePreflight,
-  createSuccessResponse,
-  createErrorResponse,
-  validateAuth,
-  validateRequiredFields,
-  parseJsonBody,
-  handleError,
-  logRequest,
-} = require("../src/utils/unified-response");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, req) {
   context.log("Carpool Groups API called");
-  logRequest(req, context, "admin-carpool-groups");
 
   // Handle preflight requests
-  const preflightResponse = handlePreflight(req);
+  const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
   if (preflightResponse) {
     context.res = preflightResponse;
     return;
@@ -27,7 +17,7 @@ module.exports = async function (context, req) {
     const { groupId } = req.params || {};
 
     // Validate authorization
-    const authError = validateAuth(req);
+    const authError = UnifiedResponseHandler.validateAuth(req);
     if (authError) {
       context.res = authError;
       return;
@@ -42,7 +32,7 @@ module.exports = async function (context, req) {
         context.res = getResult;
         return;
       case "POST":
-        const body = parseJsonBody(req);
+        const body = UnifiedResponseHandler.parseJsonBody(req);
         const { action } = body;
         if (action === "family-departure") {
           context.res = await handleFamilyDeparture(groupId, body, context);
@@ -57,25 +47,21 @@ module.exports = async function (context, req) {
         }
         return;
       case "PUT":
-        const updateBody = parseJsonBody(req);
+        const updateBody = UnifiedResponseHandler.parseJsonBody(req);
         context.res = await updateGroup(groupId, updateBody, context);
         return;
       case "DELETE":
         context.res = await deleteGroup(groupId, context);
         return;
       default:
-        context.res = createErrorResponse(
-          "METHOD_NOT_ALLOWED",
-          "Method not allowed",
-          405
-        );
+        context.res =
+          UnifiedResponseHandler.methodNotAllowedError("Method not allowed");
         return;
     }
   } catch (error) {
-    context.res = handleError(
-      error,
-      context,
-      "Failed to process carpool groups request"
+    context.res = UnifiedResponseHandler.internalError(
+      "Failed to process carpool groups request",
+      error.message
     );
   }
 };
@@ -84,7 +70,7 @@ module.exports = async function (context, req) {
 async function getGroups(context) {
   try {
     const mockGroups = getMockGroups();
-    return createSuccessResponse(mockGroups);
+    return UnifiedResponseHandler.success(mockGroups);
   } catch (error) {
     context.log.error("Get groups error:", error);
     throw error;
@@ -125,12 +111,10 @@ async function createGroup(groupData, context) {
       schedule,
     } = groupData;
 
-    const validationError = validateRequiredFields(groupData, [
-      "name",
-      "school",
-      "pickupLocation",
-      "dropoffLocation",
-    ]);
+    const validationError = UnifiedResponseHandler.validateRequiredFields(
+      groupData,
+      ["name", "school", "pickupLocation", "dropoffLocation"]
+    );
     if (validationError) {
       return validationError;
     }
@@ -153,10 +137,9 @@ async function createGroup(groupData, context) {
       invitations: [],
     };
 
-    return createSuccessResponse(
+    return UnifiedResponseHandler.created(
       newGroup,
-      "Carpool group created successfully",
-      201
+      "Carpool group created successfully"
     );
   } catch (error) {
     context.log.error("Create group error:", error);
@@ -167,15 +150,10 @@ async function createGroup(groupData, context) {
 // Update group
 async function updateGroup(groupId, updateData, context) {
   try {
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: { id: groupId, ...updateData },
-        message: "Group updated successfully",
-      }),
-    };
+    return UnifiedResponseHandler.success(
+      { id: groupId, ...updateData },
+      "Group updated successfully"
+    );
   } catch (error) {
     context.log.error("Update group error:", error);
     throw error;
@@ -185,14 +163,7 @@ async function updateGroup(groupId, updateData, context) {
 // Delete group
 async function deleteGroup(groupId, context) {
   try {
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        message: "Group deleted successfully",
-      }),
-    };
+    return UnifiedResponseHandler.success(null, "Group deleted successfully");
   } catch (error) {
     context.log.error("Delete group error:", error);
     throw error;
@@ -205,17 +176,9 @@ async function handleFamilyDeparture(groupId, requestData, context) {
     const { userId, reason, confirmDeparture } = requestData;
 
     if (!userId || !confirmDeparture) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "User ID and departure confirmation are required",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Missing required fields: userId and confirmDeparture"
+      );
     }
 
     // Find the group
@@ -223,17 +186,7 @@ async function handleFamilyDeparture(groupId, requestData, context) {
     const groupIndex = mockGroups.findIndex((g) => g.id === groupId);
 
     if (groupIndex === -1) {
-      return {
-        status: 404,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "GROUP_NOT_FOUND",
-            message: "Carpool group not found",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.notFoundError("Group not found");
     }
 
     const group = mockGroups[groupIndex];
@@ -244,17 +197,9 @@ async function handleFamilyDeparture(groupId, requestData, context) {
     );
 
     if (!drivingParent) {
-      return {
-        status: 404,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "MEMBER_NOT_FOUND",
-            message: "Driving parent not found in this group",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.notFoundError(
+        "Driving parent not found in this group"
+      );
     }
 
     // FAMILY CASCADE DEPARTURE: Find all family members
@@ -266,17 +211,9 @@ async function handleFamilyDeparture(groupId, requestData, context) {
     );
 
     if (familyMembers.length === 0) {
-      return {
-        status: 404,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "NO_FAMILY_MEMBERS",
-            message: "No family members found in this group",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.notFoundError(
+        "No family members found in this group"
+      );
     }
 
     // Remove all family members from the group
@@ -308,31 +245,16 @@ async function handleFamilyDeparture(groupId, requestData, context) {
       tripAdminNotified: true,
     };
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          departure: departureDetails,
-          updatedGroup: mockGroups[groupIndex],
-        },
-        message: `Family departure completed. ${familyMembers.length} members removed from "${group.name}". Group Admin has been notified.`,
-      }),
-    };
+    return UnifiedResponseHandler.success(
+      {
+        departure: departureDetails,
+        updatedGroup: mockGroups[groupIndex],
+      },
+      `Family departure completed. ${familyMembers.length} members removed from "${group.name}". Group Admin has been notified.`
+    );
   } catch (error) {
     context.log.error("Family departure error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Error processing family departure",
-        },
-      }),
-    };
+    throw error;
   }
 }
 
@@ -342,17 +264,9 @@ async function handleIntraFamilyReassignment(groupId, requestData, context) {
     const { fromParentId, toParentId, assignmentId, reason } = requestData;
 
     if (!fromParentId || !toParentId || !assignmentId) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "From parent, to parent, and assignment ID are required",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "From parent, to parent, and assignment ID are required"
+      );
     }
 
     // Verify both parents are from same family
@@ -360,18 +274,9 @@ async function handleIntraFamilyReassignment(groupId, requestData, context) {
     const toFamilyId = toParentId.split("-spouse")[0];
 
     if (fromFamilyId !== toFamilyId) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "NOT_SAME_FAMILY",
-            message:
-              "Intra-family reassignment only allowed between spouses/same family",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Intra-family reassignment only allowed between spouses/same family"
+      );
     }
 
     // Find the group
@@ -379,17 +284,7 @@ async function handleIntraFamilyReassignment(groupId, requestData, context) {
     const group = mockGroups.find((g) => g.id === groupId);
 
     if (!group) {
-      return {
-        status: 404,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "GROUP_NOT_FOUND",
-            message: "Carpool group not found",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.notFoundError("Carpool group not found");
     }
 
     // Find both parents in group
@@ -401,32 +296,16 @@ async function handleIntraFamilyReassignment(groupId, requestData, context) {
     );
 
     if (!fromParent || !toParent) {
-      return {
-        status: 404,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "PARENTS_NOT_FOUND",
-            message: "One or both parents not found in this group",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.notFoundError(
+        "One or both parents not found in this group"
+      );
     }
 
     // Verify receiving parent can drive
     if (!toParent.canDrive) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "RECEIVER_CANNOT_DRIVE",
-            message: "Receiving parent is not designated as a driving parent",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Receiving parent is not designated as a driving parent"
+      );
     }
 
     // Mock: Update assignment (in production, would update actual schedule)
@@ -447,36 +326,21 @@ async function handleIntraFamilyReassignment(groupId, requestData, context) {
     // Generate group notification message
     const notificationMessage = `Schedule Update: ${toParent.name} will now drive instead of ${fromParent.name} (family reassignment)`;
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          reassignment: reassignmentRecord,
-          notification: {
-            message: notificationMessage,
-            type: "family_reassignment",
-            sentToGroup: true,
-            timestamp: new Date().toISOString(),
-          },
+    return UnifiedResponseHandler.success(
+      {
+        reassignment: reassignmentRecord,
+        notification: {
+          message: notificationMessage,
+          type: "family_reassignment",
+          sentToGroup: true,
+          timestamp: new Date().toISOString(),
         },
-        message: "Trip successfully reassigned within family",
-      }),
-    };
+      },
+      "Trip successfully reassigned within family"
+    );
   } catch (error) {
     context.log.error("Intra-family reassignment error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Failed to process intra-family reassignment",
-        },
-      }),
-    };
+    throw error;
   }
 }
 

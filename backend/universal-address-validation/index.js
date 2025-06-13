@@ -1,14 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Universal school database for service area calculation
 const schoolDatabase = [
@@ -24,7 +15,7 @@ const schoolDatabase = [
   },
   {
     id: "washington-middle",
-    name: "Washington Middle School", 
+    name: "Washington Middle School",
     address: "456 Maple Avenue, Springfield, IL 62702",
     coordinates: { latitude: 39.7965, longitude: -89.644 },
     serviceRadius: 25, // miles
@@ -58,7 +49,7 @@ const mockAddressDatabase = [
   {
     address: "456 Elm Ave, Springfield, IL 62702",
     coordinates: { latitude: 39.7965, longitude: -89.644 },
-    city: "Springfield", 
+    city: "Springfield",
     state: "IL",
     zipCode: "62702",
     isValid: true,
@@ -100,9 +91,10 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 // Mock geocoding function
 async function mockGeocode(address) {
   const cleanAddress = address.toLowerCase().trim();
-  const match = mockAddressDatabase.find((entry) =>
-    cleanAddress.includes(entry.city.toLowerCase()) &&
-    cleanAddress.includes(entry.state.toLowerCase())
+  const match = mockAddressDatabase.find(
+    (entry) =>
+      cleanAddress.includes(entry.city.toLowerCase()) &&
+      cleanAddress.includes(entry.state.toLowerCase())
   );
 
   if (match) {
@@ -145,61 +137,41 @@ function detectNearbySchools(coordinates, maxResults = 3) {
 }
 
 // Enhanced address validation with school detection
-async function validateAddressWithSchoolDetection(userId, requestData, context) {
+async function validateAddressWithSchoolDetection(
+  userId,
+  requestData,
+  context
+) {
   try {
     const { address, schoolId } = requestData; // schoolId is optional for manual override
 
     if (!address || address.trim().length < 10) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Please provide a complete home address",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Please provide a complete home address"
+      );
     }
 
     // Geocode the address
     const geocodingResult = await mockGeocode(address);
 
     if (!geocodingResult.isValid) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "INVALID_ADDRESS",
-            message: "Unable to verify this address. Please check the spelling and format.",
-            suggestions: geocodingResult.suggestions || [],
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Unable to verify this address. Please check the spelling and format.",
+        geocodingResult.suggestions || []
+      );
     }
 
     // Detect nearby schools
     const nearbySchools = detectNearbySchools(geocodingResult.coordinates);
 
     if (nearbySchools.length === 0) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "NO_SCHOOLS_IN_AREA",
-            message: "No schools found within service area of this address.",
-            details: {
-              coordinates: geocodingResult.coordinates,
-              searchRadius: "25 miles",
-            },
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "No schools found within service area of this address.",
+        {
+          coordinates: geocodingResult.coordinates,
+          searchRadius: "25 miles",
+        }
+      );
     }
 
     // Use specific school if provided, otherwise use closest school
@@ -207,17 +179,9 @@ async function validateAddressWithSchoolDetection(userId, requestData, context) 
     if (schoolId) {
       targetSchool = schoolDatabase.find((s) => s.id === schoolId);
       if (!targetSchool) {
-        return {
-          status: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "SCHOOL_NOT_FOUND",
-              message: "Specified school not found",
-            },
-          }),
-        });
+        return UnifiedResponseHandler.notFoundError(
+          "Specified school not found"
+        );
       }
     } else {
       targetSchool = nearbySchools[0]; // Use closest school
@@ -233,25 +197,17 @@ async function validateAddressWithSchoolDetection(userId, requestData, context) 
 
     // Check if within service area of target school
     if (distanceToSchool > targetSchool.serviceRadius) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "OUTSIDE_SERVICE_AREA",
-            message: `This address is ${distanceToSchool.toFixed(
-              1
-            )} miles from ${targetSchool.name}. The service area is within ${targetSchool.serviceRadius} miles.`,
-            details: {
-              distanceToSchool: distanceToSchool,
-              maxDistance: targetSchool.serviceRadius,
-              schoolLocation: targetSchool,
-              nearbySchools: nearbySchools,
-            },
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        `This address is ${distanceToSchool.toFixed(1)} miles from ${
+          targetSchool.name
+        }. The service area is within ${targetSchool.serviceRadius} miles.`,
+        {
+          distanceToSchool: distanceToSchool,
+          maxDistance: targetSchool.serviceRadius,
+          schoolLocation: targetSchool,
+          nearbySchools: nearbySchools,
+        }
+      );
     }
 
     // Address is valid and within service area
@@ -270,29 +226,13 @@ async function validateAddressWithSchoolDetection(userId, requestData, context) 
     // Mock save to database
     console.log("Address validation saved:", validationResult);
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: validationResult,
-        message: "Address validated successfully with automatic school detection",
-      }),
-    };
+    return UnifiedResponseHandler.success(
+      validationResult,
+      "Address validated successfully with automatic school detection"
+    );
   } catch (error) {
     context.log.error("Address validation error:", error);
-
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error during address validation",
-        },
-      }),
-    };
+    throw error;
   }
 }
 
@@ -333,33 +273,15 @@ async function searchSchools(requestData, context) {
       results.sort((a, b) => a.distance - b.distance);
     }
 
-    return {
-      status: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          schools: results,
-          total: results.length,
-          query: query || null,
-          searchArea: coordinates ? `${maxDistance} miles` : "nationwide",
-        },
-      }),
-    };
+    return UnifiedResponseHandler.success({
+      schools: results,
+      total: results.length,
+      query: query || null,
+      searchArea: coordinates ? `${maxDistance} miles` : "nationwide",
+    });
   } catch (error) {
     context.log.error("School search error:", error);
-
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR", 
-          message: "Internal server error during school search",
-        },
-      }),
-    };
+    throw error;
   }
 }
 
@@ -368,30 +290,17 @@ module.exports = async function (context, req) {
   const method = req.method;
 
   // Handle preflight requests
-  if (method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+  const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
+  if (preflightResponse) {
+    context.res = preflightResponse;
     return;
   }
 
   try {
-    // Extract userId from authorization (mock implementation)
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      context.res = {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required",
-          },
-        }),
-      };
+    // Validate authorization
+    const authError = UnifiedResponseHandler.validateAuth(req);
+    if (authError) {
+      context.res = authError;
       return;
     }
 
@@ -418,30 +327,14 @@ module.exports = async function (context, req) {
     }
 
     // Invalid action
-    context.res = {
-      status: 400,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INVALID_ACTION",
-          message: `Action '${action}' not supported`,
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.validationError(
+      `Action '${action}' not supported`
+    );
   } catch (error) {
     context.log.error("Unexpected error:", error);
-
-    context.res = {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "An unexpected error occurred",
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "An unexpected error occurred",
+      error.message
+    );
   }
 };

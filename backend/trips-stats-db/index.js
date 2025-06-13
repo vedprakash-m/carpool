@@ -152,14 +152,7 @@ module.exports = async function (context, req) {
         timeSavedHours: 0,
       };
 
-      context.res = {
-        status: 200,
-        headers: corsHeaders,
-        body: {
-          success: true,
-          data: zeroStats,
-        },
-      };
+      context.res = UnifiedResponseHandler.success(zeroStats);
     }
   } catch (error) {
     context.log("Database stats error:", error);
@@ -178,13 +171,6 @@ module.exports = async function (context, req) {
       timeSavedHours: 0,
     };
 
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: {
-        success: true,
-        data: fallbackStats,
-      },
-    };
+    context.res = UnifiedResponseHandler.success(fallbackStats);
   }
 };

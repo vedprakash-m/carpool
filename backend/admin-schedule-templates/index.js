@@ -1,47 +1,26 @@
 const { CosmosClient } = require("@azure/cosmos");
-
-// CORS headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400",
-  "Content-Type": "application/json",
-};
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, req) {
   context.log("Admin Schedule Templates API called");
 
   // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-      body: "",
-    };
+  const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
+  if (preflightResponse) {
+    context.res = preflightResponse;
     return;
   }
 
   try {
-    // Get authorization token
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Missing or invalid authorization token",
-          },
-        }),
-      };
+    // Validate authorization
+    const authError = UnifiedResponseHandler.validateAuth(req);
+    if (authError) {
+      context.res = authError;
+      return;
     }
 
-    // TODO: Verify admin role from JWT token
-    const token = authHeader.split(" ")[1];
+    // Get token from auth header
+    const token = req.headers.authorization.split(" ")[1];
 
     // Initialize Cosmos DB (use environment variables or fallback to mock)
     let cosmosClient = null;
@@ -61,40 +40,38 @@ module.exports = async function (context, req) {
 
     switch (method) {
       case "GET":
-        return await handleGet(templatesContainer, templateId, context);
+        context.res = await handleGet(templatesContainer, templateId, context);
+        return;
       case "POST":
-        return await handlePost(templatesContainer, req, context);
+        context.res = await handlePost(templatesContainer, req, context);
+        return;
       case "PUT":
-        return await handlePut(templatesContainer, templateId, req, context);
+        context.res = await handlePut(
+          templatesContainer,
+          templateId,
+          req,
+          context
+        );
+        return;
       case "DELETE":
-        return await handleDelete(templatesContainer, templateId, context);
+        context.res = await handleDelete(
+          templatesContainer,
+          templateId,
+          context
+        );
+        return;
       default:
-        return {
-          status: 405,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "METHOD_NOT_ALLOWED",
-              message: `Method ${method} not allowed`,
-            },
-          }),
-        };
+        context.res = UnifiedResponseHandler.methodNotAllowedError(
+          `Method ${method} not allowed`
+        );
+        return;
     }
   } catch (error) {
     context.log.error("Template management error:", error);
-    return {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error",
-          details: error.message,
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error",
+      error.message
+    );
   }
 };
 
@@ -108,52 +85,22 @@ async function handleGet(container, templateId, context) {
           .item(templateId, templateId)
           .read();
         if (!template) {
-          return {
-            status: 404,
-            headers: corsHeaders,
-            body: JSON.stringify({
-              success: false,
-              error: {
-                code: "TEMPLATE_NOT_FOUND",
-                message: "Schedule template not found",
-              },
-            }),
-          };
+          return UnifiedResponseHandler.notFoundError(
+            "Schedule template not found"
+          );
         }
-        return {
-          status: 200,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: true,
-            data: template,
-          }),
-        };
+        return UnifiedResponseHandler.success(template);
       } else {
         // Mock single template
         const mockTemplate = getMockTemplates().find(
           (t) => t.id === templateId
         );
         if (!mockTemplate) {
-          return {
-            status: 404,
-            headers: corsHeaders,
-            body: JSON.stringify({
-              success: false,
-              error: {
-                code: "TEMPLATE_NOT_FOUND",
-                message: "Schedule template not found",
-              },
-            }),
-          };
+          return UnifiedResponseHandler.notFoundError(
+            "Schedule template not found"
+          );
         }
-        return {
-          status: 200,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: true,
-            data: mockTemplate,
-          }),
-        };
+        return UnifiedResponseHandler.success(mockTemplate);
       }
     } else {
       // List all templates
@@ -162,35 +109,25 @@ async function handleGet(container, templateId, context) {
           .query("SELECT * FROM c ORDER BY c.dayOfWeek, c.startTime")
           .fetchAll();
 
-        return {
-          status: 200,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: true,
-            data: templates,
-            pagination: {
-              total: templates.length,
-              page: 1,
-              limit: templates.length,
-            },
-          }),
-        };
+        return UnifiedResponseHandler.success({
+          templates,
+          pagination: {
+            total: templates.length,
+            page: 1,
+            limit: templates.length,
+          },
+        });
       } else {
         // Mock templates
         const mockTemplates = getMockTemplates();
-        return {
-          status: 200,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: true,
-            data: mockTemplates,
-            pagination: {
-              total: mockTemplates.length,
-              page: 1,
-              limit: mockTemplates.length,
-            },
-          }),
-        };
+        return UnifiedResponseHandler.success({
+          templates: mockTemplates,
+          pagination: {
+            total: mockTemplates.length,
+            page: 1,
+            limit: mockTemplates.length,
+          },
+        });
       }
     }
   } catch (error) {
@@ -202,7 +139,7 @@ async function handleGet(container, templateId, context) {
 // POST handler - Create new template
 async function handlePost(container, req, context) {
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const body = UnifiedResponseHandler.parseJsonBody(req);
 
     // Validate required fields
     const requiredFields = [
@@ -213,51 +150,28 @@ async function handlePost(container, req, context) {
       "description",
       "maxPassengers",
     ];
-    for (const field of requiredFields) {
-      if (!body[field] && body[field] !== 0) {
-        return {
-          status: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "VALIDATION_ERROR",
-              message: `Missing required field: ${field}`,
-            },
-          }),
-        };
-      }
+
+    const validationError = UnifiedResponseHandler.validateRequiredFields(
+      body,
+      requiredFields
+    );
+    if (validationError) {
+      return validationError;
     }
 
     // Validate day of week (0-6)
     if (body.dayOfWeek < 0 || body.dayOfWeek > 6) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "dayOfWeek must be between 0 (Sunday) and 6 (Saturday)",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "dayOfWeek must be between 0 (Sunday) and 6 (Saturday)"
+      );
     }
 
     // Validate time format (HH:MM)
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(body.startTime) || !timeRegex.test(body.endTime)) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "startTime and endTime must be in HH:MM format",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "startTime and endTime must be in HH:MM format"
+      );
     }
 
     // Validate route type
@@ -268,17 +182,9 @@ async function handlePost(container, req, context) {
       "point_to_point",
     ];
     if (!validRouteTypes.includes(body.routeType)) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "routeType must be one of: " + validRouteTypes.join(", "),
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "routeType must be one of: " + validRouteTypes.join(", ")
+      );
     }
 
     // Create template object
@@ -303,27 +209,17 @@ async function handlePost(container, req, context) {
       );
       context.log("Template created:", createdTemplate.id);
 
-      return {
-        status: 201,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: createdTemplate,
-          message: "Schedule template created successfully",
-        }),
-      };
+      return UnifiedResponseHandler.created(
+        createdTemplate,
+        "Schedule template created successfully"
+      );
     } else {
       // Mock creation
       context.log("Mock template created:", template.id);
-      return {
-        status: 201,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: template,
-          message: "Schedule template created successfully (mock mode)",
-        }),
-      };
+      return UnifiedResponseHandler.created(
+        template,
+        "Schedule template created successfully (mock mode)"
+      );
     }
   } catch (error) {
     context.log.error("Create template error:", error);
@@ -335,20 +231,12 @@ async function handlePost(container, req, context) {
 async function handlePut(container, templateId, req, context) {
   try {
     if (!templateId) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Template ID is required for updates",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Template ID is required for updates"
+      );
     }
 
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const body = UnifiedResponseHandler.parseJsonBody(req);
 
     if (container) {
       // Get existing template
@@ -356,17 +244,9 @@ async function handlePut(container, templateId, req, context) {
         .item(templateId, templateId)
         .read();
       if (!existingTemplate) {
-        return {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "TEMPLATE_NOT_FOUND",
-              message: "Schedule template not found",
-            },
-          }),
-        };
+        return UnifiedResponseHandler.notFoundError(
+          "Schedule template not found"
+        );
       }
 
       // Update template
@@ -381,30 +261,17 @@ async function handlePut(container, templateId, req, context) {
         .item(templateId, templateId)
         .replace(updatedTemplate);
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: result,
-          message: "Schedule template updated successfully",
-        }),
-      };
+      return UnifiedResponseHandler.success(
+        result,
+        "Schedule template updated successfully"
+      );
     } else {
       // Mock update
       const mockTemplate = getMockTemplates().find((t) => t.id === templateId);
       if (!mockTemplate) {
-        return {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "TEMPLATE_NOT_FOUND",
-              message: "Schedule template not found",
-            },
-          }),
-        };
+        return UnifiedResponseHandler.notFoundError(
+          "Schedule template not found"
+        );
       }
 
       const updatedTemplate = {
@@ -414,15 +281,10 @@ async function handlePut(container, templateId, req, context) {
         updatedAt: new Date().toISOString(),
       };
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: updatedTemplate,
-          message: "Schedule template updated successfully (mock mode)",
-        }),
-      };
+      return UnifiedResponseHandler.success(
+        updatedTemplate,
+        "Schedule template updated successfully (mock mode)"
+      );
     }
   } catch (error) {
     context.log.error("Update template error:", error);
@@ -434,17 +296,9 @@ async function handlePut(container, templateId, req, context) {
 async function handleDelete(container, templateId, context) {
   try {
     if (!templateId) {
-      return {
-        status: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Template ID is required for deletion",
-          },
-        }),
-      };
+      return UnifiedResponseHandler.validationError(
+        "Template ID is required for deletion"
+      );
     }
 
     if (container) {
@@ -453,55 +307,31 @@ async function handleDelete(container, templateId, context) {
         .item(templateId, templateId)
         .read();
       if (!existingTemplate) {
-        return {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "TEMPLATE_NOT_FOUND",
-              message: "Schedule template not found",
-            },
-          }),
-        };
+        return UnifiedResponseHandler.notFoundError(
+          "Schedule template not found"
+        );
       }
 
       // Delete template
       await container.item(templateId, templateId).delete();
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          message: "Schedule template deleted successfully",
-        }),
-      };
+      return UnifiedResponseHandler.success(
+        null,
+        "Schedule template deleted successfully"
+      );
     } else {
       // Mock deletion
       const mockTemplate = getMockTemplates().find((t) => t.id === templateId);
       if (!mockTemplate) {
-        return {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "TEMPLATE_NOT_FOUND",
-              message: "Schedule template not found",
-            },
-          }),
-        };
+        return UnifiedResponseHandler.notFoundError(
+          "Schedule template not found"
+        );
       }
 
-      return {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          message: "Schedule template deleted successfully (mock mode)",
-        }),
-      };
+      return UnifiedResponseHandler.success(
+        null,
+        "Schedule template deleted successfully (mock mode)"
+      );
     }
   } catch (error) {
     context.log.error("Delete template error:", error);

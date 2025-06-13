@@ -1,16 +1,6 @@
 const { CosmosClient } = require("@azure/cosmos");
 const { MockDataFactory } = require("../src/utils/mock-data-wrapper");
-const {
-  handlePreflight,
-  createSuccessResponse,
-  createErrorResponse,
-  validateAuth,
-  validateRequiredFields,
-  parseJsonBody,
-  handleError,
-  formatDate,
-  logRequest,
-} = require("../src/utils/unified-response");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, reminderTimer, req) {
   context.log("Assignment Reminders function triggered");
@@ -24,10 +14,8 @@ module.exports = async function (context, reminderTimer, req) {
 
   // Handle HTTP-based execution
   if (req) {
-    logRequest(req, context, "admin-assignment-reminders");
-
     // Handle preflight requests
-    const preflightResponse = handlePreflight(req);
+    const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
     if (preflightResponse) {
       context.res = preflightResponse;
       return;
@@ -36,10 +24,9 @@ module.exports = async function (context, reminderTimer, req) {
     try {
       context.res = await processManualReminders(req, context);
     } catch (error) {
-      context.res = handleError(
-        error,
-        context,
-        "Failed to process assignment reminders"
+      context.res = UnifiedResponseHandler.internalError(
+        "Failed to process assignment reminders",
+        error.message
       );
     }
   }
@@ -103,10 +90,10 @@ async function processScheduledReminders(context) {
 
 // Process manual reminders (HTTP-triggered)
 async function processManualReminders(req, context) {
-  const body = parseJsonBody(req);
+  const body = UnifiedResponseHandler.parseJsonBody(req);
   const { assignmentId, reminderType } = body;
 
-  const validationError = validateRequiredFields(body, [
+  const validationError = UnifiedResponseHandler.validateRequiredFields(body, [
     "assignmentId",
     "reminderType",
   ]);
@@ -118,11 +105,7 @@ async function processManualReminders(req, context) {
   const assignment = await getAssignmentById(assignmentId, context);
 
   if (!assignment) {
-    return createErrorResponse(
-      "ASSIGNMENT_NOT_FOUND",
-      "Assignment not found",
-      404
-    );
+    return UnifiedResponseHandler.notFoundError("Assignment not found");
   }
 
   // Send reminder
@@ -132,7 +115,7 @@ async function processManualReminders(req, context) {
     context
   );
 
-  return createSuccessResponse(result, "Reminder sent successfully");
+  return UnifiedResponseHandler.success(result, "Reminder sent successfully");
 }
 
 // Get upcoming assignments that need reminders

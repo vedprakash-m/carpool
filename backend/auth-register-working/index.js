@@ -36,14 +36,9 @@ module.exports = async function (context, req) {
 
     // Validate password strength
     if (password.length < 8) {
-      context.res = {
-        status: 400,
-        headers: corsHeaders,
-        body: {
-          success: false,
-          error: "Password must be at least 8 characters long",
-        },
-      };
+      context.res = UnifiedResponseHandler.validationError(
+        "Password must be at least 8 characters long"
+      );
       return;
     }
 
@@ -103,27 +98,15 @@ module.exports = async function (context, req) {
 
     context.log("Registration successful for:", email);
 
-    context.res = {
-      status: 201,
-      headers: corsHeaders,
-      body: {
-        success: true,
-        data: {
-          user: mockUser,
-          token: mockToken,
-          refreshToken: mockRefreshToken,
-        },
-      },
-    };
+    context.res = UnifiedResponseHandler.created({
+      user: mockUser,
+      token: mockToken,
+      refreshToken: mockRefreshToken,
+    });
   } catch (error) {
     context.log("Registration error:", error.message);
-    context.res = {
-      status: 500,
-      headers: corsHeaders,
-      body: {
-        success: false,
-        error: "Registration failed. Please try again later.",
-      },
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "Registration failed. Please try again later."
+    );
   }
 };

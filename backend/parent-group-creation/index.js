@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
 const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock data stores (in production, these would be database calls)
@@ -97,10 +98,7 @@ module.exports = async function (context, req) {
 
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    context.res = {
-      status: 200,
-      headers: corsHeaders,
-    };
+    context.res = UnifiedResponseHandler.preflight();
     return;
   }
 
@@ -111,17 +109,9 @@ module.exports = async function (context, req) {
     // Parse authorization header (in production, verify JWT)
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res = {
-        status: 401,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Valid authentication token required",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.authError(
+        "Valid authentication token required"
+      );
       return;
     }
 
@@ -131,17 +121,9 @@ module.exports = async function (context, req) {
     // Verify user is a parent (can create groups)
     const user = mockUsers.find((u) => u.id === userId);
     if (!user || user.role !== "parent") {
-      context.res = {
-        status: 403,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Only parents can create carpool groups",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.forbiddenError(
+        "Only parents can create groups"
+      );
       return;
     }
 
@@ -165,35 +147,18 @@ module.exports = async function (context, req) {
         !maxChildren ||
         !schedule
       ) {
-        context.res = {
-          status: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "VALIDATION_ERROR",
-              message:
-                "Missing required fields: name, targetSchoolId, serviceArea, maxChildren, schedule",
-            },
-          }),
-        };
+        context.res = UnifiedResponseHandler.validationError(
+          "Missing required fields: name, targetSchoolId, serviceArea, maxChildren, schedule"
+        );
         return;
       }
 
       // Validate school exists
       const targetSchool = mockSchools.find((s) => s.id === targetSchoolId);
       if (!targetSchool) {
-        context.res = {
-          status: 404,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "NOT_FOUND",
-              message: "Target school not found",
-            },
-          }),
-        };
+        context.res = UnifiedResponseHandler.notFoundError(
+          "Target school not found"
+        );
         return;
       }
 
@@ -207,17 +172,9 @@ module.exports = async function (context, req) {
 
       if (existingGroups.length >= 3) {
         // Limit parents to 3 active groups per school
-        context.res = {
-          status: 400,
-          headers: corsHeaders,
-          body: JSON.stringify({
-            success: false,
-            error: {
-              code: "LIMIT_EXCEEDED",
-              message: "You can only manage up to 3 active groups per school",
-            },
-          }),
-        };
+        context.res = UnifiedResponseHandler.validationError(
+          "You can only manage up to 3 active groups per school"
+        );
         return;
       }
 
@@ -297,23 +254,16 @@ module.exports = async function (context, req) {
         };
       }
 
-      context.res = {
-        status: 201,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
-            group: newGroup,
-            message: `🎉 Congratulations! Your carpool group "${newGroup.name}" has been created successfully. You are now the Group Admin and can start inviting other families!`,
-            nextSteps: [
-              "Invite other families from your school and neighborhood",
-              "Set up your first weekly schedule",
-              "Share your group with friends and neighbors",
-              "Review group settings and safety guidelines",
-            ],
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.created({
+        group: newGroup,
+        message: `🎉 Congratulations! Your carpool group "${newGroup.name}" has been created successfully. You are now the Group Admin and can start inviting other families!`,
+        nextSteps: [
+          "Invite other families from your school and neighborhood",
+          "Set up your first weekly schedule",
+          "Share your group with friends and neighbors",
+          "Review group settings and safety guidelines",
+        ],
+      });
       return;
     }
 
@@ -408,17 +358,10 @@ module.exports = async function (context, req) {
         },
       ];
 
-      context.res = {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
-            templates,
-            message: "Group creation templates retrieved successfully",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.success({
+        templates,
+        message: "Group creation templates retrieved successfully",
+      });
       return;
     }
 
@@ -469,45 +412,22 @@ module.exports = async function (context, req) {
         "Invite neighbors and school families you already know",
       ];
 
-      context.res = {
-        status: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          success: true,
-          data: {
-            eligibility: eligibilityChecks,
-            message: "Eligibility check completed successfully",
-          },
-        }),
-      };
+      context.res = UnifiedResponseHandler.success({
+        eligibility: eligibilityChecks,
+        message: "Eligibility check completed successfully",
+      });
       return;
     }
 
     // Invalid method or action
-    context.res = {
-      status: 405,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "METHOD_NOT_ALLOWED",
-          message: `Method ${method} with action ${action} not allowed`,
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.methodNotAllowedError(
+      `Method ${method} with action ${action} not allowed`
+    );
   } catch (error) {
     context.log.error("Parent group creation error:", error);
 
-    context.res = {
-      status: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Internal server error occurred",
-        },
-      }),
-    };
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };

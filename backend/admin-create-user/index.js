@@ -1,39 +1,24 @@
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 // Mock database for immediate functionality (replace with Cosmos DB later)
 const mockUsers = [];
 
 module.exports = async function (context, req) {
-  // Set CORS headers
-  context.res = {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "Content-Type, Authorization, X-Requested-With",
-      "Content-Type": "application/json",
-    },
-  };
-
   // Handle preflight OPTIONS request
   if (req.method === "OPTIONS") {
-    context.res.status = 200;
-    context.res.body = "";
+    context.res = UnifiedResponseHandler.preflight();
     return;
   }
 
   // Only allow POST method
   if (req.method !== "POST") {
-    context.res.status = 405;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "METHOD_NOT_ALLOWED",
-        message: "Only POST method is allowed",
-      },
-    });
+    context.res = UnifiedResponseHandler.methodNotAllowedError(
+      "Only POST method allowed"
+    );
     return;
   }
 
@@ -41,14 +26,9 @@ module.exports = async function (context, req) {
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Missing or invalid authorization token",
-        },
-      });
+      context.res = UnifiedResponseHandler.authError(
+        "Missing or invalid authorization token"
+      );
       return;
     }
 
@@ -61,25 +41,15 @@ module.exports = async function (context, req) {
         process.env.JWT_SECRET || "temp-jwt-secret-vcarpool"
       );
       if (decoded.role !== "admin") {
-        context.res.status = 403;
-        context.res.body = JSON.stringify({
-          success: false,
-          error: {
-            code: "FORBIDDEN",
-            message: "Admin role required for this operation",
-          },
-        });
+        context.res = UnifiedResponseHandler.forbiddenError(
+          "Admin role required for this operation"
+        );
         return;
       }
     } catch (jwtError) {
-      context.res.status = 401;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "INVALID_TOKEN",
-          message: "Invalid or expired token",
-        },
-      });
+      context.res = UnifiedResponseHandler.authError(
+        "Invalid or expired token"
+      );
       return;
     }
 
@@ -96,56 +66,35 @@ module.exports = async function (context, req) {
     } = req.body;
 
     if (!email || !password || !firstName || !lastName || !role) {
-      context.res.status = 400;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message:
-            "Missing required fields: email, password, firstName, lastName, role",
-        },
-      });
+      context.res = UnifiedResponseHandler.validationError(
+        "Missing required fields: email, password, firstName, lastName, role"
+      );
       return;
     }
 
     // Validate role
     if (!["parent", "student", "trip_admin"].includes(role)) {
-      context.res.status = 400;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: 'Role must be either "parent", "student", or "trip_admin"',
-        },
-      });
+      context.res = UnifiedResponseHandler.validationError(
+        'Role must be either "parent", "student", or "trip_admin"'
+      );
       return;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      context.res.status = 400;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Invalid email format",
-        },
-      });
+      context.res = UnifiedResponseHandler.validationError(
+        "Invalid email format"
+      );
       return;
     }
 
     // Check if user already exists (mock check for now)
     const existingUser = mockUsers.find((u) => u.email === email);
     if (existingUser) {
-      context.res.status = 409;
-      context.res.body = JSON.stringify({
-        success: false,
-        error: {
-          code: "CONFLICT",
-          message: "User with this email already exists",
-        },
-      });
+      context.res = UnifiedResponseHandler.conflictError(
+        "User with this email already exists"
+      );
       return;
     }
 
@@ -202,24 +151,16 @@ module.exports = async function (context, req) {
         : role.charAt(0).toUpperCase() + role.slice(1);
 
     // Return user data (without password)
-    context.res.status = 201;
-    context.res.body = JSON.stringify({
-      success: true,
-      data: {
+    context.res = UnifiedResponseHandler.created(
+      {
         user: newUser,
-        message: `${displayRole} account created successfully. Initial password has been set.`,
       },
-    });
+      `${displayRole} account created successfully. Initial password has been set.`
+    );
   } catch (error) {
     context.log.error("Admin create user error:", error);
-
-    context.res.status = 500;
-    context.res.body = JSON.stringify({
-      success: false,
-      error: {
-        code: "INTERNAL_ERROR",
-        message: "Internal server error occurred",
-      },
-    });
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };

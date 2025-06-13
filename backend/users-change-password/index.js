@@ -13,10 +13,8 @@ module.exports = async function (context, req) {
 
     // Only allow PUT method
     if (req.method !== "PUT") {
-      context.res = UnifiedResponseHandler.error(
-        "METHOD_NOT_ALLOWED",
-        "Only PUT method is allowed",
-        405
+      context.res = UnifiedResponseHandler.methodNotAllowedError(
+        "Only PUT method is allowed"
       );
       return;
     }
@@ -50,10 +48,8 @@ module.exports = async function (context, req) {
     // Extract and verify token using UnifiedAuthService
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      context.res = UnifiedResponseHandler.error(
-        "UNAUTHORIZED",
-        "Missing or invalid authorization token",
-        401
+      context.res = UnifiedResponseHandler.authError(
+        "Missing or invalid authorization token"
       );
       return;
     }
@@ -65,19 +61,15 @@ module.exports = async function (context, req) {
     try {
       decoded = UnifiedAuthService.verifyToken(token);
       if (!decoded) {
-        context.res = UnifiedResponseHandler.error(
-          "INVALID_TOKEN",
-          "Invalid or expired token",
-          401
+        context.res = UnifiedResponseHandler.authError(
+          "Invalid or expired token"
         );
         return;
       }
     } catch (jwtError) {
       context.log("JWT verification error:", jwtError);
-      context.res = UnifiedResponseHandler.error(
-        "INVALID_TOKEN",
-        "Invalid or expired token",
-        401
+      context.res = UnifiedResponseHandler.authError(
+        "Invalid or expired token"
       );
       return;
     }
@@ -96,14 +88,14 @@ module.exports = async function (context, req) {
         userId: decoded.userId,
       });
     } else {
-      context.res = UnifiedResponseHandler.error(
-        changeResult.error?.code || "PASSWORD_CHANGE_FAILED",
-        changeResult.error?.message || "Failed to change password",
-        changeResult.error?.statusCode || 400
+      context.res = UnifiedResponseHandler.validationError(
+        changeResult.error?.message || "Failed to change password"
       );
     }
   } catch (error) {
     context.log("Change password error:", error);
-    context.res = UnifiedResponseHandler.handleException(error);
+    context.res = UnifiedResponseHandler.internalError(
+      "Internal server error occurred"
+    );
   }
 };
