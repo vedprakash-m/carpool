@@ -65,6 +65,17 @@ ensure_resource_group() {
 deploy_database() {
     log "Deploying database resources to $DB_RESOURCE_GROUP..."
     
+    # Check if this is a production environment with existing containers
+    local skip_containers="false"
+    if [ "$ENVIRONMENT" = "prod" ]; then
+        # For production, check if containers already exist to avoid partition key conflicts
+        local cosmos_account="${APP_NAME}-cosmos-${ENVIRONMENT}"
+        if az cosmosdb sql container show --account-name "$cosmos_account" --resource-group "$DB_RESOURCE_GROUP" --database-name "vcarpool" --name "notifications" >/dev/null 2>&1; then
+            log "Found existing containers in production, skipping container creation to avoid conflicts"
+            skip_containers="true"
+        fi
+    fi
+    
     # Deploy database.bicep
     az deployment group create \
         --resource-group "$DB_RESOURCE_GROUP" \
@@ -73,6 +84,7 @@ deploy_database() {
             appName="$APP_NAME" \
             environmentName="$ENVIRONMENT" \
             location="$LOCATION" \
+            skipContainerCreation="$skip_containers" \
         --verbose
     
     success "Database deployment completed"

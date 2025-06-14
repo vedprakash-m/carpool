@@ -59,8 +59,11 @@ resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021
   }
 }
 
-// Cosmos DB Containers
-resource usersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
+@description('Skip container creation if they already exist')
+param skipContainerCreation bool = false
+
+// Cosmos DB Containers - only create if not skipping
+resource usersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
   parent: cosmosDatabase
   name: 'users'
   properties: {
@@ -88,21 +91,21 @@ resource usersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/cont
   }
 }
 
-resource tripsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
+resource tripsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
   parent: cosmosDatabase
   name: 'trips'
   properties: {
     resource: {
       id: 'trips'
       partitionKey: {
-        paths: ['/groupId']
+        paths: ['/driverId']
         kind: 'Hash'
       }
     }
   }
 }
 
-resource groupsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
+resource groupsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
   parent: cosmosDatabase
   name: 'groups'
   properties: {
@@ -116,7 +119,7 @@ resource groupsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/con
   }
 }
 
-resource preferencesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
+resource preferencesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
   parent: cosmosDatabase
   name: 'preferences'
   properties: {
@@ -130,14 +133,112 @@ resource preferencesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabase
   }
 }
 
-resource notificationsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
+resource notificationsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
   parent: cosmosDatabase
   name: 'notifications'
   properties: {
     resource: {
       id: 'notifications'
       partitionKey: {
+        paths: ['/id']
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource schedulesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
+  parent: cosmosDatabase
+  name: 'schedules'
+  properties: {
+    resource: {
+      id: 'schedules'
+      partitionKey: {
         paths: ['/userId']
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource swapRequestsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
+  parent: cosmosDatabase
+  name: 'swapRequests'
+  properties: {
+    resource: {
+      id: 'swapRequests'
+      partitionKey: {
+        paths: ['/requesterId']
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource messagesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
+  parent: cosmosDatabase
+  name: 'messages'
+  properties: {
+    resource: {
+      id: 'messages'
+      partitionKey: {
+        paths: ['/id']
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource chatsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
+  parent: cosmosDatabase
+  name: 'chats'
+  properties: {
+    resource: {
+      id: 'chats'
+      partitionKey: {
+        paths: ['/id']
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource chatParticipantsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
+  parent: cosmosDatabase
+  name: 'chatParticipants'
+  properties: {
+    resource: {
+      id: 'chatParticipants'
+      partitionKey: {
+        paths: ['/id']
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource emailTemplatesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
+  parent: cosmosDatabase
+  name: 'email-templates'
+  properties: {
+    resource: {
+      id: 'email-templates'
+      partitionKey: {
+        paths: ['/id']
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource weeklyPreferencesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
+  parent: cosmosDatabase
+  name: 'weeklyPreferences'
+  properties: {
+    resource: {
+      id: 'weeklyPreferences'
+      partitionKey: {
+        paths: ['/driverParentId']
         kind: 'Hash'
       }
     }
