@@ -267,16 +267,31 @@ VCarpool now implements a **cost-optimized multi-resource group architecture** t
 
 - Azure Function App (`vcarpool-api-prod`) - Backend API
 - Static Web App (`vcarpool-web-prod`) - Frontend
-- Storage Account (`vcarpoolsaprod`) - Function storage
+- Storage Account (`vcarpoolsaprod`) - Function storage (can be migrated)
 - Application Insights (`vcarpool-insights-prod`) - Monitoring
 - Key Vault (`vcarpool-kv-prod`) - Secrets management
 
 **Cost**: ~$50-100/month (depending on usage)
 **Status**: Can be deleted when not actively developing
 
+#### 🗄️ Optional: Dedicated Storage Resource Group (`vcarpool-storage-rg`)
+
+**Purpose**: Isolated storage management with migration capabilities
+**Resources**:
+
+- Dedicated Storage Account - Separated from compute resources for better management
+- Cross-region deployment support
+- Enhanced backup and disaster recovery options
+
+**Cost**: ~$5-15/month (storage usage only)
+**Status**: Optional architecture for advanced storage management
+**Migration Tools**: Complete migration scripts available (`./scripts/migrate-storage-account.sh`)
+
 #### 🛠️ Deployment Scripts
 
 - **`./scripts/deploy-multi-rg.sh`** - Deploy complete infrastructure
+- **`./scripts/deploy-storage.sh`** - Deploy dedicated storage account
+- **`./scripts/migrate-storage-account.sh`** - Complete storage migration toolkit
 - **`./scripts/cost-optimize.sh`** - Manage cost optimization
   - `analyze` - Show current resources and costs
   - `delete` - Delete compute resources (save ~$50-100/month)

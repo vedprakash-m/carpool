@@ -77,7 +77,7 @@ deploy_database() {
     fi
     
     # Deploy database.bicep
-    az deployment group create \
+    if ! az deployment group create \
         --resource-group "$DB_RESOURCE_GROUP" \
         --template-file "infra/database.bicep" \
         --parameters \
@@ -85,7 +85,10 @@ deploy_database() {
             environmentName="$ENVIRONMENT" \
             location="$LOCATION" \
             skipContainerCreation="$skip_containers" \
-        --verbose
+        --verbose 2>&1; then
+        error "Database deployment failed"
+        return 1
+    fi
     
     success "Database deployment completed"
 }

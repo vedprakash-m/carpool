@@ -2,7 +2,7 @@
 
 ## Overview
 
-Phase 2 of the VCarpool Architecture Audit & Remediation Plan has been successfully implemented, introducing comprehensive advanced performance optimizations to the Azure Functions backend. This implementation includes advanced database optimization, enhanced multi-level caching, API performance enhancement, CDN integration, and intelligent orchestration.
+Phase 2 of the VCarpool Architecture Audit & Remediation Plan has been successfully implemented, introducing comprehensive advanced performance optimizations to the Azure Functions backend. This implementation includes advanced database optimization, enhanced multi-level caching, API performance enhancement, CDN integration, intelligent orchestration, and **flexible storage account management**.
 
 ## Key Components Implemented
 
@@ -40,6 +40,57 @@ Phase 2 of the VCarpool Architecture Audit & Remediation Plan has been successfu
 - **Comprehensive Metrics**: Real-time performance monitoring and analytics
 - **Intelligent Recommendations**: AI-driven optimization suggestions
 - **Resource Management**: Graceful initialization and cleanup
+
+### 6. **NEW: Storage Account Management System**
+
+- **Storage Migration Tools**: Complete end-to-end migration capabilities
+- **Flexible Deployment**: Support for multiple resource group architectures
+- **Zero-Downtime Migration**: AzCopy-based data transfer with configuration updates
+- **Cost Optimization**: Strategic storage placement for optimal cost management
+
+#### Storage Architecture Options
+
+**Option 1: Default (Current)**
+
+```
+vcarpool-rg/ (Storage with compute resources)
+├── Function App + Static Web App
+└── Storage Account (vcarpoolsaprod)
+```
+
+**Option 2: Consolidated Persistent**
+
+```
+vcarpool-db-rg/ (Storage with database)
+├── Cosmos DB + Storage Account
+vcarpool-rg/ (Compute only)
+└── Function App + Static Web App
+```
+
+**Option 3: Dedicated Storage**
+
+```
+vcarpool-storage-rg/ (Isolated storage)
+└── Storage Account (vcarpoolsanew)
+vcarpool-db-rg/
+└── Cosmos DB
+vcarpool-rg/
+└── Function App + Static Web App
+```
+
+#### Migration Tools Available
+
+1. **`scripts/deploy-storage.sh`**: Deploy storage to any resource group/region
+2. **`scripts/migrate-storage-account.sh`**: Complete migration workflow
+3. **`infra/storage.bicep`**: Infrastructure-as-code template
+
+#### Migration Benefits
+
+- **Zero Data Loss**: Complete data migration with verification
+- **Minimal Downtime**: 5-10 minutes during configuration update
+- **Cost Flexibility**: Choose architecture for optimal cost management
+- **Cross-Region Support**: Deploy storage in different Azure regions
+- **Rollback Capability**: Keep original storage until confident
 
 ## New Azure Functions
 

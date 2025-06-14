@@ -128,6 +128,7 @@ Experience VCarpool in action: [**https://lively-stone-016bfa20f.6.azurestaticap
 **Database & Infrastructure**
 
 - **Azure Cosmos DB** with 9 optimized containers
+- **Azure Storage Account** with flexible deployment options (dedicated storage RG support)
 - **Azure Key Vault** for secrets management
 - **Azure Application Insights** for monitoring and analytics
 - **Azure Static Web Apps** for global content delivery
@@ -146,7 +147,15 @@ vcarpool/
 ├── 🔗 shared/            # Shared TypeScript types & utilities
 ├── 📚 docs/              # Technical documentation
 ├── ☁️ infra/            # Azure Bicep infrastructure templates
+│   ├── database.bicep    # Database resources (Cosmos DB)
+│   ├── main-compute.bicep # Compute resources (Functions, Web App)
+│   ├── storage.bicep     # Dedicated storage account template
+│   └── main.bicep        # Legacy single-RG template
 └── 🔨 scripts/          # Deployment and utility scripts
+    ├── deploy-multi-rg.sh      # Multi-resource group deployment
+    ├── deploy-storage.sh       # Storage account deployment
+    ├── migrate-storage-account.sh # Storage migration tools
+    └── cost-optimize.sh        # Cost optimization management
 ```
 
 ### Enterprise-Grade Features
@@ -395,6 +404,79 @@ For development teams working with Azure resources, VCarpool includes cost-effec
 ./scripts/cost-optimize.sh delete     # Remove compute resources
 ./scripts/cost-optimize.sh restore    # Restore resources quickly
 ./scripts/cost-optimize.sh status     # Check resource status
+```
+
+## 🌐 Deployment & Infrastructure
+
+### Multi-Resource Group Architecture
+
+VCarpool uses a sophisticated multi-resource group architecture for optimal cost management and operational flexibility:
+
+#### 🗄️ Database Resource Group (`vcarpool-db-rg`)
+
+**Always Running - Contains Persistent Data**
+
+- **Azure Cosmos DB** (`vcarpool-cosmos-prod`) - Main database
+- **Database**: `vcarpool` with 9 optimized containers
+- **Cost**: ~$24/month (400 RU/s provisioned throughput)
+- **Purpose**: Persistent storage that never gets deleted
+
+#### ⚡ Compute Resource Group (`vcarpool-rg`)
+
+**Can Be Deleted for Cost Savings**
+
+- **Function App** (`vcarpool-api-prod`) - Backend API with 30+ endpoints
+- **Static Web App** (`vcarpool-web-prod`) - Frontend application
+- **Storage Account** (`vcarpoolsaprod`) - Function storage and deployment artifacts
+- **Application Insights** - Performance monitoring and diagnostics
+- **Key Vault** - Secrets and configuration management
+- **Cost**: ~$50-100/month (varies by usage)
+- **Purpose**: Application runtime that can be recreated from templates
+
+#### 🗄️ Optional: Dedicated Storage Resource Group (`vcarpool-storage-rg`)
+
+**For Advanced Storage Management**
+
+- **Dedicated Storage Account** - Separated from compute resources
+- **Purpose**: Isolate storage for better management and potential cost optimization
+- **Migration Tools**: Complete migration scripts provided
+
+### Storage Account Flexibility
+
+VCarpool now supports multiple storage deployment architectures:
+
+1. **Default**: Storage in compute resource group (`vcarpool-rg`)
+2. **Consolidated**: Storage in database resource group (`vcarpool-db-rg`)
+3. **Dedicated**: Storage in separate resource group (`vcarpool-storage-rg`)
+
+**Migration Tools Available:**
+
+```bash
+# Plan storage account migration
+./scripts/migrate-storage-account.sh plan --target-name vcarpoolsanew --target-rg vcarpool-storage-rg --target-location eastus2
+
+# Deploy new storage account
+./scripts/deploy-storage.sh deploy --resource-group vcarpool-storage-rg --location eastus2
+
+# Migrate data and update configuration
+./scripts/migrate-storage-account.sh migrate-data --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
+./scripts/migrate-storage-account.sh update-config --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
+```
+
+### 💰 Cost Optimization Strategy
+
+**Active Development**: ~$75-125/month (all resource groups running)
+**Inactive Period**: ~$24/month (70% savings by deleting compute resources)
+
+```bash
+# Analyze current costs
+./scripts/cost-optimize.sh analyze
+
+# Delete compute resources (save ~$50-100/month)
+./scripts/cost-optimize.sh delete
+
+# Restore when needed (5-minute deployment)
+./scripts/cost-optimize.sh restore
 ```
 
 **🔒 Data Safety**: Database resources remain protected during any optimization operations.

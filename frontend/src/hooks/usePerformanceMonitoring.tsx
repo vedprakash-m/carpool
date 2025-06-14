@@ -9,7 +9,7 @@
  * - Network performance tracking
  */
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 
 interface PerformanceMetrics {
   // Core Web Vitals
@@ -332,8 +332,8 @@ export function usePerformanceMonitoring(
       }
 
       // Track with analytics if available
-      if (typeof gtag !== "undefined") {
-        gtag("event", "performance_issue", {
+      if (typeof window !== "undefined" && (window as any).gtag) {
+        (window as any).gtag("event", "performance_issue", {
           event_category: "Performance",
           event_label: type,
           value: Math.round(

@@ -61,12 +61,22 @@ Status: Always running (persistent data)
 Resources: 6
 ├── vcarpool-api-prod (Function App)
 ├── vcarpool-web-prod (Static Web App)
-├── vcarpoolsaprod (Storage Account)
+├── vcarpoolsaprod (Storage Account) - *Can be migrated to dedicated RG*
 ├── vcarpool-api-prod (Application Insights)
 ├── EastUSPlan (App Service Plan)
 └── vcarpool-kv-prod (Key Vault)
 Cost: ~$50-100/month
 Status: Can be deleted for cost savings
+```
+
+### Optional: Dedicated Storage Resource Group (`vcarpool-storage-rg`)
+
+```
+Resources: 1 (when migrated)
+├── vcarpoolsanew (Storage Account) - *Migrated from compute RG*
+Cost: ~$5-15/month
+Status: Isolated storage management
+Tools: Complete migration scripts provided
 ```
 
 ## 💰 Cost Optimization Benefits
@@ -97,6 +107,35 @@ Status: Can be deleted for cost savings
 ```bash
 # Check current resources and estimated costs
 ./scripts/cost-optimize.sh analyze
+```
+
+### Storage Account Migration
+
+```bash
+# Plan migration to dedicated storage resource group
+./scripts/migrate-storage-account.sh plan \
+  --target-name vcarpoolsanew \
+  --target-rg vcarpool-storage-rg \
+  --target-location eastus2
+
+# Deploy new storage account
+./scripts/deploy-storage.sh deploy \
+  --resource-group vcarpool-storage-rg \
+  --location eastus2
+
+# Migrate data and update configuration
+./scripts/migrate-storage-account.sh migrate-data \
+  --target-name vcarpoolsanew \
+  --target-rg vcarpool-storage-rg
+
+./scripts/migrate-storage-account.sh update-config \
+  --target-name vcarpoolsanew \
+  --target-rg vcarpool-storage-rg
+
+# Verify migration success
+./scripts/migrate-storage-account.sh verify \
+  --target-name vcarpoolsanew \
+  --target-rg vcarpool-storage-rg
 ```
 
 ### Delete Compute Resources (Save Costs)

@@ -25,6 +25,15 @@ This directory contains the Azure Bicep templates for VCarpool infrastructure de
 - **Parameters**: `main-compute.parameters.json`
 - **Usage**: `az deployment group create --resource-group vcarpool-rg --template-file main-compute.bicep --parameters @main-compute.parameters.json`
 
+#### `storage.bicep` - Dedicated Storage Account Template
+
+- **Purpose**: Deploy storage account to any resource group/location
+- **Target Resource Group**: Flexible (e.g., `vcarpool-storage-rg`, `vcarpool-db-rg`)
+- **Resources**: Storage account with optimal configuration for Azure Functions
+- **Cost**: ~$5-15/month (depending on usage)
+- **Benefits**: Isolation, cross-region deployment, better resource management
+- **Usage**: `./scripts/deploy-storage.sh deploy --resource-group vcarpool-storage-rg --location eastus2`
+
 ### 🔄 **Legacy Template (Backup/Rollback)**
 
 #### `main.bicep` - Single Resource Group Template
@@ -55,6 +64,30 @@ This directory contains the Azure Bicep templates for VCarpool infrastructure de
 # Or deploy manually
 az deployment group create --resource-group vcarpool-db-rg --template-file infra/database.bicep --parameters appName=vcarpool environmentName=prod
 az deployment group create --resource-group vcarpool-rg --template-file infra/main-compute.bicep --parameters appName=vcarpool environmentName=prod databaseResourceGroup=vcarpool-db-rg
+```
+
+### **Storage Account Deployment Options**
+
+```bash
+# Option 1: Deploy to dedicated storage resource group
+./scripts/deploy-storage.sh deploy --resource-group vcarpool-storage-rg --location eastus2
+
+# Option 2: Deploy to database resource group (consolidate persistent resources)
+./scripts/deploy-storage.sh deploy --resource-group vcarpool-db-rg --location eastus2
+
+# Option 3: Plan deployment first (dry run)
+./scripts/deploy-storage.sh plan --resource-group vcarpool-storage-rg --location eastus2
+```
+
+### **Storage Account Migration**
+
+```bash
+# Complete migration workflow
+./scripts/migrate-storage-account.sh plan --target-name vcarpoolsanew --target-rg vcarpool-storage-rg --target-location eastus2
+./scripts/deploy-storage.sh deploy --resource-group vcarpool-storage-rg --location eastus2
+./scripts/migrate-storage-account.sh migrate-data --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
+./scripts/migrate-storage-account.sh update-config --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
+./scripts/migrate-storage-account.sh verify --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
 ```
 
 ### **Fallback: Single Resource Group Deployment**

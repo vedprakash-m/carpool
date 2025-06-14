@@ -1,242 +1,126 @@
 /**
- * Performance Optimizer for Azure Functions
- * Phase 1: Foundation Strengthening - Performance Optimization
- *
- * Goals:
- * - Reduce cold start times to <1 second
- * - Implement connection pooling and caching
- * - Optimize bundle sizes
- * - Add performance monitoring
+ * Simplified Performance Optimizer
+ * Provides basic performance optimization without complex dependencies
  */
 
-import { Context } from "@azure/functions";
-import * as ApplicationInsights from "applicationinsights";
+import { InvocationContext } from "@azure/functions";
 
 interface PerformanceMetrics {
-  coldStartTime?: number;
   executionTime: number;
   memoryUsage: number;
-  connectionPoolSize: number;
-  cacheHitRate: number;
+  timestamp: string;
 }
 
-interface OptimizationConfig {
-  enableConnectionPooling: boolean;
-  enableCaching: boolean;
-  enableCompression: boolean;
-  enableLazyLoading: boolean;
-  maxConnectionPoolSize: number;
-  cacheTimeoutMs: number;
+interface OptimizationOptions {
+  timeout?: number;
+  retries?: number;
+  cache?: boolean;
 }
 
-class PerformanceOptimizer {
-  private static instance: PerformanceOptimizer;
-  private startTime: number;
-  private isWarm = false;
-  private connectionPool: Map<string, any> = new Map();
-  private cache: Map<string, { data: any; timestamp: number; ttl: number }> =
-    new Map();
-  private config: OptimizationConfig;
+interface CacheOptions {
+  ttl: number;
+  key: string;
+}
 
-  constructor(config: Partial<OptimizationConfig> = {}) {
-    this.startTime = Date.now();
-    this.config = {
-      enableConnectionPooling: true,
-      enableCaching: true,
-      enableCompression: true,
-      enableLazyLoading: true,
-      maxConnectionPoolSize: 10,
-      cacheTimeoutMs: 300000, // 5 minutes
-      ...config,
-    };
+export class PerformanceOptimizer {
+  private cache = new Map<string, { value: any; expires: number }>();
 
-    this.initializePerformanceMonitoring();
-  }
-
-  static getInstance(
-    config?: Partial<OptimizationConfig>
-  ): PerformanceOptimizer {
-    if (!PerformanceOptimizer.instance) {
-      PerformanceOptimizer.instance = new PerformanceOptimizer(config);
-    }
-    return PerformanceOptimizer.instance;
+  constructor() {
+    // Clear expired cache entries every 5 minutes
+    setInterval(() => this.clearExpiredCache(), 5 * 60 * 1000);
   }
 
   /**
-   * Initialize performance monitoring with Application Insights
+   * Memoize a function with caching
    */
-  private initializePerformanceMonitoring(): void {
-    if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
-      ApplicationInsights.setup()
-        .setAutoCollectConsole(true)
-        .setAutoCollectExceptions(true)
-        .setAutoCollectPerformance(true)
-        .setAutoCollectDependencies(true)
-        .start();
+  memoize<T extends (...args: any[]) => Promise<any>>(
+    fn: T,
+    options: CacheOptions
+  ): T {
+    return (async (...args: any[]) => {
+      const cacheKey = `${options.key}_${JSON.stringify(args)}`;
+      const cached = this.cache.get(cacheKey);
 
-      this.trackEvent("PerformanceOptimizer.Initialized", {
-        timestamp: new Date().toISOString(),
-        config: JSON.stringify(this.config),
+      if (cached && cached.expires > Date.now()) {
+        return cached.value;
+      }
+
+      const result = await fn(...args);
+      this.cache.set(cacheKey, {
+        value: result,
+        expires: Date.now() + options.ttl,
       });
-    }
-  }
-
-  /**
-   * Optimize function execution with comprehensive performance enhancements
-   */
-  async optimizeExecution<T>(
-    context: Context,
-    functionName: string,
-    handler: () => Promise<T>
-  ): Promise<T> {
-    const executionStart = Date.now();
-    const coldStart = !this.isWarm;
-
-    if (coldStart) {
-      this.trackColdStart();
-      this.isWarm = true;
-    }
-
-    context.log(
-      `⚡ Optimizing execution for ${functionName} (Cold start: ${coldStart})`
-    );
-
-    try {
-      // Pre-execution optimizations
-      await this.preExecutionOptimizations(context);
-
-      // Execute the function
-      const result = await handler();
-
-      // Post-execution optimizations
-      await this.postExecutionOptimizations(context, executionStart);
 
       return result;
-    } catch (error) {
-      this.trackError(functionName, error);
-      throw error;
-    }
+    }) as T;
   }
 
   /**
-   * Pre-execution optimizations
+   * Optimize a function with timeout and retry logic
    */
-  private async preExecutionOptimizations(context: Context): Promise<void> {
-    // Warm up connections if cold start
-    if (!this.isWarm && this.config.enableConnectionPooling) {
-      await this.warmUpConnections();
-    }
+  optimizeFunction<T extends (...args: any[]) => Promise<any>>(
+    fn: T,
+    options: OptimizationOptions = {}
+  ): T {
+    const { timeout = 30000, retries = 0 } = options;
 
-    // Clear expired cache entries
-    if (this.config.enableCaching) {
-      this.clearExpiredCache();
-    }
+    return (async (...args: any[]) => {
+      let lastError: Error | null = null;
 
-    // Memory optimization
-    if (global.gc) {
-      global.gc();
-    }
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Function timeout")), timeout)
+          );
+
+          return await Promise.race([fn(...args), timeoutPromise]);
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          if (attempt === retries) {
+            throw lastError;
+          }
+          // Wait before retry
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * (attempt + 1))
+          );
+        }
+      }
+
+      throw lastError;
+    }) as T;
   }
 
   /**
-   * Post-execution optimizations
+   * Measure function performance
    */
-  private async postExecutionOptimizations(
-    context: Context,
-    executionStart: number
-  ): Promise<void> {
-    const executionTime = Date.now() - executionStart;
-    const memoryUsage = process.memoryUsage();
-
-    // Track performance metrics
-    this.trackPerformanceMetrics({
-      executionTime,
-      memoryUsage: memoryUsage.heapUsed,
-      connectionPoolSize: this.connectionPool.size,
-      cacheHitRate: this.calculateCacheHitRate(),
-    });
-
-    // Log performance data
-    context.log(
-      `📊 Execution time: ${executionTime}ms, Memory: ${Math.round(
-        memoryUsage.heapUsed / 1024 / 1024
-      )}MB`
-    );
-  }
-
-  /**
-   * Warm up database connections to reduce latency
-   */
-  private async warmUpConnections(): Promise<void> {
-    if (!this.config.enableConnectionPooling) return;
+  async measurePerformance<T>(
+    fn: () => Promise<T>,
+    context?: InvocationContext
+  ): Promise<{ result: T; metrics: PerformanceMetrics }> {
+    const startTime = Date.now();
+    const startMemory = process.memoryUsage().heapUsed;
 
     try {
-      // Cosmos DB connection warmup
-      if (
-        process.env.COSMOS_DB_CONNECTION_STRING &&
-        !this.connectionPool.has("cosmosdb")
-      ) {
-        const { CosmosClient } = await import("@azure/cosmos");
-        const client = new CosmosClient(
-          process.env.COSMOS_DB_CONNECTION_STRING
-        );
-        this.connectionPool.set("cosmosdb", client);
-      }
+      const result = await fn();
+      const endTime = Date.now();
+      const endMemory = process.memoryUsage().heapUsed;
 
-      // Redis connection warmup (if used)
-      if (
-        process.env.REDIS_CONNECTION_STRING &&
-        !this.connectionPool.has("redis")
-      ) {
-        const Redis = (await import("ioredis")).default;
-        const redis = new Redis(process.env.REDIS_CONNECTION_STRING);
-        this.connectionPool.set("redis", redis);
-      }
+      const metrics: PerformanceMetrics = {
+        executionTime: endTime - startTime,
+        memoryUsage: endMemory - startMemory,
+        timestamp: new Date().toISOString(),
+      };
+
+      return { result, metrics };
     } catch (error) {
-      console.warn("Connection warmup failed:", error);
+      const endTime = Date.now();
+      const metrics: PerformanceMetrics = {
+        executionTime: endTime - startTime,
+        memoryUsage: 0,
+        timestamp: new Date().toISOString(),
+      };
+      throw error;
     }
-  }
-
-  /**
-   * Get cached data or execute function with caching
-   */
-  async withCache<T>(
-    key: string,
-    handler: () => Promise<T>,
-    ttlMs: number = this.config.cacheTimeoutMs
-  ): Promise<T> {
-    if (!this.config.enableCaching) {
-      return handler();
-    }
-
-    // Check cache first
-    const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < cached.ttl) {
-      this.trackEvent("Cache.Hit", { key });
-      return cached.data;
-    }
-
-    // Execute and cache result
-    const result = await handler();
-    this.cache.set(key, {
-      data: result,
-      timestamp: Date.now(),
-      ttl: ttlMs,
-    });
-
-    this.trackEvent("Cache.Set", { key, ttl: ttlMs });
-    return result;
-  }
-
-  /**
-   * Get optimized database connection
-   */
-  getConnection(type: "cosmosdb" | "redis"): any {
-    if (!this.config.enableConnectionPooling) {
-      throw new Error("Connection pooling is disabled");
-    }
-
-    return this.connectionPool.get(type);
   }
 
   /**
@@ -244,182 +128,55 @@ class PerformanceOptimizer {
    */
   private clearExpiredCache(): void {
     const now = Date.now();
-    let clearedCount = 0;
-
-    for (const [key, value] of this.cache.entries()) {
-      if (now - value.timestamp >= value.ttl) {
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.expires <= now) {
         this.cache.delete(key);
-        clearedCount++;
       }
     }
-
-    if (clearedCount > 0) {
-      this.trackEvent("Cache.Cleanup", { clearedCount });
-    }
   }
 
   /**
-   * Calculate cache hit rate
+   * Clear all cache entries
    */
-  private calculateCacheHitRate(): number {
-    // Simplified calculation - would need more sophisticated tracking in production
-    return this.cache.size > 0 ? 0.75 : 0; // Placeholder
+  clearCache(): void {
+    this.cache.clear();
   }
 
   /**
-   * Track cold start event
+   * Get cache statistics
    */
-  private trackColdStart(): void {
-    const coldStartTime = Date.now() - this.startTime;
-    this.trackEvent("Function.ColdStart", {
-      coldStartTime,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  /**
-   * Track performance metrics
-   */
-  private trackPerformanceMetrics(metrics: PerformanceMetrics): void {
-    this.trackEvent("Performance.Metrics", {
-      ...metrics,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Alert if performance thresholds are exceeded
-    if (metrics.executionTime > 5000) {
-      // 5 seconds
-      this.trackEvent("Performance.SlowExecution", {
-        executionTime: metrics.executionTime,
-        threshold: 5000,
-      });
-    }
-
-    if (metrics.memoryUsage > 512 * 1024 * 1024) {
-      // 512 MB
-      this.trackEvent("Performance.HighMemoryUsage", {
-        memoryUsage: metrics.memoryUsage,
-        threshold: 512 * 1024 * 1024,
-      });
-    }
-  }
-
-  /**
-   * Track error events
-   */
-  private trackError(functionName: string, error: any): void {
-    this.trackEvent("Function.Error", {
-      functionName,
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  /**
-   * Track custom events
-   */
-  private trackEvent(eventName: string, properties: Record<string, any>): void {
-    if (ApplicationInsights.defaultClient) {
-      ApplicationInsights.defaultClient.trackEvent({
-        name: eventName,
-        properties,
-      });
-    }
-  }
-
-  /**
-   * Create optimized HTTP response
-   */
-  createOptimizedResponse(data: any, statusCode = 200): any {
-    const response = {
-      status: statusCode,
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=300", // 5 minutes cache
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY",
-        "X-XSS-Protection": "1; mode=block",
-      },
-      body: JSON.stringify({
-        success: statusCode < 400,
-        data: statusCode < 400 ? data : undefined,
-        error: statusCode >= 400 ? data : undefined,
-        timestamp: new Date().toISOString(),
-        version: process.env.APP_VERSION || "1.0.0",
-      }),
+  getCacheStats(): { size: number; keys: string[] } {
+    return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys()),
     };
-
-    // Add compression hint if enabled
-    if (this.config.enableCompression) {
-      response.headers["Content-Encoding"] = "gzip";
-    }
-
-    return response;
   }
 
   /**
-   * Middleware for automatic optimization
+   * Performance monitoring decorator
    */
-  static middleware() {
-    return (
+  static monitor(options: { name?: string } = {}) {
+    return function (
       target: any,
       propertyName: string,
       descriptor: PropertyDescriptor
-    ) => {
+    ) {
       const method = descriptor.value;
+      const optimizer = new PerformanceOptimizer();
 
-      descriptor.value = async function (context: Context, ...args: any[]) {
-        const optimizer = PerformanceOptimizer.getInstance();
-
-        return optimizer.optimizeExecution(
-          context,
-          `${target.constructor.name}.${propertyName}`,
-          () => method.apply(this, [context, ...args])
+      descriptor.value = async function (...args: any[]) {
+        const { result, metrics } = await optimizer.measurePerformance(() =>
+          method.apply(this, args)
         );
+
+        console.log(
+          `Performance metrics for ${options.name || propertyName}:`,
+          metrics
+        );
+        return result;
       };
 
       return descriptor;
     };
   }
-
-  /**
-   * Cleanup resources
-   */
-  async cleanup(): Promise<void> {
-    // Close all connections
-    for (const [type, connection] of this.connectionPool.entries()) {
-      try {
-        if (connection && typeof connection.close === "function") {
-          await connection.close();
-        }
-      } catch (error) {
-        console.warn(`Failed to close ${type} connection:`, error);
-      }
-    }
-
-    // Clear cache
-    this.cache.clear();
-
-    // Flush telemetry
-    if (ApplicationInsights.defaultClient) {
-      ApplicationInsights.defaultClient.flush();
-    }
-  }
-
-  /**
-   * Get current performance statistics
-   */
-  getPerformanceStats(): any {
-    return {
-      isWarm: this.isWarm,
-      cacheSize: this.cache.size,
-      connectionPoolSize: this.connectionPool.size,
-      uptime: Date.now() - this.startTime,
-      memoryUsage: process.memoryUsage(),
-      config: this.config,
-    };
-  }
 }
-
-export { PerformanceOptimizer, PerformanceMetrics, OptimizationConfig };
