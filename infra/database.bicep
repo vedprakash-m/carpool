@@ -33,7 +33,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
     databaseAccountOfferType: 'Standard'
     locations: [
       {
-        locationName: location
+        locationName: 'East US 2'  // Cosmos DB region (different from resource location)
         failoverPriority: 0
         isZoneRedundant: false
       }
@@ -41,7 +41,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
     }
-    enableFreeTier: environmentName != 'prod'
+    enableFreeTier: true  // Keep free tier enabled as existing setup
   }
 }
 
@@ -147,6 +147,5 @@ resource notificationsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDataba
 // Outputs for cross-resource group references
 output cosmosAccountName string = cosmosAccount.name
 output cosmosDatabaseName string = cosmosDatabase.name
-output cosmosConnectionString string = cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
 output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
 output cosmosResourceGroup string = resourceGroup().name
