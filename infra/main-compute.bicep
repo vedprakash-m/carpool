@@ -21,18 +21,18 @@ param staticWebAppName string = '${appName}-web-${environmentName}'
 @description('Azure Application Insights name')
 param appInsightsName string = '${appName}-insights-${environmentName}'
 
-@description('Azure Storage Account name')
-param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
-
 @description('Azure Key Vault name')
 param keyVaultName string = '${appName}-kv-${environmentName}'
 
-// Database resource group and Cosmos DB details (from database deployment)
+// Database resource group and resource details (from database deployment)
 @description('Database resource group name')
 param databaseResourceGroup string = '${appName}-db-rg'
 
 @description('Cosmos DB account name from database resource group')
 param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
+
+@description('Storage Account name from database resource group')
+param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
 
 // Tags for all resources
 var tags = {
@@ -42,20 +42,10 @@ var tags = {
   resourceType: 'compute'
 }
 
-// Storage Account for Azure Functions
-resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
+// Reference to existing storage account in database resource group
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
   name: storageAccountName
-  location: location
-  tags: tags
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  properties: {
-    supportsHttpsTrafficOnly: true
-    accessTier: 'Hot'
-    minimumTlsVersion: 'TLS1_2'
-  }
+  scope: resourceGroup(databaseResourceGroup)
 }
 
 // Application Service Plan

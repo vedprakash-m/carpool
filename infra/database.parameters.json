@@ -13,6 +13,9 @@
     },
     "cosmosDbAccountName": {
       "value": "vcarpool-cosmos-prod"
+    },
+    "storageAccountName": {
+      "value": "vcarpoolsaprod"
     }
   }
 }

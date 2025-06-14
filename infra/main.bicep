@@ -27,6 +27,9 @@ param appInsightsName string = '${appName}-insights-${environmentName}'
 @description('Azure Storage Account name')
 param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
 
+@description('Database resource group name (for cross-RG references)')
+param databaseResourceGroup string = '${appName}-db-rg'
+
 // Tags for all resources
 var tags = {
   application: appName
@@ -34,20 +37,11 @@ var tags = {
   createdBy: 'Bicep'
 }
 
-// Storage Account for Azure Functions
-resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
+// Reference to existing storage account in database resource group
+// Note: This template now supports both single-RG and multi-RG deployments
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
   name: storageAccountName
-  location: location
-  tags: tags
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  properties: {
-    supportsHttpsTrafficOnly: true
-    accessTier: 'Hot'
-    minimumTlsVersion: 'TLS1_2'
-  }
+  scope: resourceGroup(databaseResourceGroup)
 }
 
 // Application Insights for monitoring
@@ -171,26 +165,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   }
 }
 
-// Azure Cosmos DB Account
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
+// Reference to existing Cosmos DB in the database resource group
+// Note: This template now supports both single-RG and multi-RG deployments
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existing = {
   name: cosmosDbAccountName
-  location: location
-  tags: tags
-  kind: 'GlobalDocumentDB'
-  properties: {
-    databaseAccountOfferType: 'Standard'
-    locations: [
-      {
-        locationName: location
-        failoverPriority: 0
-        isZoneRedundant: false
-      }
-    ]
-    consistencyPolicy: {
-      defaultConsistencyLevel: 'Session'
-    }
-    enableFreeTier: environmentName != 'prod'
-  }
+  scope: resourceGroup(databaseResourceGroup)
 }
 
 // Cosmos DB Database

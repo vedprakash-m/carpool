@@ -15,12 +15,31 @@ param environmentName string = 'dev'
 @description('Azure Cosmos DB account name')
 param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
 
+@description('Azure Storage Account name')
+param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
+
 // Tags for all resources
 var tags = {
   application: appName
   environment: environmentName
   createdBy: 'Bicep'
   resourceType: 'database'
+}
+
+// Storage Account for persistent data and Azure Functions
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
+  name: storageAccountName
+  location: location
+  tags: tags
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    supportsHttpsTrafficOnly: true
+    accessTier: 'Hot'
+    minimumTlsVersion: 'TLS1_2'
+  }
 }
 
 // Azure Cosmos DB Account
@@ -250,3 +269,5 @@ output cosmosAccountName string = cosmosAccount.name
 output cosmosDatabaseName string = cosmosDatabase.name
 output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
 output cosmosResourceGroup string = resourceGroup().name
+output storageAccountName string = storageAccount.name
+output storageAccountResourceGroup string = resourceGroup().name
