@@ -66,11 +66,14 @@ export default function AddressValidation({
     setLoading(true);
     try {
       const token = localStorage.getItem("vcarpool_token");
-      const response = await fetch("/api/address-validation?action=status", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "/api/address-validation-secure?action=status",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -104,14 +107,17 @@ export default function AddressValidation({
 
     try {
       const token = localStorage.getItem("vcarpool_token");
-      const response = await fetch("/api/address-validation?action=validate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ address }),
-      });
+      const response = await fetch(
+        "/api/address-validation-secure?action=validate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ address }),
+        }
+      );
 
       const data = await response.json();
 

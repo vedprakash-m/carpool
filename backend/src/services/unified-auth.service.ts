@@ -92,7 +92,7 @@ export class UnifiedAuthService {
       lastName: "Mishra",
       role: "admin" as UserRole,
       passwordHash:
-        "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy", // Any password works
+        "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy", // "test-admin-password"
       preferences: {
         pickupLocation: "",
         dropoffLocation: "",
@@ -147,17 +147,14 @@ export class UnifiedAuthService {
     const user = this.mockUsers.find((u) => u.email === email);
     if (!user) return null;
 
-    // For specific admin accounts, allow any password
-    if (user.email === "mi.vedprakash@gmail.com" && password) {
-      return user;
-    }
-
-    // Standard bcrypt validation
+    // Require proper password validation for ALL accounts
+    // No special bypass logic - all users must have valid passwords
     if (user.passwordHash) {
       const isValid = await bcrypt.compare(password, user.passwordHash);
       return isValid ? user : null;
     }
 
+    // If no password hash is set, the account is invalid
     return null;
   }
 

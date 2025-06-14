@@ -59,26 +59,14 @@ module.exports = async function (context, req) {
       return;
     }
 
-    // Fallback to unified mock authentication system
-    context.log("Database auth failed, falling back to unified mock auth");
-    const mockAuthResult = await UnifiedAuthService.authenticate(
-      email,
-      password
+    // If database auth fails, reject the login
+    // Do not fallback to mock authentication in production
+    context.log("Database authentication failed for email:", email);
+    context.res = UnifiedResponseHandler.error(
+      "AUTHENTICATION_FAILED",
+      "Invalid email or password",
+      401
     );
-
-    if (mockAuthResult.success) {
-      context.res = UnifiedResponseHandler.success({
-        user: mockAuthResult.user,
-        token: mockAuthResult.accessToken,
-        refreshToken: mockAuthResult.refreshToken,
-      });
-    } else {
-      context.res = UnifiedResponseHandler.error(
-        mockAuthResult.error?.code || "AUTHENTICATION_FAILED",
-        mockAuthResult.error?.message || "Invalid credentials",
-        mockAuthResult.error?.statusCode || 401
-      );
-    }
   } catch (error) {
     context.log("Database login error:", error);
     context.res = UnifiedResponseHandler.handleException(error);

@@ -26,7 +26,7 @@
     "deploy:azure": "func azure functionapp publish vcarpool-api-manual --typescript"
   },
   "dependencies": {
-    "@azure/cosmos": "^4.0.0",
+    "@azure/cosmos": "^4.4.1",
     "@azure/functions": "^4.5.0",
     "@types/lru-cache": "^7.10.9",
     "@vcarpool/shared": "file:../shared",
@@ -40,6 +40,7 @@
     "isomorphic-dompurify": "^2.25.0",
     "jsonwebtoken": "^9.0.2",
     "lru-cache": "^11.1.0",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.8",
     "rate-limiter-flexible": "^5.0.3",
     "reflect-metadata": "^0.2.2",
@@ -48,6 +49,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/dompurify": "^3.0.5",

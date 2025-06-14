@@ -237,7 +237,7 @@ describe("Family-Oriented VCarpool Service Validation", () => {
     it("should validate family registration requirements", () => {
       const familyRegistrationData = {
         email: "newfamily@vcarpool.com",
-        password: "test-secure-password",
+        password: "TestSecure123!",
         firstName: "Jennifer",
         lastName: "Davis",
         role: "parent",

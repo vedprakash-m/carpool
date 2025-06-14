@@ -1,6 +1,65 @@
 # VCarpool Project Metadata
 
-_Last Updated: June 12, 2025_
+_Last Updated: June 13, 2025_
+
+## 🛡️ Recent Security & Functionality Fixes (June 13, 2025)
+
+### Critical Issues Resolved
+
+#### 1. Authentication Security Vulnerabilities Fixed
+
+- **Issue**: Login authentication was allowing any email without proper registration/authentication validation
+- **Root Cause**: Multiple authentication implementations had bypass logic allowing any password for specific admin accounts
+- **Solution Implemented**:
+  - Removed all authentication bypass logic from `UnifiedAuthService.authenticate()`
+  - Fixed `unified-auth.service.ts` to require proper password validation for ALL accounts
+  - Updated `auth-login-db/index.js` to reject logins instead of falling back to mock authentication
+  - Created secure versions of login endpoints (`auth-login-simple-secure`, `auth-login-legacy-secure`)
+  - Implemented proper user registration system with password hashing and duplicate email prevention
+
+#### 2. Address Validation System Enhanced
+
+- **Issue**: Address validation was throwing "Error validating address" and using limited mock data instead of real geocoding services
+- **Root Cause**: System relied on small mock address database instead of real address validation APIs
+- **Solution Implemented**:
+  - Created secure address validation endpoint (`address-validation-secure`)
+  - Implemented support for Google Maps Geocoding API and Azure Maps API
+  - Enhanced mock geocoding system with comprehensive address database for development
+  - Added proper error handling and suggestion system for invalid addresses
+  - Updated frontend component to use secure endpoint
+  - Implemented distance calculation and service area validation
+
+### Technical Implementation Details
+
+#### Authentication Security Changes
+
+```typescript
+// OLD (INSECURE) - allowed any password for admin accounts
+if (user.email === "mi.vedprakash@gmail.com" && password) {
+  return user; // SECURITY VULNERABILITY
+}
+
+// NEW (SECURE) - requires proper password validation for ALL accounts
+if (user.passwordHash) {
+  const isValid = await bcrypt.compare(password, user.passwordHash);
+  return isValid ? user : null;
+}
+```
+
+#### Address Validation Improvements
+
+- **Real Geocoding Support**: Google Maps API and Azure Maps API integration
+- **Enhanced Mock System**: 8+ real addresses in Seattle area for comprehensive development testing
+- **Smart Address Matching**: Fuzzy matching algorithm for address suggestions
+- **Service Area Enforcement**: Precise 25-mile radius validation from Tesla STEM High School
+
+### Files Modified/Created
+
+- `backend/src/services/unified-auth.service.ts` - Fixed authentication bypass vulnerability
+- `backend/auth-login-db/index.js` - Removed fallback authentication
+- `backend/address-validation-secure/index.js` - New secure address validation with real geocoding
+- `backend/auth-register-secure/index.js` - Proper user registration with password hashing
+- `frontend/src/components/AddressValidation.tsx` - Updated to use secure endpoints
 
 ## 🎯 Project Overview
 
