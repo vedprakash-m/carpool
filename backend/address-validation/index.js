@@ -1,9 +1,9 @@
 const { v4: uuidv4 } = require("uuid");
 const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
-// Tesla Stem High School location (Redmond, WA)
+// Tesla STEM High School location (Redmond, WA)
 const TESLA_STEM_HIGH_SCHOOL = {
-  name: "Tesla Stem High School",
+  name: "Tesla STEM High School",
   address: "2301 West Lake Sammamish Pkwy NE, Redmond, WA 98052",
   coordinates: { latitude: 47.674, longitude: -122.1215 },
 };
@@ -134,7 +134,7 @@ async function validateAddress(userId, requestData, context) {
       );
     }
 
-    // Check if address is within service area (25 miles of Tesla Stem High School)
+    // Check if address is within service area (25 miles of Tesla STEM High School)
     const distanceToSchool = calculateDistance(
       geocodingResult.coordinates.latitude,
       geocodingResult.coordinates.longitude,
@@ -147,7 +147,7 @@ async function validateAddress(userId, requestData, context) {
         context,
         `This address is ${distanceToSchool.toFixed(
           1
-        )} miles from Tesla Stem High School. Our current service area is within ${SERVICE_AREA_RADIUS_MILES} miles.`,
+        )} miles from Tesla STEM High School. Our current service area is within ${SERVICE_AREA_RADIUS_MILES} miles.`,
         {
           distanceToSchool: distanceToSchool,
           maxDistance: SERVICE_AREA_RADIUS_MILES,

@@ -6,7 +6,7 @@ const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 let mockSchools = [
   {
     id: "tesla-stem-redmond",
-    name: "Tesla Stem High School",
+    name: "Tesla STEM High School",
     address: "18700 NE 68th St, Redmond, WA 98052",
     location: { latitude: 47.674, longitude: -122.1215 },
     district: "Lake Washington School District",
@@ -33,9 +33,9 @@ let mockSchools = [
 let mockCarpoolGroups = [
   {
     id: "group-tesla-1",
-    name: "Tesla Stem Morning Commute",
+    name: "Tesla STEM Morning Commute",
     description:
-      "Reliable morning carpool for Tesla Stem High School families in Redmond area",
+      "Reliable morning carpool for Tesla STEM High School families in Redmond area",
     tripAdminId: "trip-admin-tesla-1",
     tripAdmin: {
       id: "trip-admin-tesla-1",
@@ -46,14 +46,14 @@ let mockCarpoolGroups = [
     targetSchoolId: "tesla-stem-redmond",
     targetSchool: {
       id: "tesla-stem-redmond",
-      name: "Tesla Stem High School",
+      name: "Tesla STEM High School",
       location: { latitude: 47.674, longitude: -122.1215 },
     },
     serviceArea: {
       centerLocation: {
         latitude: 47.674,
         longitude: -122.1215,
-        address: "Tesla Stem High School, Redmond, WA",
+        address: "Tesla STEM High School, Redmond, WA",
       },
       radiusMiles: 25.0, // 25-mile radius as specified
     },
@@ -469,7 +469,7 @@ module.exports = async function (context, req) {
         userLat && userLng
           ? { latitude: parseFloat(userLat), longitude: parseFloat(userLng) }
           : user.homeAddressVerified
-          ? { latitude: 47.674, longitude: -122.1215 } // Tesla Stem High School area for demo
+          ? { latitude: 47.674, longitude: -122.1215 } // Tesla STEM High School area for demo
           : null;
 
       // Filter and score groups

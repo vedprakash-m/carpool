@@ -31,11 +31,12 @@ module.exports = async function (context, req) {
       password ? password.length : "undefined"
     );
 
-    // Check for test admin accounts
+    // Check for specific admin accounts with proper password validation
     if (
       (email === "admin@vcarpool.com" &&
-        password === (process.env.ADMIN_PASSWORD || "test-admin-password")) ||
-      (email === "mi.vedprakash@gmail.com" && password)
+        password === process.env.ADMIN_PASSWORD) ||
+      (email === "mi.vedprakash@gmail.com" &&
+        password === process.env.ADMIN_PASSWORD)
     ) {
       context.log("Admin login successful for email:", email);
 
@@ -85,74 +86,8 @@ module.exports = async function (context, req) {
         },
       };
     }
-    // Handle new parent registrations - default role should be "parent"
-    else if (email && password && email.length > 0) {
-      context.log("New parent login for email:", email);
-
-      // Generate a new parent user
-      const parentId = `parent-${Date.now()}`;
-      const parentToken = Buffer.from(
-        JSON.stringify({
-          userId: parentId,
-          email: email,
-          role: "parent",
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
-        })
-      ).toString("base64");
-
-      context.res = {
-        status: 200,
-        headers: corsHeaders,
-        body: {
-          success: true,
-          data: {
-            user: {
-              id: parentId,
-              email: email,
-              firstName: "New",
-              lastName: "Parent",
-              role: "parent",
-              profilePicture: null,
-              phoneNumber: null,
-              organizationId: null,
-              familyId: `family-${Date.now()}`,
-              onboardingCompleted: false,
-              preferences: {
-                notifications: {
-                  email: true,
-                  push: true,
-                  sms: false,
-                  tripReminders: true,
-                  swapRequests: true,
-                  scheduleChanges: true,
-                },
-                privacy: {
-                  showPhoneNumber: true,
-                  showEmail: false,
-                },
-                pickupLocation: "Home",
-                dropoffLocation: "School",
-                preferredTime: "08:00",
-                isDriver: false,
-                smokingAllowed: false,
-              },
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${parentToken}.parent-signature`,
-            refreshToken: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${Buffer.from(
-              JSON.stringify({
-                userId: parentId,
-                type: "refresh",
-                iat: Math.floor(Date.now() / 1000),
-                exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
-              })
-            ).toString("base64")}.parent-refresh-signature`,
-          },
-        },
-      };
-    } else {
+    // Reject all other login attempts - no automatic parent creation
+    else {
       context.log("Login failed for email:", email);
       context.res = {
         status: 401,

@@ -48,10 +48,10 @@ async function simpleLoginHandler(request, context) {
         },
       };
     }
-    // For now, let's just test with our known admin user
+    // Only allow specific admin user with proper password validation
     if (
       email === "admin@vcarpool.com" &&
-      password === (process.env.ADMIN_PASSWORD || "test-admin-password")
+      password === process.env.ADMIN_PASSWORD
     ) {
       console.log("Returning success for admin user");
       return {
@@ -73,7 +73,8 @@ async function simpleLoginHandler(request, context) {
         },
       };
     }
-    console.log("Invalid credentials");
+    // Reject all other login attempts
+    console.log("Invalid credentials for email:", email);
     return {
       status: 401,
       headers,

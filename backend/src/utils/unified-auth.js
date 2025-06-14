@@ -128,15 +128,8 @@ async function authenticateUser(email, password, context) {
       };
     }
 
-    // For development, check against known passwords or allow test passwords
-    const validPasswords = [
-      "test-admin-password",
-      "test-parent-password",
-      "test-student-password",
-      "test-password",
-      process.env.ADMIN_PASSWORD,
-      process.env.TEST_PASSWORD,
-    ].filter(Boolean);
+    // Only allow specific admin passwords - no development bypasses
+    const validPasswords = [process.env.ADMIN_PASSWORD].filter(Boolean);
 
     const isValidPassword = validPasswords.includes(password);
 
