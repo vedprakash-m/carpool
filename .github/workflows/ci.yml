@@ -30,7 +30,7 @@ jobs:
         run: npm run type-check --workspaces --if-present || true
 
       - name: Unit tests (backend)
-        run: npm run test:backend --workspace=backend -- --coverage
+        run: npm --workspace backend run test -- --coverage
 
       - name: Enforce 60% coverage
         run: |
