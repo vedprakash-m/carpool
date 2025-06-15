@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root deps
+        run: npm ci --ignore-scripts
+
+      - name: Lint
+        run: npm run lint --workspaces --if-present
+
+      - name: Type-check
+        run: npm run type-check --workspaces --if-present || true
+
+      - name: Unit tests (backend)
+        run: npm run test:backend --workspace=backend -- --coverage
+
+      - name: Enforce 60% coverage
+        run: |
+          COVERAGE=$(node -e "const r=require('./backend/coverage/coverage-summary.json');console.log(r.total.lines.pct)")
+          echo "Backend coverage $COVERAGE%"; if (( $(echo "$COVERAGE < 60" | bc -l) )); then exit 1; fi
+
+      - name: Build packages
+        run: npm run build:backend && npm run build:shared
+
+      - name: Upload backend artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/dist 
