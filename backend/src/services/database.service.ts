@@ -307,6 +307,11 @@ class DatabaseService {
       };
     }
   }
+
+  // ADD BELOW: public accessor for the default Cosmos container so repositories can resolve it safely
+  public getDefaultContainer(): Container | undefined {
+    return this.container;
+  }
 }
 
 export const databaseService = DatabaseService.getInstance();

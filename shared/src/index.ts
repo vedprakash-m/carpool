@@ -19,6 +19,9 @@ export {
 // Export all utilities
 export * from "./utils";
 
+// New Notification contract
+export * from "./contracts/notification";
+
 // Constants
 export const APP_CONFIG = {
   MAX_PASSENGERS_PER_TRIP: 8,

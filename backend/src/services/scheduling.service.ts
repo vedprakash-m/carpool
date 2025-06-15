@@ -36,10 +36,11 @@ export class SchedulingService {
       currentDate.setDate(currentDate.getDate() + day);
 
       const familiesNeedingRide = families.filter((f: Family) => {
+        const dayIso = currentDate.toISOString().split('T')[0];
         const pref = preferences.find(
-          (p: Preference) =>
-            p.familyId === f.id &&
-            new Date(p.date).getTime() === currentDate.getTime()
+          (p: any) =>
+            p.parentId === f.id && // mapping parentId
+            p.date === dayIso
         );
         return !pref || pref.canDrive === false;
       });

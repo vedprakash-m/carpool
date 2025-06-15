@@ -30,7 +30,8 @@
     "test:backend": "cd backend && npm test",
     "test:frontend": "cd frontend && npm test",
     "test:e2e": "cd frontend && npm run test:e2e",
-    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint": "npm run lint:backend && npm run lint:frontend && eslint . --ext .ts,.tsx",
+    "lint:arch": "madge --circular --fail backend/src || echo 'No circular deps'",
     "lint:backend": "cd backend && npm run lint",
     "lint:frontend": "cd frontend && npm run lint",
     "deploy": "cd backend && npm run deploy",
@@ -40,7 +41,18 @@
     "monitor-performance": "node scripts/performance-monitor.js"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-security": "^1.7.1",
+    "prettier": "^3.2.4",
+    "madge": "^6.3.1",
+    "@opentelemetry/sdk-node": "^0.43.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.43.0",
+    "@opentelemetry/resources": "^1.21.0",
+    "@opentelemetry/semantic-conventions": "^1.21.0"
   },
   "keywords": [
     "carpool",

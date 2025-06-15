@@ -1,4 +1,5 @@
-const { UnifiedAuthService } = require("../src/services/unified-auth.service");
+const { container } = require("../src/container");
+const PreferenceService = container.preferenceService;
 const UnifiedResponseHandler = require("../src/utils/unified-response.service");
 
 module.exports = async function (context, req) {
@@ -53,25 +54,12 @@ async function getWeeklyPreferences(parentId, req, context) {
     return;
   }
 
-  // Mock data for now - replace with actual Cosmos DB query
-  const preferences = [
-    {
-      id: "pref-1",
-      driverParentId: parentId,
-      weekStartDate,
-      templateSlotId: "slot-monday-morning",
-      preferenceLevel: "preferable",
-      submissionTimestamp: new Date(),
-    },
-    {
-      id: "pref-2",
-      driverParentId: parentId,
-      weekStartDate,
-      templateSlotId: "slot-monday-afternoon",
-      preferenceLevel: "less_preferable",
-      submissionTimestamp: new Date(),
-    },
-  ];
+  const groupId = req.query.groupId || "group-1"; // TODO: derive from membership
+
+  const preferences = await PreferenceService.getPreferencesForWeek(
+    groupId,
+    weekStartDate
+  );
 
   context.res = UnifiedResponseHandler.success({
     weekStartDate,
@@ -100,26 +88,20 @@ async function submitWeeklyPreferences(parentId, req, context) {
     return;
   }
 
-  // Create preference records
-  const preferences = submitRequest.preferences.map((pref, index) => ({
-    id: `pref-${parentId}-${submitRequest.weekStartDate}-${index}`,
-    driverParentId: parentId,
-    weekStartDate: submitRequest.weekStartDate,
-    templateSlotId: pref.templateSlotId,
-    preferenceLevel: pref.preferenceLevel,
-    submissionTimestamp: new Date(),
-  }));
+  const groupId = submitRequest.groupId || "group-1"; // derive later
 
-  // TODO: Save to Cosmos DB
-  context.log(
-    `Mock saving ${preferences.length} preferences for parent ${parentId}, week ${submitRequest.weekStartDate}`
+  await PreferenceService.submitWeeklyPreferences(
+    parentId,
+    groupId,
+    submitRequest.weekStartDate,
+    submitRequest.preferences
   );
 
   context.res = UnifiedResponseHandler.success({
     weekStartDate: submitRequest.weekStartDate,
-    preferencesSubmitted: preferences.length,
+    preferencesSubmitted: submitRequest.preferences.length,
     submissionTimestamp: new Date(),
-    message: "Weekly preferences submitted successfully (mock)",
+    message: "Weekly preferences submitted successfully",
   });
 }
 

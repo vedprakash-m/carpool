@@ -14,6 +14,7 @@ import {
   XCircleIcon,
   PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
+import { AccessibleModal } from "@/components/ui/AccessibleComponents";
 
 interface School {
   id: string;
@@ -105,6 +106,11 @@ export default function GroupDiscoveryPage() {
       (!user || (user.role !== "parent" && user.role !== "group_admin"))
     ) {
       router.push("/dashboard");
+    }
+
+    // Pre-registration guard: ensure user has completed registration before accessing group discovery
+    if (!isLoading && user && !user.registrationCompleted) {
+      router.push("/register/complete");
     }
   }, [user, isLoading, router]);
 
@@ -790,111 +796,104 @@ export default function GroupDiscoveryPage() {
 
         {/* Join Request Modal */}
         {selectedGroup && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Request to Join: {selectedGroup.group.name}
-                </h3>
-
-                <div className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="message"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Message to Group Admin (Optional)
-                    </label>
-                    <div className="mt-1">
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={4}
-                        className="input"
-                        placeholder="Tell the Group Admin about yourself and why you'd like to join..."
-                        value={joinRequestData.message}
-                        onChange={(e) =>
-                          setJoinRequestData((prev) => ({
-                            ...prev,
-                            message: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Children Information
-                      </label>
-                      <button
-                        onClick={addChild}
-                        className="text-blue-600 text-sm hover:text-blue-800"
-                      >
-                        + Add Child
-                      </button>
-                    </div>
-
-                    {joinRequestData.childrenInfo.map((child, index) => (
-                      <div key={index} className="flex gap-2 mb-2">
-                        <input
-                          type="text"
-                          value={child.name}
-                          onChange={(e) =>
-                            updateChild(index, "name", e.target.value)
-                          }
-                          placeholder="Child's name"
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <input
-                          type="text"
-                          value={child.grade}
-                          onChange={(e) =>
-                            updateChild(index, "grade", e.target.value)
-                          }
-                          placeholder="Grade"
-                          className="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <button
-                          onClick={() => removeChild(index)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-3 mt-6">
-                  <button
-                    onClick={() => setSelectedGroup(null)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={submitJoinRequest}
-                    disabled={isSubmittingRequest}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                  >
-                    {isSubmittingRequest ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <PaperAirplaneIcon className="h-4 w-4 mr-2" />
-                        Submit Request
-                      </>
-                    )}
-                  </button>
+          <AccessibleModal
+            isOpen={!!selectedGroup}
+            onClose={() => setSelectedGroup(null)}
+            title={`Request to Join: ${selectedGroup.group.name}`}
+          >
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Message to Group Admin (Optional)
+                </label>
+                <div className="mt-1">
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={4}
+                    className="input"
+                    placeholder="Tell the Group Admin about yourself and why you'd like to join..."
+                    value={joinRequestData.message}
+                    onChange={(e) =>
+                      setJoinRequestData((prev) => ({
+                        ...prev,
+                        message: e.target.value,
+                      }))
+                    }
+                  />
                 </div>
               </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Children Information
+                  </label>
+                  <button
+                    onClick={addChild}
+                    className="text-blue-700 text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    + Add Child
+                  </button>
+                </div>
+
+                {joinRequestData.childrenInfo.map((child, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={child.name}
+                      onChange={(e) => updateChild(index, "name", e.target.value)}
+                      placeholder="Child's name"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="text"
+                      value={child.grade}
+                      onChange={(e) => updateChild(index, "grade", e.target.value)}
+                      placeholder="Grade"
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <button
+                      onClick={() => removeChild(index)}
+                      className="text-red-700 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setSelectedGroup(null)}
+                  className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitJoinRequest}
+                  disabled={isSubmittingRequest}
+                  className="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center"
+                >
+                  {isSubmittingRequest ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <PaperAirplaneIcon className="h-4 w-4 mr-2" />
+                      Submit Request
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
+          </AccessibleModal>
         )}
       </div>
     </div>

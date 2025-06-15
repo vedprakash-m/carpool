@@ -3,21 +3,33 @@
 // This is a placeholder service to unblock development.
 // In a real implementation, this would interact with a database.
 
-import { Preference } from "../types"; // Assuming types are defined here
+import { PreferenceRepository, WeeklyPreference } from "../repositories/preference.repository";
 
 export class PreferenceService {
-  private static preferences: Preference[] = [
-    // Mock data
-  ];
+  private readonly repo: PreferenceRepository;
 
-  public static async getPreferencesForWeek(
+  constructor(repo?: PreferenceRepository) {
+    // Allows DI but also fallback to own instantiation
+    this.repo = repo ?? new PreferenceRepository();
+  }
+
+  async getPreferencesForWeek(groupId: string, weekStart: string | Date): Promise<WeeklyPreference[]> {
+    const weekStartStr = typeof weekStart === 'string' ? weekStart : weekStart.toISOString().split('T')[0];
+    return this.repo.getByGroupAndWeek(groupId, weekStartStr);
+  }
+
+  async submitWeeklyPreferences(
+    parentId: string,
     groupId: string,
-    weekStartDate: Date
-  ): Promise<Preference[]> {
-    console.log(
-      `Fetching preferences for group ${groupId} for week of ${weekStartDate.toDateString()}...`
-    );
-    // In a real implementation, you would filter preferences by group and week
-    return this.preferences;
+    weekStart: string,
+    prefs: any[]
+  ): Promise<void> {
+    await this.repo.upsert(parentId, groupId, weekStart, prefs as any);
+  }
+
+  // Static helper for legacy static usages
+  static async getPreferencesForWeek(groupId: string, weekStart: string | Date) {
+    const svc = new PreferenceService();
+    return svc.getPreferencesForWeek(groupId, weekStart);
   }
 }

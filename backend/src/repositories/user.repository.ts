@@ -1,7 +1,8 @@
 import { Container } from '@azure/cosmos';
 import { User } from '@vcarpool/shared';
+import { UserRepositoryPort } from "../core/user/ports/UserRepositoryPort";
 
-export class UserRepository {
+export class UserRepository implements UserRepositoryPort {
   constructor(private container: Container) {}
   
   async create(user: User): Promise<User> {

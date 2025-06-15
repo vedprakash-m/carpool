@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const withPWA = require('next-pwa').default({ dest: 'public' });
+
 const nextConfig = {
   // Basic configuration
   reactStrictMode: true,
@@ -37,6 +39,10 @@ const nextConfig = {
         : "http://localhost:7071/api"),
     NEXT_PUBLIC_ENV: process.env.NODE_ENV,
   },
+
+  experimental: {
+    scrollRestoration: true,
+  },
 };
 
-module.exports = nextConfig;
+module.exports = withPWA(nextConfig);

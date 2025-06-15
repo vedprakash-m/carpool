@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { container as tsyringeContainer, DependencyContainer } from "tsyringe";
+import databaseService from "./services/database.service";
 
 // Import your services and repositories here
 import { AuthService } from "./services/auth.service";
@@ -12,7 +13,13 @@ import { SchedulingService } from "./services/scheduling.service";
 import { UserRepository } from "./repositories/user.repository";
 import { FamilyRepository } from "./repositories/family.repository";
 import { ChildRepository } from "./repositories/child.repository";
+import { TripRepository } from "./repositories/trip.repository";
 import { AzureLogger, ILogger } from "./utils/logger";
+import { CreateTripUseCase } from "./core/trips/usecases/CreateTripUseCase";
+import { TripPassengerUseCase } from "./core/trips/usecases/TripPassengerUseCase";
+import { LoginUseCase } from "./core/auth/usecases/LoginUseCase";
+import { NotificationService } from "./services/notification.service";
+import { PreferenceRepository } from "./repositories/preference.repository";
 
 export interface ServiceContainer extends DependencyContainer {
   authService: AuthService;
@@ -25,6 +32,12 @@ export interface ServiceContainer extends DependencyContainer {
   userRepository: UserRepository;
   familyRepository: FamilyRepository;
   childRepository: ChildRepository;
+  tripRepository: TripRepository;
+  preferenceRepository: PreferenceRepository;
+  createTripUseCase: CreateTripUseCase;
+  tripPassengerUseCase: TripPassengerUseCase;
+  loginUseCase: LoginUseCase;
+  notificationService: NotificationService;
   loggers: {
     system: ILogger;
     trip: ILogger;
@@ -58,6 +71,9 @@ export function createContainer(): ServiceContainer {
   tsyringeContainer.register<SchedulingService>("SchedulingService", {
     useClass: SchedulingService,
   });
+  tsyringeContainer.register<NotificationService>("NotificationService", {
+    useClass: NotificationService,
+  });
 
   tsyringeContainer.register<UserRepository>("UserRepository", {
     useClass: UserRepository,
@@ -67,6 +83,23 @@ export function createContainer(): ServiceContainer {
   });
   tsyringeContainer.register<ChildRepository>("ChildRepository", {
     useClass: ChildRepository,
+  });
+  tsyringeContainer.register<TripRepository>("TripRepository", {
+    useFactory: (c) => {
+      const cosmosContainer = databaseService.getDefaultContainer();
+
+      if (!cosmosContainer) {
+        throw new Error(
+          "Cosmos container is not initialized. Did DatabaseService fail to connect?"
+        );
+      }
+
+      return new TripRepository(cosmosContainer);
+    },
+  });
+
+  tsyringeContainer.register<PreferenceRepository>("PreferenceRepository", {
+    useClass: PreferenceRepository,
   });
 
   // Logger registration
@@ -108,6 +141,18 @@ export function createContainer(): ServiceContainer {
   Object.defineProperty(serviceContainer, "childRepository", {
     get: () => tsyringeContainer.resolve<ChildRepository>("ChildRepository"),
   });
+  Object.defineProperty(serviceContainer, "tripRepository", {
+    get: () => tsyringeContainer.resolve<TripRepository>("TripRepository"),
+  });
+  Object.defineProperty(serviceContainer, "preferenceRepository", {
+    get: () => tsyringeContainer.resolve<PreferenceRepository>("PreferenceRepository"),
+  });
+  Object.defineProperty(serviceContainer, "loginUseCase", {
+    get: () => tsyringeContainer.resolve<LoginUseCase>("LoginUseCase"),
+  });
+  Object.defineProperty(serviceContainer, "notificationService", {
+    get: () => tsyringeContainer.resolve<NotificationService>("NotificationService"),
+  });
 
   // Add logger getters
   Object.defineProperty(serviceContainer, "loggers", {
@@ -117,6 +162,29 @@ export function createContainer(): ServiceContainer {
       auth: logger,
       user: logger,
     }),
+  });
+
+  // Use-cases
+  tsyringeContainer.register<CreateTripUseCase>("CreateTripUseCase", {
+    useFactory: (c) => {
+      const tripRepo = c.resolve<TripRepository>("TripRepository");
+      return new CreateTripUseCase(tripRepo);
+    },
+  });
+
+  tsyringeContainer.register<TripPassengerUseCase>("TripPassengerUseCase", {
+    useFactory: (c) => {
+      const tripRepo = c.resolve<TripRepository>("TripRepository");
+      return new TripPassengerUseCase(tripRepo);
+    },
+  });
+
+  tsyringeContainer.register<LoginUseCase>("LoginUseCase", {
+    useFactory: (c) => {
+      const authServiceInstance = c.resolve<AuthService>("AuthService");
+      const userRepoInstance = c.resolve<UserRepository>("UserRepository");
+      return new LoginUseCase(authServiceInstance, userRepoInstance);
+    },
   });
 
   return serviceContainer;

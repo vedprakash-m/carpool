@@ -86,6 +86,7 @@ export interface User {
   preferences: UserPreferences;
   createdAt: Date;
   updatedAt: Date;
+  registrationCompleted?: boolean;
 }
 
 // Trip interface

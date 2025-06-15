@@ -1,6 +1,7 @@
 import { initializeDatabase } from "./config/database";
 import { container } from "./container";
 import { initializeMonitoring } from "./utils/monitoring";
+import { initializeTelemetry } from "./utils/telemetry";
 
 /**
  * Initializes the application
@@ -12,6 +13,7 @@ export async function initializeApp(): Promise<void> {
     // Initialize Application Insights monitoring (non-critical)
     try {
       initializeMonitoring();
+      initializeTelemetry();
       console.log("Application Insights initialized");
     } catch (error) {
       console.warn("Failed to initialize Application Insights:", error);

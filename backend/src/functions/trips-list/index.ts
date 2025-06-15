@@ -14,6 +14,7 @@ import {
   TripStatus,
 } from "@vcarpool/shared";
 import { handleError } from "../../utils/error-handler";
+import { quickOptimize } from "../../middleware/phase2-optimization.middleware";
 
 async function tripsListHandler(
   request: HttpRequest,
@@ -73,5 +74,5 @@ app.http("trips-list", {
   methods: ["GET"],
   authLevel: "anonymous",
   route: "trips",
-  handler: tripsListHandler,
+  handler: quickOptimize(tripsListHandler),
 });

@@ -13,7 +13,7 @@ import {
   requestId,
   requestLogging,
 } from "../../middleware";
-import { AuthService } from "../../services/auth.service";
+import { LoginUseCase } from "../../core/auth/usecases/LoginUseCase";
 import { handleError } from "../../utils/error-handler";
 import { ILogger } from "../../utils/logger";
 
@@ -22,12 +22,12 @@ async function loginHandler(
   context: InvocationContext
 ): Promise<HttpResponseInit> {
   const logger = container.resolve<ILogger>("ILogger");
-  const authService = container.resolve<AuthService>("AuthService");
+  const loginUseCase = container.resolve<LoginUseCase>("LoginUseCase");
 
   try {
     const { email, password } = request.validated!.body;
 
-    const { user, accessToken, refreshToken } = await authService.login(
+    const { user, accessToken, refreshToken } = await loginUseCase.execute(
       email,
       password
     );

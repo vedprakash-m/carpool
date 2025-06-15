@@ -9,6 +9,9 @@ import { v4 as uuidv4 } from "uuid";
 import { Container } from "@azure/cosmos";
 import { ILogger } from "../utils/logger";
 import { Errors } from "../utils/error-handler";
+import { AzureLogger } from "../utils/logger";
+import { ServiceBusClient } from "@azure/service-bus";
+import { PushService } from "./push.service";
 
 export interface IPushNotificationService {
   sendPushNotification(
@@ -30,6 +33,13 @@ export interface PushNotificationPayload {
   sound?: string;
   clickAction?: string;
   tag?: string;
+}
+
+export interface NotificationPayload {
+  type: string;
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
 }
 
 export class NotificationRepository {
@@ -178,22 +188,19 @@ export class NotificationRepository {
 }
 
 export class NotificationService {
-  private logger: ILogger;
+  private readonly logger = new AzureLogger();
+  private sbClient?: ServiceBusClient;
 
   constructor(
     private notificationRepository: NotificationRepository,
-    private pushService?: IPushNotificationService,
-    logger?: ILogger
+    private pushService: PushService = new PushService()
   ) {
-    this.logger = logger || {
-      debug: (message: string, data?: any) => console.debug(message, data),
-      info: (message: string, data?: any) => console.info(message, data),
-      warn: (message: string, data?: any) => console.warn(message, data),
-      error: (message: string, error?: any) => console.error(message, error),
-      setContext: () => {},
-      child: () => this.logger,
-      startTimer: (label: string) => () => console.time(label),
-    };
+    const connectionString = process.env.SERVICE_BUS_CONNECTION;
+    if (connectionString) {
+      this.sbClient = new ServiceBusClient(connectionString);
+    } else {
+      this.logger.warn("SERVICE_BUS_CONNECTION not set – notifications disabled");
+    }
   }
 
   /**
@@ -431,5 +438,45 @@ export class NotificationService {
     this.logger.info(`Sending password reset email to ${email}`, data);
     // In a real implementation, call EmailService or external provider
     return;
+  }
+
+  async sendToUser(userId: string, payload: NotificationPayload): Promise<void> {
+    if (!this.sbClient) return;
+    const sender = this.sbClient.createSender(`user-${userId}`);
+    await sender.sendMessages({ body: payload });
+    await sender.close();
+    this.logger.debug("Notification sent", { userId, type: payload.type });
+  }
+
+  async broadcastToGroup(groupId: string, payload: NotificationPayload): Promise<void> {
+    if (!this.sbClient) return;
+    const sender = this.sbClient.createSender(`group-${groupId}`);
+    await sender.sendMessages({ body: payload });
+    await sender.close();
+    this.logger.debug("Group notification", { groupId, type: payload.type });
+  }
+
+  /**
+   * Generic enqueue used by HTTP notifications-dispatch function.
+   */
+  async enqueueNotification(raw: {
+    type: string;
+    payload?: Record<string, unknown>;
+    targetUserIds?: string[];
+    groupId?: string;
+  }): Promise<void> {
+    if (!this.sbClient) {
+      this.logger.warn("ServiceBusClient not initialised – enqueueNotification is a no-op in local dev");
+      return;
+    }
+
+    const sender = this.sbClient.createSender(process.env.SB_NOTIFICATIONS_TOPIC || "notifications");
+    await sender.sendMessages({ body: raw });
+    await sender.close();
+
+    // Fallback to push notifications for offline users
+    if (raw.targetUserIds && raw.targetUserIds.length) {
+      // TODO: fetch subscriptions from DB; simplified noop for now
+    }
   }
 }
