@@ -36,6 +36,7 @@
     "lint:frontend": "cd frontend && npm run lint",
     "deploy": "cd backend && npm run deploy",
     "start": "cd backend && npm start",
+    "func:start:ci": "cd backend && npx azure-functions-core-tools@4 start --javascript --cors * | cat",
     "analyze": "cd backend && node -e \"const CodeOrganizationManager = require('./dist/src/utils/code-organization.js').default; const manager = new CodeOrganizationManager('.'); manager.analyzeArchitecture().then(report => console.log(JSON.stringify(report, null, 2)));\"",
     "verify-deployment": "chmod +x scripts/deploy-verification.sh && ./scripts/deploy-verification.sh",
     "monitor-performance": "node scripts/performance-monitor.js"
