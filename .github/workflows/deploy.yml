@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write  # For OIDC login
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: false
+
+      - name: Deploy database resource group
+        run: |
+          az deployment group create \
+            --resource-group vcarpool-db-rg \
+            --template-file infra/database.bicep \
+            --parameters @infra/database.parameters.json \
+            --mode Incremental
+
+      - name: Deploy compute resource group
+        run: |
+          az deployment group create \
+            --resource-group vcarpool-rg \
+            --template-file infra/main-compute.bicep \
+            --parameters @infra/main-compute.parameters.json \
+            --parameters databaseResourceGroup=vcarpool-db-rg \
+            --mode Incremental
+
+      - name: Logout
+        run: az logout 

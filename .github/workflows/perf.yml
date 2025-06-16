@@ -1,0 +1,40 @@
+name: Performance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "shared/**"
+  workflow_dispatch:
+
+jobs:
+  perf-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps (root)
+        run: npm ci --ignore-scripts
+
+      - name: Install backend & shared workspaces
+        run: npm run install:backend
+
+      - name: Start Functions host (background)
+        run: npm run func:start:ci &
+        env:
+          OTEL_ENABLED: "false"
+        shell: bash
+
+      - name: Wait for Functions Host
+        run: npx wait-port 7071 --timeout 60000
+
+      - name: Run Phase-2 performance test (k6)
+        run: |
+          PERF_VUS=50 PERF_DURATION_SEC=30 PERF_LATENCY_MS=150 npm run perf:phase2 

@@ -11,6 +11,11 @@
 [![Azure Functions](https://img.shields.io/badge/Azure%20Functions-v4-0062AD?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/en-us/services/functions/)
 [![Test Coverage](https://img.shields.io/badge/Coverage-212%20Tests-green?style=flat-square&logo=jest)](./backend/coverage/)
 [![License](https://img.shields.io/badge/License-AGPL%20v3-blue?style=flat-square)](LICENSE)
+[![CI](https://github.com/vedprakash-m/vcarpool/actions/workflows/ci.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/ci.yml)
+[![Deploy](https://github.com/vedprakash-m/vcarpool/actions/workflows/deploy.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/deploy.yml)
+[![Perf](https://github.com/vedprakash-m/vcarpool/actions/workflows/perf.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/perf.yml)
+[![E2E](https://github.com/vedprakash-m/vcarpool/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/e2e-tests.yml)
+[![Security](https://github.com/vedprakash-m/vcarpool/actions/workflows/security-scan.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/security-scan.yml)
 
 [🚀 Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [📚 Documentation](docs/) • [🔧 API Reference](#-api-reference)
 
