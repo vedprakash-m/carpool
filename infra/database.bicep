@@ -64,6 +64,26 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
   }
 }
 
+// Key Vault for secrets (persistent resource)
+resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
+  name: '${appName}-kv-${environmentName}'
+  location: location
+  tags: tags
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    accessPolicies: [] // Access policies will be added by Function App
+    enabledForTemplateDeployment: true
+    enableRbacAuthorization: false
+    enableSoftDelete: true
+    softDeleteRetentionInDays: 7
+    enablePurgeProtection: false // Allow for easier development
+  }
+}
+
 // Cosmos DB Database
 resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
   parent: cosmosAccount
@@ -271,3 +291,4 @@ output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
 output cosmosResourceGroup string = resourceGroup().name
 output storageAccountName string = storageAccount.name
 output storageAccountResourceGroup string = resourceGroup().name
+output keyVaultName string = keyVault.name

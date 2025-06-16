@@ -1,20 +1,211 @@
-name: Deploy
+name: Robust Production Deployment
 
 on:
   push:
     branches: [main]
     paths:
+      - "backend/**"
+      - "frontend/**" 
+      - "shared/**"
       - "infra/**"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
+    inputs:
+      force_infra_deploy:
+        description: 'Force infrastructure deployment'
+        required: false
+        default: false
+        type: boolean
+      force_full_deploy:
+        description: 'Force deployment of all components'
+        required: false
+        default: false
+        type: boolean
+      skip_health_checks:
+        description: 'Skip post-deployment health checks'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: "20"
+  AZURE_LOCATION: "eastus"
+  HEALTH_CHECK_TIMEOUT: 300
+  DEPLOYMENT_TIMEOUT: 1800
 
 permissions:
   contents: read
-  id-token: write  # For OIDC login
+  id-token: write
+  deployments: write
 
 jobs:
-  deploy-infrastructure:
+  # Enhanced deployment planning with better change detection
+  deployment-planning:
+    name: 📋 Plan Deployment
     runs-on: ubuntu-latest
+    outputs:
+      deploy-infra: ${{ steps.changes.outputs.infra }}
+      deploy-backend: ${{ steps.changes.outputs.backend }}
+      deploy-frontend: ${{ steps.changes.outputs.frontend }}
+      deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+          
+      - name: Create deployment
+        id: deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: deployment } = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'production',
+              description: 'VCarpool production deployment',
+              auto_merge: false,
+              required_contexts: []
+            });
+            core.setOutput('deployment_id', deployment.id);
+            return deployment.id;
+          
+      - name: Detect changes and plan deployment
+        id: changes
+        run: |
+          echo "🔍 Analyzing changes to determine deployment scope..."
+          
+          # Force deployment flags
+          if [[ "${{ github.event.inputs.force_infra_deploy }}" == "true" || "${{ github.event.inputs.force_full_deploy }}" == "true" ]]; then
+            echo "infra=true" >> $GITHUB_OUTPUT
+            echo "🏗️ Infrastructure deployment forced"
+          elif git diff --name-only HEAD~1 HEAD | grep -E "^infra/" >/dev/null; then
+            echo "infra=true" >> $GITHUB_OUTPUT
+            echo "🏗️ Infrastructure changes detected"
+          else
+            echo "infra=false" >> $GITHUB_OUTPUT
+            echo "➡️ No infrastructure changes"
+          fi
+          
+          if [[ "${{ github.event.inputs.force_full_deploy }}" == "true" ]] || git diff --name-only HEAD~1 HEAD | grep -E "^(backend|shared)/" >/dev/null; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+            echo "⚡ Backend deployment needed"
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+            echo "➡️ No backend changes"
+          fi
+          
+          if [[ "${{ github.event.inputs.force_full_deploy }}" == "true" ]] || git diff --name-only HEAD~1 HEAD | grep -E "^(frontend|shared)/" >/dev/null; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "🌐 Frontend deployment needed"
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+            echo "➡️ No frontend changes"
+          fi
+          
+          echo "📋 Deployment Plan Summary:"
+          if [[ "$infra_deploy" == "true" ]]; then
+            echo "  Infrastructure: ✅ Deploy"
+          else
+            echo "  Infrastructure: ⏭️ Skip"
+          fi
+          
+          if [[ "$backend_deploy" == "true" ]]; then
+            echo "  Backend: ✅ Deploy"
+          else
+            echo "  Backend: ⏭️ Skip"
+          fi
+          
+          if [[ "$frontend_deploy" == "true" ]]; then
+            echo "  Frontend: ✅ Deploy"
+          else
+            echo "  Frontend: ⏭️ Skip"
+          fi
+
+  # Deploy persistent resources with enhanced error handling
+  deploy-database-rg:
+    name: 🗄️ Deploy Database Resources
+    runs-on: ubuntu-latest
+    needs: deployment-planning
+    if: needs.deployment-planning.outputs.deploy-infra == 'true'
+    timeout-minutes: 20
+    outputs:
+      deployment-status: ${{ steps.deploy.outputs.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Azure credentials
+        run: |
+          echo "🔐 Validating Azure credentials..."
+          az account show --output table
+          
+      - name: Ensure database resource group exists
+        run: |
+          echo "🏗️ Creating/updating database resource group..."
+          az group create \
+            --name vcarpool-db-rg \
+            --location ${{ env.AZURE_LOCATION }} \
+            --tags environment=prod application=vcarpool resourceType=database \
+            --output table
+
+      - name: Deploy persistent resources with validation
+        id: deploy
+        run: |
+          echo "🗄️ Deploying persistent resources (Cosmos DB, Storage, Key Vault)..."
+          
+          # Pre-deployment validation
+          if [[ ! -f "infra/database.bicep" ]]; then
+            echo "❌ Database template not found"
+            exit 1
+          fi
+          
+          # Deploy with detailed output
+          DEPLOYMENT_NAME="database-$(date +%Y%m%d-%H%M%S)"
+          az deployment group create \
+            --resource-group vcarpool-db-rg \
+            --template-file infra/database.bicep \
+            --parameters @infra/database.parameters.json \
+            --parameters environmentName=prod \
+            --name "$DEPLOYMENT_NAME" \
+            --mode Incremental \
+            --output table
+            
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "✅ Database resources deployed successfully"
+          
+      - name: Validate deployed resources
+        run: |
+          echo "🔍 Validating deployed database resources..."
+          
+          # Check if Key Vault was created
+          if az keyvault show --name vcarpool-kv-prod --resource-group vcarpool-db-rg >/dev/null 2>&1; then
+            echo "✅ Key Vault is accessible"
+          else
+            echo "⚠️ Key Vault validation failed"
+          fi
+          
+          # Check if Cosmos DB was created
+          if az cosmosdb show --name vcarpool-cosmos-prod --resource-group vcarpool-db-rg >/dev/null 2>&1; then
+            echo "✅ Cosmos DB is accessible"
+          else
+            echo "⚠️ Cosmos DB validation failed"
+          fi
+
+  # Deploy compute resources (only when needed)
+  deploy-compute-rg:
+    name: Deploy Compute RG
+    runs-on: ubuntu-latest
+    needs: [deployment-planning, deploy-database-rg]
+    if: always() && (needs.deployment-planning.outputs.deploy-infra == 'true')
     steps:
       - uses: actions/checkout@v4
 
@@ -24,24 +215,262 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          enable-AzPSSession: false
 
-      - name: Deploy database resource group
+      - name: Ensure compute resource group exists
         run: |
-          az deployment group create \
-            --resource-group vcarpool-db-rg \
-            --template-file infra/database.bicep \
-            --parameters @infra/database.parameters.json \
-            --mode Incremental
+          az group create \
+            --name vcarpool-rg \
+            --location ${{ env.AZURE_LOCATION }} \
+            --tags environment=prod application=vcarpool resourceType=compute
 
-      - name: Deploy compute resource group
+      - name: Deploy compute resources
         run: |
+          echo "⚡ Deploying Function App, Static Web App, and Application Insights..."
           az deployment group create \
             --resource-group vcarpool-rg \
             --template-file infra/main-compute.bicep \
             --parameters @infra/main-compute.parameters.json \
             --parameters databaseResourceGroup=vcarpool-db-rg \
+            --parameters environmentName=prod \
             --mode Incremental
 
-      - name: Logout
-        run: az logout 
+  # Deploy backend application
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: [deployment-planning, deploy-compute-rg]
+    if: always() && (needs.deployment-planning.outputs.deploy-backend == 'true')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install Azure Functions Core Tools
+        run: npm install -g azure-functions-core-tools@4 --unsafe-perm true
+
+      - name: Build backend
+        run: |
+          npm ci --ignore-scripts
+          npm run build:shared
+          npm run build:backend
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Functions
+        run: |
+          cd backend
+          echo "🚀 Deploying backend to vcarpool-api-prod..."
+          func azure functionapp publish vcarpool-api-prod --typescript
+
+  # Deploy frontend application
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: [deployment-planning, deploy-compute-rg]
+    if: always() && (needs.deployment-planning.outputs.deploy-frontend == 'true')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Build frontend
+        run: |
+          npm ci --ignore-scripts
+          npm run build:shared
+          npm run build:frontend
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/frontend"
+          output_location: ".next"
+
+  # Enhanced health check with comprehensive validation and rollback guidance
+  post-deployment-validation:
+    name: 🏥 Health Check & Validation
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend, deployment-planning]
+    if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-frontend.result == 'success')
+    timeout-minutes: 10
+    outputs:
+      health-status: ${{ steps.health-check.outputs.status }}
+      rollback-needed: ${{ steps.health-check.outputs.rollback_needed }}
+    steps:
+      - name: Comprehensive health check
+        id: health-check
+        run: |
+          echo "🏥 Running comprehensive health checks..."
+          
+          BACKEND_HEALTHY=false
+          FRONTEND_HEALTHY=false
+          HEALTH_ISSUES=()
+          
+          # Backend health check with retries
+          if [[ "${{ needs.deploy-backend.result }}" == "success" ]]; then
+            echo "🔍 Checking backend health..."
+            for i in {1..10}; do
+              if curl -f -s --max-time 10 https://vcarpool-api-prod.azurewebsites.net/api/health > /dev/null 2>&1; then
+                echo "✅ Backend health check passed (attempt $i)"
+                BACKEND_HEALTHY=true
+                break
+              fi
+              if [ $i -eq 10 ]; then
+                echo "❌ Backend health check failed after 10 attempts"
+                HEALTH_ISSUES+=("Backend not responding")
+              else
+                echo "⏳ Backend not ready, waiting 30s... (attempt $i/10)"
+                sleep 30
+              fi
+            done
+          else
+            echo "⏭️ Backend deployment skipped"
+            BACKEND_HEALTHY=true  # Don't fail if deployment was skipped
+          fi
+          
+          # Frontend health check
+          if [[ "${{ needs.deploy-frontend.result }}" == "success" ]]; then
+            echo "🔍 Checking frontend health..."
+            if curl -f -s --max-time 10 https://vcarpool-web-prod.azurestaticapps.net > /dev/null 2>&1; then
+              echo "✅ Frontend health check passed"
+              FRONTEND_HEALTHY=true
+            else
+              echo "❌ Frontend health check failed"
+              HEALTH_ISSUES+=("Frontend not accessible")
+              FRONTEND_HEALTHY=false
+            fi
+          else
+            echo "⏭️ Frontend deployment skipped"
+            FRONTEND_HEALTHY=true  # Don't fail if deployment was skipped
+          fi
+          
+          # API endpoint validation (if backend was deployed)
+          if [[ "$BACKEND_HEALTHY" == "true" && "${{ needs.deploy-backend.result }}" == "success" ]]; then
+            echo "🧪 Testing critical API endpoints..."
+            
+            # Test auth endpoint
+            if curl -f -s --max-time 10 https://vcarpool-api-prod.azurewebsites.net/api/auth/health > /dev/null 2>&1; then
+              echo "✅ Auth endpoint accessible"
+            else
+              echo "⚠️ Auth endpoint not responding (non-critical)"
+            fi
+            
+            # Test database connectivity (if available)
+            if curl -f -s --max-time 10 https://vcarpool-api-prod.azurewebsites.net/api/health/db > /dev/null 2>&1; then
+              echo "✅ Database connectivity confirmed"
+            else
+              echo "⚠️ Database connectivity test failed (non-critical)"
+            fi
+          fi
+          
+          # Final health assessment
+          if [[ "$BACKEND_HEALTHY" == "true" && "$FRONTEND_HEALTHY" == "true" ]]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "rollback_needed=false" >> $GITHUB_OUTPUT
+            echo "🎉 All health checks passed!"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "rollback_needed=true" >> $GITHUB_OUTPUT
+            echo "💥 Health checks failed:"
+            for issue in "${HEALTH_ISSUES[@]}"; do
+              echo "  - $issue"
+            done
+            exit 1
+          fi
+        
+      - name: Performance smoke test
+        if: github.event.inputs.skip_health_checks != 'true'
+        run: |
+          echo "⚡ Running performance smoke test..."
+          
+          # Simple response time test for backend
+          if [[ "${{ needs.deploy-backend.result }}" == "success" ]]; then
+            RESPONSE_TIME=$(curl -w "%{time_total}" -s -o /dev/null https://vcarpool-api-prod.azurewebsites.net/api/health)
+            echo "Backend response time: ${RESPONSE_TIME}s"
+            
+            # Warn if response time is too slow
+            if (( $(echo "$RESPONSE_TIME > 5.0" | bc -l) )); then
+              echo "⚠️ Backend response time is slower than expected (${RESPONSE_TIME}s > 5s)"
+            else
+              echo "✅ Backend response time is acceptable"
+            fi
+          fi
+        continue-on-error: true
+          
+  # Deployment status reporting and rollback guidance
+  deployment-status:
+    name: 📊 Deployment Status & Rollback Guidance
+    runs-on: ubuntu-latest
+    needs: [deployment-planning, deploy-database-rg, deploy-compute-rg, deploy-backend, deploy-frontend, post-deployment-validation]
+    if: always()
+    steps:
+      - name: Update deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deploymentId = "${{ needs.deployment-planning.outputs.deployment-id }}";
+            if (!deploymentId) return;
+            
+            const success = "${{ needs.post-deployment-validation.outputs.health-status }}" === "healthy";
+            
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deploymentId,
+              state: success ? 'success' : 'failure',
+              description: success ? 'Deployment completed successfully' : 'Deployment failed health checks',
+              environment_url: success ? 'https://vcarpool-web-prod.azurestaticapps.net' : undefined
+            });
+            
+      - name: Generate deployment report
+        run: |
+          echo "## 🚀 VCarpool Production Deployment Report" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment ID:** ${{ needs.deployment-planning.outputs.deployment-id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### Deployment Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Infrastructure | ${{ needs.deploy-database-rg.result == 'success' && '✅' || needs.deploy-database-rg.result == 'skipped' && '⏭️' || '❌' }} | ${{ needs.deploy-database-rg.result == 'success' && 'Deployed' || needs.deploy-database-rg.result == 'skipped' && 'Skipped' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Compute Resources | ${{ needs.deploy-compute-rg.result == 'success' && '✅' || needs.deploy-compute-rg.result == 'skipped' && '⏭️' || '❌' }} | ${{ needs.deploy-compute-rg.result == 'success' && 'Deployed' || needs.deploy-compute-rg.result == 'skipped' && 'Skipped' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend API | ${{ needs.deploy-backend.result == 'success' && '✅' || needs.deploy-backend.result == 'skipped' && '⏭️' || '❌' }} | ${{ needs.deploy-backend.result == 'success' && 'Deployed' || needs.deploy-backend.result == 'skipped' && 'Skipped' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Web | ${{ needs.deploy-frontend.result == 'success' && '✅' || needs.deploy-frontend.result == 'skipped' && '⏭️' || '❌' }} | ${{ needs.deploy-frontend.result == 'success' && 'Deployed' || needs.deploy-frontend.result == 'skipped' && 'Skipped' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health Checks | ${{ needs.post-deployment-validation.outputs.health-status == 'healthy' && '✅' || '❌' }} | ${{ needs.post-deployment-validation.outputs.health-status == 'healthy' && 'Passed' || 'Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Application URLs" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend:** https://vcarpool-web-prod.azurestaticapps.net" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend API:** https://vcarpool-api-prod.azurewebsites.net/api" >> $GITHUB_STEP_SUMMARY
+          echo "- **Health Check:** https://vcarpool-api-prod.azurewebsites.net/api/health" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.post-deployment-validation.outputs.rollback-needed }}" == "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🚨 Rollback Required" >> $GITHUB_STEP_SUMMARY
+            echo "Deployment health checks failed. To rollback:" >> $GITHUB_STEP_SUMMARY
+            echo "1. **Backend:** Redeploy previous version via Azure Portal or Functions Core Tools" >> $GITHUB_STEP_SUMMARY
+            echo "2. **Frontend:** Revert this commit and push to trigger new deployment" >> $GITHUB_STEP_SUMMARY
+            echo "3. **Monitor:** Check Application Insights for error details" >> $GITHUB_STEP_SUMMARY
+            echo "4. **Support:** Contact team lead if issues persist" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### ✅ Deployment Successful" >> $GITHUB_STEP_SUMMARY
+            echo "All components deployed and health checks passed!" >> $GITHUB_STEP_SUMMARY
+          fi 
