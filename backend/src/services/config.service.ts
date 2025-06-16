@@ -25,13 +25,13 @@ export interface AppConfig {
   geocoding: {
     googleMapsApiKey?: string;
     azureMapsKey?: string;
-    preferredProvider: "google" | "azure" | "mock";
+    preferredProvider: 'google' | 'azure' | 'mock';
     fallbackToMock: boolean;
   };
 
   // Application Settings
   app: {
-    environment: "development" | "staging" | "production";
+    environment: 'development' | 'staging' | 'production';
     corsOrigins: string[];
     maxDistanceKm: number;
     defaultServiceRadius: number;
@@ -57,37 +57,31 @@ class ConfigService {
   private loadConfiguration(): AppConfig {
     return {
       cosmosDb: {
-        endpoint: process.env.COSMOS_DB_ENDPOINT || "",
-        key: process.env.COSMOS_DB_KEY || "",
-        databaseName: process.env.COSMOS_DB_DATABASE || "vcarpooldb",
-        containerName: process.env.COSMOS_DB_CONTAINER || "users",
+        endpoint: process.env.COSMOS_DB_ENDPOINT || '',
+        key: process.env.COSMOS_DB_KEY || '',
+        databaseName: process.env.COSMOS_DB_DATABASE || 'vcarpooldb',
+        containerName: process.env.COSMOS_DB_CONTAINER || 'users',
       },
       auth: {
-        jwtSecret: process.env.JWT_SECRET || "vcarpool-dev-secret-key",
-        jwtExpiresIn: process.env.JWT_EXPIRES_IN || "24h",
-        bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || "12"),
-        maxLoginAttempts: parseInt(process.env.MAX_LOGIN_ATTEMPTS || "5"),
-        lockoutDuration: parseInt(process.env.LOCKOUT_DURATION || "15"),
+        jwtSecret: process.env.JWT_SECRET || 'vcarpool-dev-secret-key',
+        jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
+        bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '12'),
+        maxLoginAttempts: parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5'),
+        lockoutDuration: parseInt(process.env.LOCKOUT_DURATION || '15'),
       },
       geocoding: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
         azureMapsKey: process.env.AZURE_MAPS_KEY,
         preferredProvider:
-          (process.env.GEOCODING_PROVIDER as "google" | "azure" | "mock") ||
-          "mock",
-        fallbackToMock: process.env.FALLBACK_TO_MOCK === "true",
+          (process.env.GEOCODING_PROVIDER as 'google' | 'azure' | 'mock') || 'mock',
+        fallbackToMock: process.env.FALLBACK_TO_MOCK === 'true',
       },
       app: {
         environment:
-          (process.env.NODE_ENV as "development" | "staging" | "production") ||
-          "development",
-        corsOrigins: process.env.CORS_ORIGINS?.split(",") || [
-          "http://localhost:3000",
-        ],
-        maxDistanceKm: parseInt(process.env.MAX_DISTANCE_KM || "50"),
-        defaultServiceRadius: parseInt(
-          process.env.DEFAULT_SERVICE_RADIUS || "25"
-        ),
+          (process.env.NODE_ENV as 'development' | 'staging' | 'production') || 'development',
+        corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
+        maxDistanceKm: parseInt(process.env.MAX_DISTANCE_KM || '50'),
+        defaultServiceRadius: parseInt(process.env.DEFAULT_SERVICE_RADIUS || '25'),
       },
     };
   }
@@ -96,27 +90,22 @@ class ConfigService {
     const errors: string[] = [];
 
     // Validate production environment requirements
-    if (this.config.app.environment === "production") {
+    if (this.config.app.environment === 'production') {
       if (!this.config.cosmosDb.endpoint || !this.config.cosmosDb.key) {
-        errors.push("Cosmos DB configuration is required in production");
+        errors.push('Cosmos DB configuration is required in production');
       }
 
-      if (this.config.auth.jwtSecret === "vcarpool-dev-secret-key") {
-        errors.push("Custom JWT secret is required in production");
+      if (this.config.auth.jwtSecret === 'vcarpool-dev-secret-key') {
+        errors.push('Custom JWT secret is required in production');
       }
 
-      if (
-        !this.config.geocoding.googleMapsApiKey &&
-        !this.config.geocoding.azureMapsKey
-      ) {
-        console.warn(
-          "Warning: No real geocoding API keys configured in production"
-        );
+      if (!this.config.geocoding.googleMapsApiKey && !this.config.geocoding.azureMapsKey) {
+        console.warn('Warning: No real geocoding API keys configured in production');
       }
     }
 
     if (errors.length > 0) {
-      throw new Error(`Configuration validation failed: ${errors.join(", ")}`);
+      throw new Error(`Configuration validation failed: ${errors.join(', ')}`);
     }
   }
 
@@ -125,18 +114,15 @@ class ConfigService {
   }
 
   public isDevelopment(): boolean {
-    return this.config.app.environment === "development";
+    return this.config.app.environment === 'development';
   }
 
   public isProduction(): boolean {
-    return this.config.app.environment === "production";
+    return this.config.app.environment === 'production';
   }
 
   public hasRealGeocoding(): boolean {
-    return !!(
-      this.config.geocoding.googleMapsApiKey ||
-      this.config.geocoding.azureMapsKey
-    );
+    return !!(this.config.geocoding.googleMapsApiKey || this.config.geocoding.azureMapsKey);
   }
 
   public shouldUseRealDatabase(): boolean {

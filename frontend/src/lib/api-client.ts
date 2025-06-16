@@ -1,24 +1,24 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios";
-import { ApiResponse, PaginatedResponse, AuthResponse } from "@vcarpool/shared";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
+import { ApiResponse, PaginatedResponse, AuthResponse } from '@vcarpool/shared';
 import {
   ApiErrorHandler,
   TimeoutError,
   ApiError,
   createTimeoutController,
   handleApiError,
-} from "./api-error-handling";
-import { errorHandler } from "./error-handling";
+} from './api-error-handling';
+import { errorHandler } from './error-handling';
 
 // Mock data for development
 const MOCK_USER = {
-  id: "mock-user-123",
-  email: "admin@vcarpool.com",
-  firstName: "Admin",
-  lastName: "User",
-  role: "parent" as const,
+  id: 'mock-user-123',
+  email: 'admin@vcarpool.com',
+  firstName: 'Admin',
+  lastName: 'User',
+  role: 'parent' as const,
   profilePicture: null,
-  phoneNumber: "+1234567890",
-  organizationId: "mock-org-123",
+  phoneNumber: '+1234567890',
+  organizationId: 'mock-org-123',
   preferences: {
     notifications: {
       email: true,
@@ -32,9 +32,9 @@ const MOCK_USER = {
       showPhoneNumber: true,
       showEmail: false,
     },
-    pickupLocation: "Home",
-    dropoffLocation: "School",
-    preferredTime: "08:00",
+    pickupLocation: 'Home',
+    dropoffLocation: 'School',
+    preferredTime: '08:00',
     isDriver: true,
     smokingAllowed: false,
   },
@@ -56,20 +56,20 @@ export class ApiClient {
 
   constructor(
     baseURL: string = process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:7071/api"
+      'http://localhost:7071/api'
   ) {
     this.client = axios.create({
       baseURL,
       timeout: 10000,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
     // Check if mock mode was previously enabled
-    if (typeof window !== "undefined") {
-      const mockMode = localStorage.getItem("MOCK_AUTH");
-      if (mockMode === "true") {
+    if (typeof window !== 'undefined') {
+      const mockMode = localStorage.getItem('MOCK_AUTH');
+      if (mockMode === 'true') {
         this.isMockMode = true;
       }
     }
@@ -80,21 +80,21 @@ export class ApiClient {
 
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
-      (config) => {
+      config => {
         if (this.token) {
           config.headers.Authorization = `Bearer ${this.token}`;
         }
         return config;
       },
-      (error) => {
+      error => {
         return Promise.reject(error);
       }
     );
 
     // Response interceptor to handle token refresh and errors
     this.client.interceptors.response.use(
-      (response) => response,
-      async (error) => {
+      response => response,
+      async error => {
         const originalRequest = error.config;
 
         // Handle 401 errors with token refresh
@@ -108,17 +108,17 @@ export class ApiClient {
           } catch (refreshError) {
             // Refresh failed, clear tokens and redirect to login
             this.clearToken();
-            if (typeof window !== "undefined") {
-              window.location.href = "/login";
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
             }
 
             const handledError = handleApiError(
               refreshError as AxiosError,
-              "Token refresh"
+              'Token refresh'
             );
             await errorHandler.handleError(handledError, {
-              errorBoundary: "ApiClient",
-              componentStack: "Token refresh",
+              errorBoundary: 'ApiClient',
+              componentStack: 'Token refresh',
             });
             return Promise.reject(handledError);
           }
@@ -133,8 +133,8 @@ export class ApiClient {
         // Only report errors that aren't handled by specific API calls
         if (!originalRequest._skipErrorReporting) {
           await errorHandler.handleError(handledError, {
-            errorBoundary: "ApiClient",
-            componentStack: "Response interceptor",
+            errorBoundary: 'ApiClient',
+            componentStack: 'Response interceptor',
           });
         }
 
@@ -145,14 +145,14 @@ export class ApiClient {
 
   // Mock authentication methods
   private mockLogin(credentials: any): Promise<ApiResponse<AuthResponse>> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(() => {
         resolve({
           success: true,
           data: {
             user: MOCK_USER,
-            token: "mock-token-" + Date.now(),
-            refreshToken: "mock-refresh-token-" + Date.now(),
+            token: 'mock-token-' + Date.now(),
+            refreshToken: 'mock-refresh-token-' + Date.now(),
           },
         });
       }, 500); // Simulate network delay
@@ -160,7 +160,7 @@ export class ApiClient {
   }
 
   private mockRegister(userData: any): Promise<ApiResponse<AuthResponse>> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(() => {
         resolve({
           success: true,
@@ -172,8 +172,8 @@ export class ApiClient {
               lastName: userData.lastName,
               role: userData.role,
             },
-            token: "mock-token-" + Date.now(),
-            refreshToken: "mock-refresh-token-" + Date.now(),
+            token: 'mock-token-' + Date.now(),
+            refreshToken: 'mock-refresh-token-' + Date.now(),
           },
         });
       }, 500);
@@ -183,15 +183,15 @@ export class ApiClient {
   // Enable/disable mock mode
   enableMockMode() {
     this.isMockMode = true;
-    if (typeof window !== "undefined") {
-      localStorage.setItem("MOCK_AUTH", "true");
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('MOCK_AUTH', 'true');
     }
   }
 
   disableMockMode() {
     this.isMockMode = false;
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("MOCK_AUTH");
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('MOCK_AUTH');
     }
   }
 
@@ -201,10 +201,10 @@ export class ApiClient {
       this.refreshToken = refreshToken;
     }
 
-    if (typeof window !== "undefined") {
-      localStorage.setItem("access_token", token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('access_token', token);
       if (refreshToken) {
-        localStorage.setItem("refresh_token", refreshToken);
+        localStorage.setItem('refresh_token', refreshToken);
       }
     }
   }
@@ -212,16 +212,16 @@ export class ApiClient {
   clearToken() {
     this.token = null;
     this.refreshToken = null;
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
     }
   }
 
   loadToken() {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("access_token");
-      const refreshToken = localStorage.getItem("refresh_token");
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
 
       if (token) {
         this.token = token;
@@ -248,7 +248,7 @@ export class ApiClient {
 
     try {
       if (!this.refreshToken) {
-        throw new Error("No refresh token available");
+        throw new Error('No refresh token available');
       }
 
       const response = await axios.post<ApiResponse<AuthResponse>>(
@@ -257,7 +257,7 @@ export class ApiClient {
       );
 
       if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error || "Failed to refresh token");
+        throw new Error(response.data.error || 'Failed to refresh token');
       }
 
       const { token, refreshToken } = response.data.data;
@@ -269,15 +269,15 @@ export class ApiClient {
       }
 
       // Save to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem("access_token", token);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('access_token', token);
         if (refreshToken) {
-          localStorage.setItem("refresh_token", refreshToken);
+          localStorage.setItem('refresh_token', refreshToken);
         }
       }
 
       // Process any queued requests
-      this.requestsQueue.forEach((request) => {
+      this.requestsQueue.forEach(request => {
         request.resolve(token);
       });
 
@@ -290,7 +290,7 @@ export class ApiClient {
       this.clearToken();
 
       // Reject all queued requests
-      this.requestsQueue.forEach((request) => {
+      this.requestsQueue.forEach(request => {
         request.reject(error);
       });
 
@@ -308,7 +308,7 @@ export class ApiClient {
     // Check for mock mode and various endpoints
     if (this.isMockMode) {
       // Mock trips stats for dashboard (support both /trips/stats and /v1/trips/stats)
-      if (url === "/trips/stats" || url === "/v1/trips/stats") {
+      if (url === '/trips/stats' || url === '/v1/trips/stats') {
         return Promise.resolve({
           success: true,
           data: {
@@ -323,41 +323,41 @@ export class ApiClient {
       }
 
       // Mock trips list (support both /trips and /v1/trips)
-      if (url.startsWith("/trips") || url.startsWith("/v1/trips")) {
+      if (url.startsWith('/trips') || url.startsWith('/v1/trips')) {
         return Promise.resolve({
           success: true,
           data: [
             {
-              id: "trip-1",
-              driverId: "mock-driver-1",
-              destination: "Lincoln Elementary School",
+              id: 'trip-1',
+              driverId: 'mock-driver-1',
+              destination: 'Lincoln Elementary School',
               pickupLocations: [],
               date: new Date(Date.now() + 86400000),
-              departureTime: "07:45",
-              arrivalTime: "08:00",
+              departureTime: '07:45',
+              arrivalTime: '08:00',
               maxPassengers: 4,
-              passengers: ["child-1"],
+              passengers: ['child-1'],
               availableSeats: 3,
               cost: 0,
-              status: "planned",
-              notes: "Morning school drop-off",
+              status: 'planned',
+              notes: 'Morning school drop-off',
               createdAt: new Date(),
               updatedAt: new Date(),
             },
             {
-              id: "trip-2",
-              driverId: "mock-driver-2",
-              destination: "Jefferson Middle School",
+              id: 'trip-2',
+              driverId: 'mock-driver-2',
+              destination: 'Jefferson Middle School',
               pickupLocations: [],
               date: new Date(Date.now() + 172800000),
-              departureTime: "15:15",
-              arrivalTime: "15:30",
+              departureTime: '15:15',
+              arrivalTime: '15:30',
               maxPassengers: 3,
               passengers: [],
               availableSeats: 3,
               cost: 0,
-              status: "planned",
-              notes: "Afternoon pickup",
+              status: 'planned',
+              notes: 'Afternoon pickup',
               createdAt: new Date(),
               updatedAt: new Date(),
             },
@@ -372,7 +372,7 @@ export class ApiClient {
       }
 
       // Mock user profile (support both /users/me and /v1/users/me)
-      if (url === "/users/me" || url === "/v1/users/me") {
+      if (url === '/users/me' || url === '/v1/users/me') {
         return Promise.resolve({
           success: true,
           data: MOCK_USER as T,
@@ -380,19 +380,19 @@ export class ApiClient {
       }
 
       // Mock messages
-      if (url.startsWith("/messages")) {
+      if (url.startsWith('/messages')) {
         return Promise.resolve({
           success: true,
           data: {
             data: [
               {
-                id: "msg-1",
-                content: "Welcome to VCarpool! This is a mock message.",
-                senderId: "mock-user-456",
-                senderName: "System Admin",
-                tripId: "trip-1",
+                id: 'msg-1',
+                content: 'Welcome to VCarpool! This is a mock message.',
+                senderId: 'mock-user-456',
+                senderName: 'System Admin',
+                tripId: 'trip-1',
                 createdAt: new Date().toISOString(),
-                type: "SYSTEM",
+                type: 'SYSTEM',
               },
             ],
             total: 1,
@@ -423,7 +423,7 @@ export class ApiClient {
     } catch (error) {
       const handledError = handleApiError(error as AxiosError, `GET ${url}`);
       await errorHandler.handleError(handledError, {
-        errorBoundary: "ApiClient",
+        errorBoundary: 'ApiClient',
         componentStack: `GET ${url}`,
       });
       throw handledError;
@@ -437,14 +437,14 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     // Check for mock mode and auth endpoints
     if (this.isMockMode) {
-      if (url === "/v1/auth/token" || url === "/auth/login-simple") {
+      if (url === '/v1/auth/token' || url === '/auth/login-simple') {
         return this.mockLogin(data) as Promise<ApiResponse<T>>;
       }
-      if (url === "/v1/auth/register") {
+      if (url === '/v1/auth/register') {
         return this.mockRegister(data) as Promise<ApiResponse<T>>;
       }
       // For other endpoints in mock mode, return success
-      if (url.startsWith("/v1/auth/") || url.startsWith("/auth/")) {
+      if (url.startsWith('/v1/auth/') || url.startsWith('/auth/')) {
         return Promise.resolve({
           success: true,
           data: {} as T,
@@ -466,7 +466,7 @@ export class ApiClient {
     } catch (error) {
       const handledError = handleApiError(error as AxiosError, `POST ${url}`);
       await errorHandler.handleError(handledError, {
-        errorBoundary: "ApiClient",
+        errorBoundary: 'ApiClient',
         componentStack: `POST ${url}`,
       });
       throw handledError;
@@ -492,7 +492,7 @@ export class ApiClient {
     } catch (error) {
       const handledError = handleApiError(error as AxiosError, `PUT ${url}`);
       await errorHandler.handleError(handledError, {
-        errorBoundary: "ApiClient",
+        errorBoundary: 'ApiClient',
         componentStack: `PUT ${url}`,
       });
       throw handledError;
@@ -517,7 +517,7 @@ export class ApiClient {
     } catch (error) {
       const handledError = handleApiError(error as AxiosError, `DELETE ${url}`);
       await errorHandler.handleError(handledError, {
-        errorBoundary: "ApiClient",
+        errorBoundary: 'ApiClient',
         componentStack: `DELETE ${url}`,
       });
       throw handledError;
@@ -547,7 +547,7 @@ export class ApiClient {
         `GET ${url} (paginated)`
       );
       await errorHandler.handleError(handledError, {
-        errorBoundary: "ApiClient",
+        errorBoundary: 'ApiClient',
         componentStack: `GET ${url} (paginated)`,
       });
       throw handledError;
@@ -559,7 +559,7 @@ export class ApiClient {
 // Always use production backend API for now since local backend setup is complex
 const getApiUrl = () => {
   // For now, always use production API to avoid local setup complexity
-  return "https://vcarpool-api-prod.azurewebsites.net/api";
+  return 'https://vcarpool-api-prod.azurewebsites.net/api';
 
   // Future: Enable local development when needed
   // if (
@@ -574,6 +574,6 @@ const getApiUrl = () => {
 export const apiClient = new ApiClient(getApiUrl());
 
 // Initialize token on client side
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   apiClient.loadToken();
 }

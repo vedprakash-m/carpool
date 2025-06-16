@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect, memo, useCallback, useMemo } from "react";
-import { useAuthStore } from "@/store/auth.store";
+import { useState, useEffect, memo, useCallback, useMemo } from 'react';
+import { useAuthStore } from '@/store/auth.store';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -9,7 +9,7 @@ import {
   UserIcon,
   MapPinIcon,
   TruckIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface CalendarAssignment {
   id: string;
@@ -17,17 +17,17 @@ interface CalendarAssignment {
   startTime: string;
   endTime: string;
   routeType:
-    | "school_dropoff"
-    | "school_pickup"
-    | "multi_stop"
-    | "point_to_point";
+    | 'school_dropoff'
+    | 'school_pickup'
+    | 'multi_stop'
+    | 'point_to_point';
   description: string;
   driverName?: string;
   driverPhone?: string;
   passengers?: string[];
   pickupLocation?: string;
   dropoffLocation?: string;
-  status: "scheduled" | "in_progress" | "completed" | "cancelled";
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 }
 
 interface CalendarViewProps {
@@ -37,31 +37,31 @@ interface CalendarViewProps {
 }
 
 const DAYS_OF_WEEK = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ];
 
 const ROUTE_TYPE_COLORS = {
-  school_dropoff: "bg-blue-100 text-blue-800 border-blue-200",
-  school_pickup: "bg-green-100 text-green-800 border-green-200",
-  multi_stop: "bg-purple-100 text-purple-800 border-purple-200",
-  point_to_point: "bg-orange-100 text-orange-800 border-orange-200",
+  school_dropoff: 'bg-blue-100 text-blue-800 border-blue-200',
+  school_pickup: 'bg-green-100 text-green-800 border-green-200',
+  multi_stop: 'bg-purple-100 text-purple-800 border-purple-200',
+  point_to_point: 'bg-orange-100 text-orange-800 border-orange-200',
 };
 
 const STATUS_COLORS = {
-  scheduled: "bg-gray-100 text-gray-800",
-  in_progress: "bg-yellow-100 text-yellow-800",
-  completed: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800",
+  scheduled: 'bg-gray-100 text-gray-800',
+  in_progress: 'bg-yellow-100 text-yellow-800',
+  completed: 'bg-green-100 text-green-800',
+  cancelled: 'bg-red-100 text-red-800',
 };
 
 export default memo(function CalendarView({
-  className = "",
+  className = '',
   showCreateButton = false,
   onDateClick,
 }: CalendarViewProps) {
@@ -93,10 +93,10 @@ export default memo(function CalendarView({
   // Memoized assignment filtering
   const filteredAssignmentsByDate = useMemo(() => {
     const result: Record<string, CalendarAssignment[]> = {};
-    weekDates.forEach((date) => {
-      const dateString = date.toISOString().split("T")[0];
+    weekDates.forEach(date => {
+      const dateString = date.toISOString().split('T')[0];
       const dayAssignments = assignments.filter(
-        (assignment) => assignment.date === dateString
+        assignment => assignment.date === dateString
       );
       result[dateString] = filterAssignmentsByRole(dayAssignments);
     });
@@ -106,7 +106,7 @@ export default memo(function CalendarView({
   // Function to get assignments for a specific date
   const getAssignmentsForDate = useCallback(
     (date: Date): CalendarAssignment[] => {
-      const dateString = date.toISOString().split("T")[0];
+      const dateString = date.toISOString().split('T')[0];
       return filteredAssignmentsByDate[dateString] || [];
     },
     [filteredAssignmentsByDate]
@@ -120,7 +120,7 @@ export default memo(function CalendarView({
       const mockAssignments = getMockAssignments();
       setAssignments(mockAssignments);
     } catch (error) {
-      console.error("Load assignments error:", error);
+      console.error('Load assignments error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -128,9 +128,9 @@ export default memo(function CalendarView({
 
   // Optimized navigation function
   const navigateWeek = useCallback(
-    (direction: "prev" | "next") => {
+    (direction: 'prev' | 'next') => {
       const newWeek = new Date(currentWeek);
-      newWeek.setDate(currentWeek.getDate() + (direction === "next" ? 7 : -7));
+      newWeek.setDate(currentWeek.getDate() + (direction === 'next' ? 7 : -7));
       setCurrentWeek(newWeek);
     },
     [currentWeek]
@@ -149,18 +149,18 @@ export default memo(function CalendarView({
     end.setDate(start.getDate() + 6);
 
     if (start.getMonth() === end.getMonth()) {
-      return `${start.toLocaleDateString("en-US", {
-        month: "long",
+      return `${start.toLocaleDateString('en-US', {
+        month: 'long',
       })} ${start.getDate()} - ${end.getDate()}, ${start.getFullYear()}`;
     } else {
       const options: Intl.DateTimeFormatOptions = {
-        month: "short",
-        day: "numeric",
+        month: 'short',
+        day: 'numeric',
       };
       return `${start.toLocaleDateString(
-        "en-US",
+        'en-US',
         options
-      )} - ${end.toLocaleDateString("en-US", options)}, ${start.getFullYear()}`;
+      )} - ${end.toLocaleDateString('en-US', options)}, ${start.getFullYear()}`;
     }
   }, [currentWeek, getWeekStart]);
 
@@ -170,19 +170,19 @@ export default memo(function CalendarView({
       if (!user) return assignments;
 
       switch (user.role) {
-        case "admin":
+        case 'admin':
           return assignments; // Admin sees all assignments
-        case "parent":
+        case 'parent':
           return assignments.filter(
-            (assignment) =>
+            assignment =>
               assignment.driverName === `${user.firstName} ${user.lastName}` ||
               assignment.passengers?.includes(
                 `${user.firstName} ${user.lastName}`
               ) ||
-              assignment.passengers?.some((p) => p.includes("Child")) // Simplistic parent-child matching
+              assignment.passengers?.some(p => p.includes('Child')) // Simplistic parent-child matching
           );
-        case "student":
-          return assignments.filter((assignment) =>
+        case 'student':
+          return assignments.filter(assignment =>
             assignment.passengers?.includes(
               `${user.firstName} ${user.lastName}`
             )
@@ -213,7 +213,7 @@ export default memo(function CalendarView({
 
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => navigateWeek("prev")}
+              onClick={() => navigateWeek('prev')}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <ChevronLeftIcon className="h-5 w-5" />
@@ -227,7 +227,7 @@ export default memo(function CalendarView({
             </button>
 
             <button
-              onClick={() => navigateWeek("next")}
+              onClick={() => navigateWeek('next')}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <ChevronRightIcon className="h-5 w-5" />
@@ -252,8 +252,8 @@ export default memo(function CalendarView({
                 <div
                   className={`text-lg font-semibold mt-1 ${
                     isToday(weekDates[index])
-                      ? "text-blue-600"
-                      : "text-gray-700"
+                      ? 'text-blue-600'
+                      : 'text-gray-700'
                   }`}
                 >
                   {weekDates[index].getDate()}
@@ -272,11 +272,11 @@ export default memo(function CalendarView({
                   key={index}
                   className={`min-h-[120px] border rounded-lg p-2 cursor-pointer transition-colors ${
                     isToday(date)
-                      ? "border-blue-300 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? 'border-blue-300 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() =>
-                    onDateClick?.(date.toISOString().split("T")[0])
+                    onDateClick?.(date.toISOString().split('T')[0])
                   }
                 >
                   <div className="space-y-1">
@@ -285,7 +285,7 @@ export default memo(function CalendarView({
                         No trips
                       </div>
                     ) : (
-                      dayAssignments.map((assignment) => (
+                      dayAssignments.map(assignment => (
                         <div
                           key={assignment.id}
                           className={`p-2 rounded text-xs border ${
@@ -304,12 +304,12 @@ export default memo(function CalendarView({
                           </div>
 
                           {/* Role-specific information */}
-                          {user?.role === "admin" && (
+                          {user?.role === 'admin' && (
                             <div className="space-y-1">
                               <div className="flex items-center space-x-1">
                                 <UserIcon className="h-3 w-3" />
                                 <span className="truncate">
-                                  {assignment.driverName || "TBD"}
+                                  {assignment.driverName || 'TBD'}
                                 </span>
                               </div>
                               {assignment.passengers &&
@@ -317,14 +317,14 @@ export default memo(function CalendarView({
                                   <div className="text-xs text-gray-600">
                                     {assignment.passengers.length} passenger
                                     {assignment.passengers.length > 1
-                                      ? "s"
-                                      : ""}
+                                      ? 's'
+                                      : ''}
                                   </div>
                                 )}
                             </div>
                           )}
 
-                          {user?.role === "parent" && (
+                          {user?.role === 'parent' && (
                             <div className="space-y-1">
                               {assignment.driverName ===
                               `${user.firstName} ${user.lastName}` ? (
@@ -353,7 +353,7 @@ export default memo(function CalendarView({
                             </div>
                           )}
 
-                          {user?.role === "student" && (
+                          {user?.role === 'student' && (
                             <div className="space-y-1">
                               <div className="flex items-center space-x-1">
                                 <UserIcon className="h-3 w-3" />
@@ -378,7 +378,7 @@ export default memo(function CalendarView({
                               STATUS_COLORS[assignment.status]
                             }`}
                           >
-                            {assignment.status.replace("_", " ")}
+                            {assignment.status.replace('_', ' ')}
                           </div>
                         </div>
                       ))
@@ -409,7 +409,7 @@ export default memo(function CalendarView({
             </div>
           </div>
 
-          {showCreateButton && user?.role === "admin" && (
+          {showCreateButton && user?.role === 'admin' && (
             <button className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
               + Create Assignment
             </button>
@@ -428,60 +428,60 @@ function getMockAssignments(): CalendarAssignment[] {
 
   return [
     {
-      id: "assignment-1",
-      date: today.toISOString().split("T")[0],
-      startTime: "07:30",
-      endTime: "08:30",
-      routeType: "school_dropoff",
-      description: "Morning School Drop-off",
-      driverName: "Sarah Johnson",
-      driverPhone: "555-0123",
-      passengers: ["Emma Johnson", "Liam Chen"],
-      pickupLocation: "123 Maple Street",
-      dropoffLocation: "Lincoln Elementary School",
-      status: "scheduled",
+      id: 'assignment-1',
+      date: today.toISOString().split('T')[0],
+      startTime: '07:30',
+      endTime: '08:30',
+      routeType: 'school_dropoff',
+      description: 'Morning School Drop-off',
+      driverName: 'Sarah Johnson',
+      driverPhone: '555-0123',
+      passengers: ['Emma Johnson', 'Liam Chen'],
+      pickupLocation: '123 Maple Street',
+      dropoffLocation: 'Lincoln Elementary School',
+      status: 'scheduled',
     },
     {
-      id: "assignment-2",
-      date: today.toISOString().split("T")[0],
-      startTime: "15:15",
-      endTime: "16:15",
-      routeType: "school_pickup",
-      description: "Afternoon School Pick-up",
-      driverName: "Michael Chen",
-      driverPhone: "555-0124",
-      passengers: ["Emma Johnson", "Liam Chen", "Ava Wilson"],
-      pickupLocation: "Lincoln Elementary School",
-      dropoffLocation: "Various locations",
-      status: "scheduled",
+      id: 'assignment-2',
+      date: today.toISOString().split('T')[0],
+      startTime: '15:15',
+      endTime: '16:15',
+      routeType: 'school_pickup',
+      description: 'Afternoon School Pick-up',
+      driverName: 'Michael Chen',
+      driverPhone: '555-0124',
+      passengers: ['Emma Johnson', 'Liam Chen', 'Ava Wilson'],
+      pickupLocation: 'Lincoln Elementary School',
+      dropoffLocation: 'Various locations',
+      status: 'scheduled',
     },
     {
-      id: "assignment-3",
-      date: tomorrow.toISOString().split("T")[0],
-      startTime: "07:30",
-      endTime: "08:30",
-      routeType: "school_dropoff",
-      description: "Morning School Drop-off",
-      driverName: "Jennifer Davis",
-      driverPhone: "555-0125",
-      passengers: ["Noah Davis", "Sophia Wilson"],
-      pickupLocation: "789 Pine Road",
-      dropoffLocation: "Lincoln Elementary School",
-      status: "scheduled",
+      id: 'assignment-3',
+      date: tomorrow.toISOString().split('T')[0],
+      startTime: '07:30',
+      endTime: '08:30',
+      routeType: 'school_dropoff',
+      description: 'Morning School Drop-off',
+      driverName: 'Jennifer Davis',
+      driverPhone: '555-0125',
+      passengers: ['Noah Davis', 'Sophia Wilson'],
+      pickupLocation: '789 Pine Road',
+      dropoffLocation: 'Lincoln Elementary School',
+      status: 'scheduled',
     },
     {
-      id: "assignment-4",
-      date: tomorrow.toISOString().split("T")[0],
-      startTime: "15:15",
-      endTime: "16:15",
-      routeType: "school_pickup",
-      description: "Afternoon School Pick-up",
-      driverName: "David Wilson",
-      driverPhone: "555-0126",
-      passengers: ["Noah Davis", "Sophia Wilson", "Oliver Thompson"],
-      pickupLocation: "Lincoln Elementary School",
-      dropoffLocation: "Various locations",
-      status: "scheduled",
+      id: 'assignment-4',
+      date: tomorrow.toISOString().split('T')[0],
+      startTime: '15:15',
+      endTime: '16:15',
+      routeType: 'school_pickup',
+      description: 'Afternoon School Pick-up',
+      driverName: 'David Wilson',
+      driverPhone: '555-0126',
+      passengers: ['Noah Davis', 'Sophia Wilson', 'Oliver Thompson'],
+      pickupLocation: 'Lincoln Elementary School',
+      dropoffLocation: 'Various locations',
+      status: 'scheduled',
     },
   ];
 }

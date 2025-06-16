@@ -1,5 +1,5 @@
-describe("Monitoring Service Placeholder", () => {
-  it("passes", () => {
+describe('Monitoring Service Placeholder', () => {
+  it('passes', () => {
     expect(true).toBe(true);
   });
 });

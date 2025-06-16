@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 import {
   CalendarIcon,
   ClockIcon,
@@ -13,10 +13,10 @@ import {
   ChevronRightIcon,
   TruckIcon,
   EnvelopeIcon,
-} from "@heroicons/react/24/outline";
-import AssignmentConfirmation from "@/components/assignments/AssignmentConfirmation";
-import EmergencyPanel from "@/components/emergency/EmergencyPanel";
-import { apiClient } from "@/lib/api-client";
+} from '@heroicons/react/24/outline';
+import AssignmentConfirmation from '@/components/assignments/AssignmentConfirmation';
+import EmergencyPanel from '@/components/emergency/EmergencyPanel';
+import { apiClient } from '@/lib/api-client';
 
 interface Assignment {
   id: string;
@@ -26,10 +26,10 @@ interface Assignment {
   startTime: string;
   endTime: string;
   routeType:
-    | "school_dropoff"
-    | "school_pickup"
-    | "multi_stop"
-    | "point_to_point";
+    | 'school_dropoff'
+    | 'school_pickup'
+    | 'multi_stop'
+    | 'point_to_point';
   description: string;
   driverId: string;
   driverName: string;
@@ -45,8 +45,8 @@ interface Assignment {
   passengerCount: number;
   pickupLocation: string;
   dropoffLocation: string;
-  status: "confirmed" | "pending" | "cancelled";
-  assignmentMethod: "automatic" | "manual";
+  status: 'confirmed' | 'pending' | 'cancelled';
+  assignmentMethod: 'automatic' | 'manual';
   createdAt: string;
   updatedAt: string;
 }
@@ -65,33 +65,33 @@ interface AssignmentData {
 }
 
 const DAYS_OF_WEEK = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ];
 
 const ROUTE_TYPE_LABELS = {
-  school_dropoff: "School Drop-off",
-  school_pickup: "School Pick-up",
-  multi_stop: "Multi-Stop",
-  point_to_point: "Point-to-Point",
+  school_dropoff: 'School Drop-off',
+  school_pickup: 'School Pick-up',
+  multi_stop: 'Multi-Stop',
+  point_to_point: 'Point-to-Point',
 };
 
 const STATUS_COLORS = {
-  confirmed: "bg-green-100 text-green-800",
-  pending: "bg-yellow-100 text-yellow-800",
-  cancelled: "bg-red-100 text-red-800",
+  confirmed: 'bg-green-100 text-green-800',
+  pending: 'bg-yellow-100 text-yellow-800',
+  cancelled: 'bg-red-100 text-red-800',
 };
 
 export default function ParentAssignmentsPage() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
 
-  const [selectedWeek, setSelectedWeek] = useState("");
+  const [selectedWeek, setSelectedWeek] = useState('');
   const [assignmentData, setAssignmentData] = useState<AssignmentData | null>(
     null
   );
@@ -105,12 +105,12 @@ export default function ParentAssignmentsPage() {
   // Authentication check
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
 
-    if (!isLoading && user?.role !== "parent" && user?.role !== "admin") {
-      router.push("/dashboard");
+    if (!isLoading && user?.role !== 'parent' && user?.role !== 'admin') {
+      router.push('/dashboard');
       return;
     }
   }, [isAuthenticated, isLoading, user, router]);
@@ -123,7 +123,7 @@ export default function ParentAssignmentsPage() {
       const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
       const monday = new Date(today);
       monday.setDate(today.getDate() + daysUntilMonday);
-      return monday.toISOString().split("T")[0];
+      return monday.toISOString().split('T')[0];
     };
 
     setSelectedWeek(getCurrentMonday());
@@ -150,44 +150,44 @@ export default function ParentAssignmentsPage() {
       if (response.success && response.data) {
         setAssignmentData(response.data);
       } else {
-        setError("Failed to load assignments");
+        setError('Failed to load assignments');
       }
     } catch (err: any) {
-      setError(`Failed to load assignments: ${err.message || "Unknown error"}`);
+      setError(`Failed to load assignments: ${err.message || 'Unknown error'}`);
     } finally {
       setIsLoadingAssignments(false);
     }
   };
 
-  const navigateWeek = (direction: "prev" | "next") => {
+  const navigateWeek = (direction: 'prev' | 'next') => {
     const currentDate = new Date(selectedWeek);
     const newDate = new Date(currentDate);
-    newDate.setDate(currentDate.getDate() + (direction === "next" ? 7 : -7));
-    setSelectedWeek(newDate.toISOString().split("T")[0]);
+    newDate.setDate(currentDate.getDate() + (direction === 'next' ? 7 : -7));
+    setSelectedWeek(newDate.toISOString().split('T')[0]);
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const getWeekDateRange = () => {
-    if (!selectedWeek) return "";
+    if (!selectedWeek) return '';
 
     const startDate = new Date(selectedWeek);
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 6);
 
-    return `${startDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    })} - ${endDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    return `${startDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    })} - ${endDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     })}`;
   };
 
@@ -197,14 +197,14 @@ export default function ParentAssignmentsPage() {
     notes?: string
   ) => {
     try {
-      setSuccessMessage("Assignment confirmed successfully!");
+      setSuccessMessage('Assignment confirmed successfully!');
 
       // Update local confirmation status
-      setConfirmationStatuses((prev) => ({
+      setConfirmationStatuses(prev => ({
         ...prev,
         [assignmentId]: {
           id: `conf-${assignmentId}`,
-          status: "confirmed",
+          status: 'confirmed',
           confirmationDate: new Date().toISOString(),
           responseTime: Math.floor(Math.random() * 30) + 5, // Mock response time
           notes,
@@ -216,7 +216,7 @@ export default function ParentAssignmentsPage() {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       setError(
-        `Failed to confirm assignment: ${err.message || "Unknown error"}`
+        `Failed to confirm assignment: ${err.message || 'Unknown error'}`
       );
     }
   };
@@ -227,14 +227,14 @@ export default function ParentAssignmentsPage() {
     issueType: string
   ) => {
     try {
-      setSuccessMessage("Assignment declined. Admin has been notified.");
+      setSuccessMessage('Assignment declined. Admin has been notified.');
 
       // Update local confirmation status
-      setConfirmationStatuses((prev) => ({
+      setConfirmationStatuses(prev => ({
         ...prev,
         [assignmentId]: {
           id: `conf-${assignmentId}`,
-          status: "declined",
+          status: 'declined',
           confirmationDate: new Date().toISOString(),
           responseTime: Math.floor(Math.random() * 30) + 5,
           issues: [
@@ -250,7 +250,7 @@ export default function ParentAssignmentsPage() {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       setError(
-        `Failed to decline assignment: ${err.message || "Unknown error"}`
+        `Failed to decline assignment: ${err.message || 'Unknown error'}`
       );
     }
   };
@@ -262,14 +262,14 @@ export default function ParentAssignmentsPage() {
   ) => {
     try {
       setSuccessMessage(
-        "Issue reported successfully. Admin has been notified."
+        'Issue reported successfully. Admin has been notified.'
       );
 
       // Update existing confirmation status or create new one
-      setConfirmationStatuses((prev) => {
+      setConfirmationStatuses(prev => {
         const existing = prev[assignmentId] || {
           id: `conf-${assignmentId}`,
-          status: "pending",
+          status: 'pending',
           issues: [],
         };
 
@@ -291,7 +291,7 @@ export default function ParentAssignmentsPage() {
 
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
-      setError(`Failed to report issue: ${err.message || "Unknown error"}`);
+      setError(`Failed to report issue: ${err.message || 'Unknown error'}`);
     }
   };
 
@@ -307,7 +307,7 @@ export default function ParentAssignmentsPage() {
       );
 
       // Here would be the API call to emergency services
-      console.log("Emergency reported:", {
+      console.log('Emergency reported:', {
         type,
         description,
         urgency,
@@ -316,18 +316,18 @@ export default function ParentAssignmentsPage() {
 
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err: any) {
-      setError(`Failed to report emergency: ${err.message || "Unknown error"}`);
+      setError(`Failed to report emergency: ${err.message || 'Unknown error'}`);
     }
   };
 
   const handleRequestBackup = async (assignmentId: string, reason: string) => {
     try {
       setSuccessMessage(
-        "Backup request sent successfully! Available drivers in your area have been notified."
+        'Backup request sent successfully! Available drivers in your area have been notified.'
       );
 
       // Here would be the API call to backup coordination system
-      console.log("Backup requested:", {
+      console.log('Backup requested:', {
         assignmentId,
         reason,
         timestamp: new Date().toISOString(),
@@ -335,20 +335,20 @@ export default function ParentAssignmentsPage() {
 
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: any) {
-      setError(`Failed to request backup: ${err.message || "Unknown error"}`);
+      setError(`Failed to request backup: ${err.message || 'Unknown error'}`);
     }
   };
 
   const handleContactEmergency = async (contactId: string, method: string) => {
     try {
       // Log emergency contact usage for metrics
-      console.log("Emergency contact used:", {
+      console.log('Emergency contact used:', {
         contactId,
         method,
         timestamp: new Date().toISOString(),
       });
     } catch (err: any) {
-      console.error("Error logging emergency contact:", err);
+      console.error('Error logging emergency contact:', err);
     }
   };
 
@@ -382,7 +382,7 @@ export default function ParentAssignmentsPage() {
               </p>
             </div>
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push('/dashboard')}
               className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               ← Back to Dashboard
@@ -401,7 +401,7 @@ export default function ParentAssignmentsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => navigateWeek("prev")}
+              onClick={() => navigateWeek('prev')}
               className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
             >
               <ChevronLeftIcon className="h-5 w-5 mr-1" />
@@ -418,7 +418,7 @@ export default function ParentAssignmentsPage() {
             </div>
 
             <button
-              onClick={() => navigateWeek("next")}
+              onClick={() => navigateWeek('next')}
               className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
             >
               Next Week
@@ -516,13 +516,13 @@ export default function ParentAssignmentsPage() {
               No Assignments This Week
             </h3>
             <p className="text-gray-600">
-              You don't have any driving assignments for the week of{" "}
+              You don't have any driving assignments for the week of{' '}
               {getWeekDateRange()}.
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {assignmentData.assignments.map((assignment) => (
+            {assignmentData.assignments.map(assignment => (
               <div
                 key={assignment.id}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
@@ -545,7 +545,7 @@ export default function ParentAssignmentsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                       <div className="flex items-center">
                         <CalendarIcon className="h-4 w-4 mr-2" />
-                        {DAYS_OF_WEEK[assignment.dayOfWeek]},{" "}
+                        {DAYS_OF_WEEK[assignment.dayOfWeek]},{' '}
                         {formatDate(assignment.date)}
                       </div>
                       <div className="flex items-center">
@@ -589,7 +589,7 @@ export default function ParentAssignmentsPage() {
                     Passengers ({assignment.passengerCount})
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {assignment.passengers.map((passenger) => (
+                    {assignment.passengers.map(passenger => (
                       <div
                         key={passenger.id}
                         className="flex items-center justify-between p-3 bg-blue-50 rounded-lg"

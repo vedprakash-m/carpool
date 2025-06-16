@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   CalendarIcon,
   ClockIcon,
@@ -8,7 +8,7 @@ import {
   ArrowPathIcon,
   ExclamationTriangleIcon,
   CheckIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface Assignment {
   id: string;
@@ -53,50 +53,50 @@ export default function DualDrivingParentDashboard({
 }: DualDrivingParentDashboardProps) {
   const [selectedAssignment, setSelectedAssignment] =
     useState<Assignment | null>(null);
-  const [reassignmentReason, setReassignmentReason] = useState("");
+  const [reassignmentReason, setReassignmentReason] = useState('');
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [processing, setProcessing] = useState(false);
 
   // Mock data
   const mockFamily: FamilyData = {
-    familyId: "family-johnson",
+    familyId: 'family-johnson',
     children: [
-      { name: "Emma Johnson", grade: "2nd Grade" },
-      { name: "Jake Johnson", grade: "5th Grade" },
+      { name: 'Emma Johnson', grade: '2nd Grade' },
+      { name: 'Jake Johnson', grade: '5th Grade' },
     ],
     parents: [
       {
-        id: "parent-sarah",
-        name: "Sarah Johnson",
-        email: "sarah.j@example.com",
+        id: 'parent-sarah',
+        name: 'Sarah Johnson',
+        email: 'sarah.j@example.com',
         canDrive: true,
-        availability: ["monday", "wednesday", "friday"],
+        availability: ['monday', 'wednesday', 'friday'],
         assignedTrips: [
           {
-            id: "assignment-1",
-            date: "2025-01-15",
-            dayOfWeek: "Monday",
-            time: "7:45 AM",
-            currentDriverId: "parent-sarah",
-            currentDriverName: "Sarah Johnson",
+            id: 'assignment-1',
+            date: '2025-01-15',
+            dayOfWeek: 'Monday',
+            time: '7:45 AM',
+            currentDriverId: 'parent-sarah',
+            currentDriverName: 'Sarah Johnson',
             canReassign: true,
           },
         ],
       },
       {
-        id: "parent-mike",
-        name: "Mike Johnson",
-        email: "mike.j@example.com",
+        id: 'parent-mike',
+        name: 'Mike Johnson',
+        email: 'mike.j@example.com',
         canDrive: true,
-        availability: ["tuesday", "thursday"],
+        availability: ['tuesday', 'thursday'],
         assignedTrips: [
           {
-            id: "assignment-2",
-            date: "2025-01-18",
-            dayOfWeek: "Thursday",
-            time: "7:45 AM",
-            currentDriverId: "parent-mike",
-            currentDriverName: "Mike Johnson",
+            id: 'assignment-2',
+            date: '2025-01-18',
+            dayOfWeek: 'Thursday',
+            time: '7:45 AM',
+            currentDriverId: 'parent-mike',
+            currentDriverName: 'Mike Johnson',
             canReassign: true,
           },
         ],
@@ -107,11 +107,11 @@ export default function DualDrivingParentDashboard({
   };
 
   const family = familyData || mockFamily;
-  const drivingParents = family.parents.filter((p) => p.canDrive);
+  const drivingParents = family.parents.filter(p => p.canDrive);
 
   const handleReassignClick = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
-    setReassignmentReason("");
+    setReassignmentReason('');
     setShowReassignModal(true);
   };
 
@@ -131,14 +131,14 @@ export default function DualDrivingParentDashboard({
       setShowReassignModal(false);
       setSelectedAssignment(null);
     } catch (error) {
-      console.error("Reassignment failed:", error);
+      console.error('Reassignment failed:', error);
     } finally {
       setProcessing(false);
     }
   };
 
   const getOtherParent = (currentParentId: string) => {
-    return drivingParents.find((p) => p.id !== currentParentId);
+    return drivingParents.find(p => p.id !== currentParentId);
   };
 
   return (
@@ -148,11 +148,11 @@ export default function DualDrivingParentDashboard({
           Family Driving Coordination
         </h2>
         <p className="text-sm text-gray-600 mt-1">
-          Manage driving assignments between{" "}
+          Manage driving assignments between{' '}
           {family.parents
-            .filter((p) => p.canDrive)
-            .map((p) => p.name.split(" ")[0])
-            .join(" and ")}
+            .filter(p => p.canDrive)
+            .map(p => p.name.split(' ')[0])
+            .join(' and ')}
         </p>
       </div>
 
@@ -174,7 +174,7 @@ export default function DualDrivingParentDashboard({
           </p>
           <p className="text-sm text-green-700">
             Based on {family.children.length} child
-            {family.children.length !== 1 ? "ren" : ""}
+            {family.children.length !== 1 ? 'ren' : ''}
           </p>
         </div>
 
@@ -185,17 +185,17 @@ export default function DualDrivingParentDashboard({
           </p>
           <p className="text-sm text-gray-600">
             {family.totalTripsAssigned === family.fairShareTrips
-              ? "✅ Meeting fair share"
+              ? '✅ Meeting fair share'
               : family.totalTripsAssigned > family.fairShareTrips
-              ? "⚠️ Above fair share"
-              : "📉 Below fair share"}
+                ? '⚠️ Above fair share'
+                : '📉 Below fair share'}
           </p>
         </div>
       </div>
 
       {/* Driving Parents Status */}
       <div className="space-y-6">
-        {drivingParents.map((parent) => (
+        {drivingParents.map(parent => (
           <div
             key={parent.id}
             className="border border-gray-200 rounded-lg p-5"
@@ -204,16 +204,16 @@ export default function DualDrivingParentDashboard({
               <div>
                 <h3 className="font-medium text-gray-900">{parent.name}</h3>
                 <p className="text-sm text-gray-600">
-                  Available:{" "}
+                  Available:{' '}
                   {parent.availability
-                    .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
-                    .join(", ")}
+                    .map(day => day.charAt(0).toUpperCase() + day.slice(1))
+                    .join(', ')}
                 </p>
               </div>
               <div className="text-right">
                 <span className="text-lg font-semibold text-gray-900">
                   {parent.assignedTrips.length} trip
-                  {parent.assignedTrips.length !== 1 ? "s" : ""}
+                  {parent.assignedTrips.length !== 1 ? 's' : ''}
                 </span>
               </div>
             </div>
@@ -224,7 +224,7 @@ export default function DualDrivingParentDashboard({
                   No trips assigned
                 </p>
               ) : (
-                parent.assignedTrips.map((assignment) => {
+                parent.assignedTrips.map(assignment => {
                   const otherParent = getOtherParent(parent.id);
                   return (
                     <div
@@ -235,7 +235,7 @@ export default function DualDrivingParentDashboard({
                         <CalendarIcon className="h-5 w-5 text-gray-400" />
                         <div>
                           <p className="font-medium text-gray-900">
-                            {assignment.dayOfWeek},{" "}
+                            {assignment.dayOfWeek},{' '}
                             {new Date(assignment.date).toLocaleDateString()}
                           </p>
                           <p className="text-sm text-gray-600 flex items-center">
@@ -252,7 +252,7 @@ export default function DualDrivingParentDashboard({
                             className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center"
                           >
                             <ArrowPathIcon className="h-4 w-4 mr-1" />
-                            Reassign to {otherParent.name.split(" ")[0]}
+                            Reassign to {otherParent.name.split(' ')[0]}
                           </button>
                         )}
                       </div>
@@ -279,11 +279,11 @@ export default function DualDrivingParentDashboard({
               </p>
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="font-medium text-gray-900">
-                  {selectedAssignment.dayOfWeek},{" "}
+                  {selectedAssignment.dayOfWeek},{' '}
                   {new Date(selectedAssignment.date).toLocaleDateString()}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {selectedAssignment.time} • Currently:{" "}
+                  {selectedAssignment.time} • Currently:{' '}
                   {selectedAssignment.currentDriverName}
                 </p>
               </div>
@@ -295,7 +295,7 @@ export default function DualDrivingParentDashboard({
               </label>
               <textarea
                 value={reassignmentReason}
-                onChange={(e) => setReassignmentReason(e.target.value)}
+                onChange={e => setReassignmentReason(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={3}
                 placeholder="e.g., Schedule conflict, better availability..."
@@ -325,8 +325,8 @@ export default function DualDrivingParentDashboard({
               </button>
 
               {drivingParents
-                .filter((p) => p.id !== selectedAssignment.currentDriverId)
-                .map((otherParent) => (
+                .filter(p => p.id !== selectedAssignment.currentDriverId)
+                .map(otherParent => (
                   <button
                     key={otherParent.id}
                     onClick={() => handleReassignConfirm(otherParent.id)}
@@ -338,7 +338,7 @@ export default function DualDrivingParentDashboard({
                     ) : (
                       <CheckIcon className="h-4 w-4 mr-2" />
                     )}
-                    Assign to {otherParent.name.split(" ")[0]}
+                    Assign to {otherParent.name.split(' ')[0]}
                   </button>
                 ))}
             </div>

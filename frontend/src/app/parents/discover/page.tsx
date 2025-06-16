@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 import {
   MagnifyingGlassIcon,
   MapPinIcon,
@@ -13,8 +13,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   PaperAirplaneIcon,
-} from "@heroicons/react/24/outline";
-import { AccessibleModal } from "@/components/ui/AccessibleComponents";
+} from '@heroicons/react/24/outline';
+import { AccessibleModal } from '@/components/ui/AccessibleComponents';
 
 interface School {
   id: string;
@@ -74,9 +74,9 @@ export default function GroupDiscoveryPage() {
   const { user, isLoading } = useAuthStore();
   const router = useRouter();
   const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>({
-    schoolName: "",
-    userLat: "",
-    userLng: "",
+    schoolName: '',
+    userLat: '',
+    userLng: '',
     maxDistanceMiles: 10,
     ageGroups: [],
     daysOfWeek: [],
@@ -90,12 +90,12 @@ export default function GroupDiscoveryPage() {
     null
   );
   const [joinRequestData, setJoinRequestData] = useState({
-    message: "",
+    message: '',
     childrenInfo: [] as { name: string; grade: string }[],
   });
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [message, setMessage] = useState<{
-    type: "success" | "error";
+    type: 'success' | 'error';
     text: string;
   } | null>(null);
 
@@ -103,14 +103,14 @@ export default function GroupDiscoveryPage() {
   useEffect(() => {
     if (
       !isLoading &&
-      (!user || (user.role !== "parent" && user.role !== "group_admin"))
+      (!user || (user.role !== 'parent' && user.role !== 'group_admin'))
     ) {
-      router.push("/dashboard");
+      router.push('/dashboard');
     }
 
     // Pre-registration guard: ensure user has completed registration before accessing group discovery
     if (!isLoading && user && !user.registrationCompleted) {
-      router.push("/register/complete");
+      router.push('/register/complete');
     }
   }, [user, isLoading, router]);
 
@@ -118,28 +118,28 @@ export default function GroupDiscoveryPage() {
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setSearchCriteria((prev) => ({
+        position => {
+          setSearchCriteria(prev => ({
             ...prev,
             userLat: position.coords.latitude.toString(),
             userLng: position.coords.longitude.toString(),
           }));
           setMessage({
-            type: "success",
-            text: "Location detected! Search will show distance-based results.",
+            type: 'success',
+            text: 'Location detected! Search will show distance-based results.',
           });
         },
-        (error) => {
+        error => {
           setMessage({
-            type: "error",
-            text: "Could not detect location. You can still search by school name.",
+            type: 'error',
+            text: 'Could not detect location. You can still search by school name.',
           });
         }
       );
     } else {
       setMessage({
-        type: "error",
-        text: "Geolocation is not supported by this browser.",
+        type: 'error',
+        text: 'Geolocation is not supported by this browser.',
       });
     }
   };
@@ -150,35 +150,35 @@ export default function GroupDiscoveryPage() {
 
     try {
       const queryParams = new URLSearchParams({
-        action: "search",
+        action: 'search',
         maxDistanceMiles: searchCriteria.maxDistanceMiles.toString(),
       });
 
       if (searchCriteria.schoolName) {
-        queryParams.append("schoolName", searchCriteria.schoolName);
+        queryParams.append('schoolName', searchCriteria.schoolName);
       }
       if (searchCriteria.userLat && searchCriteria.userLng) {
-        queryParams.append("userLat", searchCriteria.userLat);
-        queryParams.append("userLng", searchCriteria.userLng);
+        queryParams.append('userLat', searchCriteria.userLat);
+        queryParams.append('userLng', searchCriteria.userLng);
       }
       if (searchCriteria.ageGroups.length > 0) {
-        queryParams.append("ageGroups", searchCriteria.ageGroups.join(","));
+        queryParams.append('ageGroups', searchCriteria.ageGroups.join(','));
       }
       if (searchCriteria.daysOfWeek.length > 0) {
-        queryParams.append("daysOfWeek", searchCriteria.daysOfWeek.join(","));
+        queryParams.append('daysOfWeek', searchCriteria.daysOfWeek.join(','));
       }
       if (searchCriteria.morningPickup) {
-        queryParams.append("morningPickup", "true");
+        queryParams.append('morningPickup', 'true');
       }
       if (searchCriteria.afternoonDropoff) {
-        queryParams.append("afternoonDropoff", "true");
+        queryParams.append('afternoonDropoff', 'true');
       }
 
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(`/api/parent/groups?${queryParams}`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
 
@@ -187,7 +187,7 @@ export default function GroupDiscoveryPage() {
         setSearchResults(data.data.results);
         setSearchPerformed(true);
         setMessage({
-          type: "success",
+          type: 'success',
           text: `Found ${data.data.results.length} matching carpool groups`,
         });
       } else {
@@ -196,10 +196,10 @@ export default function GroupDiscoveryPage() {
         // Handle registration-specific errors
         if (response.status === 401) {
           setMessage({
-            type: "error",
-            text: "Please log in to search for carpool groups.",
+            type: 'error',
+            text: 'Please log in to search for carpool groups.',
           });
-          router.push("/auth/login");
+          router.push('/auth/login');
           return;
         }
 
@@ -210,48 +210,48 @@ export default function GroupDiscoveryPage() {
             missingRequirements,
           } = errorData.error;
 
-          if (errorCode === "REGISTRATION_INCOMPLETE") {
+          if (errorCode === 'REGISTRATION_INCOMPLETE') {
             setMessage({
-              type: "error",
+              type: 'error',
               text: `Registration incomplete: ${errorMessage}${
                 missingRequirements
-                  ? ` Missing: ${missingRequirements.join(", ")}`
-                  : ""
+                  ? ` Missing: ${missingRequirements.join(', ')}`
+                  : ''
               }`,
             });
-          } else if (errorCode === "PHONE_NOT_VERIFIED") {
+          } else if (errorCode === 'PHONE_NOT_VERIFIED') {
             setMessage({
-              type: "error",
-              text: "Please verify your phone number before searching for groups.",
+              type: 'error',
+              text: 'Please verify your phone number before searching for groups.',
             });
-          } else if (errorCode === "ADDRESS_NOT_VERIFIED") {
+          } else if (errorCode === 'ADDRESS_NOT_VERIFIED') {
             setMessage({
-              type: "error",
-              text: "Please verify your home address before searching for groups.",
+              type: 'error',
+              text: 'Please verify your home address before searching for groups.',
             });
-          } else if (errorCode === "EMERGENCY_CONTACT_NOT_VERIFIED") {
+          } else if (errorCode === 'EMERGENCY_CONTACT_NOT_VERIFIED') {
             setMessage({
-              type: "error",
-              text: "Please add and verify emergency contacts before searching for groups.",
+              type: 'error',
+              text: 'Please add and verify emergency contacts before searching for groups.',
             });
           } else {
             setMessage({
-              type: "error",
-              text: errorMessage || "Registration verification required.",
+              type: 'error',
+              text: errorMessage || 'Registration verification required.',
             });
           }
           return;
         }
 
         setMessage({
-          type: "error",
-          text: "Failed to search for groups",
+          type: 'error',
+          text: 'Failed to search for groups',
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error searching for groups",
+        type: 'error',
+        text: 'Error searching for groups',
       });
     } finally {
       setLoading(false);
@@ -269,11 +269,11 @@ export default function GroupDiscoveryPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem("vcarpool_token");
-      const response = await fetch("/api/parent/groups?action=join-request", {
-        method: "POST",
+      const token = localStorage.getItem('vcarpool_token');
+      const response = await fetch('/api/parent/groups?action=join-request', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -286,22 +286,22 @@ export default function GroupDiscoveryPage() {
       if (response.ok) {
         const data = await response.json();
         setMessage({
-          type: "success",
+          type: 'success',
           text: data.data.message,
         });
         setSelectedGroup(null);
-        setJoinRequestData({ message: "", childrenInfo: [] });
+        setJoinRequestData({ message: '', childrenInfo: [] });
       } else {
         const errorData = await response.json();
         setMessage({
-          type: "error",
+          type: 'error',
           text: errorData.error.message,
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error submitting join request",
+        type: 'error',
+        text: 'Error submitting join request',
       });
     } finally {
       setIsSubmittingRequest(false);
@@ -309,18 +309,18 @@ export default function GroupDiscoveryPage() {
   };
 
   const addChild = () => {
-    setJoinRequestData((prev) => ({
+    setJoinRequestData(prev => ({
       ...prev,
-      childrenInfo: [...prev.childrenInfo, { name: "", grade: "" }],
+      childrenInfo: [...prev.childrenInfo, { name: '', grade: '' }],
     }));
   };
 
   const updateChild = (
     index: number,
-    field: "name" | "grade",
+    field: 'name' | 'grade',
     value: string
   ) => {
-    setJoinRequestData((prev) => ({
+    setJoinRequestData(prev => ({
       ...prev,
       childrenInfo: prev.childrenInfo.map((child, i) =>
         i === index ? { ...child, [field]: value } : child
@@ -329,16 +329,16 @@ export default function GroupDiscoveryPage() {
   };
 
   const removeChild = (index: number) => {
-    setJoinRequestData((prev) => ({
+    setJoinRequestData(prev => ({
       ...prev,
       childrenInfo: prev.childrenInfo.filter((_, i) => i !== index),
     }));
   };
 
   const getMatchScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 bg-green-100";
-    if (score >= 60) return "text-yellow-600 bg-yellow-100";
-    return "text-orange-600 bg-orange-100";
+    if (score >= 80) return 'text-green-600 bg-green-100';
+    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
+    return 'text-orange-600 bg-orange-100';
   };
 
   if (isLoading) {
@@ -349,7 +349,7 @@ export default function GroupDiscoveryPage() {
     );
   }
 
-  if (!user || (user.role !== "parent" && user.role !== "group_admin")) {
+  if (!user || (user.role !== 'parent' && user.role !== 'group_admin')) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -415,14 +415,14 @@ export default function GroupDiscoveryPage() {
         {message && (
           <div
             className={`mb-6 p-4 rounded-md ${
-              message.type === "success"
-                ? "bg-green-50 border border-green-200"
-                : "bg-red-50 border border-red-200"
+              message.type === 'success'
+                ? 'bg-green-50 border border-green-200'
+                : 'bg-red-50 border border-red-200'
             }`}
           >
             <p
               className={`text-sm ${
-                message.type === "success" ? "text-green-800" : "text-red-800"
+                message.type === 'success' ? 'text-green-800' : 'text-red-800'
               }`}
             >
               {message.text}
@@ -446,8 +446,8 @@ export default function GroupDiscoveryPage() {
               <input
                 type="text"
                 value={searchCriteria.schoolName}
-                onChange={(e) =>
-                  setSearchCriteria((prev) => ({
+                onChange={e =>
+                  setSearchCriteria(prev => ({
                     ...prev,
                     schoolName: e.target.value,
                   }))
@@ -466,8 +466,8 @@ export default function GroupDiscoveryPage() {
               <input
                 type="number"
                 value={searchCriteria.maxDistanceMiles}
-                onChange={(e) =>
-                  setSearchCriteria((prev) => ({
+                onChange={e =>
+                  setSearchCriteria(prev => ({
                     ...prev,
                     maxDistanceMiles: parseInt(e.target.value) || 10,
                   }))
@@ -500,30 +500,30 @@ export default function GroupDiscoveryPage() {
             </label>
             <div className="flex flex-wrap gap-2">
               {[
-                "K",
-                "1",
-                "2",
-                "3",
-                "4",
-                "5",
-                "6",
-                "7",
-                "8",
-                "9",
-                "10",
-                "11",
-                "12",
-              ].map((grade) => (
+                'K',
+                '1',
+                '2',
+                '3',
+                '4',
+                '5',
+                '6',
+                '7',
+                '8',
+                '9',
+                '10',
+                '11',
+                '12',
+              ].map(grade => (
                 <label key={grade} className="inline-flex items-center">
                   <input
                     type="checkbox"
                     checked={searchCriteria.ageGroups.includes(grade)}
-                    onChange={(e) => {
-                      setSearchCriteria((prev) => ({
+                    onChange={e => {
+                      setSearchCriteria(prev => ({
                         ...prev,
                         ageGroups: e.target.checked
                           ? [...prev.ageGroups, grade]
-                          : prev.ageGroups.filter((g) => g !== grade),
+                          : prev.ageGroups.filter(g => g !== grade),
                       }));
                     }}
                     className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
@@ -545,8 +545,8 @@ export default function GroupDiscoveryPage() {
                 <input
                   type="checkbox"
                   checked={searchCriteria.morningPickup}
-                  onChange={(e) =>
-                    setSearchCriteria((prev) => ({
+                  onChange={e =>
+                    setSearchCriteria(prev => ({
                       ...prev,
                       morningPickup: e.target.checked,
                     }))
@@ -561,8 +561,8 @@ export default function GroupDiscoveryPage() {
                 <input
                   type="checkbox"
                   checked={searchCriteria.afternoonDropoff}
-                  onChange={(e) =>
-                    setSearchCriteria((prev) => ({
+                  onChange={e =>
+                    setSearchCriteria(prev => ({
                       ...prev,
                       afternoonDropoff: e.target.checked,
                     }))
@@ -646,7 +646,7 @@ export default function GroupDiscoveryPage() {
                       </p>
                       <button
                         onClick={() =>
-                          (window.location.href = "/parents/groups/create")
+                          (window.location.href = '/parents/groups/create')
                         }
                         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
                       >
@@ -663,7 +663,7 @@ export default function GroupDiscoveryPage() {
                   <div className="flex flex-wrap gap-2 justify-center">
                     <button
                       onClick={() =>
-                        setSearchCriteria((prev) => ({
+                        setSearchCriteria(prev => ({
                           ...prev,
                           maxDistanceMiles: prev.maxDistanceMiles + 5,
                         }))
@@ -674,9 +674,9 @@ export default function GroupDiscoveryPage() {
                     </button>
                     <button
                       onClick={() =>
-                        setSearchCriteria((prev) => ({
+                        setSearchCriteria(prev => ({
                           ...prev,
-                          schoolName: "",
+                          schoolName: '',
                         }))
                       }
                       className="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50"
@@ -685,7 +685,7 @@ export default function GroupDiscoveryPage() {
                     </button>
                     <button
                       onClick={() =>
-                        setSearchCriteria((prev) => ({
+                        setSearchCriteria(prev => ({
                           ...prev,
                           ageGroups: [],
                         }))
@@ -699,7 +699,7 @@ export default function GroupDiscoveryPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {searchResults.map((result) => (
+                {searchResults.map(result => (
                   <div
                     key={result.group.id}
                     className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
@@ -711,7 +711,7 @@ export default function GroupDiscoveryPage() {
                             {result.group.name}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            by {result.group.tripAdmin.firstName}{" "}
+                            by {result.group.tripAdmin.firstName}{' '}
                             {result.group.tripAdmin.lastName}
                           </p>
                         </div>
@@ -742,7 +742,7 @@ export default function GroupDiscoveryPage() {
                         )}
                         <div className="flex items-center text-sm text-gray-600">
                           <UserGroupIcon className="h-4 w-4 mr-2" />
-                          {result.group.memberCount}/{result.group.maxChildren}{" "}
+                          {result.group.memberCount}/{result.group.maxChildren}{' '}
                           members
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
@@ -769,7 +769,7 @@ export default function GroupDiscoveryPage() {
 
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-600">
-                          Grades: {result.group.ageGroups.join(", ")}
+                          Grades: {result.group.ageGroups.join(', ')}
                         </div>
                         {result.canRequestToJoin ? (
                           <button
@@ -817,8 +817,8 @@ export default function GroupDiscoveryPage() {
                     className="input"
                     placeholder="Tell the Group Admin about yourself and why you'd like to join..."
                     value={joinRequestData.message}
-                    onChange={(e) =>
-                      setJoinRequestData((prev) => ({
+                    onChange={e =>
+                      setJoinRequestData(prev => ({
                         ...prev,
                         message: e.target.value,
                       }))
@@ -845,14 +845,16 @@ export default function GroupDiscoveryPage() {
                     <input
                       type="text"
                       value={child.name}
-                      onChange={(e) => updateChild(index, "name", e.target.value)}
+                      onChange={e => updateChild(index, 'name', e.target.value)}
                       placeholder="Child's name"
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     />
                     <input
                       type="text"
                       value={child.grade}
-                      onChange={(e) => updateChild(index, "grade", e.target.value)}
+                      onChange={e =>
+                        updateChild(index, 'grade', e.target.value)
+                      }
                       placeholder="Grade"
                       className="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     />

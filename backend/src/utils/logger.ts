@@ -1,4 +1,4 @@
-import { InvocationContext } from "@azure/functions";
+import { InvocationContext } from '@azure/functions';
 
 // Log levels with numeric values for filtering
 export enum LogLevel {
@@ -32,9 +32,8 @@ interface LoggerConfig {
 
 // Default configuration
 const defaultConfig: LoggerConfig = {
-  service: "vcarpool",
-  minLevel:
-    process.env.NODE_ENV === "production" ? LogLevel.INFO : LogLevel.DEBUG,
+  service: 'vcarpool',
+  minLevel: process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG,
   enableConsole: true,
   enableApplicationInsights: true,
   enableStructuredLogs: true,
@@ -50,7 +49,7 @@ export class AzureLogger implements ILogger {
 
   constructor(
     private config: LoggerConfig = defaultConfig,
-    metadata: Record<string, unknown> = {}
+    metadata: Record<string, unknown> = {},
   ) {
     this.metadata = { ...metadata, service: config.service };
   }
@@ -80,11 +79,7 @@ export class AzureLogger implements ILogger {
     return level >= this.config.minLevel;
   }
 
-  private log(
-    level: LogLevel,
-    message: string,
-    data?: Record<string, unknown>
-  ): void {
+  private log(level: LogLevel, message: string, data?: Record<string, unknown>): void {
     if (!this.shouldLog(level)) {
       return;
     }
@@ -117,34 +112,28 @@ export class AzureLogger implements ILogger {
     }
   }
 
-  private logToConsole(
-    level: LogLevel,
-    logEntry: Record<string, unknown>
-  ): void {
+  private logToConsole(level: LogLevel, logEntry: Record<string, unknown>): void {
     const message = this.config.enableStructuredLogs
       ? JSON.stringify(logEntry)
       : `[${logEntry.timestamp}] [${logEntry.level}] [${logEntry.service}] ${logEntry.message}`;
 
     switch (level) {
       case LogLevel.DEBUG:
-        console.debug(message, logEntry["data"]);
+        console.debug(message, logEntry['data']);
         break;
       case LogLevel.INFO:
-        console.info(message, logEntry["data"]);
+        console.info(message, logEntry['data']);
         break;
       case LogLevel.WARN:
-        console.warn(message, logEntry["data"]);
+        console.warn(message, logEntry['data']);
         break;
       case LogLevel.ERROR:
-        console.error(message, logEntry["data"]);
+        console.error(message, logEntry['data']);
         break;
     }
   }
 
-  private logToAzureFunctions(
-    level: LogLevel,
-    logEntry: Record<string, unknown>
-  ): void {
+  private logToAzureFunctions(level: LogLevel, logEntry: Record<string, unknown>): void {
     const message = `[${logEntry.level}] [${logEntry.service}] ${logEntry.message}`;
     if (level === LogLevel.ERROR) {
       this.context!.error(message, logEntry);
@@ -153,10 +142,7 @@ export class AzureLogger implements ILogger {
     }
   }
 
-  private logToApplicationInsights(
-    level: LogLevel,
-    logEntry: Record<string, unknown>
-  ): void {
+  private logToApplicationInsights(level: LogLevel, logEntry: Record<string, unknown>): void {
     // Implementation would depend on Application Insights SDK
     // For now, this is a placeholder for future enhancement
     if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
@@ -166,16 +152,12 @@ export class AzureLogger implements ILogger {
 
   private sanitizeData(data: unknown, depth = 0): unknown {
     if (depth > this.config.maxDepth) {
-      return "[Max Depth Reached]";
+      return '[Max Depth Reached]';
     }
 
     if (!data) return data;
 
-    if (
-      typeof data === "string" ||
-      typeof data === "number" ||
-      typeof data === "boolean"
-    ) {
+    if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') {
       return data;
     }
 
@@ -188,35 +170,29 @@ export class AzureLogger implements ILogger {
     }
 
     if (Array.isArray(data)) {
-      return data
-        .slice(0, 10)
-        .map((item) => this.sanitizeData(item, depth + 1));
+      return data.slice(0, 10).map((item) => this.sanitizeData(item, depth + 1));
     }
 
-    if (typeof data === "object") {
+    if (typeof data === 'object') {
       const sanitized: Record<string, unknown> = {};
       const sensitiveKeys = [
-        "password",
-        "passwordHash",
-        "token",
-        "accessToken",
-        "refreshToken",
-        "secret",
-        "apiKey",
-        "authorization",
-        "cookie",
-        "sessionId",
+        'password',
+        'passwordHash',
+        'token',
+        'accessToken',
+        'refreshToken',
+        'secret',
+        'apiKey',
+        'authorization',
+        'cookie',
+        'sessionId',
       ];
 
-      for (const [key, value] of Object.entries(
-        data as Record<string, unknown>
-      )) {
+      for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
         if (
-          sensitiveKeys.some((sensitive) =>
-            key.toLowerCase().includes(sensitive.toLowerCase())
-          )
+          sensitiveKeys.some((sensitive) => key.toLowerCase().includes(sensitive.toLowerCase()))
         ) {
-          sanitized[key] = "[REDACTED]";
+          sanitized[key] = '[REDACTED]';
         } else {
           sanitized[key] = this.sanitizeData(value, depth + 1);
         }
@@ -272,11 +248,8 @@ export class LoggerFactory {
     return new AzureLogger(serviceConfig, metadata);
   }
 
-  createForFunction(
-    functionName: string,
-    context?: InvocationContext
-  ): ILogger {
-    const logger = this.create("function", { functionName });
+  createForFunction(functionName: string, context?: InvocationContext): ILogger {
+    const logger = this.create('function', { functionName });
     if (context) {
       logger.setContext(context);
     }
@@ -288,14 +261,14 @@ export class LoggerFactory {
 const factory = LoggerFactory.getInstance();
 
 export const loggers = {
-  auth: factory.create("auth"),
-  trip: factory.create("trip"),
-  user: factory.create("user"),
-  system: factory.create("system"),
-  api: factory.create("api"),
-  database: factory.create("database"),
-  cache: factory.create("cache"),
-  email: factory.create("email"),
+  auth: factory.create('auth'),
+  trip: factory.create('trip'),
+  user: factory.create('user'),
+  system: factory.create('system'),
+  api: factory.create('api'),
+  database: factory.create('database'),
+  cache: factory.create('cache'),
+  email: factory.create('email'),
 };
 
 // Default logger
@@ -309,11 +282,7 @@ export class LoggingUtils {
    * Create a performance logger that measures execution time
    */
   static performance<T extends any[], R>(logger: ILogger, operation: string) {
-    return function (
-      target: any,
-      propertyName: string,
-      descriptor: PropertyDescriptor
-    ) {
+    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
       const method = descriptor.value;
 
       descriptor.value = async function (...args: T): Promise<R> {
@@ -344,7 +313,7 @@ export class LoggingUtils {
             ...metadata,
             success: false,
             duration,
-            error: error instanceof Error ? error.message : "Unknown error",
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
 
           throw error;
@@ -356,14 +325,9 @@ export class LoggingUtils {
   /**
    * Log user actions for audit trail
    */
-  static auditLog(
-    logger: ILogger,
-    action: string,
-    userId?: string,
-    details?: any
-  ): void {
-    logger.info("User action", {
-      type: "audit",
+  static auditLog(logger: ILogger, action: string, userId?: string, details?: any): void {
+    logger.info('User action', {
+      type: 'audit',
       action,
       userId,
       details,
@@ -375,8 +339,8 @@ export class LoggingUtils {
    * Log security events
    */
   static securityLog(logger: ILogger, event: string, details?: any): void {
-    logger.warn("Security event", {
-      type: "security",
+    logger.warn('Security event', {
+      type: 'security',
       event,
       details,
       timestamp: new Date().toISOString(),
@@ -386,14 +350,9 @@ export class LoggingUtils {
   /**
    * Log business metrics
    */
-  static metricsLog(
-    logger: ILogger,
-    metric: string,
-    value: number,
-    metadata?: any
-  ): void {
-    logger.info("Metric", {
-      type: "metric",
+  static metricsLog(logger: ILogger, metric: string, value: number, metadata?: any): void {
+    logger.info('Metric', {
+      type: 'metric',
       metric,
       value,
       metadata,

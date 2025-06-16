@@ -10,49 +10,49 @@
  * - Weekly Preference Submission: Schedule preference components and family calendar integration
  */
 
-import { render, screen, waitFor } from "@testing-library/react";
-import { describe, it, expect, jest, beforeEach } from "@jest/globals";
+import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 
 // Family-oriented mock auth store aligned with UX requirements
 const mockFamilyAuthStore = {
   user: {
-    id: "parent-family-123",
-    email: "john.doe@lincoln.edu",
-    firstName: "John",
-    lastName: "Doe",
-    role: "parent",
-    familyId: "family-456",
+    id: 'parent-family-123',
+    email: 'john.doe@lincoln.edu',
+    firstName: 'John',
+    lastName: 'Doe',
+    role: 'parent',
+    familyId: 'family-456',
     children: [
       {
-        id: "child-1",
-        firstName: "Emma",
-        lastName: "Doe",
-        grade: "3rd",
-        school: "Lincoln Elementary",
-        emergencyContacts: ["contact-1", "contact-2"],
+        id: 'child-1',
+        firstName: 'Emma',
+        lastName: 'Doe',
+        grade: '3rd',
+        school: 'Lincoln Elementary',
+        emergencyContacts: ['contact-1', 'contact-2'],
       },
       {
-        id: "child-2",
-        firstName: "Lucas",
-        lastName: "Doe",
-        grade: "1st",
-        school: "Lincoln Elementary",
-        emergencyContacts: ["contact-1", "contact-2"],
+        id: 'child-2',
+        firstName: 'Lucas',
+        lastName: 'Doe',
+        grade: '1st',
+        school: 'Lincoln Elementary',
+        emergencyContacts: ['contact-1', 'contact-2'],
       },
     ],
     emergencyContacts: [
       {
-        id: "contact-1",
-        name: "Sarah Doe",
-        relationship: "mother",
-        phone: "555-0101",
+        id: 'contact-1',
+        name: 'Sarah Doe',
+        relationship: 'mother',
+        phone: '555-0101',
         isPrimary: true,
       },
       {
-        id: "contact-2",
-        name: "Mike Johnson",
-        relationship: "uncle",
-        phone: "555-0102",
+        id: 'contact-2',
+        name: 'Mike Johnson',
+        relationship: 'uncle',
+        phone: '555-0102',
         isPrimary: false,
       },
     ],
@@ -64,17 +64,17 @@ const mockFamilyAuthStore = {
       weeklyPreferencesSet: true,
       groupDiscoveryCompleted: true,
     },
-    groupAdminRoles: ["group-2"], // Admin for Oak Park Afternoon Group
+    groupAdminRoles: ['group-2'], // Admin for Oak Park Afternoon Group
     weeklyPreferences: {
       morningDropoff: { preferred: true, flexibleTiming: false },
       afternoonPickup: { preferred: true, flexibleTiming: true },
-      recurringDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      recurringDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
     },
   },
   isAuthenticated: true,
   loading: false,
   familyContext: {
-    familyId: "family-456",
+    familyId: 'family-456',
     totalChildren: 2,
     activeGroupMemberships: 2,
     emergencyContactsCount: 2,
@@ -128,16 +128,16 @@ const mockFamilyTripStore = {
 };
 
 // Mock stores aligned with UX requirements
-jest.mock("@/store/auth.store", () => ({
+jest.mock('@/store/auth.store', () => ({
   useAuthStore: () => mockFamilyAuthStore,
 }));
 
-jest.mock("@/store/trip.store", () => ({
+jest.mock('@/store/trip.store', () => ({
   useTripStore: () => mockFamilyTripStore,
 }));
 
 // Mock API client
-jest.mock("@/lib/api-client", () => ({
+jest.mock('@/lib/api-client', () => ({
   apiClient: {
     get: jest.fn(),
     post: jest.fn(),
@@ -145,13 +145,13 @@ jest.mock("@/lib/api-client", () => ({
   },
 }));
 
-describe("Dashboard Components - Family-Centered UX", () => {
+describe('Dashboard Components - Family-Centered UX', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("Family-Oriented Dashboard Statistics", () => {
-    it("should display family trip statistics correctly", () => {
+  describe('Family-Oriented Dashboard Statistics', () => {
+    it('should display family trip statistics correctly', () => {
       const familyStats = mockFamilyTripStore.stats;
 
       // Validate family-centered statistics structure
@@ -168,12 +168,12 @@ describe("Dashboard Components - Family-Centered UX", () => {
 
       // Validate family cost savings and benefits
       expect(familyStats.familyCostSavings).toBe(486.75);
-      expect(typeof familyStats.monthlyCostPerChild).toBe("number");
-      expect(typeof familyStats.fuelSavingsFamily).toBe("number");
-      expect(typeof familyStats.timeSavedHoursFamily).toBe("number");
+      expect(typeof familyStats.monthlyCostPerChild).toBe('number');
+      expect(typeof familyStats.fuelSavingsFamily).toBe('number');
+      expect(typeof familyStats.timeSavedHoursFamily).toBe('number');
     });
 
-    it("should calculate family-derived statistics correctly", () => {
+    it('should calculate family-derived statistics correctly', () => {
       const familyStats = mockFamilyTripStore.stats;
 
       // Calculate average family trips per week
@@ -194,7 +194,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(familyStats.crisisResponseTime).toBeLessThanOrEqual(10); // minutes
     });
 
-    it("should validate family safety and emergency statistics", () => {
+    it('should validate family safety and emergency statistics', () => {
       const familyStats = mockFamilyTripStore.stats;
 
       // Safety statistics validation
@@ -207,7 +207,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(familyStats.crisisResponseTime).toBeLessThan(15); // Should be under 15 minutes
     });
 
-    it("should validate group admin statistics for family context", () => {
+    it('should validate group admin statistics for family context', () => {
       const familyStats = mockFamilyTripStore.stats;
       const familyUser = mockFamilyAuthStore.user;
 
@@ -223,7 +223,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(familyStats.flexibilityScore).toBeGreaterThanOrEqual(70); // At least 70% flexibility
     });
 
-    it("should handle loading states for family statistics", () => {
+    it('should handle loading states for family statistics', () => {
       const loadingState = {
         stats: null,
         loading: true,
@@ -235,15 +235,15 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(loadingState.loading).toBe(true);
       expect(loadingState.stats).toBeNull();
       expect(loadingState.error).toBeNull();
-      expect(typeof loadingState.fetchFamilyStats).toBe("function");
-      expect(typeof loadingState.fetchGroupAdminStats).toBe("function");
+      expect(typeof loadingState.fetchFamilyStats).toBe('function');
+      expect(typeof loadingState.fetchGroupAdminStats).toBe('function');
     });
 
-    it("should handle error states for family statistics", () => {
+    it('should handle error states for family statistics', () => {
       const errorState = {
         stats: null,
         loading: false,
-        error: "Failed to fetch family trip statistics",
+        error: 'Failed to fetch family trip statistics',
         fetchFamilyStats: jest.fn(),
         fetchGroupAdminStats: jest.fn(),
       };
@@ -251,19 +251,19 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(errorState.loading).toBe(false);
       expect(errorState.stats).toBeNull();
       expect(errorState.error).toBeDefined();
-      expect(errorState.error).toContain("Failed to fetch");
-      expect(errorState.error).toContain("family");
+      expect(errorState.error).toContain('Failed to fetch');
+      expect(errorState.error).toContain('family');
     });
   });
 
-  describe("Family-Oriented User Authentication Display", () => {
-    it("should display family user information correctly", () => {
+  describe('Family-Oriented User Authentication Display', () => {
+    it('should display family user information correctly', () => {
       const familyUser = mockFamilyAuthStore.user;
 
       expect(familyUser.email).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
       expect(familyUser.firstName).toBeDefined();
       expect(familyUser.lastName).toBeDefined();
-      expect(["admin", "parent", "student"]).toContain(familyUser.role);
+      expect(['admin', 'parent', 'student']).toContain(familyUser.role);
 
       // Family-specific validations
       expect(familyUser.familyId).toBeDefined();
@@ -273,7 +273,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(familyUser.emergencyContacts.length).toBeGreaterThan(0);
     });
 
-    it("should validate family onboarding progress", () => {
+    it('should validate family onboarding progress', () => {
       const familyUser = mockFamilyAuthStore.user;
       const onboardingProgress = familyUser.onboardingProgress;
 
@@ -287,41 +287,41 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(familyUser.onboardingCompleted).toBe(true);
     });
 
-    it("should handle different family user roles appropriately", () => {
-      const userRoles = ["admin", "parent", "student"];
+    it('should handle different family user roles appropriately', () => {
+      const userRoles = ['admin', 'parent', 'student'];
 
-      userRoles.forEach((role) => {
+      userRoles.forEach(role => {
         const familyUserWithRole = {
           ...mockFamilyAuthStore.user,
           role,
           // Ensure family context is maintained regardless of role
-          familyId: "family-456",
-          children: role === "student" ? [] : mockFamilyAuthStore.user.children,
+          familyId: 'family-456',
+          children: role === 'student' ? [] : mockFamilyAuthStore.user.children,
         };
 
-        expect(["admin", "parent", "student"]).toContain(
+        expect(['admin', 'parent', 'student']).toContain(
           familyUserWithRole.role
         );
 
         // Role-specific validations with family context
-        if (role === "admin") {
+        if (role === 'admin') {
           // Admin should have access to all features with family oversight
-          expect(familyUserWithRole.role).toBe("admin");
+          expect(familyUserWithRole.role).toBe('admin');
           expect(familyUserWithRole.familyId).toBeDefined();
-        } else if (role === "parent") {
+        } else if (role === 'parent') {
           // Parent should have carpool management features and family management
-          expect(familyUserWithRole.role).toBe("parent");
+          expect(familyUserWithRole.role).toBe('parent');
           expect(familyUserWithRole.familyId).toBeDefined();
           expect(Array.isArray(familyUserWithRole.children)).toBe(true);
-        } else if (role === "student") {
+        } else if (role === 'student') {
           // Student should have limited features but maintain family connection
-          expect(familyUserWithRole.role).toBe("student");
+          expect(familyUserWithRole.role).toBe('student');
           expect(familyUserWithRole.familyId).toBeDefined();
         }
       });
     });
 
-    it("should validate family authentication states", () => {
+    it('should validate family authentication states', () => {
       const familyAuthStates = [
         {
           isAuthenticated: true,
@@ -343,7 +343,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
         },
       ];
 
-      familyAuthStates.forEach((state) => {
+      familyAuthStates.forEach(state => {
         if (state.isAuthenticated) {
           expect(state.user).toBeDefined();
           expect(state.loading).toBe(false);
@@ -359,43 +359,43 @@ describe("Dashboard Components - Family-Centered UX", () => {
     });
   });
 
-  describe("Family-Oriented School Dashboard Features", () => {
-    it("should validate family school carpool specific data", () => {
+  describe('Family-Oriented School Dashboard Features', () => {
+    it('should validate family school carpool specific data', () => {
       const familyUser = mockFamilyAuthStore.user;
       const schoolData = {
-        schoolName: "Lincoln Elementary School",
-        schoolYear: "2024-2025",
-        semesterStart: "2024-08-26",
-        semesterEnd: "2025-05-30",
-        holidayBreaks: ["2024-12-23", "2025-01-06", "2025-03-17"],
+        schoolName: 'Lincoln Elementary School',
+        schoolYear: '2024-2025',
+        semesterStart: '2024-08-26',
+        semesterEnd: '2025-05-30',
+        holidayBreaks: ['2024-12-23', '2025-01-06', '2025-03-17'],
         // Family-specific school data
         childrenAtSchool: familyUser.children.length,
-        childrenGrades: familyUser.children.map((child) => child.grade),
+        childrenGrades: familyUser.children.map(child => child.grade),
         emergencyContactsRegistered: familyUser.emergencyContacts.length,
       };
 
-      expect(schoolData.schoolName).toContain("School");
+      expect(schoolData.schoolName).toContain('School');
       expect(schoolData.schoolYear).toMatch(/^\d{4}-\d{4}$/);
       expect(schoolData.semesterStart).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(Array.isArray(schoolData.holidayBreaks)).toBe(true);
 
       // Family-specific validations
       expect(schoolData.childrenAtSchool).toBe(2);
-      expect(schoolData.childrenGrades).toContain("3rd");
-      expect(schoolData.childrenGrades).toContain("1st");
+      expect(schoolData.childrenGrades).toContain('3rd');
+      expect(schoolData.childrenGrades).toContain('1st');
       expect(schoolData.emergencyContactsRegistered).toBe(2);
     });
 
-    it("should validate family carpool timing constraints", () => {
+    it('should validate family carpool timing constraints', () => {
       const familyUser = mockFamilyAuthStore.user;
       const familyPreferences = familyUser.weeklyPreferences;
 
       const carpoolTimes = {
-        morningDropoff: "07:30",
-        afternoonPickup: "15:15",
+        morningDropoff: '07:30',
+        afternoonPickup: '15:15',
         maxTripDuration: 30, // minutes
-        earliestStart: "07:00",
-        latestEnd: "16:00",
+        earliestStart: '07:00',
+        latestEnd: '16:00',
         // Family preference integration
         familyPrefersMorning: familyPreferences.morningDropoff.preferred,
         familyPrefersAfternoon: familyPreferences.afternoonPickup.preferred,
@@ -410,12 +410,12 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(carpoolTimes.maxTripDuration).toBeGreaterThan(15);
 
       // Family preference validations
-      expect(typeof carpoolTimes.familyPrefersMorning).toBe("boolean");
-      expect(typeof carpoolTimes.familyPrefersAfternoon).toBe("boolean");
-      expect(typeof carpoolTimes.flexibleTiming).toBe("boolean");
+      expect(typeof carpoolTimes.familyPrefersMorning).toBe('boolean');
+      expect(typeof carpoolTimes.familyPrefersAfternoon).toBe('boolean');
+      expect(typeof carpoolTimes.flexibleTiming).toBe('boolean');
     });
 
-    it("should validate family parent-child relationship display", () => {
+    it('should validate family parent-child relationship display', () => {
       const familyUser = mockFamilyAuthStore.user;
       const familyContext = mockFamilyAuthStore.familyContext;
 
@@ -430,7 +430,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
       };
 
       expect(parentChildData.parentId).toBeDefined();
-      expect(parentChildData.familyId).toBe("family-456");
+      expect(parentChildData.familyId).toBe('family-456');
       expect(Array.isArray(parentChildData.children)).toBe(true);
       expect(parentChildData.children.length).toBeGreaterThan(0);
       expect(parentChildData.children[0].grade).toMatch(/^\d+(st|nd|rd|th)$/);
@@ -443,23 +443,23 @@ describe("Dashboard Components - Family-Centered UX", () => {
     });
   });
 
-  describe("Family-Oriented Dashboard Navigation and Layout", () => {
-    it("should validate family dashboard navigation menu structure", () => {
+  describe('Family-Oriented Dashboard Navigation and Layout', () => {
+    it('should validate family dashboard navigation menu structure', () => {
       const familyUser = mockFamilyAuthStore.user;
       const navigationMenu = {
-        dashboard: "/dashboard",
-        myGroups: "/groups/my-groups", // Group-focused navigation
-        discoverGroups: "/groups/discover", // Group discovery
-        joinRequests: "/groups/join-requests", // Join request management
-        profile: "/profile",
-        children: "/family/children", // Family-specific
-        emergencyContacts: "/family/emergency-contacts", // Family-specific
-        weeklyPreferences: "/parents/preferences", // Parent-specific with family context
+        dashboard: '/dashboard',
+        myGroups: '/groups/my-groups', // Group-focused navigation
+        discoverGroups: '/groups/discover', // Group discovery
+        joinRequests: '/groups/join-requests', // Join request management
+        profile: '/profile',
+        children: '/family/children', // Family-specific
+        emergencyContacts: '/family/emergency-contacts', // Family-specific
+        weeklyPreferences: '/parents/preferences', // Parent-specific with family context
         admin:
           familyUser.groupAdminRoles && familyUser.groupAdminRoles.length > 0
-            ? "/admin"
+            ? '/admin'
             : null, // Admin-specific if user has admin roles
-        familyDashboard: "/family/dashboard", // Family-centered dashboard
+        familyDashboard: '/family/dashboard', // Family-centered dashboard
       };
 
       Object.entries(navigationMenu).forEach(([key, route]) => {
@@ -468,37 +468,37 @@ describe("Dashboard Components - Family-Centered UX", () => {
         }
       });
 
-      expect(navigationMenu.dashboard).toBe("/dashboard");
-      expect(navigationMenu.myGroups).toContain("groups");
-      expect(navigationMenu.discoverGroups).toContain("groups");
-      expect(navigationMenu.joinRequests).toContain("join-requests");
-      expect(navigationMenu.children).toContain("family");
-      expect(navigationMenu.emergencyContacts).toContain("emergency-contacts");
-      expect(navigationMenu.weeklyPreferences).toContain("parents");
+      expect(navigationMenu.dashboard).toBe('/dashboard');
+      expect(navigationMenu.myGroups).toContain('groups');
+      expect(navigationMenu.discoverGroups).toContain('groups');
+      expect(navigationMenu.joinRequests).toContain('join-requests');
+      expect(navigationMenu.children).toContain('family');
+      expect(navigationMenu.emergencyContacts).toContain('emergency-contacts');
+      expect(navigationMenu.weeklyPreferences).toContain('parents');
 
       // Conditional admin access based on group admin roles
       if (familyUser.groupAdminRoles && familyUser.groupAdminRoles.length > 0) {
-        expect(navigationMenu.admin).toBe("/admin");
+        expect(navigationMenu.admin).toBe('/admin');
       }
     });
 
-    it("should validate family-responsive design breakpoints", () => {
+    it('should validate family-responsive design breakpoints', () => {
       const breakpoints = {
-        mobile: "640px",
-        tablet: "768px",
-        desktop: "1024px",
-        large: "1280px",
+        mobile: '640px',
+        tablet: '768px',
+        desktop: '1024px',
+        large: '1280px',
         // Family-specific breakpoints for multi-child displays
-        familyMobile: "480px", // Compact family info
-        familyTablet: "896px", // Extended family cards
+        familyMobile: '480px', // Compact family info
+        familyTablet: '896px', // Extended family cards
       };
 
-      Object.values(breakpoints).forEach((breakpoint) => {
+      Object.values(breakpoints).forEach(breakpoint => {
         expect(breakpoint).toMatch(/^\d+px$/);
       });
 
       // Validate breakpoint order
-      const sizes = Object.values(breakpoints).map((bp) => parseInt(bp));
+      const sizes = Object.values(breakpoints).map(bp => parseInt(bp));
       expect(Math.min(...sizes)).toBeLessThan(Math.max(...sizes));
 
       // Family-specific breakpoint validations
@@ -510,47 +510,47 @@ describe("Dashboard Components - Family-Centered UX", () => {
       );
     });
 
-    it("should validate family dashboard layout components", () => {
+    it('should validate family dashboard layout components', () => {
       const familyLayoutComponents = [
-        "FamilyHeader", // Header with family context
-        "GroupNavigation", // Group-focused navigation
-        "FamilyMainContent", // Family-centered main content
-        "FamilyStatisticsCards", // Family trip statistics
-        "ChildrenOverview", // Children information display
-        "EmergencyContactsPanel", // Emergency contacts quick access
-        "GroupMemberships", // Current group memberships
-        "JoinRequestsPanel", // Active join requests
-        "WeeklyPreferencesStatus", // Weekly preferences summary
-        "AdminGroupsPanel", // Group admin tools (conditional)
-        "FamilyFooter", // Footer with family-specific links
+        'FamilyHeader', // Header with family context
+        'GroupNavigation', // Group-focused navigation
+        'FamilyMainContent', // Family-centered main content
+        'FamilyStatisticsCards', // Family trip statistics
+        'ChildrenOverview', // Children information display
+        'EmergencyContactsPanel', // Emergency contacts quick access
+        'GroupMemberships', // Current group memberships
+        'JoinRequestsPanel', // Active join requests
+        'WeeklyPreferencesStatus', // Weekly preferences summary
+        'AdminGroupsPanel', // Group admin tools (conditional)
+        'FamilyFooter', // Footer with family-specific links
       ];
 
-      familyLayoutComponents.forEach((component) => {
+      familyLayoutComponents.forEach(component => {
         expect(component).toMatch(/^[A-Z][a-zA-Z]*$/);
         expect(component.length).toBeGreaterThan(3);
       });
 
-      expect(familyLayoutComponents).toContain("FamilyHeader");
-      expect(familyLayoutComponents).toContain("GroupNavigation");
-      expect(familyLayoutComponents).toContain("FamilyMainContent");
-      expect(familyLayoutComponents).toContain("ChildrenOverview");
-      expect(familyLayoutComponents).toContain("EmergencyContactsPanel");
+      expect(familyLayoutComponents).toContain('FamilyHeader');
+      expect(familyLayoutComponents).toContain('GroupNavigation');
+      expect(familyLayoutComponents).toContain('FamilyMainContent');
+      expect(familyLayoutComponents).toContain('ChildrenOverview');
+      expect(familyLayoutComponents).toContain('EmergencyContactsPanel');
 
       // Group-specific components
-      expect(familyLayoutComponents).toContain("GroupMemberships");
-      expect(familyLayoutComponents).toContain("JoinRequestsPanel");
+      expect(familyLayoutComponents).toContain('GroupMemberships');
+      expect(familyLayoutComponents).toContain('JoinRequestsPanel');
 
       // Progressive onboarding components
-      expect(familyLayoutComponents).toContain("WeeklyPreferencesStatus");
+      expect(familyLayoutComponents).toContain('WeeklyPreferencesStatus');
     });
   });
 
-  describe("Family Dashboard Performance and Optimization", () => {
-    it("should validate family data loading performance", async () => {
+  describe('Family Dashboard Performance and Optimization', () => {
+    it('should validate family data loading performance', async () => {
       const loadStart = performance.now();
 
       // Simulate family data loading including children, emergency contacts, and group memberships
-      await new Promise((resolve) => setTimeout(resolve, 150)); // Slightly longer due to family data complexity
+      await new Promise(resolve => setTimeout(resolve, 150)); // Slightly longer due to family data complexity
 
       const loadEnd = performance.now();
       const loadTime = loadEnd - loadStart;
@@ -560,7 +560,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(loadTime).toBeGreaterThan(100); // But realistic for complex family data
     });
 
-    it("should validate family memory usage patterns", () => {
+    it('should validate family memory usage patterns', () => {
       const familyMemoryUsage = {
         initialLoad: 55, // MB - slightly higher due to family context
         afterFamilyDataFetch: 65, // MB - includes children and emergency contacts
@@ -579,7 +579,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
       );
     });
 
-    it("should validate family-oriented caching strategy", () => {
+    it('should validate family-oriented caching strategy', () => {
       const familyCacheConfig = {
         familyStatsCache: 300, // 5 minutes - family statistics
         childrenDataCache: 900, // 15 minutes - children information (changes less frequently)
@@ -590,8 +590,8 @@ describe("Dashboard Components - Family-Centered UX", () => {
         maxFamilyCacheSize: 15, // MB - higher for family applications
       };
 
-      Object.values(familyCacheConfig).forEach((value) => {
-        expect(typeof value).toBe("number");
+      Object.values(familyCacheConfig).forEach(value => {
+        expect(typeof value).toBe('number');
         expect(value).toBeGreaterThan(0);
       });
 
@@ -611,11 +611,11 @@ describe("Dashboard Components - Family-Centered UX", () => {
     });
   });
 
-  describe("Family-Oriented Error Handling and Edge Cases", () => {
-    it("should handle network failures gracefully in family context", () => {
+  describe('Family-Oriented Error Handling and Edge Cases', () => {
+    it('should handle network failures gracefully in family context', () => {
       const familyNetworkError = {
-        type: "family_network_error",
-        message: "Failed to fetch family data",
+        type: 'family_network_error',
+        message: 'Failed to fetch family data',
         retryable: true,
         fallbackData: {
           familyStats: mockFamilyTripStore.stats,
@@ -623,13 +623,13 @@ describe("Dashboard Components - Family-Centered UX", () => {
           familyContext: mockFamilyAuthStore.familyContext,
         },
         affectedComponents: [
-          "FamilyStatistics",
-          "ChildrenOverview",
-          "GroupMemberships",
+          'FamilyStatistics',
+          'ChildrenOverview',
+          'GroupMemberships',
         ],
       };
 
-      expect(familyNetworkError.type).toBe("family_network_error");
+      expect(familyNetworkError.type).toBe('family_network_error');
       expect(familyNetworkError.retryable).toBe(true);
       expect(familyNetworkError.fallbackData).toBeDefined();
       expect(familyNetworkError.fallbackData.familyStats).toBeDefined();
@@ -638,46 +638,46 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(Array.isArray(familyNetworkError.affectedComponents)).toBe(true);
     });
 
-    it("should handle invalid family user data", () => {
+    it('should handle invalid family user data', () => {
       const invalidFamilyUsers = [
         {
-          email: "invalid-email",
-          role: "parent",
-          familyId: "family-456",
+          email: 'invalid-email',
+          role: 'parent',
+          familyId: 'family-456',
           children: [],
         },
         {
-          email: "valid@email.com",
-          role: "invalid-role",
-          familyId: "family-456",
+          email: 'valid@email.com',
+          role: 'invalid-role',
+          familyId: 'family-456',
           children: [],
         },
         {
-          email: "valid@email.com",
-          role: "parent",
-          firstName: "",
-          familyId: "",
+          email: 'valid@email.com',
+          role: 'parent',
+          firstName: '',
+          familyId: '',
           children: [],
         },
         {
-          email: "valid@email.com",
-          role: "parent",
-          familyId: "family-456",
+          email: 'valid@email.com',
+          role: 'parent',
+          familyId: 'family-456',
           children: null, // Invalid children data
         },
       ];
 
-      invalidFamilyUsers.forEach((user) => {
-        if (!user.email.includes("@")) {
+      invalidFamilyUsers.forEach(user => {
+        if (!user.email.includes('@')) {
           expect(user.email).not.toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
         }
-        if (!["admin", "parent", "student"].includes(user.role)) {
-          expect(["admin", "parent", "student"]).not.toContain(user.role);
+        if (!['admin', 'parent', 'student'].includes(user.role)) {
+          expect(['admin', 'parent', 'student']).not.toContain(user.role);
         }
-        if (user.firstName === "") {
+        if (user.firstName === '') {
           expect(user.firstName.length).toBe(0);
         }
-        if (user.familyId === "") {
+        if (user.familyId === '') {
           expect(user.familyId.length).toBe(0);
         }
         if (user.children === null) {
@@ -686,7 +686,7 @@ describe("Dashboard Components - Family-Centered UX", () => {
       });
     });
 
-    it("should handle missing or null family statistics", () => {
+    it('should handle missing or null family statistics', () => {
       const missingFamilyStats = {
         stats: null,
         loading: false,
@@ -713,20 +713,20 @@ describe("Dashboard Components - Family-Centered UX", () => {
       // Null stats should be handled
       expect(missingFamilyStats.stats).toBeNull();
       expect(missingFamilyStats.loading).toBe(false);
-      expect(typeof missingFamilyStats.fetchFamilyStats).toBe("function");
-      expect(typeof missingFamilyStats.fetchGroupAdminStats).toBe("function");
+      expect(typeof missingFamilyStats.fetchFamilyStats).toBe('function');
+      expect(typeof missingFamilyStats.fetchGroupAdminStats).toBe('function');
 
       // Empty stats should be valid
       expect(emptyFamilyStats.stats.totalFamilyTrips).toBe(0);
       expect(emptyFamilyStats.stats.childrenTransported).toBe(0);
       expect(emptyFamilyStats.stats.activeGroupMemberships).toBe(0);
-      expect(typeof emptyFamilyStats.stats.familyCostSavings).toBe("number");
+      expect(typeof emptyFamilyStats.stats.familyCostSavings).toBe('number');
       expect(typeof emptyFamilyStats.stats.emergencyContactsActive).toBe(
-        "number"
+        'number'
       );
     });
 
-    it("should handle incomplete family onboarding scenarios", () => {
+    it('should handle incomplete family onboarding scenarios', () => {
       const incompleteOnboardingUser = {
         ...mockFamilyAuthStore.user,
         onboardingCompleted: false,
@@ -755,43 +755,43 @@ describe("Dashboard Components - Family-Centered UX", () => {
       expect(incompleteOnboardingUser.emergencyContacts.length).toBe(0);
     });
 
-    it("should handle emergency contact validation errors", () => {
+    it('should handle emergency contact validation errors', () => {
       const invalidEmergencyContacts = [
         {
-          id: "contact-1",
-          name: "",
-          relationship: "mother",
-          phone: "555-0101",
+          id: 'contact-1',
+          name: '',
+          relationship: 'mother',
+          phone: '555-0101',
         }, // Missing name
         {
-          id: "contact-2",
-          name: "John Doe",
-          relationship: "",
-          phone: "555-0102",
+          id: 'contact-2',
+          name: 'John Doe',
+          relationship: '',
+          phone: '555-0102',
         }, // Missing relationship
         {
-          id: "contact-3",
-          name: "Jane Doe",
-          relationship: "aunt",
-          phone: "invalid-phone",
+          id: 'contact-3',
+          name: 'Jane Doe',
+          relationship: 'aunt',
+          phone: 'invalid-phone',
         }, // Invalid phone
         {
-          id: "contact-4",
-          name: "Bob Smith",
-          relationship: "uncle",
-          phone: "555-0103",
+          id: 'contact-4',
+          name: 'Bob Smith',
+          relationship: 'uncle',
+          phone: '555-0103',
           isPrimary: null,
         }, // Invalid isPrimary
       ];
 
-      invalidEmergencyContacts.forEach((contact) => {
-        if (contact.name === "") {
+      invalidEmergencyContacts.forEach(contact => {
+        if (contact.name === '') {
           expect(contact.name.length).toBe(0);
         }
-        if (contact.relationship === "") {
+        if (contact.relationship === '') {
           expect(contact.relationship.length).toBe(0);
         }
-        if (contact.phone === "invalid-phone") {
+        if (contact.phone === 'invalid-phone') {
           expect(contact.phone).not.toMatch(/^\d{3}-\d{4}$/);
         }
         if (contact.isPrimary === null) {

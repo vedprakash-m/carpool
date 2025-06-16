@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useProtectedRoute } from "@/hooks/useProtectedRoute";
-import { UserRole, RolePermissions } from "@/types/shared";
+import React from 'react';
+import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import { UserRole, RolePermissions } from '@/types/shared';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -33,7 +33,7 @@ export function ProtectedRoute({
 export function AdminRoute({
   children,
   fallback,
-}: Omit<ProtectedRouteProps, "requiredRole">) {
+}: Omit<ProtectedRouteProps, 'requiredRole'>) {
   return (
     <ProtectedRoute requiredRole="admin" fallback={fallback}>
       {children}
@@ -44,7 +44,7 @@ export function AdminRoute({
 export function GroupAdminRoute({
   children,
   fallback,
-}: Omit<ProtectedRouteProps, "requiredRole">) {
+}: Omit<ProtectedRouteProps, 'requiredRole'>) {
   return (
     <ProtectedRoute requiredRole="group_admin" fallback={fallback}>
       {children}
@@ -55,7 +55,7 @@ export function GroupAdminRoute({
 export function ParentRoute({
   children,
   fallback,
-}: Omit<ProtectedRouteProps, "requiredRole">) {
+}: Omit<ProtectedRouteProps, 'requiredRole'>) {
   return (
     <ProtectedRoute requiredRole="parent" fallback={fallback}>
       {children}
@@ -66,7 +66,7 @@ export function ParentRoute({
 export function ChildRoute({
   children,
   fallback,
-}: Omit<ProtectedRouteProps, "requiredRole">) {
+}: Omit<ProtectedRouteProps, 'requiredRole'>) {
   return (
     <ProtectedRoute requiredRole="child" fallback={fallback}>
       {children}

@@ -30,7 +30,7 @@ export class SanitizationMiddleware {
     }
 
     let sanitized = value.replace(/\0/g, '').trim();
-    
+
     sanitized = DOMPurify.sanitize(sanitized, {
       ALLOWED_TAGS: [],
       ALLOWED_ATTR: [],
@@ -72,7 +72,7 @@ export class SanitizationMiddleware {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.sanitizeObject(item));
+      return obj.map((item) => this.sanitizeObject(item));
     }
 
     if (typeof obj === 'object') {
@@ -128,8 +128,8 @@ export class SanitizationMiddleware {
 
       return result;
     } catch (error) {
-      logger.error('Request sanitization failed', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Request sanitization failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw new Error('Invalid input detected in request');
     }
@@ -143,17 +143,17 @@ export class SanitizationMiddleware {
       return async (request: HttpRequest, context: InvocationContext) => {
         try {
           const sanitizedData = this.sanitizeRequestData(request);
-          
+
           // Add sanitized data to context for use in handlers
           (context as any).sanitizedQuery = sanitizedData.sanitizedQuery;
           (context as any).sanitizedBody = sanitizedData.sanitizedBody;
-          
+
           return handler(request, context);
         } catch (error) {
-          logger.error('Sanitization middleware failed', { 
-            error: error instanceof Error ? error.message : 'Unknown error' 
+          logger.error('Sanitization middleware failed', {
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
-          
+
           return {
             status: 400,
             headers: { 'Content-Type': 'application/json' },

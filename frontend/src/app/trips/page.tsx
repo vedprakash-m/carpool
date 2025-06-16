@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "../../store/auth.store";
-import { useTripStore } from "../../store/trip.store";
-import DashboardLayout from "../../components/DashboardLayout";
-import { SectionErrorBoundary } from "../../components/SectionErrorBoundary";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '../../store/auth.store';
+import { useTripStore } from '../../store/trip.store';
+import DashboardLayout from '../../components/DashboardLayout';
+import { SectionErrorBoundary } from '../../components/SectionErrorBoundary';
 // Removed problematic optimization components
-import { Trip, TripStatus } from "../../types/shared";
+import { Trip, TripStatus } from '../../types/shared';
 import {
   CalendarIcon,
   TruckIcon as CarIcon,
@@ -19,11 +19,11 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   UserGroupIcon,
-} from "@heroicons/react/24/outline";
-import AdvancedTripSearch from "../../components/AdvancedTripSearch";
-import LoadingSpinner from "../../components/LoadingSpinner";
+} from '@heroicons/react/24/outline';
+import AdvancedTripSearch from '../../components/AdvancedTripSearch';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
-type TabType = "my-trips" | "available" | "driving";
+type TabType = 'my-trips' | 'available' | 'driving';
 
 interface TripCardProps {
   trip: Trip;
@@ -44,34 +44,34 @@ const TripCard = ({
     !isDriver &&
     !isPassenger &&
     trip.availableSeats > 0 &&
-    trip.status === "planned";
-  const canLeave = isPassenger && trip.status === "planned";
+    trip.status === 'planned';
+  const canLeave = isPassenger && trip.status === 'planned';
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const getStatusColor = (status: TripStatus) => {
     switch (status) {
-      case "planned":
-        return "text-blue-600 bg-blue-100";
-      case "active":
-        return "text-green-600 bg-green-100";
-      case "completed":
-        return "text-gray-600 bg-gray-100";
-      case "cancelled":
-        return "text-red-600 bg-red-100";
+      case 'planned':
+        return 'text-blue-600 bg-blue-100';
+      case 'active':
+        return 'text-green-600 bg-green-100';
+      case 'completed':
+        return 'text-gray-600 bg-gray-100';
+      case 'cancelled':
+        return 'text-red-600 bg-red-100';
       default:
-        return "text-gray-600 bg-gray-100";
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
   const handleJoinClick = () => {
-    const pickupLocation = prompt("Please enter your pickup location:");
+    const pickupLocation = prompt('Please enter your pickup location:');
     if (pickupLocation && onJoinTrip) {
       onJoinTrip(trip.id);
     }
@@ -174,40 +174,40 @@ function TripsPage() {
     leaveTrip,
     clearError,
   } = useTripStore();
-  const [activeTab, setActiveTab] = useState<TabType>("my-trips");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"date" | "cost" | "destination">("date");
-  const [filterStatus, setFilterStatus] = useState<TripStatus | "all">("all");
+  const [activeTab, setActiveTab] = useState<TabType>('my-trips');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'cost' | 'destination'>('date');
+  const [filterStatus, setFilterStatus] = useState<TripStatus | 'all'>('all');
 
   // Fetch trips when component mounts or tab changes
   useEffect(() => {
-    if (activeTab === "my-trips") {
+    if (activeTab === 'my-trips') {
       fetchMyTrips();
-    } else if (activeTab === "available") {
+    } else if (activeTab === 'available') {
       fetchAvailableTrips();
     }
   }, [activeTab, fetchMyTrips, fetchAvailableTrips]);
 
   // Filter and sort trips based on search criteria
   const filteredTrips = trips
-    .filter((trip) => {
+    .filter(trip => {
       const matchesSearch =
-        searchQuery === "" ||
+        searchQuery === '' ||
         trip.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
         trip.notes?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus =
-        filterStatus === "all" || trip.status === filterStatus;
+        filterStatus === 'all' || trip.status === filterStatus;
 
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case "date":
+        case 'date':
           return new Date(a.date).getTime() - new Date(b.date).getTime();
-        case "cost":
+        case 'cost':
           return (a.cost || 0) - (b.cost || 0);
-        case "destination":
+        case 'destination':
           return a.destination.localeCompare(b.destination);
         default:
           return 0;
@@ -217,23 +217,23 @@ function TripsPage() {
   useEffect(() => {
     if (isAuthenticated) {
       // Fetch trips based on active tab
-      if (activeTab === "my-trips") {
+      if (activeTab === 'my-trips') {
         fetchMyTrips();
-      } else if (activeTab === "available") {
+      } else if (activeTab === 'available') {
         fetchAvailableTrips();
       }
     }
   }, [isAuthenticated, activeTab, fetchMyTrips, fetchAvailableTrips]);
 
   const handleJoinTrip = async (tripId: string) => {
-    const pickupLocation = prompt("Please enter your pickup location:");
+    const pickupLocation = prompt('Please enter your pickup location:');
     if (pickupLocation) {
       const success = await joinTrip(tripId, pickupLocation);
       if (success) {
         // Refresh the current view
-        if (activeTab === "my-trips") {
+        if (activeTab === 'my-trips') {
           fetchMyTrips();
-        } else if (activeTab === "available") {
+        } else if (activeTab === 'available') {
           fetchAvailableTrips();
         }
       }
@@ -241,13 +241,13 @@ function TripsPage() {
   };
 
   const handleLeaveTrip = async (tripId: string) => {
-    if (confirm("Are you sure you want to leave this trip?")) {
+    if (confirm('Are you sure you want to leave this trip?')) {
       const success = await leaveTrip(tripId);
       if (success) {
         // Refresh the current view
-        if (activeTab === "my-trips") {
+        if (activeTab === 'my-trips') {
           fetchMyTrips();
-        } else if (activeTab === "available") {
+        } else if (activeTab === 'available') {
           fetchAvailableTrips();
         }
       }
@@ -271,7 +271,7 @@ function TripsPage() {
               </p>
             </div>
             <button
-              onClick={() => router.push("/trips/create")}
+              onClick={() => router.push('/trips/create')}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <PlusOutlineIcon className="h-4 w-4 mr-2" />
@@ -284,21 +284,21 @@ function TripsPage() {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
             <button
-              onClick={() => setActiveTab("my-trips")}
+              onClick={() => setActiveTab('my-trips')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === "my-trips"
-                  ? "border-primary-500 text-primary-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                activeTab === 'my-trips'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               My Trips
             </button>
             <button
-              onClick={() => setActiveTab("available")}
+              onClick={() => setActiveTab('available')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === "available"
-                  ? "border-primary-500 text-primary-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                activeTab === 'available'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               Available Trips
@@ -312,7 +312,7 @@ function TripsPage() {
             {/* Search */}
             <div className="flex-1 w-full sm:w-auto">
               <AdvancedTripSearch
-                onSearch={(filters) => {
+                onSearch={filters => {
                   // Use the advanced search functionality
                   searchTrips(filters);
                 }}
@@ -329,8 +329,8 @@ function TripsPage() {
                 </label>
                 <select
                   value={sortBy}
-                  onChange={(e) =>
-                    setSortBy(e.target.value as "date" | "cost" | "destination")
+                  onChange={e =>
+                    setSortBy(e.target.value as 'date' | 'cost' | 'destination')
                   }
                   className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-primary-500 focus:border-primary-500"
                 >
@@ -345,8 +345,8 @@ function TripsPage() {
                 <FunnelIcon className="h-4 w-4 text-gray-400" />
                 <select
                   value={filterStatus}
-                  onChange={(e) =>
-                    setFilterStatus(e.target.value as TripStatus | "all")
+                  onChange={e =>
+                    setFilterStatus(e.target.value as TripStatus | 'all')
                   }
                   className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-primary-500 focus:border-primary-500"
                 >
@@ -361,20 +361,20 @@ function TripsPage() {
           </div>
 
           {/* Results Count */}
-          {(searchQuery || filterStatus !== "all") && (
+          {(searchQuery || filterStatus !== 'all') && (
             <div className="mt-3 text-sm text-gray-600">
               Showing {filteredTrips.length} of {trips.length} trips
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => setSearchQuery('')}
                   className="ml-2 text-primary-600 hover:text-primary-500 underline"
                 >
                   Clear search
                 </button>
               )}
-              {filterStatus !== "all" && (
+              {filterStatus !== 'all' && (
                 <button
-                  onClick={() => setFilterStatus("all")}
+                  onClick={() => setFilterStatus('all')}
                   className="ml-2 text-primary-600 hover:text-primary-500 underline"
                 >
                   Clear filter
@@ -409,22 +409,22 @@ function TripsPage() {
             <CarIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">
               {trips.length === 0
-                ? activeTab === "my-trips"
-                  ? "No trips yet"
-                  : "No available trips"
-                : "No trips match your search"}
+                ? activeTab === 'my-trips'
+                  ? 'No trips yet'
+                  : 'No available trips'
+                : 'No trips match your search'}
             </h3>
             <p className="mt-2 text-sm text-gray-500">
               {trips.length === 0
-                ? activeTab === "my-trips"
-                  ? "Get started by creating your first trip."
-                  : "Check back later for available rides."
-                : "Try adjusting your search criteria or filters."}
+                ? activeTab === 'my-trips'
+                  ? 'Get started by creating your first trip.'
+                  : 'Check back later for available rides.'
+                : 'Try adjusting your search criteria or filters.'}
             </p>
-            {activeTab === "my-trips" && trips.length === 0 && (
+            {activeTab === 'my-trips' && trips.length === 0 && (
               <div className="mt-6">
                 <button
-                  onClick={() => router.push("/trips/create")}
+                  onClick={() => router.push('/trips/create')}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   <PlusOutlineIcon className="h-4 w-4 mr-2" />
@@ -436,11 +436,11 @@ function TripsPage() {
         ) : (
           <div className="relative">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredTrips.map((trip) => (
+              {filteredTrips.map(trip => (
                 <TripCard
                   key={trip.id}
                   trip={trip}
-                  currentUserId={user?.id || ""}
+                  currentUserId={user?.id || ''}
                   onJoinTrip={handleJoinTrip}
                   onLeaveTrip={handleLeaveTrip}
                 />

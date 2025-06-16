@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   CalendarIcon,
   ClockIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface PreferenceTutorialProps {
   onNext: () => void;
@@ -23,7 +23,7 @@ export default function PreferenceTutorial({
 
   const demoSteps = [
     {
-      title: "Weekly Schedule Overview",
+      title: 'Weekly Schedule Overview',
       description:
         "You'll see a weekly calendar with morning and afternoon time slots",
       content: (
@@ -49,7 +49,7 @@ export default function PreferenceTutorial({
       ),
     },
     {
-      title: "Set Your Preferences",
+      title: 'Set Your Preferences',
       description:
         "Click on time slots to set: Can't Drive, Prefer Not, Available, or Prefer",
       content: (
@@ -80,9 +80,9 @@ export default function PreferenceTutorial({
       ),
     },
     {
-      title: "Pro Tips for Better Scheduling",
+      title: 'Pro Tips for Better Scheduling',
       description:
-        "Follow these tips to help create fair and efficient schedules",
+        'Follow these tips to help create fair and efficient schedules',
       content: (
         <div className="space-y-3">
           <div className="flex items-start space-x-3">
@@ -157,10 +157,10 @@ export default function PreferenceTutorial({
             key={index}
             className={`w-3 h-3 rounded-full ${
               index === currentDemo
-                ? "bg-indigo-600"
+                ? 'bg-indigo-600'
                 : index < currentDemo
-                ? "bg-green-600"
-                : "bg-gray-300"
+                  ? 'bg-green-600'
+                  : 'bg-gray-300'
             }`}
           />
         ))}
@@ -192,7 +192,7 @@ export default function PreferenceTutorial({
                 week
               </li>
               <li>
-                • Assignments are generated and sent out on{" "}
+                • Assignments are generated and sent out on{' '}
                 <strong>Sunday morning</strong>
               </li>
               <li>
@@ -210,8 +210,8 @@ export default function PreferenceTutorial({
           disabled={currentDemo === 0}
           className={`px-4 py-2 rounded-lg transition-colors ${
             currentDemo === 0
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+              ? 'text-gray-400 cursor-not-allowed'
+              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
           }`}
         >
           Previous
@@ -225,7 +225,7 @@ export default function PreferenceTutorial({
           onClick={handleNext}
           className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
         >
-          {currentDemo === demoSteps.length - 1 ? "Got It!" : "Next"}
+          {currentDemo === demoSteps.length - 1 ? 'Got It!' : 'Next'}
         </button>
       </div>
 

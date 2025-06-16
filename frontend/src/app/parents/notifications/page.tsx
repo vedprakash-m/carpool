@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 import {
   BellIcon,
   EnvelopeIcon,
   CheckCircleIcon,
   XCircleIcon,
   InformationCircleIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface NotificationSettings {
   emailNotifications: boolean;
@@ -45,12 +45,12 @@ export default function NotificationPreferencesPage() {
   // Authentication check
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
 
-    if (!isLoading && user?.role !== "parent" && user?.role !== "admin") {
-      router.push("/dashboard");
+    if (!isLoading && user?.role !== 'parent' && user?.role !== 'admin') {
+      router.push('/dashboard');
       return;
     }
   }, [isAuthenticated, isLoading, user, router]);
@@ -69,7 +69,7 @@ export default function NotificationPreferencesPage() {
       // For now, use default settings
       setSettings(DEFAULT_SETTINGS);
     } catch (err) {
-      setError("Failed to load notification settings");
+      setError('Failed to load notification settings');
     } finally {
       setIsLoadingSettings(false);
     }
@@ -79,7 +79,7 @@ export default function NotificationPreferencesPage() {
     key: keyof NotificationSettings,
     value: boolean
   ) => {
-    setSettings((prev) => ({
+    setSettings(prev => ({
       ...prev,
       [key]: value,
     }));
@@ -92,11 +92,11 @@ export default function NotificationPreferencesPage() {
     try {
       // In production, this would save to an API
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       setLastSaved(new Date());
     } catch (err) {
-      setError("Failed to save notification settings");
+      setError('Failed to save notification settings');
     } finally {
       setIsSaving(false);
     }
@@ -132,7 +132,7 @@ export default function NotificationPreferencesPage() {
               </p>
             </div>
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push('/dashboard')}
               className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               ← Back to Dashboard
@@ -159,7 +159,7 @@ export default function NotificationPreferencesPage() {
               <CheckCircleIcon className="h-5 w-5 text-green-400" />
               <div className="ml-3">
                 <p className="text-sm text-green-800">
-                  Settings saved successfully at{" "}
+                  Settings saved successfully at{' '}
                   {lastSaved.toLocaleTimeString()}
                 </p>
               </div>
@@ -202,21 +202,21 @@ export default function NotificationPreferencesPage() {
                   <button
                     onClick={() =>
                       handleSettingChange(
-                        "emailNotifications",
+                        'emailNotifications',
                         !settings.emailNotifications
                       )
                     }
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       settings.emailNotifications
-                        ? "bg-green-600"
-                        : "bg-gray-200"
+                        ? 'bg-green-600'
+                        : 'bg-gray-200'
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                         settings.emailNotifications
-                          ? "translate-x-6"
-                          : "translate-x-1"
+                          ? 'translate-x-6'
+                          : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -242,7 +242,7 @@ export default function NotificationPreferencesPage() {
                       <button
                         onClick={() =>
                           handleSettingChange(
-                            "swapRequestCreated",
+                            'swapRequestCreated',
                             !settings.swapRequestCreated
                           )
                         }
@@ -250,20 +250,20 @@ export default function NotificationPreferencesPage() {
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           settings.swapRequestCreated &&
                           settings.emailNotifications
-                            ? "bg-green-600"
-                            : "bg-gray-200"
+                            ? 'bg-green-600'
+                            : 'bg-gray-200'
                         } ${
                           !settings.emailNotifications
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
                         }`}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                             settings.swapRequestCreated &&
                             settings.emailNotifications
-                              ? "translate-x-6"
-                              : "translate-x-1"
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
                           }`}
                         />
                       </button>
@@ -282,7 +282,7 @@ export default function NotificationPreferencesPage() {
                       <button
                         onClick={() =>
                           handleSettingChange(
-                            "swapRequestResponded",
+                            'swapRequestResponded',
                             !settings.swapRequestResponded
                           )
                         }
@@ -290,20 +290,20 @@ export default function NotificationPreferencesPage() {
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           settings.swapRequestResponded &&
                           settings.emailNotifications
-                            ? "bg-green-600"
-                            : "bg-gray-200"
+                            ? 'bg-green-600'
+                            : 'bg-gray-200'
                         } ${
                           !settings.emailNotifications
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
                         }`}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                             settings.swapRequestResponded &&
                             settings.emailNotifications
-                              ? "translate-x-6"
-                              : "translate-x-1"
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
                           }`}
                         />
                       </button>
@@ -329,7 +329,7 @@ export default function NotificationPreferencesPage() {
                       <button
                         onClick={() =>
                           handleSettingChange(
-                            "assignmentReminder24h",
+                            'assignmentReminder24h',
                             !settings.assignmentReminder24h
                           )
                         }
@@ -337,20 +337,20 @@ export default function NotificationPreferencesPage() {
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           settings.assignmentReminder24h &&
                           settings.emailNotifications
-                            ? "bg-green-600"
-                            : "bg-gray-200"
+                            ? 'bg-green-600'
+                            : 'bg-gray-200'
                         } ${
                           !settings.emailNotifications
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
                         }`}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                             settings.assignmentReminder24h &&
                             settings.emailNotifications
-                              ? "translate-x-6"
-                              : "translate-x-1"
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
                           }`}
                         />
                       </button>
@@ -368,7 +368,7 @@ export default function NotificationPreferencesPage() {
                       <button
                         onClick={() =>
                           handleSettingChange(
-                            "assignmentReminder2h",
+                            'assignmentReminder2h',
                             !settings.assignmentReminder2h
                           )
                         }
@@ -376,20 +376,20 @@ export default function NotificationPreferencesPage() {
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           settings.assignmentReminder2h &&
                           settings.emailNotifications
-                            ? "bg-green-600"
-                            : "bg-gray-200"
+                            ? 'bg-green-600'
+                            : 'bg-gray-200'
                         } ${
                           !settings.emailNotifications
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
                         }`}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                             settings.assignmentReminder2h &&
                             settings.emailNotifications
-                              ? "translate-x-6"
-                              : "translate-x-1"
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
                           }`}
                         />
                       </button>
@@ -415,7 +415,7 @@ export default function NotificationPreferencesPage() {
                       <button
                         onClick={() =>
                           handleSettingChange(
-                            "assignmentChanges",
+                            'assignmentChanges',
                             !settings.assignmentChanges
                           )
                         }
@@ -423,20 +423,20 @@ export default function NotificationPreferencesPage() {
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           settings.assignmentChanges &&
                           settings.emailNotifications
-                            ? "bg-green-600"
-                            : "bg-gray-200"
+                            ? 'bg-green-600'
+                            : 'bg-gray-200'
                         } ${
                           !settings.emailNotifications
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
                         }`}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                             settings.assignmentChanges &&
                             settings.emailNotifications
-                              ? "translate-x-6"
-                              : "translate-x-1"
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
                           }`}
                         />
                       </button>
@@ -454,27 +454,27 @@ export default function NotificationPreferencesPage() {
                       <button
                         onClick={() =>
                           handleSettingChange(
-                            "weeklySchedule",
+                            'weeklySchedule',
                             !settings.weeklySchedule
                           )
                         }
                         disabled={!settings.emailNotifications}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                           settings.weeklySchedule && settings.emailNotifications
-                            ? "bg-green-600"
-                            : "bg-gray-200"
+                            ? 'bg-green-600'
+                            : 'bg-gray-200'
                         } ${
                           !settings.emailNotifications
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
                         }`}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                             settings.weeklySchedule &&
                             settings.emailNotifications
-                              ? "translate-x-6"
-                              : "translate-x-1"
+                              ? 'translate-x-6'
+                              : 'translate-x-1'
                           }`}
                         />
                       </button>
@@ -517,7 +517,7 @@ export default function NotificationPreferencesPage() {
               </h3>
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>
-                  • Notifications are sent to your registered email address:{" "}
+                  • Notifications are sent to your registered email address:{' '}
                   <strong>{user?.email}</strong>
                 </li>
                 <li>

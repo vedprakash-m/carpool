@@ -1,30 +1,26 @@
-import {
-  HttpRequest,
-  HttpResponseInit,
-  InvocationContext,
-} from "@azure/functions";
-import { UserRole } from "@vcarpool/shared";
-import { Middleware } from "./index";
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { UserRole } from '@vcarpool/shared';
+import { Middleware } from './index';
 
 export const hasRole = (allowedRoles: UserRole[]): Middleware => {
   return (
     request: HttpRequest,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _context: InvocationContext
+    _context: InvocationContext,
   ): Promise<HttpResponseInit | void> => {
     const user = request.auth;
 
     if (!user || !user.role) {
       return Promise.resolve({
         status: 401,
-        jsonBody: { success: false, error: "Unauthorized" },
+        jsonBody: { success: false, error: 'Unauthorized' },
       });
     }
 
     if (!allowedRoles.includes(user.role)) {
       return Promise.resolve({
         status: 403,
-        jsonBody: { success: false, error: "Forbidden" },
+        jsonBody: { success: false, error: 'Forbidden' },
       });
     }
 

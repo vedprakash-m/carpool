@@ -11,26 +11,22 @@ import {
   User,
   Trip,
   MessageType,
-} from "@vcarpool/shared";
-import { v4 as uuidv4 } from "uuid";
+} from '@vcarpool/shared';
+import { v4 as uuidv4 } from 'uuid';
 import {
   MessageRepository,
   ChatRepository,
   ChatParticipantRepository,
-} from "../repositories/message.repository";
-import { UserRepository } from "../repositories/user.repository";
-import { TripRepository } from "../repositories/trip.repository";
-import { Errors } from "../utils/error-handler";
-import { ILogger } from "../utils/logger";
+} from '../repositories/message.repository';
+import { UserRepository } from '../repositories/user.repository';
+import { TripRepository } from '../repositories/trip.repository';
+import { Errors } from '../utils/error-handler';
+import { ILogger } from '../utils/logger';
 
 export interface IRealtimeService {
   sendToChat(chatId: string, event: RealTimeEvent): Promise<void>;
   sendToUser(userId: string, event: RealTimeEvent): Promise<void>;
-  notifyTyping(
-    chatId: string,
-    userId: string,
-    isTyping: boolean
-  ): Promise<void>;
+  notifyTyping(chatId: string, userId: string, isTyping: boolean): Promise<void>;
 }
 
 export class MessagingService {
@@ -43,7 +39,7 @@ export class MessagingService {
     private userRepository: UserRepository,
     private tripRepository: TripRepository,
     private realtimeService?: IRealtimeService,
-    logger?: ILogger
+    logger?: ILogger,
   ) {
     this.logger = logger || {
       debug: (message: string, data?: any) => console.debug(message, data),
@@ -62,7 +58,7 @@ export class MessagingService {
   async createTripChat(
     tripId: string,
     createdBy: string,
-    chatData?: CreateChatRequest
+    chatData?: CreateChatRequest,
   ): Promise<ChatRoom> {
     try {
       // Check if chat already exists for this trip
@@ -74,20 +70,18 @@ export class MessagingService {
       // Get trip details
       const trip = await this.tripRepository.findById(tripId);
       if (!trip) {
-        throw Errors.NotFound("Trip not found");
+        throw Errors.NotFound('Trip not found');
       }
 
       // Get all participants (driver + passengers)
       const participants = [trip.driverId, ...trip.passengers];
 
       // Create chat room
-      const chatRoom: Omit<ChatRoom, "id" | "createdAt" | "updatedAt"> = {
+      const chatRoom: Omit<ChatRoom, 'id' | 'createdAt' | 'updatedAt'> = {
         tripId,
-        type: "trip_chat",
+        type: 'trip_chat',
         name: chatData?.name || `Trip to ${trip.destination}`,
-        description:
-          chatData?.description ||
-          `Chat for trip on ${trip.date.toDateString()}`,
+        description: chatData?.description || `Chat for trip on ${trip.date.toDateString()}`,
         participants,
         createdBy,
         isActive: true,
@@ -100,7 +94,7 @@ export class MessagingService {
         const participant: ChatParticipant = {
           userId,
           chatId: createdChat.id,
-          role: userId === trip.driverId ? "driver" : "passenger",
+          role: userId === trip.driverId ? 'driver' : 'passenger',
           joinedAt: new Date(),
           notificationsEnabled: true,
         };
@@ -110,15 +104,13 @@ export class MessagingService {
       // Send system message
       await this.sendSystemMessage(
         createdChat.id,
-        `Trip chat created for ${
-          trip.destination
-        } on ${trip.date.toDateString()}`
+        `Trip chat created for ${trip.destination} on ${trip.date.toDateString()}`,
       );
 
-      this.logger.info("Trip chat created", { tripId, chatId: createdChat.id });
+      this.logger.info('Trip chat created', { tripId, chatId: createdChat.id });
       return createdChat;
     } catch (error) {
-      this.logger.error("Error creating trip chat", { tripId, error });
+      this.logger.error('Error creating trip chat', { tripId, error });
       throw error;
     }
   }
@@ -129,42 +121,40 @@ export class MessagingService {
   async sendMessage(
     chatId: string,
     senderId: string,
-    messageData: SendMessageRequest
+    messageData: SendMessageRequest,
   ): Promise<MessageWithSender> {
     try {
       // Verify chat exists and user is participant
       const chat = await this.chatRepository.getChatById(chatId);
       if (!chat) {
-        throw Errors.NotFound("Chat not found");
+        throw Errors.NotFound('Chat not found');
       }
 
       if (!chat.participants.includes(senderId)) {
-        throw Errors.Forbidden("You are not a participant in this chat");
+        throw Errors.Forbidden('You are not a participant in this chat');
       }
 
       if (!chat.isActive) {
-        throw Errors.BadRequest("Chat is no longer active");
+        throw Errors.BadRequest('Chat is no longer active');
       }
 
       // Get sender info
       const sender = await this.userRepository.findById(senderId);
       if (!sender) {
-        throw Errors.NotFound("Sender not found");
+        throw Errors.NotFound('Sender not found');
       }
 
       // Create message
-      const message: Omit<Message, "id" | "createdAt" | "updatedAt"> = {
+      const message: Omit<Message, 'id' | 'createdAt' | 'updatedAt'> = {
         chatId,
         senderId,
         senderName: `${sender.firstName} ${sender.lastName}`,
-        type: messageData.type || "text",
+        type: messageData.type || 'text',
         content: messageData.content,
         metadata: messageData.metadata,
       };
 
-      const createdMessage = await this.messageRepository.createMessage(
-        message
-      );
+      const createdMessage = await this.messageRepository.createMessage(message);
 
       // Update chat's last message
       await this.chatRepository.updateChat(chatId, {
@@ -186,7 +176,7 @@ export class MessagingService {
       // Send real-time notification to other participants
       if (this.realtimeService) {
         const realtimeEvent: RealTimeEvent = {
-          type: "message",
+          type: 'message',
           chatId,
           userId: senderId,
           data: createdMessage,
@@ -196,14 +186,14 @@ export class MessagingService {
         await this.realtimeService.sendToChat(chatId, realtimeEvent);
       }
 
-      this.logger.info("Message sent", {
+      this.logger.info('Message sent', {
         chatId,
         messageId: createdMessage.id,
         senderId,
       });
       return messageWithSender;
     } catch (error) {
-      this.logger.error("Error sending message", { chatId, senderId, error });
+      this.logger.error('Error sending message', { chatId, senderId, error });
       throw error;
     }
   }
@@ -219,42 +209,33 @@ export class MessagingService {
       before?: Date;
       after?: Date;
       offset?: number;
-    } = {}
+    } = {},
   ): Promise<{ messages: MessageWithSender[]; total: number }> {
     try {
       // Verify user is participant
       const chat = await this.chatRepository.getChatById(chatId);
       if (!chat) {
-        throw Errors.NotFound("Chat not found");
+        throw Errors.NotFound('Chat not found');
       }
 
       if (!chat.participants.includes(userId)) {
-        throw Errors.Forbidden("You are not a participant in this chat");
+        throw Errors.Forbidden('You are not a participant in this chat');
       }
 
-      const { messages, total } = await this.messageRepository.getMessages(
-        chatId,
-        options
-      );
+      const { messages, total } = await this.messageRepository.getMessages(chatId, options);
 
       // Add isOwnMessage flag
-      const messagesWithSender: MessageWithSender[] = messages.map(
-        (message) => ({
-          ...message,
-          isOwnMessage: message.senderId === userId,
-        })
-      );
+      const messagesWithSender: MessageWithSender[] = messages.map((message) => ({
+        ...message,
+        isOwnMessage: message.senderId === userId,
+      }));
 
       // Update last read timestamp
-      await this.participantRepository.updateLastRead(
-        userId,
-        chatId,
-        new Date()
-      );
+      await this.participantRepository.updateLastRead(userId, chatId, new Date());
 
       return { messages: messagesWithSender, total };
     } catch (error) {
-      this.logger.error("Error getting messages", { chatId, userId, error });
+      this.logger.error('Error getting messages', { chatId, userId, error });
       throw error;
     }
   }
@@ -268,38 +249,32 @@ export class MessagingService {
       includeInactive?: boolean;
       limit?: number;
       offset?: number;
-    } = {}
+    } = {},
   ): Promise<{ chats: ChatRoomWithUnreadCount[]; total: number }> {
     try {
-      const { chats, total } = await this.chatRepository.getUserChats(
-        userId,
-        options
-      );
+      const { chats, total } = await this.chatRepository.getUserChats(userId, options);
 
       // Add unread counts and user role
       const chatsWithUnread: ChatRoomWithUnreadCount[] = await Promise.all(
         chats.map(async (chat) => {
-          const participant = await this.participantRepository.getParticipant(
-            userId,
-            chat.id
-          );
+          const participant = await this.participantRepository.getParticipant(userId, chat.id);
           const unreadCount = await this.messageRepository.getUnreadCount(
             chat.id,
             userId,
-            participant?.lastReadAt
+            participant?.lastReadAt,
           );
 
           return {
             ...chat,
             unreadCount,
-            userRole: participant?.role || "passenger",
+            userRole: participant?.role || 'passenger',
           };
-        })
+        }),
       );
 
       return { chats: chatsWithUnread, total };
     } catch (error) {
-      this.logger.error("Error getting user chats", { userId, error });
+      this.logger.error('Error getting user chats', { userId, error });
       throw error;
     }
   }
@@ -326,7 +301,7 @@ export class MessagingService {
             const participant: ChatParticipant = {
               userId,
               chatId: chat.id,
-              role: userId === trip.driverId ? "driver" : "passenger",
+              role: userId === trip.driverId ? 'driver' : 'passenger',
               joinedAt: new Date(),
               notificationsEnabled: true,
             };
@@ -337,7 +312,7 @@ export class MessagingService {
 
       return chat;
     } catch (error) {
-      this.logger.error("Error getting or creating trip chat", {
+      this.logger.error('Error getting or creating trip chat', {
         tripId,
         userId,
         error,
@@ -349,39 +324,32 @@ export class MessagingService {
   /**
    * Update message
    */
-  async updateMessage(
-    messageId: string,
-    userId: string,
-    content: string
-  ): Promise<Message | null> {
+  async updateMessage(messageId: string, userId: string, content: string): Promise<Message | null> {
     try {
       const message = await this.messageRepository.getMessageById(messageId);
       if (!message) {
-        throw Errors.NotFound("Message not found");
+        throw Errors.NotFound('Message not found');
       }
 
       if (message.senderId !== userId) {
-        throw Errors.Forbidden("You can only edit your own messages");
+        throw Errors.Forbidden('You can only edit your own messages');
       }
 
       // Don't allow editing messages older than 15 minutes
       const editTimeLimit = 15 * 60 * 1000; // 15 minutes
       if (Date.now() - message.createdAt.getTime() > editTimeLimit) {
-        throw Errors.BadRequest("Message is too old to edit");
+        throw Errors.BadRequest('Message is too old to edit');
       }
 
-      const updatedMessage = await this.messageRepository.updateMessage(
-        messageId,
-        { content }
-      );
+      const updatedMessage = await this.messageRepository.updateMessage(messageId, { content });
 
       // Send real-time notification
       if (this.realtimeService && updatedMessage) {
         const realtimeEvent: RealTimeEvent = {
-          type: "message",
+          type: 'message',
           chatId: message.chatId,
           userId,
-          data: { ...updatedMessage, type: "edit" },
+          data: { ...updatedMessage, type: 'edit' },
           timestamp: new Date(),
         };
 
@@ -390,7 +358,7 @@ export class MessagingService {
 
       return updatedMessage;
     } catch (error) {
-      this.logger.error("Error updating message", { messageId, userId, error });
+      this.logger.error('Error updating message', { messageId, userId, error });
       throw error;
     }
   }
@@ -402,11 +370,11 @@ export class MessagingService {
     try {
       const message = await this.messageRepository.getMessageById(messageId);
       if (!message) {
-        throw Errors.NotFound("Message not found");
+        throw Errors.NotFound('Message not found');
       }
 
       if (message.senderId !== userId) {
-        throw Errors.Forbidden("You can only delete your own messages");
+        throw Errors.Forbidden('You can only delete your own messages');
       }
 
       const deleted = await this.messageRepository.deleteMessage(messageId);
@@ -414,10 +382,10 @@ export class MessagingService {
       // Send real-time notification
       if (this.realtimeService && deleted) {
         const realtimeEvent: RealTimeEvent = {
-          type: "message",
+          type: 'message',
           chatId: message.chatId,
           userId,
-          data: { messageId, type: "delete" },
+          data: { messageId, type: 'delete' },
           timestamp: new Date(),
         };
 
@@ -426,7 +394,7 @@ export class MessagingService {
 
       return deleted;
     } catch (error) {
-      this.logger.error("Error deleting message", { messageId, userId, error });
+      this.logger.error('Error deleting message', { messageId, userId, error });
       throw error;
     }
   }
@@ -434,18 +402,15 @@ export class MessagingService {
   /**
    * Send system message
    */
-  private async sendSystemMessage(
-    chatId: string,
-    content: string
-  ): Promise<Message> {
-    const systemMessage: Omit<Message, "id" | "createdAt" | "updatedAt"> = {
+  private async sendSystemMessage(chatId: string, content: string): Promise<Message> {
+    const systemMessage: Omit<Message, 'id' | 'createdAt' | 'updatedAt'> = {
       chatId,
-      senderId: "system",
-      senderName: "System",
-      type: "system" as MessageType,
+      senderId: 'system',
+      senderName: 'System',
+      type: 'system' as MessageType,
       content,
       metadata: {
-        systemEventType: "chat_created",
+        systemEventType: 'chat_created',
       },
     };
 
@@ -466,7 +431,7 @@ export class MessagingService {
         const participant: ChatParticipant = {
           userId,
           chatId: chat.id,
-          role: "passenger",
+          role: 'passenger',
           joinedAt: new Date(),
           notificationsEnabled: true,
         };
@@ -474,7 +439,7 @@ export class MessagingService {
 
         // Get user info
         const user = await this.userRepository.findById(userId);
-        const userName = user ? `${user.firstName} ${user.lastName}` : "A user";
+        const userName = user ? `${user.firstName} ${user.lastName}` : 'A user';
 
         // Send system message
         await this.sendSystemMessage(chat.id, `${userName} joined the trip`);
@@ -482,7 +447,7 @@ export class MessagingService {
         // Send real-time notification
         if (this.realtimeService) {
           const realtimeEvent: RealTimeEvent = {
-            type: "user_joined",
+            type: 'user_joined',
             chatId: chat.id,
             tripId,
             userId,
@@ -494,7 +459,7 @@ export class MessagingService {
         }
       }
     } catch (error) {
-      this.logger.error("Error handling user joined trip", {
+      this.logger.error('Error handling user joined trip', {
         tripId,
         userId,
         error,
@@ -511,7 +476,7 @@ export class MessagingService {
       if (chat) {
         // Get user info before removing
         const user = await this.userRepository.findById(userId);
-        const userName = user ? `${user.firstName} ${user.lastName}` : "A user";
+        const userName = user ? `${user.firstName} ${user.lastName}` : 'A user';
 
         // Remove user from chat
         await this.chatRepository.removeParticipant(chat.id, userId);
@@ -522,7 +487,7 @@ export class MessagingService {
         // Send real-time notification
         if (this.realtimeService) {
           const realtimeEvent: RealTimeEvent = {
-            type: "user_left",
+            type: 'user_left',
             chatId: chat.id,
             tripId,
             userId,
@@ -534,7 +499,7 @@ export class MessagingService {
         }
       }
     } catch (error) {
-      this.logger.error("Error handling user left trip", {
+      this.logger.error('Error handling user left trip', {
         tripId,
         userId,
         error,
@@ -551,20 +516,18 @@ export class MessagingService {
       if (chat) {
         // Get user info
         const user = await this.userRepository.findById(updatedBy);
-        const userName = user
-          ? `${user.firstName} ${user.lastName}`
-          : "The driver";
+        const userName = user ? `${user.firstName} ${user.lastName}` : 'The driver';
 
         // Send system message
         await this.sendSystemMessage(
           chat.id,
-          `${userName} updated the trip details. Please check the trip information.`
+          `${userName} updated the trip details. Please check the trip information.`,
         );
 
         // Send real-time notification
         if (this.realtimeService) {
           const realtimeEvent: RealTimeEvent = {
-            type: "trip_update",
+            type: 'trip_update',
             chatId: chat.id,
             tripId: trip.id,
             userId: updatedBy,
@@ -576,7 +539,7 @@ export class MessagingService {
         }
       }
     } catch (error) {
-      this.logger.error("Error handling trip updated", {
+      this.logger.error('Error handling trip updated', {
         tripId: trip.id,
         updatedBy,
         error,
@@ -587,11 +550,7 @@ export class MessagingService {
   /**
    * Handle typing indicator
    */
-  async handleTyping(
-    chatId: string,
-    userId: string,
-    isTyping: boolean
-  ): Promise<void> {
+  async handleTyping(chatId: string, userId: string, isTyping: boolean): Promise<void> {
     try {
       // Verify user is participant
       const chat = await this.chatRepository.getChatById(chatId);
@@ -604,7 +563,7 @@ export class MessagingService {
         await this.realtimeService.notifyTyping(chatId, userId, isTyping);
       }
     } catch (error) {
-      this.logger.error("Error handling typing", { chatId, userId, error });
+      this.logger.error('Error handling typing', { chatId, userId, error });
     }
   }
 
@@ -616,13 +575,10 @@ export class MessagingService {
       const chat = await this.chatRepository.getChatByTripId(tripId);
       if (chat) {
         await this.chatRepository.updateChat(chat.id, { isActive: false });
-        await this.sendSystemMessage(
-          chat.id,
-          "This trip has ended. Chat is now read-only."
-        );
+        await this.sendSystemMessage(chat.id, 'This trip has ended. Chat is now read-only.');
       }
     } catch (error) {
-      this.logger.error("Error deactivating chat", { tripId, error });
+      this.logger.error('Error deactivating chat', { tripId, error });
     }
   }
 }

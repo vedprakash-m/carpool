@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
 import {
   PhoneIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ClockIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface PhoneVerificationProps {
   onVerificationComplete?: (verified: boolean) => void;
@@ -25,14 +25,14 @@ export default function PhoneVerification({
   required = false,
 }: PhoneVerificationProps) {
   const { user } = useAuthStore();
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [step, setStep] = useState<"phone" | "code">("phone");
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [step, setStep] = useState<'phone' | 'code'>('phone');
   const [status, setStatus] = useState<VerificationStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [message, setMessage] = useState<{
-    type: "success" | "error" | "info";
+    type: 'success' | 'error' | 'info';
     text: string;
   } | null>(null);
 
@@ -51,8 +51,8 @@ export default function PhoneVerification({
 
   const loadVerificationStatus = async () => {
     try {
-      const token = localStorage.getItem("vcarpool_token");
-      const response = await fetch("/api/phone-verification?action=status", {
+      const token = localStorage.getItem('vcarpool_token');
+      const response = await fetch('/api/phone-verification?action=status', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -69,15 +69,15 @@ export default function PhoneVerification({
         }
       }
     } catch (error) {
-      console.error("Failed to load verification status:", error);
+      console.error('Failed to load verification status:', error);
     }
   };
 
   const sendVerificationCode = async () => {
     if (!phoneNumber.trim()) {
       setMessage({
-        type: "error",
-        text: "Please enter your phone number",
+        type: 'error',
+        text: 'Please enter your phone number',
       });
       return;
     }
@@ -86,11 +86,11 @@ export default function PhoneVerification({
     setMessage(null);
 
     try {
-      const token = localStorage.getItem("vcarpool_token");
-      const response = await fetch("/api/phone-verification?action=send-code", {
-        method: "POST",
+      const token = localStorage.getItem('vcarpool_token');
+      const response = await fetch('/api/phone-verification?action=send-code', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ phoneNumber }),
@@ -99,30 +99,30 @@ export default function PhoneVerification({
       const data = await response.json();
 
       if (response.ok) {
-        setStep("code");
+        setStep('code');
         setCountdown(600); // 10 minutes
         setMessage({
-          type: "success",
+          type: 'success',
           text: `Verification code sent to ${phoneNumber}`,
         });
 
         // In development, show the code
         if (data.data.verificationCode) {
           setMessage({
-            type: "info",
+            type: 'info',
             text: `Development mode: Your verification code is ${data.data.verificationCode}`,
           });
         }
       } else {
         setMessage({
-          type: "error",
-          text: data.error.message || "Failed to send verification code",
+          type: 'error',
+          text: data.error.message || 'Failed to send verification code',
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error sending verification code",
+        type: 'error',
+        text: 'Error sending verification code',
       });
     } finally {
       setLoading(false);
@@ -132,8 +132,8 @@ export default function PhoneVerification({
   const verifyCode = async () => {
     if (!verificationCode.trim()) {
       setMessage({
-        type: "error",
-        text: "Please enter the verification code",
+        type: 'error',
+        text: 'Please enter the verification code',
       });
       return;
     }
@@ -142,13 +142,13 @@ export default function PhoneVerification({
     setMessage(null);
 
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/phone-verification?action=verify-code",
+        '/api/phone-verification?action=verify-code',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ phoneNumber, code: verificationCode }),
@@ -159,8 +159,8 @@ export default function PhoneVerification({
 
       if (response.ok) {
         setMessage({
-          type: "success",
-          text: "Phone number verified successfully!",
+          type: 'success',
+          text: 'Phone number verified successfully!',
         });
         await loadVerificationStatus();
         if (onVerificationComplete) {
@@ -168,14 +168,14 @@ export default function PhoneVerification({
         }
       } else {
         setMessage({
-          type: "error",
-          text: data.error.message || "Invalid verification code",
+          type: 'error',
+          text: data.error.message || 'Invalid verification code',
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error verifying code",
+        type: 'error',
+        text: 'Error verifying code',
       });
     } finally {
       setLoading(false);
@@ -185,7 +185,7 @@ export default function PhoneVerification({
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   if (status?.verified) {
@@ -219,18 +219,18 @@ export default function PhoneVerification({
       {message && (
         <div
           className={`mb-4 p-3 rounded-md ${
-            message.type === "success"
-              ? "bg-green-50 border border-green-200 text-green-800"
-              : message.type === "error"
-              ? "bg-red-50 border border-red-200 text-red-800"
-              : "bg-blue-50 border border-blue-200 text-blue-800"
+            message.type === 'success'
+              ? 'bg-green-50 border border-green-200 text-green-800'
+              : message.type === 'error'
+                ? 'bg-red-50 border border-red-200 text-red-800'
+                : 'bg-blue-50 border border-blue-200 text-blue-800'
           }`}
         >
           {message.text}
         </div>
       )}
 
-      {step === "phone" && (
+      {step === 'phone' && (
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -239,7 +239,7 @@ export default function PhoneVerification({
             <input
               type="tel"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={e => setPhoneNumber(e.target.value)}
               placeholder="(555) 123-4567"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
@@ -252,12 +252,12 @@ export default function PhoneVerification({
             disabled={loading || !phoneNumber.trim()}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Sending..." : "Send Verification Code"}
+            {loading ? 'Sending...' : 'Send Verification Code'}
           </button>
         </div>
       )}
 
-      {step === "code" && (
+      {step === 'code' && (
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -266,7 +266,7 @@ export default function PhoneVerification({
             <input
               type="text"
               value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
+              onChange={e => setVerificationCode(e.target.value)}
               placeholder="123456"
               maxLength={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center text-lg font-mono"
@@ -282,12 +282,12 @@ export default function PhoneVerification({
               disabled={loading || !verificationCode.trim()}
               className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Verifying..." : "Verify Code"}
+              {loading ? 'Verifying...' : 'Verify Code'}
             </button>
             <button
               onClick={() => {
-                setStep("phone");
-                setVerificationCode("");
+                setStep('phone');
+                setVerificationCode('');
                 setMessage(null);
               }}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"

@@ -3,14 +3,14 @@
  * Replaces the existing unified-auth.service.ts with secure practices
  */
 
-import bcrypt from "bcrypt";
-import * as jwt from "jsonwebtoken";
-import { databaseService, User } from "./database.service";
-import { configService } from "./config.service";
+import bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
+import { databaseService, User } from './database.service';
+import { configService } from './config.service';
 
 export interface AuthResult {
   success: boolean;
-  user?: Omit<User, "passwordHash">;
+  user?: Omit<User, 'passwordHash'>;
   token?: string;
   message?: string;
   remainingAttempts?: number;
@@ -27,7 +27,7 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  role: "parent" | "student";
+  role: 'parent' | 'student';
   phoneNumber?: string;
   address?: string;
 }
@@ -47,9 +47,7 @@ class SecureAuthService {
   /**
    * Authenticate user with rate limiting and account lockout protection
    */
-  public async authenticate(
-    credentials: LoginCredentials
-  ): Promise<AuthResult> {
+  public async authenticate(credentials: LoginCredentials): Promise<AuthResult> {
     const { email, password } = credentials;
 
     try {
@@ -74,7 +72,7 @@ class SecureAuthService {
         await databaseService.recordLoginAttempt(normalizedEmail);
         return {
           success: false,
-          message: "Invalid email or password",
+          message: 'Invalid email or password',
           remainingAttempts: await this.getRemainingAttempts(normalizedEmail),
         };
       }
@@ -84,7 +82,7 @@ class SecureAuthService {
         await databaseService.recordLoginAttempt(normalizedEmail);
         return {
           success: false,
-          message: "Account is deactivated. Please contact support.",
+          message: 'Account is deactivated. Please contact support.',
           remainingAttempts: await this.getRemainingAttempts(normalizedEmail),
         };
       }
@@ -95,7 +93,7 @@ class SecureAuthService {
         await databaseService.recordLoginAttempt(normalizedEmail);
         return {
           success: false,
-          message: "Invalid email or password",
+          message: 'Invalid email or password',
           remainingAttempts: await this.getRemainingAttempts(normalizedEmail),
         };
       }
@@ -115,13 +113,13 @@ class SecureAuthService {
         success: true,
         user: this.sanitizeUser(user),
         token,
-        message: "Login successful",
+        message: 'Login successful',
       };
     } catch (error) {
-      console.error("Authentication error:", error);
+      console.error('Authentication error:', error);
       return {
         success: false,
-        message: "An error occurred during authentication. Please try again.",
+        message: 'An error occurred during authentication. Please try again.',
       };
     }
   }
@@ -131,15 +129,7 @@ class SecureAuthService {
    */
   public async register(registerData: RegisterData): Promise<AuthResult> {
     try {
-      const {
-        email,
-        password,
-        firstName,
-        lastName,
-        role,
-        phoneNumber,
-        address,
-      } = registerData;
+      const { email, password, firstName, lastName, role, phoneNumber, address } = registerData;
 
       // Normalize email
       const normalizedEmail = email.toLowerCase().trim();
@@ -148,7 +138,7 @@ class SecureAuthService {
       if (!this.isValidEmail(normalizedEmail)) {
         return {
           success: false,
-          message: "Please provide a valid email address",
+          message: 'Please provide a valid email address',
         };
       }
 
@@ -162,22 +152,17 @@ class SecureAuthService {
       }
 
       // Check if user already exists
-      const existingUser = await databaseService.getUserByEmail(
-        normalizedEmail
-      );
+      const existingUser = await databaseService.getUserByEmail(normalizedEmail);
       if (existingUser) {
         return {
           success: false,
-          message: "An account with this email already exists",
+          message: 'An account with this email already exists',
         };
       }
 
       // Hash password
       const config = configService.getConfig();
-      const passwordHash = await bcrypt.hash(
-        password,
-        config.auth.bcryptRounds
-      );
+      const passwordHash = await bcrypt.hash(password, config.auth.bcryptRounds);
 
       // Create user
       const newUser = await databaseService.createUser({
@@ -198,13 +183,13 @@ class SecureAuthService {
         success: true,
         user: this.sanitizeUser(newUser),
         token,
-        message: "Account created successfully",
+        message: 'Account created successfully',
       };
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error('Registration error:', error);
       return {
         success: false,
-        message: "An error occurred during registration. Please try again.",
+        message: 'An error occurred during registration. Please try again.',
       };
     }
   }
@@ -214,7 +199,7 @@ class SecureAuthService {
    */
   public async verifyToken(token: string): Promise<{
     valid: boolean;
-    user?: Omit<User, "passwordHash">;
+    user?: Omit<User, 'passwordHash'>;
     message?: string;
   }> {
     try {
@@ -226,7 +211,7 @@ class SecureAuthService {
       if (!user || !user.isActive) {
         return {
           valid: false,
-          message: "User not found or account deactivated",
+          message: 'User not found or account deactivated',
         };
       }
 
@@ -238,18 +223,18 @@ class SecureAuthService {
       if (error instanceof jwt.TokenExpiredError) {
         return {
           valid: false,
-          message: "Token has expired",
+          message: 'Token has expired',
         };
       } else if (error instanceof jwt.JsonWebTokenError) {
         return {
           valid: false,
-          message: "Invalid token",
+          message: 'Invalid token',
         };
       } else {
-        console.error("Token verification error:", error);
+        console.error('Token verification error:', error);
         return {
           valid: false,
-          message: "Token verification failed",
+          message: 'Token verification failed',
         };
       }
     }
@@ -271,12 +256,12 @@ class SecureAuthService {
     // Ensure JWT secret is properly typed
     const jwtSecret = config.auth.jwtSecret;
     if (!jwtSecret) {
-      throw new Error("JWT secret is not configured");
+      throw new Error('JWT secret is not configured');
     }
 
     return jwt.sign(payload, jwtSecret, {
       expiresIn: config.auth.jwtExpiresIn,
-      issuer: "vcarpool-app",
+      issuer: 'vcarpool-app',
       subject: user.id,
     } as jwt.SignOptions);
   }
@@ -298,12 +283,12 @@ class SecureAuthService {
         payload,
       };
     } catch (error) {
-      let message = "Invalid token";
+      let message = 'Invalid token';
 
       if (error instanceof jwt.TokenExpiredError) {
-        message = "Token has expired";
+        message = 'Token has expired';
       } else if (error instanceof jwt.JsonWebTokenError) {
-        message = "Invalid token format";
+        message = 'Invalid token format';
       }
 
       return {
@@ -316,7 +301,7 @@ class SecureAuthService {
   /**
    * Remove sensitive information from user object
    */
-  private sanitizeUser(user: User): Omit<User, "passwordHash"> {
+  private sanitizeUser(user: User): Omit<User, 'passwordHash'> {
     const { passwordHash, ...sanitizedUser } = user;
     return sanitizedUser;
   }
@@ -348,43 +333,43 @@ class SecureAuthService {
     if (password.length < 8) {
       return {
         isValid: false,
-        message: "Password must be at least 8 characters long",
+        message: 'Password must be at least 8 characters long',
       };
     }
 
     if (!/(?=.*[a-z])/.test(password)) {
       return {
         isValid: false,
-        message: "Password must contain at least one lowercase letter",
+        message: 'Password must contain at least one lowercase letter',
       };
     }
 
     if (!/(?=.*[A-Z])/.test(password)) {
       return {
         isValid: false,
-        message: "Password must contain at least one uppercase letter",
+        message: 'Password must contain at least one uppercase letter',
       };
     }
 
     if (!/(?=.*\d)/.test(password)) {
       return {
         isValid: false,
-        message: "Password must contain at least one number",
+        message: 'Password must contain at least one number',
       };
     }
 
     // Check for common weak passwords and patterns
     const commonPasswords = [
-      "password",
-      "12345678",
-      "qwerty",
-      "abc123",
-      "password123",
-      "admin123",
-      "letmein",
-      "welcome",
-      "monkey",
-      "dragon",
+      'password',
+      '12345678',
+      'qwerty',
+      'abc123',
+      'password123',
+      'admin123',
+      'letmein',
+      'welcome',
+      'monkey',
+      'dragon',
     ];
 
     // Check for common patterns that are weak
@@ -403,7 +388,7 @@ class SecureAuthService {
     ) {
       return {
         isValid: false,
-        message: "Please choose a stronger, less common password",
+        message: 'Please choose a stronger, less common password',
       };
     }
 
@@ -416,7 +401,7 @@ class SecureAuthService {
   public async changePassword(
     email: string,
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<AuthResult> {
     try {
       const normalizedEmail = email.toLowerCase().trim();
@@ -426,18 +411,15 @@ class SecureAuthService {
       if (!user) {
         return {
           success: false,
-          message: "User not found",
+          message: 'User not found',
         };
       }
 
-      const isCurrentPasswordValid = await bcrypt.compare(
-        currentPassword,
-        user.passwordHash
-      );
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
       if (!isCurrentPasswordValid) {
         return {
           success: false,
-          message: "Current password is incorrect",
+          message: 'Current password is incorrect',
         };
       }
 
@@ -451,23 +433,17 @@ class SecureAuthService {
       }
 
       // Check if new password is different from current
-      const isSamePassword = await bcrypt.compare(
-        newPassword,
-        user.passwordHash
-      );
+      const isSamePassword = await bcrypt.compare(newPassword, user.passwordHash);
       if (isSamePassword) {
         return {
           success: false,
-          message: "New password must be different from your current password",
+          message: 'New password must be different from your current password',
         };
       }
 
       // Hash new password and update user
       const config = configService.getConfig();
-      const newPasswordHash = await bcrypt.hash(
-        newPassword,
-        config.auth.bcryptRounds
-      );
+      const newPasswordHash = await bcrypt.hash(newPassword, config.auth.bcryptRounds);
 
       await databaseService.updateUser(normalizedEmail, {
         passwordHash: newPasswordHash,
@@ -476,13 +452,13 @@ class SecureAuthService {
 
       return {
         success: true,
-        message: "Password changed successfully",
+        message: 'Password changed successfully',
       };
     } catch (error) {
-      console.error("Password change error:", error);
+      console.error('Password change error:', error);
       return {
         success: false,
-        message: "An error occurred while changing password. Please try again.",
+        message: 'An error occurred while changing password. Please try again.',
       };
     }
   }
@@ -496,7 +472,7 @@ class SecureAuthService {
       const config = configService.getConfig();
 
       return {
-        status: "healthy",
+        status: 'healthy',
         database: dbHealth,
         configuration: {
           environment: config.app.environment,
@@ -509,8 +485,8 @@ class SecureAuthService {
       };
     } catch (error) {
       return {
-        status: "error",
-        message: "Service health check failed",
+        status: 'error',
+        message: 'Service health check failed',
         timestamp: new Date().toISOString(),
       };
     }

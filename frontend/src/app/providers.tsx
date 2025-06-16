@@ -7,7 +7,7 @@ import { NotificationProvider } from '@/contexts/NotificationContext';
 import { Toaster } from 'react-hot-toast';
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const initialize = useAuthStore((state) => state.initialize);
+  const initialize = useAuthStore(state => state.initialize);
 
   useEffect(() => {
     // Initialize auth state on app startup

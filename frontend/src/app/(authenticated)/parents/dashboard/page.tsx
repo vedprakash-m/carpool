@@ -1,6 +1,6 @@
-import React from "react";
-import { Metadata } from "next";
-import Link from "next/link";
+import React from 'react';
+import { Metadata } from 'next';
+import Link from 'next/link';
 import {
   Calendar,
   Users,
@@ -12,10 +12,10 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
-} from "lucide-react";
+} from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: "Parent Dashboard - VCarpool",
+  title: 'Parent Dashboard - VCarpool',
   description:
     "Manage your family's carpool activities, assignments, and preferences",
 };
@@ -25,21 +25,21 @@ const mockData = {
   upcomingTrips: [
     {
       id: 1,
-      date: "2025-01-15",
-      time: "8:00 AM",
-      type: "Morning Drop-off",
-      children: ["Emma", "Liam"],
-      location: "Lincoln Elementary",
-      status: "confirmed",
+      date: '2025-01-15',
+      time: '8:00 AM',
+      type: 'Morning Drop-off',
+      children: ['Emma', 'Liam'],
+      location: 'Lincoln Elementary',
+      status: 'confirmed',
     },
     {
       id: 2,
-      date: "2025-01-15",
-      time: "3:30 PM",
-      type: "Afternoon Pickup",
-      children: ["Emma", "Liam"],
-      location: "Lincoln Elementary",
-      status: "pending",
+      date: '2025-01-15',
+      time: '3:30 PM',
+      type: 'Afternoon Pickup',
+      children: ['Emma', 'Liam'],
+      location: 'Lincoln Elementary',
+      status: 'pending',
     },
   ],
   fairnessScore: 87,
@@ -48,16 +48,16 @@ const mockData = {
   notifications: [
     {
       id: 1,
-      type: "assignment",
-      message: "New carpool assignment for Wednesday",
-      time: "2 hours ago",
+      type: 'assignment',
+      message: 'New carpool assignment for Wednesday',
+      time: '2 hours ago',
       unread: true,
     },
     {
       id: 2,
-      type: "swap",
-      message: "Sarah Johnson requested a trip swap",
-      time: "1 day ago",
+      type: 'swap',
+      message: 'Sarah Johnson requested a trip swap',
+      time: '1 day ago',
       unread: true,
     },
   ],
@@ -144,8 +144,7 @@ export default function ParentDashboard() {
                     Notifications
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {mockData.notifications.filter((n) => n.unread).length}{" "}
-                    unread
+                    {mockData.notifications.filter(n => n.unread).length} unread
                   </dd>
                 </dl>
               </div>
@@ -163,12 +162,12 @@ export default function ParentDashboard() {
                 </h3>
               </div>
               <div className="divide-y divide-gray-200">
-                {mockData.upcomingTrips.map((trip) => (
+                {mockData.upcomingTrips.map(trip => (
                   <div key={trip.id} className="px-6 py-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="flex-shrink-0">
-                          {trip.status === "confirmed" ? (
+                          {trip.status === 'confirmed' ? (
                             <CheckCircle className="h-6 w-6 text-green-500" />
                           ) : (
                             <AlertCircle className="h-6 w-6 text-yellow-500" />
@@ -185,7 +184,7 @@ export default function ParentDashboard() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-gray-900">
-                          {trip.children.join(", ")}
+                          {trip.children.join(', ')}
                         </p>
                         <p className="text-sm text-gray-500 flex items-center">
                           <MapPin className="h-4 w-4 mr-1" />
@@ -249,7 +248,7 @@ export default function ParentDashboard() {
                 </h3>
               </div>
               <div className="divide-y divide-gray-200">
-                {mockData.notifications.slice(0, 3).map((notification) => (
+                {mockData.notifications.slice(0, 3).map(notification => (
                   <div key={notification.id} className="px-6 py-4">
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0">

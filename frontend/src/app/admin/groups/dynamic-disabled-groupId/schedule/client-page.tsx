@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import {
   CalendarIcon,
   UsersIcon,
@@ -10,7 +10,7 @@ import {
   ExclamationTriangleIcon,
   ChartBarIcon,
   ArrowPathIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 export default function GroupSchedulePageClient() {
   const params = useParams();
@@ -18,7 +18,7 @@ export default function GroupSchedulePageClient() {
 
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState<{
-    type: "success" | "error";
+    type: 'success' | 'error';
     text: string;
   } | null>(null);
   const [schedule, setSchedule] = useState<any | null>(null);
@@ -33,57 +33,57 @@ export default function GroupSchedulePageClient() {
       // const data = await response.json();
 
       // Mocking the API call for now
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       const mockData = {
         success: true,
-        message: "Schedule generated successfully!",
+        message: 'Schedule generated successfully!',
         schedule: {
-          week: "July 29 - August 2, 2024",
+          week: 'July 29 - August 2, 2024',
           assignments: [
             {
-              date: "Monday, July 29",
+              date: 'Monday, July 29',
               morning: {
-                driver: "Sarah Johnson",
-                passengers: ["Emma", "Jake"],
+                driver: 'Sarah Johnson',
+                passengers: ['Emma', 'Jake'],
               },
-              afternoon: { driver: "Mike Chen", passengers: ["Lily", "Alex"] },
+              afternoon: { driver: 'Mike Chen', passengers: ['Lily', 'Alex'] },
             },
             {
-              date: "Tuesday, July 30",
-              morning: { driver: "Lisa Davis", passengers: ["Sophie", "Ryan"] },
-              afternoon: { driver: "Tom Wilson", passengers: ["Emma", "Jake"] },
+              date: 'Tuesday, July 30',
+              morning: { driver: 'Lisa Davis', passengers: ['Sophie', 'Ryan'] },
+              afternoon: { driver: 'Tom Wilson', passengers: ['Emma', 'Jake'] },
             },
             {
-              date: "Wednesday, July 31",
-              morning: { driver: "Mike Chen", passengers: ["Lily", "Alex"] },
+              date: 'Wednesday, July 31',
+              morning: { driver: 'Mike Chen', passengers: ['Lily', 'Alex'] },
               afternoon: {
-                driver: "Sarah Johnson",
-                passengers: ["Sophie", "Ryan"],
+                driver: 'Sarah Johnson',
+                passengers: ['Sophie', 'Ryan'],
               },
             },
             {
-              date: "Thursday, August 1",
-              morning: { driver: "Tom Wilson", passengers: ["Emma", "Jake"] },
-              afternoon: { driver: "Lisa Davis", passengers: ["Lily", "Alex"] },
+              date: 'Thursday, August 1',
+              morning: { driver: 'Tom Wilson', passengers: ['Emma', 'Jake'] },
+              afternoon: { driver: 'Lisa Davis', passengers: ['Lily', 'Alex'] },
             },
             {
-              date: "Friday, August 2",
+              date: 'Friday, August 2',
               morning: {
-                driver: "Sarah Johnson",
-                passengers: ["Sophie", "Ryan"],
+                driver: 'Sarah Johnson',
+                passengers: ['Sophie', 'Ryan'],
               },
-              afternoon: { driver: "Mike Chen", passengers: ["Emma", "Jake"] },
+              afternoon: { driver: 'Mike Chen', passengers: ['Emma', 'Jake'] },
             },
           ],
         },
       };
 
       setSchedule(mockData.schedule);
-      setMessage({ type: "success", text: mockData.message });
+      setMessage({ type: 'success', text: mockData.message });
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Failed to generate schedule. Please try again.",
+        type: 'error',
+        text: 'Failed to generate schedule. Please try again.',
       });
     } finally {
       setGenerating(false);
@@ -118,20 +118,20 @@ export default function GroupSchedulePageClient() {
             ) : (
               <PlayIcon className="h-5 w-5 mr-2" />
             )}
-            {generating ? "Generating..." : "Generate Schedule"}
+            {generating ? 'Generating...' : 'Generate Schedule'}
           </button>
         </div>
 
         {message && (
           <div
             className={`p-4 rounded-lg mb-4 ${
-              message.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : "bg-red-50 text-red-800 border border-red-200"
+              message.type === 'success'
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
             }`}
           >
             <div className="flex items-center">
-              {message.type === "success" ? (
+              {message.type === 'success' ? (
                 <CheckCircleIcon className="h-5 w-5 mr-2" />
               ) : (
                 <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
@@ -173,8 +173,8 @@ export default function GroupSchedulePageClient() {
                       <strong>Driver:</strong> {day.morning.driver}
                     </p>
                     <p className="text-sm">
-                      <strong>Passengers:</strong>{" "}
-                      {day.morning.passengers.join(", ")}
+                      <strong>Passengers:</strong>{' '}
+                      {day.morning.passengers.join(', ')}
                     </p>
                   </div>
                   <div className="bg-green-50 p-3 rounded">
@@ -185,8 +185,8 @@ export default function GroupSchedulePageClient() {
                       <strong>Driver:</strong> {day.afternoon.driver}
                     </p>
                     <p className="text-sm">
-                      <strong>Passengers:</strong>{" "}
-                      {day.afternoon.passengers.join(", ")}
+                      <strong>Passengers:</strong>{' '}
+                      {day.afternoon.passengers.join(', ')}
                     </p>
                   </div>
                 </div>

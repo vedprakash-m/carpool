@@ -3,12 +3,12 @@
  * Provides quick access to emergency actions
  */
 
-import React from "react";
+import React from 'react';
 import {
   BellAlertIcon,
   UserGroupIcon,
   PhoneIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface EmergencyActionButtonsProps {
   onReportEmergency: () => void;

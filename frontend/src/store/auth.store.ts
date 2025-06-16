@@ -1,19 +1,19 @@
 // filepath: /Users/vedprakashmishra/vcarpool/frontend/src/store/auth.store.ts
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   User,
   LoginRequest,
   RegisterRequest,
   AuthResponse,
   UpdateUserRequest,
-} from "../types/shared";
-import { apiClient } from "../lib/api-client";
+} from '../types/shared';
+import { apiClient } from '../lib/api-client';
 import {
   setTokens,
   getTokens,
   hasValidTokens,
   clearTokens,
-} from "../lib/secure-storage";
+} from '../lib/secure-storage';
 
 interface AuthState {
   user: User | null;
@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       set({ isLoading: true });
 
       const response = await apiClient.post<AuthResponse>(
-        "/v1/auth/token",
+        '/v1/auth/token',
         credentials
       );
 
@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
           isLoading: false,
         });
       } else {
-        throw new Error(response.error || "Login failed");
+        throw new Error(response.error || 'Login failed');
       }
     } catch (error) {
       set({ isLoading: false });
@@ -94,7 +94,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       set({ isLoading: true });
 
       const response = await apiClient.post<AuthResponse>(
-        "/v1/auth/register",
+        '/v1/auth/register',
         userData
       );
 
@@ -115,7 +115,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
           isLoading: false,
         });
       } else {
-        throw new Error(response.error || "Registration failed");
+        throw new Error(response.error || 'Registration failed');
       }
     } catch (error) {
       set({ isLoading: false });
@@ -143,7 +143,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       const token = await apiClient.refreshAccessToken();
 
       // Get the current user info to verify our session
-      const userResponse = await apiClient.get<User>("/v1/users/me");
+      const userResponse = await apiClient.get<User>('/v1/users/me');
 
       if (userResponse.success && userResponse.data) {
         // Update tokens in secure storage
@@ -162,9 +162,9 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         return;
       }
 
-      throw new Error("Failed to get user data");
+      throw new Error('Failed to get user data');
     } catch (error) {
-      console.error("Error refreshing auth:", error);
+      console.error('Error refreshing auth:', error);
 
       // Clear all auth data on refresh failure
       clearTokens();
@@ -178,19 +178,19 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         error:
           error instanceof Error
             ? error.message
-            : "Authentication refresh failed",
+            : 'Authentication refresh failed',
       });
     }
   },
 
   updateUser: async (updates: Partial<User>) => {
     try {
-      const response = await apiClient.put<User>("/v1/users/me", updates);
+      const response = await apiClient.put<User>('/v1/users/me', updates);
 
       if (response.success && response.data) {
         set({ user: response.data });
       } else {
-        throw new Error(response.error || "Update failed");
+        throw new Error(response.error || 'Update failed');
       }
     } catch (error) {
       throw error;
@@ -201,7 +201,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ loading: true, error: null });
 
-      const response = await apiClient.put<User>("/v1/users/me", updates);
+      const response = await apiClient.put<User>('/v1/users/me', updates);
 
       if (response.success && response.data) {
         set({
@@ -211,14 +211,14 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         return true;
       } else {
         set({
-          error: response.error || "Update failed",
+          error: response.error || 'Update failed',
           loading: false,
         });
         return false;
       }
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Update failed",
+        error: error instanceof Error ? error.message : 'Update failed',
         loading: false,
       });
       return false;
@@ -229,7 +229,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ loading: true, error: null });
 
-      const response = await apiClient.put<boolean>("/v1/users/me/password", {
+      const response = await apiClient.put<boolean>('/v1/users/me/password', {
         currentPassword,
         newPassword,
       });
@@ -242,7 +242,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         return true;
       } else {
         set({
-          error: response.error || "Password change failed",
+          error: response.error || 'Password change failed',
           loading: false,
         });
         return false;
@@ -250,7 +250,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error ? error.message : "Password change failed",
+          error instanceof Error ? error.message : 'Password change failed',
         loading: false,
       });
       return false;

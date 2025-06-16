@@ -3,7 +3,7 @@
  * Provides utilities for render tracking, debouncing, throttling, and memory management
  */
 
-import { useCallback, useEffect, useRef, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useMemo, useState } from 'react';
 
 /**
  * Performance timing interface for render performance tracking
@@ -21,7 +21,7 @@ interface PerformanceMetrics {
  */
 class PerformanceTracker {
   private metrics: Map<string, PerformanceMetrics> = new Map();
-  private isDevelopment = process.env.NODE_ENV === "development";
+  private isDevelopment = process.env.NODE_ENV === 'development';
 
   track(componentName: string, renderTime: number) {
     if (!this.isDevelopment) return;
@@ -119,7 +119,7 @@ export function useRenderPerformance(
 
     // Log in development mode
     if (
-      process.env.NODE_ENV === "development" &&
+      process.env.NODE_ENV === 'development' &&
       logSlowRenders &&
       renderTime > slowRenderThreshold
     ) {
@@ -172,10 +172,13 @@ export function useThrottle<T extends (...args: any[]) => any>(
           clearTimeout(timeoutRef.current);
         }
 
-        timeoutRef.current = setTimeout(() => {
-          lastCall.current = Date.now();
-          callback(...args);
-        }, delay - (now - lastCall.current));
+        timeoutRef.current = setTimeout(
+          () => {
+            lastCall.current = Date.now();
+            callback(...args);
+          },
+          delay - (now - lastCall.current)
+        );
       }
     },
     [callback, delay]
@@ -255,7 +258,7 @@ export function useExpensiveCalculation<T>(
     lastResult.current = value;
     lastDeps.current = deps;
 
-    if (process.env.NODE_ENV === "development" && cacheKey) {
+    if (process.env.NODE_ENV === 'development' && cacheKey) {
       console.log(
         `💰 Cache miss for ${cacheKey}. Total: ${cacheHits.current} hits, ${cacheMisses.current} misses`
       );
@@ -312,13 +315,13 @@ export function useLazyLoad<T>(
     setError(null);
 
     loader()
-      .then((result) => {
+      .then(result => {
         if (isMounted.current) {
           setData(result);
           setLoading(false);
         }
       })
-      .catch((err) => {
+      .catch(err => {
         if (isMounted.current) {
           setError(err);
           setLoading(false);
@@ -340,11 +343,11 @@ export function useWhyDidYouUpdate(name: string, props: Record<string, any>) {
   const previous = useRef<Record<string, any>>();
 
   useEffect(() => {
-    if (previous.current && process.env.NODE_ENV === "development") {
+    if (previous.current && process.env.NODE_ENV === 'development') {
       const allKeys = Object.keys({ ...previous.current, ...props });
       const changedProps: Record<string, { from: any; to: any }> = {};
 
-      allKeys.forEach((key) => {
+      allKeys.forEach(key => {
         if (previous.current![key] !== props[key]) {
           changedProps[key] = {
             from: previous.current![key],
@@ -354,7 +357,7 @@ export function useWhyDidYouUpdate(name: string, props: Record<string, any>) {
       });
 
       if (Object.keys(changedProps).length) {
-        console.log("🔄 [why-did-you-update]", name, changedProps);
+        console.log('🔄 [why-did-you-update]', name, changedProps);
       }
     }
 

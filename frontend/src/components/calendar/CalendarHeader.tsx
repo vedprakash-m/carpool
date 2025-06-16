@@ -2,12 +2,12 @@
  * Calendar header component with navigation
  */
 
-import { memo } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { memo } from 'react';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface CalendarHeaderProps {
   weekRangeText: string;
-  onNavigateWeek: (direction: "prev" | "next") => void;
+  onNavigateWeek: (direction: 'prev' | 'next') => void;
   onGoToToday: () => void;
   showCreateButton?: boolean;
   userRole?: string;
@@ -32,7 +32,7 @@ export const CalendarHeader = memo(function CalendarHeader({
 
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => onNavigateWeek("prev")}
+            onClick={() => onNavigateWeek('prev')}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <ChevronLeftIcon className="h-5 w-5" />
@@ -46,7 +46,7 @@ export const CalendarHeader = memo(function CalendarHeader({
           </button>
 
           <button
-            onClick={() => onNavigateWeek("next")}
+            onClick={() => onNavigateWeek('next')}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <ChevronRightIcon className="h-5 w-5" />

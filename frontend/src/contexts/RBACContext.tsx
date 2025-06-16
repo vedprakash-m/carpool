@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useMemo } from "react";
-import { UserRole, RolePermissions } from "../types/shared";
-import { useAuthStore } from "../store/auth.store";
+import React, { createContext, useContext, useMemo } from 'react';
+import { UserRole, RolePermissions } from '../types/shared';
+import { useAuthStore } from '../store/auth.store';
 
 interface RBACContextType {
   hasPermission: (permission: keyof RolePermissions[UserRole]) => boolean;
@@ -81,7 +81,7 @@ export function RBACProvider({ children }: { children: React.ReactNode }) {
 export function useRBAC() {
   const context = useContext(RBACContext);
   if (context === undefined) {
-    throw new Error("useRBAC must be used within a RBACProvider");
+    throw new Error('useRBAC must be used within a RBACProvider');
   }
   return context;
 }

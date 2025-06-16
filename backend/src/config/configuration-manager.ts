@@ -16,7 +16,7 @@ const DatabaseConfigSchema = z.object({
   maxRetries: z.number().min(0).default(3),
   retryDelay: z.number().min(0).default(1000),
   connectionPoolSize: z.number().min(1).default(10),
-  requestTimeout: z.number().min(1000).default(30000)
+  requestTimeout: z.number().min(1000).default(30000),
 });
 
 const AuthConfigSchema = z.object({
@@ -25,7 +25,7 @@ const AuthConfigSchema = z.object({
   refreshTokenExpiresIn: z.string().default('7d'),
   bcryptRounds: z.number().min(10).max(15).default(12),
   maxLoginAttempts: z.number().min(1).default(5),
-  lockoutDuration: z.number().min(60000).default(900000) // 15 minutes
+  lockoutDuration: z.number().min(60000).default(900000), // 15 minutes
 });
 
 const EmailConfigSchema = z.object({
@@ -36,7 +36,7 @@ const EmailConfigSchema = z.object({
   smtpUser: z.string().optional(),
   smtpPassword: z.string().optional(),
   fromEmail: z.string().email(),
-  fromName: z.string().default('vCarpool')
+  fromName: z.string().default('vCarpool'),
 });
 
 const CacheConfigSchema = z.object({
@@ -44,7 +44,7 @@ const CacheConfigSchema = z.object({
   redisUrl: z.string().optional(),
   defaultTtl: z.number().min(1000).default(300000), // 5 minutes
   maxSize: z.number().min(100).default(1000),
-  checkPeriod: z.number().min(1000).default(60000) // 1 minute
+  checkPeriod: z.number().min(1000).default(60000), // 1 minute
 });
 
 const RateLimitConfigSchema = z.object({
@@ -53,7 +53,7 @@ const RateLimitConfigSchema = z.object({
   skipSuccessfulRequests: z.boolean().default(false),
   skipFailedRequests: z.boolean().default(false),
   standardHeaders: z.boolean().default(true),
-  legacyHeaders: z.boolean().default(false)
+  legacyHeaders: z.boolean().default(false),
 });
 
 const MonitoringConfigSchema = z.object({
@@ -63,7 +63,7 @@ const MonitoringConfigSchema = z.object({
   enableHealthChecks: z.boolean().default(true),
   metricsInterval: z.number().min(1000).default(60000), // 1 minute
   alertingEnabled: z.boolean().default(true),
-  alertWebhookUrl: z.string().url().optional()
+  alertWebhookUrl: z.string().url().optional(),
 });
 
 const SecurityConfigSchema = z.object({
@@ -72,7 +72,7 @@ const SecurityConfigSchema = z.object({
   corsOrigins: z.array(z.string()).default(['http://localhost:3000']),
   enableThreatDetection: z.boolean().default(true),
   maxUploadSize: z.number().min(1024).default(10485760), // 10MB
-  allowedFileTypes: z.array(z.string()).default(['image/jpeg', 'image/png', 'application/pdf'])
+  allowedFileTypes: z.array(z.string()).default(['image/jpeg', 'image/png', 'application/pdf']),
 });
 
 const AppConfigSchema = z.object({
@@ -87,7 +87,7 @@ const AppConfigSchema = z.object({
   cache: CacheConfigSchema,
   rateLimit: RateLimitConfigSchema,
   monitoring: MonitoringConfigSchema,
-  security: SecurityConfigSchema
+  security: SecurityConfigSchema,
 });
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;
@@ -125,7 +125,7 @@ class ConfigurationManager {
     try {
       // Load configuration from all sources in priority order
       const configData: Partial<AppConfig> = {};
-      
+
       for (const source of this.sources.sort((a, b) => a.priority - b.priority)) {
         try {
           const sourceConfig = await source.load();
@@ -139,7 +139,7 @@ class ConfigurationManager {
       // Validate and merge configuration
       this.config = AppConfigSchema.parse({
         ...this.getDefaultConfig(),
-        ...configData
+        ...configData,
       });
 
       // Start watching for configuration changes
@@ -147,9 +147,8 @@ class ConfigurationManager {
 
       logger.info('Configuration initialized successfully', {
         environment: this.config.environment,
-        sources: this.sources.map(s => s.name)
+        sources: this.sources.map((s) => s.name),
       });
-
     } catch (error) {
       logger.error('Failed to initialize configuration', { error });
       throw new Error('Configuration initialization failed');
@@ -177,7 +176,7 @@ class ConfigurationManager {
     try {
       const newConfig = AppConfigSchema.parse({
         ...this.config,
-        ...updates
+        ...updates,
       });
 
       const oldConfig = this.config;
@@ -188,9 +187,8 @@ class ConfigurationManager {
 
       logger.info('Configuration updated', {
         updatedKeys: Object.keys(updates),
-        environment: this.config.environment
+        environment: this.config.environment,
       });
-
     } catch (error) {
       logger.error('Failed to update configuration', { error, updates });
       throw new Error('Configuration update failed');
@@ -208,7 +206,7 @@ class ConfigurationManager {
       if (error instanceof z.ZodError) {
         return {
           valid: false,
-          errors: error.errors.map(err => `${err.path.join('.')}: ${err.message}`)
+          errors: error.errors.map((err) => `${err.path.join('.')}: ${err.message}`),
         };
       }
       return { valid: false, errors: ['Unknown validation error'] };
@@ -220,7 +218,7 @@ class ConfigurationManager {
    */
   onChange(listener: (config: AppConfig) => void): () => void {
     this.listeners.push(listener);
-    
+
     // Return unsubscribe function
     return () => {
       const index = this.listeners.indexOf(listener);
@@ -251,7 +249,7 @@ class ConfigurationManager {
   async exportConfig(filePath: string, format: 'json' | 'yaml' = 'json'): Promise<void> {
     try {
       const configData = this.sanitizeForExport(this.config);
-      
+
       if (format === 'json') {
         await fsPromises.writeFile(filePath, JSON.stringify(configData, null, 2));
       } else {
@@ -279,7 +277,7 @@ class ConfigurationManager {
         maxRetries: 3,
         retryDelay: 1000,
         connectionPoolSize: 10,
-        requestTimeout: 30000
+        requestTimeout: 30000,
       },
       auth: {
         jwtSecret: '',
@@ -287,18 +285,18 @@ class ConfigurationManager {
         refreshTokenExpiresIn: '7d',
         bcryptRounds: 12,
         maxLoginAttempts: 5,
-        lockoutDuration: 900000
+        lockoutDuration: 900000,
       },
       email: {
         provider: 'sendgrid',
         fromEmail: 'noreply@vcarpool.com',
-        fromName: 'vCarpool'
+        fromName: 'vCarpool',
       },
       cache: {
         provider: 'memory',
         defaultTtl: 300000,
         maxSize: 1000,
-        checkPeriod: 60000
+        checkPeriod: 60000,
       },
       rateLimit: {
         windowMs: 900000,
@@ -306,14 +304,14 @@ class ConfigurationManager {
         skipSuccessfulRequests: false,
         skipFailedRequests: false,
         standardHeaders: true,
-        legacyHeaders: false
+        legacyHeaders: false,
       },
       monitoring: {
         enableMetrics: true,
         enableTracing: true,
         enableHealthChecks: true,
         metricsInterval: 60000,
-        alertingEnabled: true
+        alertingEnabled: true,
       },
       security: {
         enableSanitization: true,
@@ -321,8 +319,8 @@ class ConfigurationManager {
         corsOrigins: ['http://localhost:3000'],
         enableThreatDetection: true,
         maxUploadSize: 10485760,
-        allowedFileTypes: ['image/jpeg', 'image/png', 'application/pdf']
-      }
+        allowedFileTypes: ['image/jpeg', 'image/png', 'application/pdf'],
+      },
     };
   }
 
@@ -331,29 +329,29 @@ class ConfigurationManager {
     this.sources.push({
       name: 'environment',
       priority: 100,
-      load: async () => this.loadFromEnvironment()
+      load: async () => this.loadFromEnvironment(),
     });
 
     // Configuration file source
     this.sources.push({
       name: 'file',
       priority: 50,
-      load: async () => this.loadFromFile()
+      load: async () => this.loadFromFile(),
     });
 
     // Azure Key Vault source (if available)
     this.sources.push({
       name: 'keyvault',
       priority: 75,
-      load: async () => this.loadFromKeyVault()
+      load: async () => this.loadFromKeyVault(),
     });
   }
 
   private async loadFromEnvironment(): Promise<Partial<AppConfig>> {
     const env = process.env;
-    
+
     return {
-      environment: env.NODE_ENV as any || 'development',
+      environment: (env.NODE_ENV as any) || 'development',
       port: env.PORT ? parseInt(env.PORT) : undefined,
       logLevel: env.LOG_LEVEL as any,
       enableDebug: env.ENABLE_DEBUG === 'true',
@@ -364,7 +362,7 @@ class ConfigurationManager {
         maxRetries: env.DB_MAX_RETRIES ? parseInt(env.DB_MAX_RETRIES) : 3,
         retryDelay: env.DB_RETRY_DELAY ? parseInt(env.DB_RETRY_DELAY) : 1000,
         connectionPoolSize: env.DB_POOL_SIZE ? parseInt(env.DB_POOL_SIZE) : 10,
-        requestTimeout: env.DB_TIMEOUT ? parseInt(env.DB_TIMEOUT) : 30000
+        requestTimeout: env.DB_TIMEOUT ? parseInt(env.DB_TIMEOUT) : 30000,
       },
       auth: {
         jwtSecret: env.JWT_SECRET || 'default-jwt-secret-change-in-production',
@@ -372,7 +370,7 @@ class ConfigurationManager {
         refreshTokenExpiresIn: env.REFRESH_TOKEN_EXPIRES_IN || '7d',
         bcryptRounds: env.BCRYPT_ROUNDS ? parseInt(env.BCRYPT_ROUNDS) : 12,
         maxLoginAttempts: env.MAX_LOGIN_ATTEMPTS ? parseInt(env.MAX_LOGIN_ATTEMPTS) : 5,
-        lockoutDuration: env.LOCKOUT_DURATION ? parseInt(env.LOCKOUT_DURATION) : 300000
+        lockoutDuration: env.LOCKOUT_DURATION ? parseInt(env.LOCKOUT_DURATION) : 300000,
       },
       email: {
         provider: env.EMAIL_PROVIDER as any,
@@ -382,14 +380,14 @@ class ConfigurationManager {
         smtpUser: env.SMTP_USER,
         smtpPassword: env.SMTP_PASSWORD,
         fromEmail: env.FROM_EMAIL || 'noreply@vcarpool.com',
-        fromName: env.FROM_NAME || 'vCarpool'
+        fromName: env.FROM_NAME || 'vCarpool',
       },
       cache: {
-        provider: env.CACHE_PROVIDER as any || 'memory',
+        provider: (env.CACHE_PROVIDER as any) || 'memory',
         redisUrl: env.REDIS_URL,
         defaultTtl: env.CACHE_TTL ? parseInt(env.CACHE_TTL) : 3600,
         maxSize: env.CACHE_MAX_SIZE ? parseInt(env.CACHE_MAX_SIZE) : 1000,
-        checkPeriod: env.CACHE_CHECK_PERIOD ? parseInt(env.CACHE_CHECK_PERIOD) : 600
+        checkPeriod: env.CACHE_CHECK_PERIOD ? parseInt(env.CACHE_CHECK_PERIOD) : 600,
       },
       monitoring: {
         applicationInsightsKey: env.APPINSIGHTS_INSTRUMENTATIONKEY,
@@ -398,7 +396,7 @@ class ConfigurationManager {
         enableHealthChecks: env.ENABLE_HEALTH_CHECKS !== 'false',
         metricsInterval: env.METRICS_INTERVAL ? parseInt(env.METRICS_INTERVAL) : 60000,
         alertingEnabled: env.ALERTING_ENABLED !== 'false',
-        alertWebhookUrl: env.ALERT_WEBHOOK_URL
+        alertWebhookUrl: env.ALERT_WEBHOOK_URL,
       },
       security: {
         enableSanitization: env.ENABLE_SANITIZATION !== 'false',
@@ -406,17 +404,15 @@ class ConfigurationManager {
         corsOrigins: env.CORS_ORIGINS ? env.CORS_ORIGINS.split(',') : ['http://localhost:3000'],
         enableThreatDetection: env.ENABLE_THREAT_DETECTION !== 'false',
         maxUploadSize: env.MAX_UPLOAD_SIZE ? parseInt(env.MAX_UPLOAD_SIZE) : 10485760,
-        allowedFileTypes: env.ALLOWED_FILE_TYPES ? env.ALLOWED_FILE_TYPES.split(',') : ['jpg', 'jpeg', 'png', 'pdf']
-      }
+        allowedFileTypes: env.ALLOWED_FILE_TYPES
+          ? env.ALLOWED_FILE_TYPES.split(',')
+          : ['jpg', 'jpeg', 'png', 'pdf'],
+      },
     };
   }
 
   private async loadFromFile(): Promise<Partial<AppConfig>> {
-    const configPaths = [
-      'config/config.json',
-      'config.json',
-      '.vcarpool.json'
-    ];
+    const configPaths = ['config/config.json', 'config.json', '.vcarpool.json'];
 
     for (const configPath of configPaths) {
       try {
@@ -446,14 +442,14 @@ class ConfigurationManager {
     } catch (error) {
       logger.warn('Failed to load from Key Vault', { error });
     }
-    
+
     return {};
   }
 
   private async startWatching(): Promise<void> {
     // Watch configuration files for changes
     const configPaths = ['config/config.json', 'config.json'];
-    
+
     for (const configPath of configPaths) {
       try {
         const fullPath = path.resolve(configPath);
@@ -461,7 +457,7 @@ class ConfigurationManager {
           logger.info(`Configuration file changed: ${configPath}`);
           await this.reload();
         });
-        
+
         this.watchers.set(configPath, watcher);
       } catch (error) {
         // Ignore if file doesn't exist
@@ -481,7 +477,7 @@ class ConfigurationManager {
 
   private sanitizeForExport(config: AppConfig): any {
     const sanitized = { ...config };
-    
+
     // Remove sensitive information
     if (sanitized.auth?.jwtSecret) {
       sanitized.auth.jwtSecret = '***REDACTED***';
@@ -495,7 +491,7 @@ class ConfigurationManager {
     if (sanitized.database?.connectionString) {
       sanitized.database.connectionString = '***REDACTED***';
     }
-    
+
     return sanitized;
   }
 }

@@ -1,5 +1,5 @@
 // Shared types for backend
-export type UserRole = "admin" | "group_admin" | "parent" | "child";
+export type UserRole = 'admin' | 'group_admin' | 'parent' | 'child';
 
 export interface RolePermissions {
   admin: {

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   CalendarIcon,
   TruckIcon as CarIcon,
@@ -8,7 +8,7 @@ import {
   BellIcon,
   UserGroupIcon,
   AcademicCapIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface WelcomeTourProps {
   onNext: () => void;
@@ -18,39 +18,39 @@ interface WelcomeTourProps {
 
 const features = [
   {
-    id: "weekly_preferences",
-    title: "Weekly Preferences",
+    id: 'weekly_preferences',
+    title: 'Weekly Preferences',
     description:
-      "Submit your driving availability and time preferences each week",
+      'Submit your driving availability and time preferences each week',
     icon: CalendarIcon,
-    color: "bg-indigo-500",
+    color: 'bg-indigo-500',
     highlight:
-      "The heart of our scheduling system - tell us when you can drive!",
+      'The heart of our scheduling system - tell us when you can drive!',
   },
   {
-    id: "my_assignments",
-    title: "My Assignments",
+    id: 'my_assignments',
+    title: 'My Assignments',
     description:
-      "View your driving assignments with passenger details and contact info",
+      'View your driving assignments with passenger details and contact info',
     icon: CarIcon,
-    color: "bg-orange-500",
-    highlight: "See your carpool duties and easily contact other parents",
+    color: 'bg-orange-500',
+    highlight: 'See your carpool duties and easily contact other parents',
   },
   {
-    id: "swap_requests",
-    title: "Swap Requests",
-    description: "Exchange assignments with other parents when needed",
+    id: 'swap_requests',
+    title: 'Swap Requests',
+    description: 'Exchange assignments with other parents when needed',
     icon: ChatBubbleLeftRightIcon,
-    color: "bg-purple-500",
-    highlight: "Life happens - easily coordinate changes with other families",
+    color: 'bg-purple-500',
+    highlight: 'Life happens - easily coordinate changes with other families',
   },
   {
-    id: "notifications",
-    title: "Notification Settings",
-    description: "Control how you receive reminders and updates",
+    id: 'notifications',
+    title: 'Notification Settings',
+    description: 'Control how you receive reminders and updates',
     icon: BellIcon,
-    color: "bg-yellow-500",
-    highlight: "Stay informed with 24h and 2h assignment reminders",
+    color: 'bg-yellow-500',
+    highlight: 'Stay informed with 24h and 2h assignment reminders',
   },
 ];
 
@@ -65,7 +65,7 @@ export default function WelcomeTour({
     setSelectedFeature(selectedFeature === featureId ? null : featureId);
   };
 
-  const selectedFeatureData = features.find((f) => f.id === selectedFeature);
+  const selectedFeatureData = features.find(f => f.id === selectedFeature);
 
   return (
     <div className="space-y-6">
@@ -91,7 +91,7 @@ export default function WelcomeTour({
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {features.map((feature) => {
+          {features.map(feature => {
             const Icon = feature.icon;
             const isSelected = selectedFeature === feature.id;
 
@@ -101,8 +101,8 @@ export default function WelcomeTour({
                 onClick={() => handleFeatureClick(feature.id)}
                 className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                   isSelected
-                    ? "border-green-500 bg-green-50 shadow-lg scale-105"
-                    : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
+                    ? 'border-green-500 bg-green-50 shadow-lg scale-105'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                 }`}
               >
                 <div className="flex items-center space-x-3">
@@ -147,7 +147,7 @@ export default function WelcomeTour({
             </p>
             <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
               <p className="text-blue-800 text-sm">
-                <span className="font-medium">Pro Tip:</span>{" "}
+                <span className="font-medium">Pro Tip:</span>{' '}
                 {selectedFeatureData.highlight}
               </p>
             </div>

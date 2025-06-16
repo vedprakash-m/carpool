@@ -3,18 +3,18 @@
  * Handles live messaging, notifications, and real-time updates
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 export interface WebSocketMessage {
   type:
-    | "message"
-    | "notification"
-    | "location_update"
-    | "trip_status"
-    | "heartbeat"
-    | "typing"
-    | "user_joined"
-    | "user_left";
+    | 'message'
+    | 'notification'
+    | 'location_update'
+    | 'trip_status'
+    | 'heartbeat'
+    | 'typing'
+    | 'user_joined'
+    | 'user_left';
   data: any;
   timestamp: string;
   userId?: string;
@@ -28,7 +28,7 @@ export interface RealTimeMessage {
   senderId: string;
   senderName: string;
   content: string;
-  type: "text" | "voice" | "location" | "photo" | "system";
+  type: 'text' | 'voice' | 'location' | 'photo' | 'system';
   createdAt: Date;
   metadata?: {
     location?: {
@@ -68,7 +68,7 @@ class WebSocketService {
         this.ws = new WebSocket(this.config.url);
 
         this.ws.onopen = () => {
-          console.log("WebSocket connected");
+          console.log('WebSocket connected');
           this.isConnected = true;
           this.reconnectAttempts = 0;
           this.startHeartbeat();
@@ -77,12 +77,12 @@ class WebSocketService {
           resolve();
         };
 
-        this.ws.onmessage = (event) => {
+        this.ws.onmessage = event => {
           this.handleMessage(event.data);
         };
 
-        this.ws.onclose = (event) => {
-          console.log("WebSocket disconnected:", event.code, event.reason);
+        this.ws.onclose = event => {
+          console.log('WebSocket disconnected:', event.code, event.reason);
           this.isConnected = false;
           this.stopHeartbeat();
           this.notifyConnectionListeners(false);
@@ -95,8 +95,8 @@ class WebSocketService {
           }
         };
 
-        this.ws.onerror = (error) => {
-          console.error("WebSocket error:", error);
+        this.ws.onerror = error => {
+          console.error('WebSocket error:', error);
           reject(error);
         };
       } catch (error) {
@@ -114,7 +114,7 @@ class WebSocketService {
     this.stopHeartbeat();
 
     if (this.ws) {
-      this.ws.close(1000, "Client disconnect");
+      this.ws.close(1000, 'Client disconnect');
       this.ws = null;
     }
 
@@ -133,19 +133,19 @@ class WebSocketService {
 
   // Message type handlers
   onMessage(handler: (data: RealTimeMessage) => void): void {
-    this.messageHandlers.set("message", handler);
+    this.messageHandlers.set('message', handler);
   }
 
   onNotification(handler: (data: any) => void): void {
-    this.messageHandlers.set("notification", handler);
+    this.messageHandlers.set('notification', handler);
   }
 
   onLocationUpdate(handler: (data: any) => void): void {
-    this.messageHandlers.set("location_update", handler);
+    this.messageHandlers.set('location_update', handler);
   }
 
   onTripStatus(handler: (data: any) => void): void {
-    this.messageHandlers.set("trip_status", handler);
+    this.messageHandlers.set('trip_status', handler);
   }
 
   onTyping(
@@ -155,7 +155,7 @@ class WebSocketService {
       chatId: string;
     }) => void
   ): void {
-    this.messageHandlers.set("typing", handler);
+    this.messageHandlers.set('typing', handler);
   }
 
   onUserJoined(
@@ -165,7 +165,7 @@ class WebSocketService {
       chatId: string;
     }) => void
   ): void {
-    this.messageHandlers.set("user_joined", handler);
+    this.messageHandlers.set('user_joined', handler);
   }
 
   onUserLeft(
@@ -175,13 +175,13 @@ class WebSocketService {
       chatId: string;
     }) => void
   ): void {
-    this.messageHandlers.set("user_left", handler);
+    this.messageHandlers.set('user_left', handler);
   }
 
   // Send typing indicator
   sendTyping(chatId: string, isTyping: boolean): void {
     this.sendMessage({
-      type: "typing",
+      type: 'typing',
       data: { chatId, isTyping },
       timestamp: new Date().toISOString(),
       chatId,
@@ -191,7 +191,7 @@ class WebSocketService {
   // Join chat room
   joinChat(chatId: string): void {
     this.sendMessage({
-      type: "user_joined",
+      type: 'user_joined',
       data: { chatId },
       timestamp: new Date().toISOString(),
       chatId,
@@ -201,7 +201,7 @@ class WebSocketService {
   // Leave chat room
   leaveChat(chatId: string): void {
     this.sendMessage({
-      type: "user_left",
+      type: 'user_left',
       data: { chatId },
       timestamp: new Date().toISOString(),
       chatId,
@@ -220,9 +220,9 @@ class WebSocketService {
     try {
       const message: WebSocketMessage = JSON.parse(data);
 
-      if (message.type === "heartbeat") {
+      if (message.type === 'heartbeat') {
         this.sendMessage({
-          type: "heartbeat",
+          type: 'heartbeat',
           data: { pong: true },
           timestamp: new Date().toISOString(),
         });
@@ -234,7 +234,7 @@ class WebSocketService {
         handler(message.data);
       }
     } catch (error) {
-      console.error("Error parsing WebSocket message:", error);
+      console.error('Error parsing WebSocket message:', error);
     }
   }
 
@@ -255,7 +255,7 @@ class WebSocketService {
     this.heartbeatTimer = setInterval(() => {
       if (this.isConnected) {
         this.sendMessage({
-          type: "heartbeat",
+          type: 'heartbeat',
           data: { ping: true },
           timestamp: new Date().toISOString(),
         });
@@ -280,7 +280,7 @@ class WebSocketService {
   }
 
   private notifyConnectionListeners(connected: boolean): void {
-    this.connectionListeners.forEach((listener) => listener(connected));
+    this.connectionListeners.forEach(listener => listener(connected));
   }
 
   get connected(): boolean {
@@ -300,7 +300,7 @@ export function useWebSocket(chatId?: string) {
 
   useEffect(() => {
     const config: WebSocketConfig = {
-      url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001",
+      url: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001',
       reconnectInterval: 5000,
       maxReconnectAttempts: 5,
       heartbeatInterval: 30000,
@@ -310,9 +310,9 @@ export function useWebSocket(chatId?: string) {
 
     // Set up message handlers
     wsRef.current.onMessage((data: RealTimeMessage) => {
-      setMessages((prev) => {
+      setMessages(prev => {
         // Avoid duplicates
-        if (prev.some((msg) => msg.id === data.id)) return prev;
+        if (prev.some(msg => msg.id === data.id)) return prev;
         return [...prev, data].sort(
           (a, b) =>
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -320,14 +320,14 @@ export function useWebSocket(chatId?: string) {
       });
     });
 
-    wsRef.current.onNotification((data) => {
-      setNotifications((prev) => [...prev, data]);
+    wsRef.current.onNotification(data => {
+      setNotifications(prev => [...prev, data]);
     });
 
-    wsRef.current.onTyping((data) => {
+    wsRef.current.onTyping(data => {
       if (!chatId || data.chatId !== chatId) return;
 
-      setTypingUsers((prev) => {
+      setTypingUsers(prev => {
         const newSet = new Set(prev);
         if (data.isTyping) {
           newSet.add(data.userId);
@@ -338,15 +338,15 @@ export function useWebSocket(chatId?: string) {
       });
     });
 
-    wsRef.current.onUserJoined((data) => {
+    wsRef.current.onUserJoined(data => {
       if (!chatId || data.chatId !== chatId) return;
-      setOnlineUsers((prev) => new Set(Array.from(prev).concat(data.userId)));
+      setOnlineUsers(prev => new Set(Array.from(prev).concat(data.userId)));
     });
 
-    wsRef.current.onUserLeft((data) => {
+    wsRef.current.onUserLeft(data => {
       if (!chatId || data.chatId !== chatId) return;
-      setOnlineUsers((prev) => {
-        const newArray = Array.from(prev).filter((id) => id !== data.userId);
+      setOnlineUsers(prev => {
+        const newArray = Array.from(prev).filter(id => id !== data.userId);
         return new Set(newArray);
       });
     });
@@ -371,7 +371,7 @@ export function useWebSocket(chatId?: string) {
     };
   }, [chatId]);
 
-  const sendMessage = (message: Omit<WebSocketMessage, "timestamp">) => {
+  const sendMessage = (message: Omit<WebSocketMessage, 'timestamp'>) => {
     wsRef.current?.sendMessage({
       ...message,
       timestamp: new Date().toISOString(),

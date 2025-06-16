@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 import {
   School,
   GradeConfig,
   getAllActiveSchools,
   getGradesForSchool,
   TESLA_STEM_GRADES,
-} from "@/config/schools";
+} from '@/config/schools';
 
 interface SchoolSelectProps {
   value: string;
@@ -31,8 +31,8 @@ interface GradeSelectProps {
 export const SchoolSelect: React.FC<SchoolSelectProps> = ({
   value,
   onChange,
-  className = "",
-  placeholder = "Select School",
+  className = '',
+  placeholder = 'Select School',
   required = false,
   schools,
 }) => {
@@ -41,12 +41,12 @@ export const SchoolSelect: React.FC<SchoolSelectProps> = ({
   return (
     <select
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={e => onChange(e.target.value)}
       className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${className}`}
       required={required}
     >
       <option value="">{placeholder}</option>
-      {availableSchools.map((school) => (
+      {availableSchools.map(school => (
         <option key={school.id} value={school.name}>
           {school.name} - {school.city}, {school.state}
         </option>
@@ -58,8 +58,8 @@ export const SchoolSelect: React.FC<SchoolSelectProps> = ({
 export const GradeSelect: React.FC<GradeSelectProps> = ({
   value,
   onChange,
-  className = "",
-  placeholder = "Select Grade",
+  className = '',
+  placeholder = 'Select Grade',
   required = false,
   schoolId,
   grades,
@@ -70,7 +70,7 @@ export const GradeSelect: React.FC<GradeSelectProps> = ({
   // If school is specified, filter grades by school
   if (schoolId) {
     const allSchools = getAllActiveSchools();
-    const school = allSchools.find((s) => s.id === schoolId);
+    const school = allSchools.find(s => s.id === schoolId);
     if (school) {
       availableGrades = getGradesForSchool(school);
     }
@@ -79,12 +79,12 @@ export const GradeSelect: React.FC<GradeSelectProps> = ({
   return (
     <select
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={e => onChange(e.target.value)}
       className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${className}`}
       required={required}
     >
       <option value="">{placeholder}</option>
-      {availableGrades.map((grade) => (
+      {availableGrades.map(grade => (
         <option key={grade.id} value={grade.id}>
           {grade.label}
         </option>

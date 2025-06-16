@@ -1,46 +1,46 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import {
   UserGroupIcon,
   CheckIcon,
   XMarkIcon,
   InformationCircleIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 // Mock Data
 const mockRequests = [
   {
-    familyId: "family-123",
-    familyName: "The Johnson Family",
+    familyId: 'family-123',
+    familyName: 'The Johnson Family',
     drivingParent: {
-      name: "Sarah Johnson",
-      email: "sarah.j@example.com",
+      name: 'Sarah Johnson',
+      email: 'sarah.j@example.com',
     },
     children: [
-      { name: "Emma Johnson", grade: "3rd" },
-      { name: "Jake Johnson", grade: "1st" },
+      { name: 'Emma Johnson', grade: '3rd' },
+      { name: 'Jake Johnson', grade: '1st' },
     ],
     message:
       "We're excited to join! I can drive Tuesday and Thursday mornings regularly.",
     impact: {
-      newCapacity: "7/8 members",
-      driverChange: "+1 reliable driver",
+      newCapacity: '7/8 members',
+      driverChange: '+1 reliable driver',
     },
   },
   {
-    familyId: "family-456",
-    familyName: "The Chen Family",
+    familyId: 'family-456',
+    familyName: 'The Chen Family',
     drivingParent: {
-      name: "Mike Chen",
-      email: "mike.c@example.com",
+      name: 'Mike Chen',
+      email: 'mike.c@example.com',
     },
-    children: [{ name: "Liam Chen", grade: "2nd" }],
-    message: "Looking for a reliable carpool for my son Liam.",
+    children: [{ name: 'Liam Chen', grade: '2nd' }],
+    message: 'Looking for a reliable carpool for my son Liam.',
     impact: {
-      newCapacity: "5/8 members",
-      driverChange: "+1 driver",
+      newCapacity: '5/8 members',
+      driverChange: '+1 driver',
     },
   },
 ];
@@ -52,11 +52,11 @@ export default function JoinRequestsPageClient() {
 
   const handleDecision = (
     familyId: string,
-    decision: "approve" | "decline"
+    decision: 'approve' | 'decline'
   ) => {
     // In a real app, this would be an API call
     console.log(`Group ${groupId}: Family ${familyId} request ${decision}d.`);
-    setRequests(requests.filter((req) => req.familyId !== familyId));
+    setRequests(requests.filter(req => req.familyId !== familyId));
   };
 
   return (
@@ -69,7 +69,7 @@ export default function JoinRequestsPageClient() {
         <p className="text-gray-500">No pending join requests.</p>
       ) : (
         <div className="space-y-6">
-          {requests.map((req) => (
+          {requests.map(req => (
             <div
               key={req.familyId}
               className="bg-white p-6 rounded-lg shadow-md border"
@@ -84,10 +84,8 @@ export default function JoinRequestsPageClient() {
                     {req.drivingParent.email})
                   </p>
                   <p>
-                    <strong>Children:</strong>{" "}
-                    {req.children
-                      .map((c) => `${c.name} (${c.grade})`)
-                      .join(", ")}
+                    <strong>Children:</strong>{' '}
+                    {req.children.map(c => `${c.name} (${c.grade})`).join(', ')}
                   </p>
                   <p className="mt-2 italic">"{req.message}"</p>
                 </div>
@@ -97,7 +95,7 @@ export default function JoinRequestsPageClient() {
                     <strong>New Capacity:</strong> {req.impact.newCapacity}
                   </p>
                   <p>
-                    <strong>Driving Capability:</strong>{" "}
+                    <strong>Driving Capability:</strong>{' '}
                     {req.impact.driverChange}
                   </p>
                 </div>
@@ -105,14 +103,14 @@ export default function JoinRequestsPageClient() {
 
               <div className="mt-4 pt-4 border-t flex justify-end space-x-4">
                 <button
-                  onClick={() => handleDecision(req.familyId, "decline")}
+                  onClick={() => handleDecision(req.familyId, 'decline')}
                   className="btn-secondary"
                 >
                   <XMarkIcon className="h-5 w-5 mr-2" />
                   Decline
                 </button>
                 <button
-                  onClick={() => handleDecision(req.familyId, "approve")}
+                  onClick={() => handleDecision(req.familyId, 'approve')}
                   className="btn-primary"
                 >
                   <CheckIcon className="h-5 w-5 mr-2" />

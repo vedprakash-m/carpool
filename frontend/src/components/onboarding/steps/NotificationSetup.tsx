@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   BellIcon,
   EnvelopeIcon,
   CheckCircleIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface NotificationSetupProps {
   onNext: () => void;
@@ -26,7 +26,7 @@ export default function NotificationSetup({
   });
 
   const handleToggle = (setting: keyof typeof settings) => {
-    setSettings((prev) => ({ ...prev, [setting]: !prev[setting] }));
+    setSettings(prev => ({ ...prev, [setting]: !prev[setting] }));
   };
 
   const handleContinue = () => {
@@ -61,16 +61,16 @@ export default function NotificationSetup({
               </div>
             </div>
             <button
-              onClick={() => handleToggle("emailNotifications")}
+              onClick={() => handleToggle('emailNotifications')}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                settings.emailNotifications ? "bg-green-600" : "bg-gray-200"
+                settings.emailNotifications ? 'bg-green-600' : 'bg-gray-200'
               }`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                   settings.emailNotifications
-                    ? "translate-x-6"
-                    : "translate-x-1"
+                    ? 'translate-x-6'
+                    : 'translate-x-1'
                 }`}
               />
             </button>
@@ -87,21 +87,21 @@ export default function NotificationSetup({
                 </p>
               </div>
               <button
-                onClick={() => handleToggle("swapRequestNotifications")}
+                onClick={() => handleToggle('swapRequestNotifications')}
                 disabled={!settings.emailNotifications}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.swapRequestNotifications &&
                   settings.emailNotifications
-                    ? "bg-green-600"
-                    : "bg-gray-200"
-                } ${!settings.emailNotifications ? "opacity-50" : ""}`}
+                    ? 'bg-green-600'
+                    : 'bg-gray-200'
+                } ${!settings.emailNotifications ? 'opacity-50' : ''}`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.swapRequestNotifications &&
                     settings.emailNotifications
-                      ? "translate-x-6"
-                      : "translate-x-1"
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -117,19 +117,19 @@ export default function NotificationSetup({
                 </p>
               </div>
               <button
-                onClick={() => handleToggle("assignmentReminders")}
+                onClick={() => handleToggle('assignmentReminders')}
                 disabled={!settings.emailNotifications}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   settings.assignmentReminders && settings.emailNotifications
-                    ? "bg-green-600"
-                    : "bg-gray-200"
-                } ${!settings.emailNotifications ? "opacity-50" : ""}`}
+                    ? 'bg-green-600'
+                    : 'bg-gray-200'
+                } ${!settings.emailNotifications ? 'opacity-50' : ''}`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.assignmentReminders && settings.emailNotifications
-                      ? "translate-x-6"
-                      : "translate-x-1"
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
                   }`}
                 />
               </button>

@@ -1,23 +1,21 @@
-import { User, UserPreferences, ApiResponse } from "@vcarpool/shared";
-import { v4 as uuidv4 } from "uuid";
-import { UserRepository } from "../repositories/user.repository";
-import { Errors } from "../utils/error-handler";
-import { ILogger } from "../utils/logger";
+import { User, UserPreferences, ApiResponse } from '@vcarpool/shared';
+import { v4 as uuidv4 } from 'uuid';
+import { UserRepository } from '../repositories/user.repository';
+import { Errors } from '../utils/error-handler';
+import { ILogger } from '../utils/logger';
 
 export class UserService {
   // Static methods for backward compatibility
-  static async getUserByEmail(
-    email: string
-  ): Promise<(User & { passwordHash: string }) | null> {
+  static async getUserByEmail(email: string): Promise<(User & { passwordHash: string }) | null> {
     // Create a temporary instance for static calls
-    const { containers } = await import("../config/database");
+    const { containers } = await import('../config/database');
     const userRepository = new UserRepository(containers.users);
     const userService = new UserService(userRepository);
     return userService.getUserByEmail(email);
   }
 
   static async createUser(userData: any): Promise<User> {
-    const { containers } = await import("../config/database");
+    const { containers } = await import('../config/database');
     const userRepository = new UserRepository(containers.users);
     const userService = new UserService(userRepository);
     return userService.createUser(userData);
@@ -25,7 +23,10 @@ export class UserService {
 
   private logger: ILogger;
 
-  constructor(private userRepository: UserRepository, logger?: ILogger) {
+  constructor(
+    private userRepository: UserRepository,
+    logger?: ILogger,
+  ) {
     // Use provided logger or create a simple implementation
     this.logger = logger || {
       debug: (message: string, data?: any) => console.debug(message, data),
@@ -51,11 +52,9 @@ export class UserService {
   }): Promise<User> {
     try {
       // Check if user with this email already exists
-      const existingUser = await this.userRepository.findByEmail(
-        userData.email
-      );
+      const existingUser = await this.userRepository.findByEmail(userData.email);
       if (existingUser) {
-        throw Errors.Conflict("User with this email already exists");
+        throw Errors.Conflict('User with this email already exists');
       }
 
       const user: User = {
@@ -65,11 +64,11 @@ export class UserService {
         lastName: userData.lastName,
         phoneNumber: userData.phoneNumber,
         department: userData.department,
-        role: "parent", // Default role
+        role: 'parent', // Default role
         preferences: {
-          pickupLocation: "",
-          dropoffLocation: "",
-          preferredTime: "08:00",
+          pickupLocation: '',
+          dropoffLocation: '',
+          preferredTime: '08:00',
           isDriver: false,
           smokingAllowed: false,
           notifications: {
@@ -95,14 +94,12 @@ export class UserService {
       // Return user without password hash
       return user;
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error('Error creating user:', error);
       if (error instanceof Error) {
         throw error; // Re-throw AppErrors
       }
       throw Errors.InternalServerError(
-        `Error creating user: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `Error creating user: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -119,14 +116,9 @@ export class UserService {
       const { passwordHash, ...user } = userWithPassword as any;
       return user as User;
     } catch (error) {
-      this.logger.error(
-        `Error finding user by email ${email}:`,
-        error as Record<string, unknown>
-      );
+      this.logger.error(`Error finding user by email ${email}:`, error as Record<string, unknown>);
       throw Errors.InternalServerError(
-        `Error finding user: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `Error finding user: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -140,9 +132,7 @@ export class UserService {
     } catch (error) {
       console.error(`Error fetching user ${userId}:`, error);
       throw Errors.InternalServerError(
-        `Error fetching user: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `Error fetching user: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -150,9 +140,7 @@ export class UserService {
   /**
    * Get user by email
    */
-  async getUserByEmail(
-    email: string
-  ): Promise<(User & { passwordHash: string }) | null> {
+  async getUserByEmail(email: string): Promise<(User & { passwordHash: string }) | null> {
     try {
       return (await this.userRepository.findByEmail(email)) as
         | (User & { passwordHash: string })
@@ -160,9 +148,7 @@ export class UserService {
     } catch (error) {
       console.error(`Error fetching user by email ${email}:`, error);
       throw Errors.InternalServerError(
-        `Error fetching user by email: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `Error fetching user by email: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -181,7 +167,7 @@ export class UserService {
       resetToken?: string;
       resetTokenExpiry?: Date;
       passwordHash?: string;
-    }
+    },
   ): Promise<User | null> {
     try {
       const existingUser = await this.userRepository.findById(userId);
@@ -223,9 +209,7 @@ export class UserService {
     } catch (error) {
       console.error(`Error updating user ${userId}:`, error);
       throw Errors.InternalServerError(
-        `Error updating user: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `Error updating user: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -245,9 +229,7 @@ export class UserService {
     } catch (error) {
       console.error(`Error deleting user ${userId}:`, error);
       throw Errors.InternalServerError(
-        `Error deleting user: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `Error deleting user: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -260,10 +242,10 @@ export class UserService {
       limit?: number;
       offset?: number;
       searchTerm?: string;
-    } = {}
+    } = {},
   ): Promise<{ users: User[]; total: number }> {
     try {
-      let query = "SELECT * FROM c";
+      let query = 'SELECT * FROM c';
       const parameters: Array<{ name: string; value: any }> = [];
 
       // Add search filter if provided
@@ -273,13 +255,13 @@ export class UserService {
           CONTAINS(LOWER(c.lastName), @searchTerm) OR 
           CONTAINS(LOWER(c.email), @searchTerm)`;
         parameters.push({
-          name: "@searchTerm",
+          name: '@searchTerm',
           value: options.searchTerm.toLowerCase(),
         });
       }
 
       // Add ordering
-      query += " ORDER BY c.lastName";
+      query += ' ORDER BY c.lastName';
 
       // Get all users with the filter
       const users = await this.userRepository.query({ query, parameters });
@@ -307,11 +289,9 @@ export class UserService {
         total,
       };
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error('Error fetching users:', error);
       throw Errors.InternalServerError(
-        `Error fetching users: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `Error fetching users: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }

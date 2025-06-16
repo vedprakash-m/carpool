@@ -1,6 +1,6 @@
-import { Container } from "@azure/cosmos";
-import { Message, ChatRoom, ChatParticipant } from "@vcarpool/shared";
-import { v4 as uuidv4 } from "uuid";
+import { Container } from '@azure/cosmos';
+import { Message, ChatRoom, ChatParticipant } from '@vcarpool/shared';
+import { v4 as uuidv4 } from 'uuid';
 
 export class MessageRepository {
   constructor(private container: Container) {}
@@ -8,9 +8,7 @@ export class MessageRepository {
   /**
    * Create a new message
    */
-  async createMessage(
-    message: Omit<Message, "id" | "createdAt" | "updatedAt">
-  ): Promise<Message> {
+  async createMessage(message: Omit<Message, 'id' | 'createdAt' | 'updatedAt'>): Promise<Message> {
     const newMessage: Message = {
       ...message,
       id: uuidv4(),
@@ -32,23 +30,23 @@ export class MessageRepository {
       before?: Date;
       after?: Date;
       offset?: number;
-    } = {}
+    } = {},
   ): Promise<{ messages: Message[]; total: number }> {
     let query =
-      "SELECT * FROM c WHERE c.chatId = @chatId AND (c.deletedAt IS NULL OR c.deletedAt = null)";
-    const parameters = [{ name: "@chatId", value: chatId }];
+      'SELECT * FROM c WHERE c.chatId = @chatId AND (c.deletedAt IS NULL OR c.deletedAt = null)';
+    const parameters = [{ name: '@chatId', value: chatId }];
 
     if (options.before) {
-      query += " AND c.createdAt < @before";
-      parameters.push({ name: "@before", value: options.before.toISOString() });
+      query += ' AND c.createdAt < @before';
+      parameters.push({ name: '@before', value: options.before.toISOString() });
     }
 
     if (options.after) {
-      query += " AND c.createdAt > @after";
-      parameters.push({ name: "@after", value: options.after.toISOString() });
+      query += ' AND c.createdAt > @after';
+      parameters.push({ name: '@after', value: options.after.toISOString() });
     }
 
-    query += " ORDER BY c.createdAt DESC";
+    query += ' ORDER BY c.createdAt DESC';
 
     if (options.limit) {
       query += ` OFFSET ${options.offset || 0} LIMIT ${options.limit}`;
@@ -63,9 +61,9 @@ export class MessageRepository {
 
     // Get total count
     const countQuery = query
-      .replace("SELECT * FROM c", "SELECT VALUE COUNT(1) FROM c")
-      .replace(/ORDER BY .+$/, "")
-      .replace(/OFFSET .+ LIMIT .+$/, "");
+      .replace('SELECT * FROM c', 'SELECT VALUE COUNT(1) FROM c')
+      .replace(/ORDER BY .+$/, '')
+      .replace(/OFFSET .+ LIMIT .+$/, '');
 
     const { resources: countResult } = await this.container.items
       .query({
@@ -84,9 +82,7 @@ export class MessageRepository {
    */
   async getMessageById(messageId: string): Promise<Message | null> {
     try {
-      const { resource } = await this.container
-        .item(messageId, messageId)
-        .read<Message>();
+      const { resource } = await this.container.item(messageId, messageId).read<Message>();
       return resource || null;
     } catch (error: any) {
       if (error.code === 404) {
@@ -99,10 +95,7 @@ export class MessageRepository {
   /**
    * Update a message
    */
-  async updateMessage(
-    messageId: string,
-    updates: Partial<Message>
-  ): Promise<Message | null> {
+  async updateMessage(messageId: string, updates: Partial<Message>): Promise<Message | null> {
     try {
       const existingMessage = await this.getMessageById(messageId);
       if (!existingMessage) {
@@ -116,9 +109,7 @@ export class MessageRepository {
         editedAt: updates.content ? new Date() : existingMessage.editedAt,
       };
 
-      const { resource } = await this.container
-        .item(messageId, messageId)
-        .replace(updatedMessage);
+      const { resource } = await this.container.item(messageId, messageId).replace(updatedMessage);
       return resource as Message;
     } catch (error: any) {
       if (error.code === 404) {
@@ -157,21 +148,16 @@ export class MessageRepository {
   /**
    * Get unread message count for a user in a chat
    */
-  async getUnreadCount(
-    chatId: string,
-    userId: string,
-    lastReadAt?: Date
-  ): Promise<number> {
-    let query =
-      "SELECT VALUE COUNT(1) FROM c WHERE c.chatId = @chatId AND c.senderId != @userId";
+  async getUnreadCount(chatId: string, userId: string, lastReadAt?: Date): Promise<number> {
+    let query = 'SELECT VALUE COUNT(1) FROM c WHERE c.chatId = @chatId AND c.senderId != @userId';
     const parameters = [
-      { name: "@chatId", value: chatId },
-      { name: "@userId", value: userId },
+      { name: '@chatId', value: chatId },
+      { name: '@userId', value: userId },
     ];
 
     if (lastReadAt) {
-      query += " AND c.createdAt > @lastReadAt";
-      parameters.push({ name: "@lastReadAt", value: lastReadAt.toISOString() });
+      query += ' AND c.createdAt > @lastReadAt';
+      parameters.push({ name: '@lastReadAt', value: lastReadAt.toISOString() });
     }
 
     const { resources } = await this.container.items
@@ -190,13 +176,11 @@ export class MessageRepository {
   async getLatestMessage(chatId: string): Promise<Message | null> {
     const query = {
       query:
-        "SELECT TOP 1 * FROM c WHERE c.chatId = @chatId AND (c.deletedAt IS NULL OR c.deletedAt = null) ORDER BY c.createdAt DESC",
-      parameters: [{ name: "@chatId", value: chatId }],
+        'SELECT TOP 1 * FROM c WHERE c.chatId = @chatId AND (c.deletedAt IS NULL OR c.deletedAt = null) ORDER BY c.createdAt DESC',
+      parameters: [{ name: '@chatId', value: chatId }],
     };
 
-    const { resources } = await this.container.items
-      .query<Message>(query)
-      .fetchAll();
+    const { resources } = await this.container.items.query<Message>(query).fetchAll();
     return resources[0] || null;
   }
 }
@@ -207,9 +191,7 @@ export class ChatRepository {
   /**
    * Create a new chat room
    */
-  async createChat(
-    chat: Omit<ChatRoom, "id" | "createdAt" | "updatedAt">
-  ): Promise<ChatRoom> {
+  async createChat(chat: Omit<ChatRoom, 'id' | 'createdAt' | 'updatedAt'>): Promise<ChatRoom> {
     const newChat: ChatRoom = {
       ...chat,
       id: uuidv4(),
@@ -226,9 +208,7 @@ export class ChatRepository {
    */
   async getChatById(chatId: string): Promise<ChatRoom | null> {
     try {
-      const { resource } = await this.container
-        .item(chatId, chatId)
-        .read<ChatRoom>();
+      const { resource } = await this.container.item(chatId, chatId).read<ChatRoom>();
       return resource || null;
     } catch (error: any) {
       if (error.code === 404) {
@@ -243,14 +223,11 @@ export class ChatRepository {
    */
   async getChatByTripId(tripId: string): Promise<ChatRoom | null> {
     const query = {
-      query:
-        'SELECT * FROM c WHERE c.tripId = @tripId AND c.type = "trip_chat"',
-      parameters: [{ name: "@tripId", value: tripId }],
+      query: 'SELECT * FROM c WHERE c.tripId = @tripId AND c.type = "trip_chat"',
+      parameters: [{ name: '@tripId', value: tripId }],
     };
 
-    const { resources } = await this.container.items
-      .query<ChatRoom>(query)
-      .fetchAll();
+    const { resources } = await this.container.items.query<ChatRoom>(query).fetchAll();
     return resources[0] || null;
   }
 
@@ -263,16 +240,16 @@ export class ChatRepository {
       includeInactive?: boolean;
       limit?: number;
       offset?: number;
-    } = {}
+    } = {},
   ): Promise<{ chats: ChatRoom[]; total: number }> {
-    let query = "SELECT * FROM c WHERE ARRAY_CONTAINS(c.participants, @userId)";
-    const parameters = [{ name: "@userId", value: userId }];
+    let query = 'SELECT * FROM c WHERE ARRAY_CONTAINS(c.participants, @userId)';
+    const parameters = [{ name: '@userId', value: userId }];
 
     if (!options.includeInactive) {
-      query += " AND c.isActive = true";
+      query += ' AND c.isActive = true';
     }
 
-    query += " ORDER BY c.updatedAt DESC";
+    query += ' ORDER BY c.updatedAt DESC';
 
     if (options.limit) {
       query += ` OFFSET ${options.offset || 0} LIMIT ${options.limit}`;
@@ -287,9 +264,9 @@ export class ChatRepository {
 
     // Get total count
     const countQuery = query
-      .replace("SELECT * FROM c", "SELECT VALUE COUNT(1) FROM c")
-      .replace(/ORDER BY .+$/, "")
-      .replace(/OFFSET .+ LIMIT .+$/, "");
+      .replace('SELECT * FROM c', 'SELECT VALUE COUNT(1) FROM c')
+      .replace(/ORDER BY .+$/, '')
+      .replace(/OFFSET .+ LIMIT .+$/, '');
 
     const { resources: countResult } = await this.container.items
       .query({
@@ -306,10 +283,7 @@ export class ChatRepository {
   /**
    * Update chat
    */
-  async updateChat(
-    chatId: string,
-    updates: Partial<ChatRoom>
-  ): Promise<ChatRoom | null> {
+  async updateChat(chatId: string, updates: Partial<ChatRoom>): Promise<ChatRoom | null> {
     try {
       const existingChat = await this.getChatById(chatId);
       if (!existingChat) {
@@ -322,9 +296,7 @@ export class ChatRepository {
         updatedAt: new Date(),
       };
 
-      const { resource } = await this.container
-        .item(chatId, chatId)
-        .replace(updatedChat);
+      const { resource } = await this.container.item(chatId, chatId).replace(updatedChat);
       return resource as ChatRoom;
     } catch (error: any) {
       if (error.code === 404) {
@@ -378,9 +350,7 @@ export class ChatParticipantRepository {
   /**
    * Create chat participant
    */
-  async createParticipant(
-    participant: ChatParticipant
-  ): Promise<ChatParticipant> {
+  async createParticipant(participant: ChatParticipant): Promise<ChatParticipant> {
     const { resource } = await this.container.items.create(participant);
     return resource as ChatParticipant;
   }
@@ -388,32 +358,23 @@ export class ChatParticipantRepository {
   /**
    * Get participant by user and chat
    */
-  async getParticipant(
-    userId: string,
-    chatId: string
-  ): Promise<ChatParticipant | null> {
+  async getParticipant(userId: string, chatId: string): Promise<ChatParticipant | null> {
     const query = {
-      query: "SELECT * FROM c WHERE c.userId = @userId AND c.chatId = @chatId",
+      query: 'SELECT * FROM c WHERE c.userId = @userId AND c.chatId = @chatId',
       parameters: [
-        { name: "@userId", value: userId },
-        { name: "@chatId", value: chatId },
+        { name: '@userId', value: userId },
+        { name: '@chatId', value: chatId },
       ],
     };
 
-    const { resources } = await this.container.items
-      .query<ChatParticipant>(query)
-      .fetchAll();
+    const { resources } = await this.container.items.query<ChatParticipant>(query).fetchAll();
     return resources[0] || null;
   }
 
   /**
    * Update participant's last read timestamp
    */
-  async updateLastRead(
-    userId: string,
-    chatId: string,
-    lastReadAt: Date
-  ): Promise<boolean> {
+  async updateLastRead(userId: string, chatId: string, lastReadAt: Date): Promise<boolean> {
     const participant = await this.getParticipant(userId, chatId);
     if (!participant) {
       return false;
@@ -433,13 +394,11 @@ export class ChatParticipantRepository {
    */
   async getChatParticipants(chatId: string): Promise<ChatParticipant[]> {
     const query = {
-      query: "SELECT * FROM c WHERE c.chatId = @chatId",
-      parameters: [{ name: "@chatId", value: chatId }],
+      query: 'SELECT * FROM c WHERE c.chatId = @chatId',
+      parameters: [{ name: '@chatId', value: chatId }],
     };
 
-    const { resources } = await this.container.items
-      .query<ChatParticipant>(query)
-      .fetchAll();
+    const { resources } = await this.container.items.query<ChatParticipant>(query).fetchAll();
     return resources;
   }
 }

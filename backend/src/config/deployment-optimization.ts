@@ -5,95 +5,95 @@
 
 // Azure Functions Host Configuration (host.json)
 export const optimizedHostConfig = {
-  "version": "2.0",
-  "functionTimeout": "00:05:00",
-  "logging": {
-    "applicationInsights": {
-      "samplingSettings": {
-        "isEnabled": true,
-        "maxTelemetryItemsPerSecond": 20,
-        "excludedTypes": "Request;Exception"
-      }
+  version: '2.0',
+  functionTimeout: '00:05:00',
+  logging: {
+    applicationInsights: {
+      samplingSettings: {
+        isEnabled: true,
+        maxTelemetryItemsPerSecond: 20,
+        excludedTypes: 'Request;Exception',
+      },
     },
-    "logLevel": {
-      "default": "Information",
-      "Host.Results": "Warning",
-      "Function": "Information",
-      "Host.Aggregator": "Warning"
-    }
+    logLevel: {
+      default: 'Information',
+      'Host.Results': 'Warning',
+      Function: 'Information',
+      'Host.Aggregator': 'Warning',
+    },
   },
-  "aggregator": {
-    "batchSize": 1000,
-    "flushTimeout": "00:00:30"
+  aggregator: {
+    batchSize: 1000,
+    flushTimeout: '00:00:30',
   },
-  "healthMonitor": {
-    "enabled": true,
-    "healthCheckInterval": "00:00:30",
-    "healthCheckWindow": "00:02:00",
-    "healthCheckThreshold": 6,
-    "counterThreshold": 0.80
+  healthMonitor: {
+    enabled: true,
+    healthCheckInterval: '00:00:30',
+    healthCheckWindow: '00:02:00',
+    healthCheckThreshold: 6,
+    counterThreshold: 0.8,
   },
-  "httpWorkerProcess": {
-    "processCount": 1
+  httpWorkerProcess: {
+    processCount: 1,
   },
-  "retry": {
-    "strategy": "exponentialBackoff",
-    "maxRetryCount": 3,
-    "minimumInterval": "00:00:02",
-    "maximumInterval": "00:00:30"
+  retry: {
+    strategy: 'exponentialBackoff',
+    maxRetryCount: 3,
+    minimumInterval: '00:00:02',
+    maximumInterval: '00:00:30',
   },
-  "extensions": {
-    "http": {
-      "routePrefix": "",
-      "maxConcurrentRequests": 100,
-      "maxOutstandingRequests": 200,
-      "dynamicThrottlesEnabled": true
-    }
+  extensions: {
+    http: {
+      routePrefix: '',
+      maxConcurrentRequests: 100,
+      maxOutstandingRequests: 200,
+      dynamicThrottlesEnabled: true,
+    },
   },
-  "concurrency": {
-    "dynamicConcurrencyEnabled": true,
-    "snapshotPersistenceEnabled": true
-  }
+  concurrency: {
+    dynamicConcurrencyEnabled: true,
+    snapshotPersistenceEnabled: true,
+  },
 };
 
 // Azure Functions Local Settings Template
 export const localSettingsTemplate = {
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "node",
-    "FUNCTIONS_EXTENSION_VERSION": "~4",
-    "WEBSITE_NODE_DEFAULT_VERSION": "~18",
-    "NODE_ENV": "development",
-    
+  IsEncrypted: false,
+  Values: {
+    AzureWebJobsStorage: 'UseDevelopmentStorage=true',
+    FUNCTIONS_WORKER_RUNTIME: 'node',
+    FUNCTIONS_EXTENSION_VERSION: '~4',
+    WEBSITE_NODE_DEFAULT_VERSION: '~18',
+    NODE_ENV: 'development',
+
     // Performance settings
-    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "",
-    "WEBSITE_CONTENTSHARE": "",
-    "WEBSITE_RUN_FROM_PACKAGE": "1",
-    "WEBSITE_ENABLE_SYNC_UPDATE_SITE": "true",
-    
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: '',
+    WEBSITE_CONTENTSHARE: '',
+    WEBSITE_RUN_FROM_PACKAGE: '1',
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true',
+
     // Monitoring
-    "APPINSIGHTS_INSTRUMENTATIONKEY": "",
-    "APPLICATIONINSIGHTS_CONNECTION_STRING": "",
-    
+    APPINSIGHTS_INSTRUMENTATIONKEY: '',
+    APPLICATIONINSIGHTS_CONNECTION_STRING: '',
+
     // Custom app settings
-    "JWT_SECRET": "development-jwt-secret-change-in-production",
-    "JWT_EXPIRES_IN": "24h",
-    "BCRYPT_SALT_ROUNDS": "12",
-    "COSMOS_DB_ENDPOINT": "",
-    "COSMOS_DB_KEY": "",
-    "COSMOS_DB_DATABASE": "vcarpool-dev",
-    
+    JWT_SECRET: 'development-jwt-secret-change-in-production',
+    JWT_EXPIRES_IN: '24h',
+    BCRYPT_SALT_ROUNDS: '12',
+    COSMOS_DB_ENDPOINT: '',
+    COSMOS_DB_KEY: '',
+    COSMOS_DB_DATABASE: 'vcarpool-dev',
+
     // Performance optimization
-    "WEBSITE_TIME_ZONE": "UTC",
-    "WEBSITE_HTTPSCALEV2_ENABLED": "1",
-    "WEBSITE_VNET_ROUTE_ALL": "1"
+    WEBSITE_TIME_ZONE: 'UTC',
+    WEBSITE_HTTPSCALEV2_ENABLED: '1',
+    WEBSITE_VNET_ROUTE_ALL: '1',
   },
-  "Host": {
-    "LocalHttpPort": 7071,
-    "CORS": "*",
-    "CORSCredentials": false
-  }
+  Host: {
+    LocalHttpPort: 7071,
+    CORS: '*',
+    CORSCredentials: false,
+  },
 };
 
 // GitHub Actions Workflow for Optimized CI/CD
@@ -289,173 +289,163 @@ jobs:
 
 // Package.json scripts optimization
 export const optimizedPackageScripts = {
-  "scripts": {
-    "build": "rimraf dist && tsc && npm run copy-assets",
-    "build:production": "npm run build && npm run optimize-bundle",
-    "copy-assets": "copyfiles -u 1 'src/**/*.json' dist/",
-    "optimize-bundle": "npm prune --production",
-    
-    "dev": "npm run build && func start --verbose",
-    "start": "func start",
-    "start:production": "NODE_ENV=production func start",
-    
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --detectOpenHandles",
-    "test:integration": "jest --config jest.integration.config.js",
-    "test:e2e": "jest --config jest.e2e.config.js",
-    
-    "lint": "eslint src/**/*.ts --fix",
-    "lint:check": "eslint src/**/*.ts",
-    "type-check": "tsc --noEmit",
-    
-    "security:audit": "npm audit --audit-level moderate",
-    "security:check": "npm audit --audit-level high",
-    
-    "deploy": "npm run build:production && func azure functionapp publish vcarpool-functions",
-    "deploy:staging": "npm run build:production && func azure functionapp publish vcarpool-functions-staging",
-    
-    "clean": "rimraf dist coverage .nyc_output",
-    "clean:all": "npm run clean && rimraf node_modules package-lock.json",
-    
-    "precommit": "npm run lint && npm run type-check && npm run test",
-    "prepush": "npm run test:coverage",
-    
-    "docs:generate": "typedoc --out docs src",
-    "docs:serve": "http-server docs -p 8080"
-  }
+  scripts: {
+    build: 'rimraf dist && tsc && npm run copy-assets',
+    'build:production': 'npm run build && npm run optimize-bundle',
+    'copy-assets': "copyfiles -u 1 'src/**/*.json' dist/",
+    'optimize-bundle': 'npm prune --production',
+
+    dev: 'npm run build && func start --verbose',
+    start: 'func start',
+    'start:production': 'NODE_ENV=production func start',
+
+    test: 'jest',
+    'test:watch': 'jest --watch',
+    'test:coverage': 'jest --coverage --detectOpenHandles',
+    'test:integration': 'jest --config jest.integration.config.js',
+    'test:e2e': 'jest --config jest.e2e.config.js',
+
+    lint: 'eslint src/**/*.ts --fix',
+    'lint:check': 'eslint src/**/*.ts',
+    'type-check': 'tsc --noEmit',
+
+    'security:audit': 'npm audit --audit-level moderate',
+    'security:check': 'npm audit --audit-level high',
+
+    deploy: 'npm run build:production && func azure functionapp publish vcarpool-functions',
+    'deploy:staging':
+      'npm run build:production && func azure functionapp publish vcarpool-functions-staging',
+
+    clean: 'rimraf dist coverage .nyc_output',
+    'clean:all': 'npm run clean && rimraf node_modules package-lock.json',
+
+    precommit: 'npm run lint && npm run type-check && npm run test',
+    prepush: 'npm run test:coverage',
+
+    'docs:generate': 'typedoc --out docs src',
+    'docs:serve': 'http-server docs -p 8080',
+  },
 };
 
 // ESLint configuration for performance and best practices
 export const eslintConfig = {
-  "root": true,
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": 2022,
-    "sourceType": "module",
-    "project": "./tsconfig.json"
+  root: true,
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 2022,
+    sourceType: 'module',
+    project: './tsconfig.json',
   },
-  "plugins": [
-    "@typescript-eslint",
-    "security",
-    "import",
-    "node"
+  plugins: ['@typescript-eslint', 'security', 'import', 'node'],
+  extends: [
+    'eslint:recommended',
+    '@typescript-eslint/recommended',
+    '@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:security/recommended',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
+    'plugin:node/recommended',
   ],
-  "extends": [
-    "eslint:recommended",
-    "@typescript-eslint/recommended",
-    "@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:security/recommended",
-    "plugin:import/recommended",
-    "plugin:import/typescript",
-    "plugin:node/recommended"
-  ],
-  "rules": {
+  rules: {
     // Performance rules
-    "prefer-const": "error",
-    "no-var": "error",
-    "no-eval": "error",
-    "no-implied-eval": "error",
-    
+    'prefer-const': 'error',
+    'no-var': 'error',
+    'no-eval': 'error',
+    'no-implied-eval': 'error',
+
     // Security rules
-    "security/detect-object-injection": "error",
-    "security/detect-non-literal-regexp": "error",
-    "security/detect-unsafe-regex": "error",
-    
+    'security/detect-object-injection': 'error',
+    'security/detect-non-literal-regexp': 'error',
+    'security/detect-unsafe-regex': 'error',
+
     // TypeScript specific
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "@typescript-eslint/explicit-function-return-type": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/prefer-nullish-coalescing": "error",
-    "@typescript-eslint/prefer-optional-chain": "error",
-    
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/explicit-function-return-type': 'warn',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/prefer-nullish-coalescing': 'error',
+    '@typescript-eslint/prefer-optional-chain': 'error',
+
     // Import rules
-    "import/order": ["error", {
-      "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
-      "newlines-between": "always"
-    }],
-    "import/no-unresolved": "error",
-    "import/no-cycle": "error",
-    
+    'import/order': [
+      'error',
+      {
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+        'newlines-between': 'always',
+      },
+    ],
+    'import/no-unresolved': 'error',
+    'import/no-cycle': 'error',
+
     // Node.js rules
-    "node/no-unsupported-features/es-syntax": "off",
-    "node/no-missing-import": "off",
-    "node/no-unpublished-import": "off"
+    'node/no-unsupported-features/es-syntax': 'off',
+    'node/no-missing-import': 'off',
+    'node/no-unpublished-import': 'off',
   },
-  "settings": {
-    "import/resolver": {
-      "typescript": {
-        "alwaysTryTypes": true,
-        "project": "./tsconfig.json"
-      }
-    }
+  settings: {
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: './tsconfig.json',
+      },
+    },
   },
-  "env": {
-    "node": true,
-    "es2022": true,
-    "jest": true
-  }
+  env: {
+    node: true,
+    es2022: true,
+    jest: true,
+  },
 };
 
 // TypeScript configuration optimized for Azure Functions
 export const tsConfigOptimized = {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
-    "lib": ["ES2022"],
-    "outDir": "./dist",
-    "rootDir": "./src",
-    
-    "strict": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["src/*"],
-      "@shared/*": ["../shared/src/*"],
-      "@tests/*": ["tests/*"]
+  compilerOptions: {
+    target: 'ES2022',
+    module: 'CommonJS',
+    lib: ['ES2022'],
+    outDir: './dist',
+    rootDir: './src',
+
+    strict: true,
+    esModuleInterop: true,
+    allowSyntheticDefaultImports: true,
+    forceConsistentCasingInFileNames: true,
+    skipLibCheck: true,
+
+    moduleResolution: 'node',
+    resolveJsonModule: true,
+    declaration: true,
+    declarationMap: true,
+    sourceMap: true,
+
+    noImplicitAny: true,
+    noImplicitReturns: true,
+    noImplicitThis: true,
+    noFallthroughCasesInSwitch: true,
+    noUncheckedIndexedAccess: true,
+
+    experimentalDecorators: true,
+    emitDecoratorMetadata: true,
+
+    baseUrl: './',
+    paths: {
+      '@/*': ['src/*'],
+      '@shared/*': ['../shared/src/*'],
+      '@tests/*': ['tests/*'],
     },
-    
-    "typeRoots": ["node_modules/@types", "src/types"],
-    
+
+    typeRoots: ['node_modules/@types', 'src/types'],
+
     // Optimization options
-    "removeComments": true,
-    "preserveConstEnums": false,
-    "importsNotUsedAsValues": "remove",
-    "isolatedModules": true
+    removeComments: true,
+    preserveConstEnums: false,
+    importsNotUsedAsValues: 'remove',
+    isolatedModules: true,
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "coverage",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "tests/**/*"
-  ],
-  "ts-node": {
-    "esm": true
-  }
+  include: ['src/**/*'],
+  exclude: ['node_modules', 'dist', 'coverage', '**/*.test.ts', '**/*.spec.ts', 'tests/**/*'],
+  'ts-node': {
+    esm: true,
+  },
 };
 
 // Docker configuration for containerized deployment
@@ -706,5 +696,5 @@ export default {
   eslintConfig,
   tsConfigOptimized,
   dockerfileConfig,
-  bicepTemplate
+  bicepTemplate,
 };

@@ -3,9 +3,9 @@
  * Provides unified interface for Cosmos DB and in-memory storage
  */
 
-import { CosmosClient, Container, Database } from "@azure/cosmos";
-import { configService } from "./config.service";
-import bcrypt from "bcrypt";
+import { CosmosClient, Container, Database } from '@azure/cosmos';
+import { configService } from './config.service';
+import bcrypt from 'bcrypt';
 
 export interface User {
   id: string;
@@ -13,7 +13,7 @@ export interface User {
   passwordHash: string;
   firstName: string;
   lastName: string;
-  role: "parent" | "student" | "admin";
+  role: 'parent' | 'student' | 'admin';
   phoneNumber?: string;
   address?: string;
   isActive: boolean;
@@ -71,14 +71,14 @@ class DatabaseService {
 
       const { container } = await this.database.containers.createIfNotExists({
         id: config.cosmosDb.containerName,
-        partitionKey: "/email",
+        partitionKey: '/email',
       });
       this.container = container;
 
-      console.log("Cosmos DB initialized successfully");
+      console.log('Cosmos DB initialized successfully');
     } catch (error) {
-      console.error("Failed to initialize Cosmos DB:", error);
-      console.log("Falling back to in-memory storage");
+      console.error('Failed to initialize Cosmos DB:', error);
+      console.log('Falling back to in-memory storage');
       this.useRealDatabase = false;
       this.initializeInMemoryStorage();
     }
@@ -88,27 +88,27 @@ class DatabaseService {
     // Initialize with some test users for development
     const testUsers: User[] = [
       {
-        id: "1",
-        email: "admin@vcarpool.com",
-        passwordHash: "", // Will be set below
-        firstName: "Admin",
-        lastName: "User",
-        role: "admin",
-        phoneNumber: "+1234567890",
-        address: "123 Main St, Anytown, USA",
+        id: '1',
+        email: 'admin@vcarpool.com',
+        passwordHash: '', // Will be set below
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
+        phoneNumber: '+1234567890',
+        address: '123 Main St, Anytown, USA',
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: "2",
-        email: "parent@vcarpool.com",
-        passwordHash: "", // Will be set below
-        firstName: "John",
-        lastName: "Parent",
-        role: "parent",
-        phoneNumber: "+1234567891",
-        address: "456 Oak Ave, Anytown, USA",
+        id: '2',
+        email: 'parent@vcarpool.com',
+        passwordHash: '', // Will be set below
+        firstName: 'John',
+        lastName: 'Parent',
+        role: 'parent',
+        phoneNumber: '+1234567891',
+        address: '456 Oak Ave, Anytown, USA',
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -119,22 +119,17 @@ class DatabaseService {
     const initializeTestUsers = async () => {
       const config = configService.getConfig();
       for (const user of testUsers) {
-        user.passwordHash = await bcrypt.hash(
-          "password123",
-          config.auth.bcryptRounds
-        );
+        user.passwordHash = await bcrypt.hash('password123', config.auth.bcryptRounds);
         this.inMemoryUsers.set(user.email, user);
       }
     };
 
     initializeTestUsers().catch(console.error);
-    console.log("In-memory storage initialized with test users");
+    console.log('In-memory storage initialized with test users');
   }
 
   // User Management Methods
-  public async createUser(
-    userData: Omit<User, "id" | "createdAt" | "updatedAt">
-  ): Promise<User> {
+  public async createUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
     const user: User = {
       ...userData,
       id: this.generateId(),
@@ -147,8 +142,8 @@ class DatabaseService {
         const { resource } = await this.container.items.create(user);
         return resource as User;
       } catch (error) {
-        console.error("Error creating user in Cosmos DB:", error);
-        throw new Error("Failed to create user");
+        console.error('Error creating user in Cosmos DB:', error);
+        throw new Error('Failed to create user');
       }
     } else {
       this.inMemoryUsers.set(user.email, user);
@@ -161,14 +156,14 @@ class DatabaseService {
       try {
         const { resources } = await this.container.items
           .query({
-            query: "SELECT * FROM c WHERE c.email = @email",
-            parameters: [{ name: "@email", value: email }],
+            query: 'SELECT * FROM c WHERE c.email = @email',
+            parameters: [{ name: '@email', value: email }],
           })
           .fetchAll();
 
         return resources.length > 0 ? (resources[0] as User) : null;
       } catch (error) {
-        console.error("Error fetching user from Cosmos DB:", error);
+        console.error('Error fetching user from Cosmos DB:', error);
         return null;
       }
     } else {
@@ -176,10 +171,7 @@ class DatabaseService {
     }
   }
 
-  public async updateUser(
-    email: string,
-    updates: Partial<User>
-  ): Promise<User | null> {
+  public async updateUser(email: string, updates: Partial<User>): Promise<User | null> {
     const user = await this.getUserByEmail(email);
     if (!user) return null;
 
@@ -191,12 +183,10 @@ class DatabaseService {
 
     if (this.useRealDatabase && this.container) {
       try {
-        const { resource } = await this.container
-          .item(user.id, email)
-          .replace(updatedUser);
+        const { resource } = await this.container.item(user.id, email).replace(updatedUser);
         return resource as User;
       } catch (error) {
-        console.error("Error updating user in Cosmos DB:", error);
+        console.error('Error updating user in Cosmos DB:', error);
         return null;
       }
     } else {
@@ -214,7 +204,7 @@ class DatabaseService {
         await this.container.item(user.id, email).delete();
         return true;
       } catch (error) {
-        console.error("Error deleting user from Cosmos DB:", error);
+        console.error('Error deleting user from Cosmos DB:', error);
         return false;
       }
     } else {
@@ -233,9 +223,7 @@ class DatabaseService {
 
       if (existing.attempts >= config.auth.maxLoginAttempts) {
         const lockoutEnd = new Date();
-        lockoutEnd.setMinutes(
-          lockoutEnd.getMinutes() + config.auth.lockoutDuration
-        );
+        lockoutEnd.setMinutes(lockoutEnd.getMinutes() + config.auth.lockoutDuration);
         existing.lockedUntil = lockoutEnd;
       }
     } else {
@@ -286,24 +274,24 @@ class DatabaseService {
     try {
       if (this.useRealDatabase && this.container) {
         const { resources } = await this.container.items
-          .query("SELECT VALUE COUNT(1) FROM c")
+          .query('SELECT VALUE COUNT(1) FROM c')
           .fetchAll();
         return {
-          status: "healthy",
-          database: "cosmos-db",
+          status: 'healthy',
+          database: 'cosmos-db',
           userCount: resources[0],
         };
       } else {
         return {
-          status: "healthy",
-          database: "in-memory",
+          status: 'healthy',
+          database: 'in-memory',
           userCount: this.inMemoryUsers.size,
         };
       }
     } catch (error) {
       return {
-        status: "error",
-        database: this.useRealDatabase ? "cosmos-db" : "in-memory",
+        status: 'error',
+        database: this.useRealDatabase ? 'cosmos-db' : 'in-memory',
       };
     }
   }

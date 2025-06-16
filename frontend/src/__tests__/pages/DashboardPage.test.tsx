@@ -9,15 +9,15 @@
  * - Multi-role user experience support
  * - Real-time status updates and notifications
  */
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { useRouter } from "next/navigation";
-import DashboardPage from "../../app/dashboard/page";
-import { useAuthStore } from "@/store/auth.store";
-import { useTripStore } from "@/store/trip.store";
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useRouter } from 'next/navigation';
+import DashboardPage from '../../app/dashboard/page';
+import { useAuthStore } from '@/store/auth.store';
+import { useTripStore } from '@/store/trip.store';
 
 // Mock Next.js router
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 
@@ -39,23 +39,23 @@ const mockUseAuthStore = jest.fn();
 const mockUseTripStore = jest.fn();
 
 // Mock the store modules properly
-jest.mock("@/store/auth.store", () => ({
+jest.mock('@/store/auth.store', () => ({
   useAuthStore: jest.fn(),
 }));
 
-jest.mock("@/store/trip.store", () => ({
+jest.mock('@/store/trip.store', () => ({
   useTripStore: jest.fn(),
 }));
 
 // Mock DashboardLayout
-jest.mock("../../components/DashboardLayout", () => {
+jest.mock('../../components/DashboardLayout', () => {
   return ({ children }: { children: React.ReactNode }) => (
     <div data-testid="dashboard-layout">{children}</div>
   );
 });
 
 // Mock SectionErrorBoundary
-jest.mock("../../components/SectionErrorBoundary", () => ({
+jest.mock('../../components/SectionErrorBoundary', () => ({
   SectionErrorBoundary: ({
     children,
     sectionName,
@@ -64,7 +64,7 @@ jest.mock("../../components/SectionErrorBoundary", () => ({
     sectionName: string;
   }) => (
     <div
-      data-testid={`section-${sectionName.toLowerCase().replace(/\s+/g, "-")}`}
+      data-testid={`section-${sectionName.toLowerCase().replace(/\s+/g, '-')}`}
     >
       {children}
     </div>
@@ -72,7 +72,7 @@ jest.mock("../../components/SectionErrorBoundary", () => ({
 }));
 
 // Mock Heroicons
-jest.mock("@heroicons/react/24/outline", () => ({
+jest.mock('@heroicons/react/24/outline', () => ({
   CalendarIcon: () => <svg data-testid="calendar-icon" />,
   TruckIcon: () => <svg data-testid="truck-icon" />,
   UserGroupIcon: () => <svg data-testid="usergroup-icon" />,
@@ -84,39 +84,39 @@ jest.mock("@heroicons/react/24/outline", () => ({
   ChartBarIcon: () => <svg data-testid="chart-icon" />,
 }));
 
-describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
+describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
   const mockRouter = {
     push: jest.fn(),
     replace: jest.fn(),
-    pathname: "/dashboard",
+    pathname: '/dashboard',
     query: {},
-    asPath: "/dashboard",
+    asPath: '/dashboard',
   };
 
   // Mock family-oriented user data aligned with UX requirements
   const mockFamilyParentUser = {
-    id: "parent-456",
-    firstName: "Sarah",
-    lastName: "Johnson",
-    email: "sarah.johnson@family.edu",
-    role: "parent",
-    familyId: "family-123",
-    schoolDomain: "lincolnelementary.edu",
+    id: 'parent-456',
+    firstName: 'Sarah',
+    lastName: 'Johnson',
+    email: 'sarah.johnson@family.edu',
+    role: 'parent',
+    familyId: 'family-123',
+    schoolDomain: 'lincolnelementary.edu',
     onboardingCompleted: true,
     children: [
-      { id: "child-1", name: "Emma Johnson", grade: "3rd" },
-      { id: "child-2", name: "Liam Johnson", grade: "1st" },
+      { id: 'child-1', name: 'Emma Johnson', grade: '3rd' },
+      { id: 'child-2', name: 'Liam Johnson', grade: '1st' },
     ],
   };
 
   const mockAdminUser = {
-    id: "admin-001",
-    firstName: "Admin",
-    lastName: "User",
-    email: "admin@lincolnelementary.edu",
-    role: "admin",
+    id: 'admin-001',
+    firstName: 'Admin',
+    lastName: 'User',
+    email: 'admin@lincolnelementary.edu',
+    role: 'admin',
     familyId: null, // Admins don't belong to families
-    schoolDomain: "lincolnelementary.edu",
+    schoolDomain: 'lincolnelementary.edu',
     onboardingCompleted: true,
   };
 
@@ -178,17 +178,17 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     (useTripStore as jest.Mock).mockReturnValue(mockTripStore);
   });
 
-  describe("Family Authentication and Context", () => {
-    it("should render family dashboard when parent is authenticated", () => {
+  describe('Family Authentication and Context', () => {
+    it('should render family dashboard when parent is authenticated', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByTestId("dashboard-layout")).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
       expect(
         screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}! 👋`)
       ).toBeInTheDocument();
     });
 
-    it("should render admin dashboard with system-wide context", () => {
+    it('should render admin dashboard with system-wide context', () => {
       (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
@@ -196,13 +196,13 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
 
       render(<DashboardPage />);
 
-      expect(screen.getByTestId("dashboard-layout")).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
       expect(
         screen.getByText(`Good morning, ${mockAdminUser.firstName}! 👋`)
       ).toBeInTheDocument();
     });
 
-    it("should not render dashboard content when user is not authenticated", () => {
+    it('should not render dashboard content when user is not authenticated', () => {
       (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         isAuthenticated: false,
@@ -213,7 +213,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it("should not render dashboard content when user is missing", () => {
+    it('should not render dashboard content when user is missing', () => {
       (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: null,
@@ -223,13 +223,13 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it("should fetch family trip stats when parent is authenticated", () => {
+    it('should fetch family trip stats when parent is authenticated', () => {
       render(<DashboardPage />);
 
       expect(mockTripStore.fetchTripStats).toHaveBeenCalledTimes(1);
     });
 
-    it("should not fetch trip stats when not authenticated", () => {
+    it('should not fetch trip stats when not authenticated', () => {
       (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         isAuthenticated: false,
@@ -241,8 +241,8 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
   });
 
-  describe("Family Welcome Section and School Focus", () => {
-    it("should display personalized family welcome message", () => {
+  describe('Family Welcome Section and School Focus', () => {
+    it('should display personalized family welcome message', () => {
       render(<DashboardPage />);
 
       expect(
@@ -250,7 +250,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       ).toBeInTheDocument();
     });
 
-    it("should show family school run information with children context", () => {
+    it('should show family school run information with children context', () => {
       render(<DashboardPage />);
 
       expect(
@@ -259,26 +259,26 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       expect(screen.getByText(/all pickups confirmed/i)).toBeInTheDocument();
     });
 
-    it("should display academic cap icon for school focus", () => {
+    it('should display academic cap icon for school focus', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByTestId("academic-icon")).toBeInTheDocument();
+      expect(screen.getByTestId('academic-icon')).toBeInTheDocument();
     });
 
-    it("should use proper styling for family welcome section", () => {
+    it('should use proper styling for family welcome section', () => {
       render(<DashboardPage />);
 
       const welcomeSection = screen
         .getByText(`Good morning, ${mockFamilyParentUser.firstName}! 👋`)
-        .closest("div");
+        .closest('div');
       expect(welcomeSection).toHaveClass(
-        "bg-gradient-to-r",
-        "from-blue-50",
-        "to-indigo-50"
+        'bg-gradient-to-r',
+        'from-blue-50',
+        'to-indigo-50'
       );
     });
 
-    it("should display role-appropriate welcome for admin users", () => {
+    it('should display role-appropriate welcome for admin users', () => {
       (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
@@ -292,48 +292,48 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
   });
 
-  describe("Family Statistics Display - Role-Based Content", () => {
-    it("should display family weekly school trips statistic", () => {
+  describe('Family Statistics Display - Role-Based Content', () => {
+    it('should display family weekly school trips statistic', () => {
       render(<DashboardPage />);
 
       expect(screen.getByText("This Week's School Runs")).toBeInTheDocument();
       expect(
         screen.getByText(mockFamilyStats.weeklySchoolTrips.toString())
       ).toBeInTheDocument();
-      expect(screen.getByText("Morning + afternoon trips")).toBeInTheDocument();
+      expect(screen.getByText('Morning + afternoon trips')).toBeInTheDocument();
     });
 
-    it("should display family children count statistic", () => {
+    it('should display family children count statistic', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Children in Carpool")).toBeInTheDocument();
+      expect(screen.getByText('Children in Carpool')).toBeInTheDocument();
       expect(
         screen.getByText(mockFamilyStats.childrenCount.toString())
       ).toBeInTheDocument();
-      expect(screen.getByText("Active student profiles")).toBeInTheDocument();
+      expect(screen.getByText('Active student profiles')).toBeInTheDocument();
     });
 
-    it("should display family monthly fuel savings with currency formatting", () => {
+    it('should display family monthly fuel savings with currency formatting', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Monthly Fuel Savings")).toBeInTheDocument();
+      expect(screen.getByText('Monthly Fuel Savings')).toBeInTheDocument();
       expect(
         screen.getByText(`$${mockFamilyStats.monthlyFuelSavings.toFixed(2)}`)
       ).toBeInTheDocument();
-      expect(screen.getByText("vs. driving alone")).toBeInTheDocument();
+      expect(screen.getByText('vs. driving alone')).toBeInTheDocument();
     });
 
-    it("should display family time saved statistic", () => {
+    it('should display family time saved statistic', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Time Saved This Month")).toBeInTheDocument();
+      expect(screen.getByText('Time Saved This Month')).toBeInTheDocument();
       expect(
         screen.getByText(`${mockFamilyStats.timeSavedHours}h`)
       ).toBeInTheDocument();
-      expect(screen.getByText("from coordinated pickups")).toBeInTheDocument();
+      expect(screen.getByText('from coordinated pickups')).toBeInTheDocument();
     });
 
-    it("should show admin-level statistics for admin users", () => {
+    it('should show admin-level statistics for admin users', () => {
       const mockAdminStats = {
         ...mockFamilyStats,
         totalFamilies: 45,
@@ -357,7 +357,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       expect(screen.getByText("This Week's School Runs")).toBeInTheDocument();
     });
 
-    it("should show loading state for family statistics", () => {
+    it('should show loading state for family statistics', () => {
       (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
         loading: true,
@@ -366,10 +366,10 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
 
       render(<DashboardPage />);
 
-      expect(screen.getAllByText("...")).toHaveLength(4); // One for each stat
+      expect(screen.getAllByText('...')).toHaveLength(4); // One for each stat
     });
 
-    it("should handle missing stats gracefully", () => {
+    it('should handle missing stats gracefully', () => {
       (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
         stats: null,
@@ -377,50 +377,50 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
 
       render(<DashboardPage />);
 
-      expect(screen.getByText("0")).toBeInTheDocument(); // Default values
-      expect(screen.getByText("$0.00")).toBeInTheDocument();
-      expect(screen.getByText("0h")).toBeInTheDocument();
+      expect(screen.getByText('0')).toBeInTheDocument(); // Default values
+      expect(screen.getByText('$0.00')).toBeInTheDocument();
+      expect(screen.getByText('0h')).toBeInTheDocument();
     });
   });
 
-  describe("Family-Oriented Quick Actions - Role-Based Navigation", () => {
-    it("should display family schedule school run action", () => {
+  describe('Family-Oriented Quick Actions - Role-Based Navigation', () => {
+    it('should display family schedule school run action', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Schedule School Run")).toBeInTheDocument();
+      expect(screen.getByText('Schedule School Run')).toBeInTheDocument();
       expect(
-        screen.getByText("Create morning or afternoon school trip")
+        screen.getByText('Create morning or afternoon school trip')
       ).toBeInTheDocument();
     });
 
-    it("should display family carpool discovery action", () => {
+    it('should display family carpool discovery action', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Find School Carpool")).toBeInTheDocument();
+      expect(screen.getByText('Find School Carpool')).toBeInTheDocument();
       expect(
-        screen.getByText("Join existing school trips in your area")
+        screen.getByText('Join existing school trips in your area')
       ).toBeInTheDocument();
     });
 
-    it("should display family weekly preferences action", () => {
+    it('should display family weekly preferences action', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Weekly Preferences")).toBeInTheDocument();
+      expect(screen.getByText('Weekly Preferences')).toBeInTheDocument();
       expect(
-        screen.getByText("Submit your weekly driving preferences")
+        screen.getByText('Submit your weekly driving preferences')
       ).toBeInTheDocument();
     });
 
-    it("should display family children management action", () => {
+    it('should display family children management action', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Manage Children")).toBeInTheDocument();
+      expect(screen.getByText('Manage Children')).toBeInTheDocument();
       expect(
-        screen.getByText("Add or edit student profiles")
+        screen.getByText('Add or edit student profiles')
       ).toBeInTheDocument();
     });
 
-    it("should display admin-specific actions for admin users", () => {
+    it('should display admin-specific actions for admin users', () => {
       (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: mockAdminUser,
@@ -429,102 +429,102 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       render(<DashboardPage />);
 
       // Admin users should see system management actions
-      expect(screen.getByText("Schedule School Run")).toBeInTheDocument();
+      expect(screen.getByText('Schedule School Run')).toBeInTheDocument();
       // Additional admin actions would be tested here
     });
 
-    it("should navigate to family trip creation with school type when clicked", () => {
+    it('should navigate to family trip creation with school type when clicked', () => {
       render(<DashboardPage />);
 
       const scheduleButton = screen
-        .getByText("Schedule School Run")
-        .closest("button");
+        .getByText('Schedule School Run')
+        .closest('button');
       fireEvent.click(scheduleButton!);
 
-      expect(mockRouter.push).toHaveBeenCalledWith("/trips/create?type=school");
+      expect(mockRouter.push).toHaveBeenCalledWith('/trips/create?type=school');
     });
 
-    it("should navigate to family trip search with school filter when clicked", () => {
+    it('should navigate to family trip search with school filter when clicked', () => {
       render(<DashboardPage />);
 
       const findButton = screen
-        .getByText("Find School Carpool")
-        .closest("button");
+        .getByText('Find School Carpool')
+        .closest('button');
       fireEvent.click(findButton!);
 
-      expect(mockRouter.push).toHaveBeenCalledWith("/trips?filter=school");
+      expect(mockRouter.push).toHaveBeenCalledWith('/trips?filter=school');
     });
 
-    it("should navigate to preferences page when clicked", () => {
+    it('should navigate to preferences page when clicked', () => {
       render(<DashboardPage />);
 
       const preferencesButton = screen
-        .getByText("Weekly Preferences")
-        .closest("button");
+        .getByText('Weekly Preferences')
+        .closest('button');
       fireEvent.click(preferencesButton!);
 
-      expect(mockRouter.push).toHaveBeenCalledWith("/parents/preferences");
+      expect(mockRouter.push).toHaveBeenCalledWith('/parents/preferences');
     });
 
-    it("should navigate to children management when clicked", () => {
+    it('should navigate to children management when clicked', () => {
       render(<DashboardPage />);
 
       const childrenButton = screen
-        .getByText("Manage Children")
-        .closest("button");
+        .getByText('Manage Children')
+        .closest('button');
       fireEvent.click(childrenButton!);
 
-      expect(mockRouter.push).toHaveBeenCalledWith("/family/children");
+      expect(mockRouter.push).toHaveBeenCalledWith('/family/children');
     });
   });
 
   describe("Family School Schedule - Today's Trips", () => {
-    it("should display family school schedule header", () => {
+    it('should display family school schedule header', () => {
       render(<DashboardPage />);
 
       expect(screen.getByText("Today's School Schedule")).toBeInTheDocument();
     });
 
-    it("should display family morning drop-off trip details", () => {
+    it('should display family morning drop-off trip details', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Morning Drop-off")).toBeInTheDocument();
-      expect(screen.getByText("Lincoln Elementary")).toBeInTheDocument();
-      expect(screen.getByText("7:45 AM")).toBeInTheDocument();
-      expect(screen.getByText("Tomorrow")).toBeInTheDocument();
+      expect(screen.getByText('Morning Drop-off')).toBeInTheDocument();
+      expect(screen.getByText('Lincoln Elementary')).toBeInTheDocument();
+      expect(screen.getByText('7:45 AM')).toBeInTheDocument();
+      expect(screen.getByText('Tomorrow')).toBeInTheDocument();
     });
 
-    it("should display family afternoon pickup trip details", () => {
+    it('should display family afternoon pickup trip details', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Afternoon Pickup")).toBeInTheDocument();
-      expect(screen.getByText("3:15 PM")).toBeInTheDocument();
-      expect(screen.getByText("You")).toBeInTheDocument();
+      expect(screen.getByText('Afternoon Pickup')).toBeInTheDocument();
+      expect(screen.getByText('3:15 PM')).toBeInTheDocument();
+      expect(screen.getByText('You')).toBeInTheDocument();
     });
 
-    it("should show family trip status indicators", () => {
+    it('should show family trip status indicators', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("✓ Confirmed")).toBeInTheDocument();
+      expect(screen.getByText('✓ Confirmed')).toBeInTheDocument();
       expect(screen.getByText("🚗 You're driving")).toBeInTheDocument();
     });
 
-    it("should display family children names in trips", () => {
+    it('should display family children names in trips', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Emma, Jake")).toBeInTheDocument();
-      expect(screen.getByText("Emma")).toBeInTheDocument();
+      expect(screen.getByText('Emma, Jake')).toBeInTheDocument();
+      expect(screen.getByText('Emma')).toBeInTheDocument();
     });
 
-    it("should show passenger information for family driving trips", () => {
+    it('should show passenger information for family driving trips', () => {
       render(<DashboardPage />);
 
       expect(
-        screen.getByText("Tom (Grade 3), Lisa (Grade 2)")
+        screen.getByText('Tom (Grade 3), Lisa (Grade 2)')
       ).toBeInTheDocument();
     });
 
-    it("should handle emergency pickup notifications", () => {
+    it('should handle emergency pickup notifications', () => {
       render(<DashboardPage />);
 
       // Emergency notifications should be prominently displayed
@@ -533,94 +533,94 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
   });
 
-  describe("Family Efficiency Metrics", () => {
-    it("should display weekly efficiency metrics", () => {
+  describe('Family Efficiency Metrics', () => {
+    it('should display weekly efficiency metrics', () => {
       render(<DashboardPage />);
 
       expect(screen.getByText("This Week's Impact")).toBeInTheDocument();
-      expect(screen.getByText("8")).toBeInTheDocument(); // trips coordinated
-      expect(screen.getByText("45 miles")).toBeInTheDocument(); // miles shared
-      expect(screen.getByText("12 lbs")).toBeInTheDocument(); // CO2 saved
-      expect(screen.getByText("$3.25")).toBeInTheDocument(); // cost per trip
+      expect(screen.getByText('8')).toBeInTheDocument(); // trips coordinated
+      expect(screen.getByText('45 miles')).toBeInTheDocument(); // miles shared
+      expect(screen.getByText('12 lbs')).toBeInTheDocument(); // CO2 saved
+      expect(screen.getByText('$3.25')).toBeInTheDocument(); // cost per trip
     });
 
-    it("should display community connection metrics", () => {
+    it('should display community connection metrics', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByText("Community Connection")).toBeInTheDocument();
-      expect(screen.getByText("98%")).toBeInTheDocument(); // reliability score
-      expect(screen.getByText("6")).toBeInTheDocument(); // families connected
-      expect(screen.getByText("2")).toBeInTheDocument(); // emergency pickups
-      expect(screen.getByText("⭐ 4.8/5")).toBeInTheDocument(); // rating
+      expect(screen.getByText('Community Connection')).toBeInTheDocument();
+      expect(screen.getByText('98%')).toBeInTheDocument(); // reliability score
+      expect(screen.getByText('6')).toBeInTheDocument(); // families connected
+      expect(screen.getByText('2')).toBeInTheDocument(); // emergency pickups
+      expect(screen.getByText('⭐ 4.8/5')).toBeInTheDocument(); // rating
     });
 
-    it("should use proper icons for metric sections", () => {
+    it('should use proper icons for metric sections', () => {
       render(<DashboardPage />);
 
-      expect(screen.getByTestId("chart-icon")).toBeInTheDocument();
-      expect(screen.getByTestId("usergroup-icon")).toBeInTheDocument();
+      expect(screen.getByTestId('chart-icon')).toBeInTheDocument();
+      expect(screen.getByTestId('usergroup-icon')).toBeInTheDocument();
     });
   });
 
-  describe("UX-Aligned Error Boundaries", () => {
-    it("should wrap family statistics in error boundary", () => {
+  describe('UX-Aligned Error Boundaries', () => {
+    it('should wrap family statistics in error boundary', () => {
       render(<DashboardPage />);
 
       expect(
-        screen.getByTestId("section-school-statistics")
+        screen.getByTestId('section-school-statistics')
       ).toBeInTheDocument();
     });
 
-    it("should wrap family quick actions in error boundary", () => {
+    it('should wrap family quick actions in error boundary', () => {
       render(<DashboardPage />);
 
       expect(
-        screen.getByTestId("section-school-quick-actions")
+        screen.getByTestId('section-school-quick-actions')
       ).toBeInTheDocument();
     });
 
-    it("should wrap family upcoming trips in error boundary", () => {
+    it('should wrap family upcoming trips in error boundary', () => {
       render(<DashboardPage />);
 
       expect(
-        screen.getByTestId("section-upcoming-school-trips")
+        screen.getByTestId('section-upcoming-school-trips')
       ).toBeInTheDocument();
     });
 
-    it("should wrap family efficiency metrics in error boundary", () => {
+    it('should wrap family efficiency metrics in error boundary', () => {
       render(<DashboardPage />);
 
       expect(
-        screen.getByTestId("section-family-efficiency-metrics")
+        screen.getByTestId('section-family-efficiency-metrics')
       ).toBeInTheDocument();
     });
 
-    it("should handle role-based section errors gracefully", () => {
+    it('should handle role-based section errors gracefully', () => {
       // Test that error boundaries work properly for different user roles
       render(<DashboardPage />);
 
       expect(
-        screen.getByTestId("section-school-statistics")
+        screen.getByTestId('section-school-statistics')
       ).toBeInTheDocument();
     });
   });
 
-  describe("Responsive Design and Layout", () => {
-    it("should use responsive grid layouts", () => {
+  describe('Responsive Design and Layout', () => {
+    it('should use responsive grid layouts', () => {
       const { container } = render(<DashboardPage />);
 
       const gridElements = container.querySelectorAll('[class*="grid-cols"]');
       expect(gridElements.length).toBeGreaterThan(0);
     });
 
-    it("should have proper spacing between sections", () => {
+    it('should have proper spacing between sections', () => {
       const { container } = render(<DashboardPage />);
 
       const spacedElements = container.querySelectorAll('[class*="space-y"]');
       expect(spacedElements.length).toBeGreaterThan(0);
     });
 
-    it("should use shadow and rounded corners for cards", () => {
+    it('should use shadow and rounded corners for cards', () => {
       const { container } = render(<DashboardPage />);
 
       const shadowElements = container.querySelectorAll('[class*="shadow"]');
@@ -631,13 +631,13 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
   });
 
-  describe("Performance and Error Handling", () => {
-    it("should render without errors", () => {
+  describe('Performance and Error Handling', () => {
+    it('should render without errors', () => {
       expect(() => render(<DashboardPage />)).not.toThrow();
     });
 
-    it("should handle different user roles appropriately", () => {
-      const studentUser = { ...mockFamilyParentUser, role: "student" };
+    it('should handle different user roles appropriately', () => {
+      const studentUser = { ...mockFamilyParentUser, role: 'student' };
       (useAuthStore as jest.Mock).mockReturnValue({
         ...mockAuthStore,
         user: studentUser,
@@ -650,7 +650,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       ).toBeInTheDocument();
     });
 
-    it("should handle missing trip stats gracefully", () => {
+    it('should handle missing trip stats gracefully', () => {
       (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
         stats: undefined,
@@ -659,12 +659,12 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       expect(() => render(<DashboardPage />)).not.toThrow();
     });
 
-    it("should handle fetchTripStats errors gracefully", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+    it('should handle fetchTripStats errors gracefully', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       (useTripStore as jest.Mock).mockReturnValue({
         ...mockTripStore,
-        fetchTripStats: jest.fn().mockRejectedValue(new Error("API Error")),
+        fetchTripStats: jest.fn().mockRejectedValue(new Error('API Error')),
       });
 
       expect(() => render(<DashboardPage />)).not.toThrow();
@@ -673,8 +673,8 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
     });
   });
 
-  describe("VCarpool Business Logic Integration", () => {
-    it("should display school-specific terminology throughout", () => {
+  describe('VCarpool Business Logic Integration', () => {
+    it('should display school-specific terminology throughout', () => {
       render(<DashboardPage />);
 
       expect(screen.getAllByText(/school runs/i)).toHaveLength(2); // Multiple instances expected
@@ -682,7 +682,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       expect(screen.getByText(/active student profiles/i)).toBeInTheDocument();
     });
 
-    it("should focus on family and school community aspects", () => {
+    it('should focus on family and school community aspects', () => {
       render(<DashboardPage />);
 
       expect(screen.getByText(/carpooling/i)).toBeInTheDocument();
@@ -690,7 +690,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       expect(screen.getByText(/children in carpool/i)).toBeInTheDocument();
     });
 
-    it("should emphasize cost savings and efficiency", () => {
+    it('should emphasize cost savings and efficiency', () => {
       render(<DashboardPage />);
 
       expect(screen.getByText(/miles saved/i)).toBeInTheDocument();
@@ -701,8 +701,8 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
   });
 
   // Additional UX-aligned tests for role transitions and family context
-  describe("Family Dashboard Role Transitions - UX Requirements", () => {
-    it("should handle role transitions between parent and admin seamlessly", () => {
+  describe('Family Dashboard Role Transitions - UX Requirements', () => {
+    it('should handle role transitions between parent and admin seamlessly', () => {
       const { rerender } = render(<DashboardPage />);
 
       // Verify parent dashboard renders correctly
@@ -723,7 +723,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       ).toBeInTheDocument();
     });
 
-    it("should handle family onboarding completion status appropriately", () => {
+    it('should handle family onboarding completion status appropriately', () => {
       const incompleteUser = {
         ...mockFamilyParentUser,
         onboardingCompleted: false,
@@ -738,13 +738,13 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       render(<DashboardPage />);
 
       // Should still render dashboard but with potentially different content flow
-      expect(screen.getByTestId("dashboard-layout")).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
       expect(
         screen.getByText(`Good morning, ${incompleteUser.firstName}! 👋`)
       ).toBeInTheDocument();
     });
 
-    it("should support emergency response context in family dashboard", () => {
+    it('should support emergency response context in family dashboard', () => {
       const emergencyUser = {
         ...mockFamilyParentUser,
         emergencyContact: true,
@@ -758,17 +758,17 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       render(<DashboardPage />);
 
       // Dashboard should be ready for emergency response features
-      expect(screen.getByTestId("dashboard-layout")).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
       // Emergency-specific UI elements would be tested here based on UX requirements
     });
 
-    it("should handle multi-child family context appropriately", () => {
+    it('should handle multi-child family context appropriately', () => {
       const multiChildUser = {
         ...mockFamilyParentUser,
         children: [
-          { id: "child-1", name: "Emma Johnson", grade: "3rd" },
-          { id: "child-2", name: "Liam Johnson", grade: "1st" },
-          { id: "child-3", name: "Sophia Johnson", grade: "5th" },
+          { id: 'child-1', name: 'Emma Johnson', grade: '3rd' },
+          { id: 'child-2', name: 'Liam Johnson', grade: '1st' },
+          { id: 'child-3', name: 'Sophia Johnson', grade: '5th' },
         ],
       };
 
@@ -780,7 +780,7 @@ describe("Dashboard Page - Unified Family Dashboard & Role Transitions", () => {
       render(<DashboardPage />);
 
       // Dashboard should accommodate multiple children scheduling
-      expect(screen.getByTestId("dashboard-layout")).toBeInTheDocument();
+      expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
     });
   });
 });

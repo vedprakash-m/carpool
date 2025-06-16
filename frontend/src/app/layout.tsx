@@ -1,39 +1,39 @@
-import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
-import { Toaster } from "react-hot-toast";
-import { OnboardingProvider } from "@/contexts/OnboardingContext";
-import { RBACProvider } from "@/contexts/RBACContext";
-import PWAInitializer from "@/components/PWAInitializer";
-import { SkipLink } from "@/components/ui/AccessibleComponents";
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { Providers } from './providers';
+import { Toaster } from 'react-hot-toast';
+import { OnboardingProvider } from '@/contexts/OnboardingContext';
+import { RBACProvider } from '@/contexts/RBACContext';
+import PWAInitializer from '@/components/PWAInitializer';
+import { SkipLink } from '@/components/ui/AccessibleComponents';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover",
-  themeColor: "#3b82f6",
+  viewportFit: 'cover',
+  themeColor: '#3b82f6',
 };
 
 export const metadata: Metadata = {
-  title: "VCarpool - Smart Carpool Management",
+  title: 'VCarpool - Smart Carpool Management',
   description:
-    "Efficient carpool management for schools and families with real-time coordination",
+    'Efficient carpool management for schools and families with real-time coordination',
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: "VCarpool",
+    statusBarStyle: 'default',
+    title: 'VCarpool',
   },
   other: {
-    "mobile-web-app-capable": "yes",
+    'mobile-web-app-capable': 'yes',
   },
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: '/icon.svg',
+    apple: '/icon.svg',
   },
 };
 
@@ -61,8 +61,8 @@ export default function RootLayout({
                 toastOptions={{
                   duration: 4000,
                   style: {
-                    background: "#363636",
-                    color: "#fff",
+                    background: '#363636',
+                    color: '#fff',
                   },
                 }}
               />

@@ -47,7 +47,7 @@ describe('Accessibility Integration', () => {
   describe('Skip Link Component', () => {
     test('renders skip link with proper attributes', () => {
       render(<SkipLink targetId="main-content" />);
-      
+
       const skipLink = screen.getByText('Skip to main content');
       expect(skipLink).toBeInTheDocument();
       expect(skipLink).toHaveAttribute('href', '#main-content');
@@ -56,10 +56,10 @@ describe('Accessibility Integration', () => {
 
     test('becomes visible on focus', () => {
       render(<SkipLink targetId="main-content" />);
-      
+
       const skipLink = screen.getByText('Skip to main content');
       fireEvent.focus(skipLink);
-      
+
       expect(skipLink).toHaveClass('focus:not-sr-only');
     });
 
@@ -79,11 +79,7 @@ describe('Accessibility Integration', () => {
 
     test('renders modal with proper ARIA attributes', () => {
       render(
-        <AccessibleModal 
-          isOpen={true} 
-          onClose={mockOnClose} 
-          title="Test Modal"
-        >
+        <AccessibleModal isOpen={true} onClose={mockOnClose} title="Test Modal">
           <p>Modal content</p>
         </AccessibleModal>
       );
@@ -92,18 +88,14 @@ describe('Accessibility Integration', () => {
       expect(modal).toBeInTheDocument();
       expect(modal).toHaveAttribute('aria-modal', 'true');
       expect(modal).toHaveAttribute('aria-labelledby');
-      
+
       const title = screen.getByText('Test Modal');
       expect(title).toBeInTheDocument();
     });
 
     test('traps focus within modal', () => {
       render(
-        <AccessibleModal 
-          isOpen={true} 
-          onClose={mockOnClose} 
-          title="Test Modal"
-        >
+        <AccessibleModal isOpen={true} onClose={mockOnClose} title="Test Modal">
           <button>First Button</button>
           <button>Second Button</button>
         </AccessibleModal>
@@ -119,11 +111,7 @@ describe('Accessibility Integration', () => {
 
     test('closes on escape key', () => {
       render(
-        <AccessibleModal 
-          isOpen={true} 
-          onClose={mockOnClose} 
-          title="Test Modal"
-        >
+        <AccessibleModal isOpen={true} onClose={mockOnClose} title="Test Modal">
           <p>Modal content</p>
         </AccessibleModal>
       );
@@ -134,11 +122,7 @@ describe('Accessibility Integration', () => {
 
     test('prevents body scroll when open', () => {
       render(
-        <AccessibleModal 
-          isOpen={true} 
-          onClose={mockOnClose} 
-          title="Test Modal"
-        >
+        <AccessibleModal isOpen={true} onClose={mockOnClose} title="Test Modal">
           <p>Modal content</p>
         </AccessibleModal>
       );
@@ -148,11 +132,7 @@ describe('Accessibility Integration', () => {
 
     test('meets accessibility standards', async () => {
       const { container } = render(
-        <AccessibleModal 
-          isOpen={true} 
-          onClose={mockOnClose} 
-          title="Test Modal"
-        >
+        <AccessibleModal isOpen={true} onClose={mockOnClose} title="Test Modal">
           <p>Modal content</p>
         </AccessibleModal>
       );
@@ -165,9 +145,7 @@ describe('Accessibility Integration', () => {
   describe('Accessible Dropdown Component', () => {
     test('renders dropdown with proper ARIA attributes', () => {
       render(
-        <AccessibleDropdown 
-          trigger={<button>Open Dropdown</button>}
-        >
+        <AccessibleDropdown trigger={<button>Open Dropdown</button>}>
           <div>Dropdown content</div>
         </AccessibleDropdown>
       );
@@ -179,9 +157,7 @@ describe('Accessibility Integration', () => {
 
     test('opens dropdown on click and updates ARIA attributes', () => {
       render(
-        <AccessibleDropdown 
-          trigger={<button>Open Dropdown</button>}
-        >
+        <AccessibleDropdown trigger={<button>Open Dropdown</button>}>
           <div>Dropdown content</div>
         </AccessibleDropdown>
       );
@@ -195,28 +171,24 @@ describe('Accessibility Integration', () => {
 
     test('closes dropdown on escape key', () => {
       render(
-        <AccessibleDropdown 
-          trigger={<button>Open Dropdown</button>}
-        >
+        <AccessibleDropdown trigger={<button>Open Dropdown</button>}>
           <div>Dropdown content</div>
         </AccessibleDropdown>
       );
 
       const trigger = screen.getByText('Open Dropdown');
       fireEvent.click(trigger);
-      
+
       expect(screen.getByText('Dropdown content')).toBeInTheDocument();
 
       fireEvent.keyDown(document, { key: 'Escape' });
-      
+
       expect(trigger).toHaveAttribute('aria-expanded', 'false');
     });
 
     test('meets accessibility standards', async () => {
       const { container } = render(
-        <AccessibleDropdown 
-          trigger={<button>Open Dropdown</button>}
-        >
+        <AccessibleDropdown trigger={<button>Open Dropdown</button>}>
           <div>Dropdown content</div>
         </AccessibleDropdown>
       );
@@ -235,10 +207,10 @@ describe('Accessibility Integration', () => {
 
     test('renders toast with proper ARIA attributes', () => {
       render(
-        <AccessibleToast 
-          message="Test notification" 
-          type="info" 
-          onClose={mockOnClose} 
+        <AccessibleToast
+          message="Test notification"
+          type="info"
+          onClose={mockOnClose}
         />
       );
 
@@ -250,10 +222,10 @@ describe('Accessibility Integration', () => {
 
     test('uses assertive live region for error messages', () => {
       render(
-        <AccessibleToast 
-          message="Error occurred" 
-          type="error" 
-          onClose={mockOnClose} 
+        <AccessibleToast
+          message="Error occurred"
+          type="error"
+          onClose={mockOnClose}
         />
       );
 
@@ -264,25 +236,28 @@ describe('Accessibility Integration', () => {
 
     test('auto-closes after specified duration', async () => {
       render(
-        <AccessibleToast 
-          message="Auto-close test" 
-          type="info" 
+        <AccessibleToast
+          message="Auto-close test"
+          type="info"
           onClose={mockOnClose}
           duration={1000}
         />
       );
 
-      await waitFor(() => {
-        expect(mockOnClose).toHaveBeenCalled();
-      }, { timeout: 1500 });
+      await waitFor(
+        () => {
+          expect(mockOnClose).toHaveBeenCalled();
+        },
+        { timeout: 1500 }
+      );
     });
 
     test('meets accessibility standards', async () => {
       const { container } = render(
-        <AccessibleToast 
-          message="Test notification" 
-          type="info" 
-          onClose={mockOnClose} 
+        <AccessibleToast
+          message="Test notification"
+          type="info"
+          onClose={mockOnClose}
         />
       );
 
@@ -294,9 +269,9 @@ describe('Accessibility Integration', () => {
   describe('Form Field Component', () => {
     test('renders form field with proper labels and ARIA attributes', () => {
       render(
-        <FormField 
-          label="Test Field" 
-          id="test-field" 
+        <FormField
+          label="Test Field"
+          id="test-field"
           required={true}
           description="This is a test field"
         >
@@ -316,9 +291,9 @@ describe('Accessibility Integration', () => {
 
     test('displays error message with proper ARIA attributes', () => {
       render(
-        <FormField 
-          label="Test Field" 
-          id="test-field" 
+        <FormField
+          label="Test Field"
+          id="test-field"
           error="This field is required"
         >
           <input id="test-field" type="text" />
@@ -335,11 +310,7 @@ describe('Accessibility Integration', () => {
 
     test('meets accessibility standards', async () => {
       const { container } = render(
-        <FormField 
-          label="Test Field" 
-          id="test-field" 
-          required={true}
-        >
+        <FormField label="Test Field" id="test-field" required={true}>
           <input id="test-field" type="text" />
         </FormField>
       );
@@ -352,11 +323,7 @@ describe('Accessibility Integration', () => {
   describe('Progress Component', () => {
     test('renders progress with proper ARIA attributes', () => {
       render(
-        <AccessibleProgress 
-          value={50} 
-          max={100} 
-          label="Upload progress" 
-        />
+        <AccessibleProgress value={50} max={100} label="Upload progress" />
       );
 
       const progress = screen.getByRole('progressbar');
@@ -368,10 +335,10 @@ describe('Accessibility Integration', () => {
 
     test('shows percentage when enabled', () => {
       render(
-        <AccessibleProgress 
-          value={75} 
-          max={100} 
-          label="Upload progress" 
+        <AccessibleProgress
+          value={75}
+          max={100}
+          label="Upload progress"
           showPercentage={true}
         />
       );
@@ -381,11 +348,7 @@ describe('Accessibility Integration', () => {
 
     test('meets accessibility standards', async () => {
       const { container } = render(
-        <AccessibleProgress 
-          value={50} 
-          max={100} 
-          label="Upload progress" 
-        />
+        <AccessibleProgress value={50} max={100} label="Upload progress" />
       );
 
       const results = await axe(container);
@@ -409,7 +372,9 @@ describe('Accessibility Integration', () => {
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
-      expect(document.documentElement.classList.contains('high-contrast')).toBe(true);
+      expect(document.documentElement.classList.contains('high-contrast')).toBe(
+        true
+      );
       expect(button).toHaveAttribute('aria-pressed', 'true');
     });
 
@@ -424,18 +389,24 @@ describe('Accessibility Integration', () => {
     test('detects keyboard navigation', () => {
       // Simulate tab key press
       fireEvent.keyDown(document, { key: 'Tab' });
-      
-      expect(document.body.classList.contains('keyboard-navigation')).toBe(true);
+
+      expect(document.body.classList.contains('keyboard-navigation')).toBe(
+        true
+      );
     });
 
     test('removes keyboard navigation class on mouse interaction', () => {
       // First enable keyboard navigation
       fireEvent.keyDown(document, { key: 'Tab' });
-      expect(document.body.classList.contains('keyboard-navigation')).toBe(true);
+      expect(document.body.classList.contains('keyboard-navigation')).toBe(
+        true
+      );
 
       // Then simulate mouse interaction
       fireEvent.mouseDown(document);
-      expect(document.body.classList.contains('keyboard-navigation')).toBe(false);
+      expect(document.body.classList.contains('keyboard-navigation')).toBe(
+        false
+      );
     });
   });
 
@@ -443,12 +414,12 @@ describe('Accessibility Integration', () => {
     test('announces live regions properly', () => {
       // Mock the accessibility service
       const mockAnnounceLive = jest.fn();
-      
+
       render(
-        <AccessibleToast 
-          message="Screen reader test" 
-          type="info" 
-          onClose={jest.fn()} 
+        <AccessibleToast
+          message="Screen reader test"
+          type="info"
+          onClose={jest.fn()}
         />
       );
 
@@ -462,8 +433,12 @@ describe('Accessibility Integration', () => {
           <h1>Main Heading</h1>
           <nav aria-label="Main navigation">
             <ul>
-              <li><a href="#home">Home</a></li>
-              <li><a href="#about">About</a></li>
+              <li>
+                <a href="#home">Home</a>
+              </li>
+              <li>
+                <a href="#about">About</a>
+              </li>
             </ul>
           </nav>
           <main>
@@ -490,7 +465,7 @@ describe('Accessibility Integration', () => {
       });
 
       const result = mockValidateContrast('#000000', '#ffffff');
-      
+
       expect(result.ratio).toBeGreaterThanOrEqual(4.5);
       expect(result.wcagAA).toBe(true);
     });
@@ -503,7 +478,7 @@ describe('Accessibility Integration', () => {
       });
 
       const result = mockValidateContrast('#808080', '#ffffff');
-      
+
       expect(result.ratio).toBeLessThan(4.5);
       expect(result.wcagAA).toBe(false);
     });
@@ -524,15 +499,21 @@ describe('Accessibility Integration', () => {
       }));
 
       // Component should respect reduced motion preference
-      expect(window.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(true);
+      expect(
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ).toBe(true);
     });
 
     test('applies reduced motion classes when preferred', () => {
       // Mock the accessibility service to return reduced motion preference
-      const { useAccessibility } = require('../../services/accessibility.service');
-      
+      const {
+        useAccessibility,
+      } = require('../../services/accessibility.service');
+
       // This would be implemented in the actual accessibility service
-      expect(document.documentElement.classList.contains('reduce-motion')).toBeDefined();
+      expect(
+        document.documentElement.classList.contains('reduce-motion')
+      ).toBeDefined();
     });
   });
 });

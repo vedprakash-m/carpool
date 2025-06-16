@@ -9,18 +9,18 @@
  * - Role-based dashboard navigation
  */
 
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import "@testing-library/jest-dom";
-import LoginPage from "../../app/login/page";
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
+import LoginPage from '../../app/login/page';
 
 // Test constants
 const TEST_PASSWORDS = {
-  ADMIN: "test-admin-pass",
-  USER: "test-user-pass",
-  FAMILY: "test-family-pass",
-  SECURE: "test-secure-pass",
+  ADMIN: 'test-admin-pass',
+  USER: 'test-user-pass',
+  FAMILY: 'test-family-pass',
+  SECURE: 'test-secure-pass',
 };
 
 // Mock the auth store
@@ -32,20 +32,20 @@ const mockAuthStore = {
   isAuthenticated: false,
 };
 
-jest.mock("../../store/auth.store", () => ({
+jest.mock('../../store/auth.store', () => ({
   useAuthStore: (selector: any) => selector(mockAuthStore),
 }));
 
 // Mock Next.js router
 const mockPush = jest.fn();
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
 }));
 
 // Mock react-hot-toast
-jest.mock("react-hot-toast", () => ({
+jest.mock('react-hot-toast', () => ({
   __esModule: true,
   default: {
     success: jest.fn(),
@@ -70,14 +70,14 @@ const mockOnboardingState = {
 
 const mockStartOnboarding = jest.fn();
 
-jest.mock("../../contexts/OnboardingContext", () => ({
+jest.mock('../../contexts/OnboardingContext', () => ({
   useOnboarding: () => ({
     onboardingState: mockOnboardingState,
     startOnboarding: mockStartOnboarding,
   }),
 }));
 
-describe("Login Page - UX Requirements Alignment", () => {
+describe('Login Page - UX Requirements Alignment', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuthStore.isLoading = false;
@@ -86,48 +86,48 @@ describe("Login Page - UX Requirements Alignment", () => {
     mockOnboardingState.isOnboardingActive = false;
   });
 
-  describe("Progressive Parent Onboarding Integration", () => {
-    it("should render login form with onboarding-aware messaging", () => {
+  describe('Progressive Parent Onboarding Integration', () => {
+    it('should render login form with onboarding-aware messaging', () => {
       render(<LoginPage />);
 
       // Check for heading that aligns with Progressive Parent Onboarding
-      expect(screen.getByText("Sign in to your account")).toBeInTheDocument();
+      expect(screen.getByText('Sign in to your account')).toBeInTheDocument();
 
       // Check for form inputs (by placeholder since labels are screen-reader only)
-      expect(screen.getByPlaceholderText("Email address")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Password")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Email address')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
 
       // Check for submit button
       expect(
-        screen.getByRole("button", { name: /sign in/i })
+        screen.getByRole('button', { name: /sign in/i })
       ).toBeInTheDocument();
 
       // Check for registration link that supports family registration flow
-      expect(screen.getByText("create a new account")).toBeInTheDocument();
+      expect(screen.getByText('create a new account')).toBeInTheDocument();
     });
 
-    it("should have proper input types and attributes for family-oriented login", () => {
+    it('should have proper input types and attributes for family-oriented login', () => {
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
 
-      expect(emailInput).toHaveAttribute("type", "email");
-      expect(emailInput).toHaveAttribute("autoComplete", "email");
-      expect(passwordInput).toHaveAttribute("type", "password");
-      expect(passwordInput).toHaveAttribute("autoComplete", "current-password");
+      expect(emailInput).toHaveAttribute('type', 'email');
+      expect(emailInput).toHaveAttribute('autoComplete', 'email');
+      expect(passwordInput).toHaveAttribute('type', 'password');
+      expect(passwordInput).toHaveAttribute('autoComplete', 'current-password');
     });
 
-    it("should handle login for new parent requiring Progressive Onboarding", async () => {
+    it('should handle login for new parent requiring Progressive Onboarding', async () => {
       const user = userEvent.setup();
 
       // Mock a new parent user who needs onboarding
       const newParentUser = {
-        id: "new-parent-123",
-        email: "newparent@school.edu",
-        firstName: "Sarah",
-        lastName: "Johnson",
-        role: "parent",
+        id: 'new-parent-123',
+        email: 'newparent@school.edu',
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        role: 'parent',
         familyId: null, // No family registered yet
         onboardingCompleted: false,
       };
@@ -136,33 +136,33 @@ describe("Login Page - UX Requirements Alignment", () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "newparent@school.edu");
+      await user.type(emailInput, 'newparent@school.edu');
       await user.type(passwordInput, TEST_PASSWORDS.USER);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
-          email: "newparent@school.edu",
+          email: 'newparent@school.edu',
           password: TEST_PASSWORDS.USER,
         });
       });
     });
 
-    it("should handle login for returning parent with existing family", async () => {
+    it('should handle login for returning parent with existing family', async () => {
       const user = userEvent.setup();
 
       // Mock an existing parent with completed family registration
       const existingParentUser = {
-        id: "parent-456",
-        email: "parent@school.edu",
-        firstName: "Michael",
-        lastName: "Smith",
-        role: "parent",
-        familyId: "family-123",
+        id: 'parent-456',
+        email: 'parent@school.edu',
+        firstName: 'Michael',
+        lastName: 'Smith',
+        role: 'parent',
+        familyId: 'family-123',
         onboardingCompleted: true,
       };
 
@@ -170,33 +170,33 @@ describe("Login Page - UX Requirements Alignment", () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "parent@school.edu");
+      await user.type(emailInput, 'parent@school.edu');
       await user.type(passwordInput, TEST_PASSWORDS.SECURE);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
-          email: "parent@school.edu",
+          email: 'parent@school.edu',
           password: TEST_PASSWORDS.SECURE,
         });
       });
     });
   });
 
-  describe("Form Submission - Family-Aware Login", () => {
-    it("should submit form with valid credentials and handle role-based routing", async () => {
+  describe('Form Submission - Family-Aware Login', () => {
+    it('should submit form with valid credentials and handle role-based routing', async () => {
       const user = userEvent.setup();
       const familyParentUser = {
-        id: "parent-789",
-        email: "parent@family.edu",
-        firstName: "Lisa",
-        lastName: "Chen",
-        role: "parent",
-        familyId: "family-456",
+        id: 'parent-789',
+        email: 'parent@family.edu',
+        firstName: 'Lisa',
+        lastName: 'Chen',
+        role: 'parent',
+        familyId: 'family-456',
         onboardingCompleted: true,
       };
 
@@ -204,30 +204,30 @@ describe("Login Page - UX Requirements Alignment", () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "parent@family.edu");
+      await user.type(emailInput, 'parent@family.edu');
       await user.type(passwordInput, TEST_PASSWORDS.FAMILY);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
-          email: "parent@family.edu",
+          email: 'parent@family.edu',
           password: TEST_PASSWORDS.FAMILY,
         });
       });
     });
 
-    it("should handle admin login with system-wide access", async () => {
+    it('should handle admin login with system-wide access', async () => {
       const user = userEvent.setup();
       const adminUser = {
-        id: "admin-001",
-        email: "admin@school.edu",
-        firstName: "Admin",
-        lastName: "User",
-        role: "admin",
+        id: 'admin-001',
+        email: 'admin@school.edu',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
         familyId: null, // Admins don't belong to families
         onboardingCompleted: true,
       };
@@ -236,46 +236,46 @@ describe("Login Page - UX Requirements Alignment", () => {
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "admin@school.edu");
+      await user.type(emailInput, 'admin@school.edu');
       await user.type(passwordInput, TEST_PASSWORDS.ADMIN);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
-          email: "admin@school.edu",
+          email: 'admin@school.edu',
           password: TEST_PASSWORDS.ADMIN,
         });
       });
     });
 
-    it("should handle empty form submission with proper validation", async () => {
+    it('should handle empty form submission with proper validation', async () => {
       const user = userEvent.setup();
 
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
 
       // Should not call login with empty form (form validation should prevent it)
       expect(mockLogin).not.toHaveBeenCalled();
     });
 
-    it("should handle login errors gracefully", async () => {
+    it('should handle login errors gracefully', async () => {
       const user = userEvent.setup();
-      mockLogin.mockRejectedValue(new Error("Invalid credentials"));
+      mockLogin.mockRejectedValue(new Error('Invalid credentials'));
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "invalid@email.com");
-      await user.type(passwordInput, "wrongpassword");
+      await user.type(emailInput, 'invalid@email.com');
+      await user.type(passwordInput, 'wrongpassword');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -283,108 +283,108 @@ describe("Login Page - UX Requirements Alignment", () => {
       });
 
       // Error should be handled gracefully without breaking the form
-      expect(screen.getByPlaceholderText("Email address")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Email address')).toBeInTheDocument();
     });
   });
 
-  describe("Loading States - UX-Optimized Feedback", () => {
-    it("should show progressive loading state during authentication", () => {
+  describe('Loading States - UX-Optimized Feedback', () => {
+    it('should show progressive loading state during authentication', () => {
       mockAuthStore.isLoading = true;
 
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole("button");
-      expect(submitButton).toHaveTextContent("Signing in...");
+      const submitButton = screen.getByRole('button');
+      expect(submitButton).toHaveTextContent('Signing in...');
       expect(submitButton).toBeDisabled();
 
       // Loading state should be accessible and clear
       expect(submitButton).toBeDisabled();
     });
 
-    it("should show ready state for family login flow", () => {
+    it('should show ready state for family login flow', () => {
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole("button");
-      expect(submitButton).toHaveTextContent("Sign in");
+      const submitButton = screen.getByRole('button');
+      expect(submitButton).toHaveTextContent('Sign in');
       expect(submitButton).not.toBeDisabled();
-      expect(submitButton).not.toHaveAttribute("aria-disabled");
+      expect(submitButton).not.toHaveAttribute('aria-disabled');
     });
 
-    it("should handle loading state transitions properly", async () => {
+    it('should handle loading state transitions properly', async () => {
       const user = userEvent.setup();
 
       // Start with loading false
       mockAuthStore.isLoading = false;
       const { rerender } = render(<LoginPage />);
 
-      let submitButton = screen.getByRole("button");
-      expect(submitButton).toHaveTextContent("Sign in");
+      let submitButton = screen.getByRole('button');
+      expect(submitButton).toHaveTextContent('Sign in');
       expect(submitButton).not.toBeDisabled();
 
       // Simulate loading state change
       mockAuthStore.isLoading = true;
       rerender(<LoginPage />);
 
-      submitButton = screen.getByRole("button");
-      expect(submitButton).toHaveTextContent("Signing in...");
+      submitButton = screen.getByRole('button');
+      expect(submitButton).toHaveTextContent('Signing in...');
       expect(submitButton).toBeDisabled();
     });
   });
 
-  describe("Navigation Links - Family Registration Flow", () => {
-    it("should have registration link that supports Enhanced Family Unit Registration", () => {
+  describe('Navigation Links - Family Registration Flow', () => {
+    it('should have registration link that supports Enhanced Family Unit Registration', () => {
       render(<LoginPage />);
 
-      const registerLink = screen.getByRole("link", {
+      const registerLink = screen.getByRole('link', {
         name: /create a new account/i,
       });
-      expect(registerLink).toHaveAttribute("href", "/register");
+      expect(registerLink).toHaveAttribute('href', '/register');
 
       // Registration link should be prominent for new families
       expect(registerLink).toBeInTheDocument();
     });
 
-    it("should have accessible forgot password functionality", () => {
+    it('should have accessible forgot password functionality', () => {
       render(<LoginPage />);
 
-      const forgotPasswordLink = screen.getByRole("link", {
+      const forgotPasswordLink = screen.getByRole('link', {
         name: /forgot your password/i,
       });
-      expect(forgotPasswordLink).toHaveAttribute("href", "/forgot-password");
+      expect(forgotPasswordLink).toHaveAttribute('href', '/forgot-password');
 
       // Should be accessible for family members who may have forgotten credentials
       expect(forgotPasswordLink).toBeInTheDocument();
     });
 
-    it("should have proper accessibility attributes for navigation", () => {
+    it('should have proper accessibility attributes for navigation', () => {
       render(<LoginPage />);
 
-      const registerLink = screen.getByRole("link", {
+      const registerLink = screen.getByRole('link', {
         name: /create a new account/i,
       });
-      const forgotPasswordLink = screen.getByRole("link", {
+      const forgotPasswordLink = screen.getByRole('link', {
         name: /forgot your password/i,
       });
 
       // Links should have proper ARIA attributes for screen readers
-      expect(registerLink).toHaveAttribute("href", "/register");
-      expect(forgotPasswordLink).toHaveAttribute("href", "/forgot-password");
+      expect(registerLink).toHaveAttribute('href', '/register');
+      expect(forgotPasswordLink).toHaveAttribute('href', '/forgot-password');
 
       // Both links should be keyboard navigable
       expect(registerLink).toBeVisible();
       expect(forgotPasswordLink).toBeVisible();
     });
 
-    it("should support family onboarding entry points", () => {
+    it('should support family onboarding entry points', () => {
       render(<LoginPage />);
 
       // The registration link should clearly indicate family registration capability
-      const registerLink = screen.getByRole("link", {
+      const registerLink = screen.getByRole('link', {
         name: /create a new account/i,
       });
 
       expect(registerLink).toBeInTheDocument();
-      expect(registerLink).toHaveAttribute("href", "/register");
+      expect(registerLink).toHaveAttribute('href', '/register');
 
       // Should be styled appropriately to encourage new family registration
       // (styling verification would be in integration/e2e tests)

@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import toast from "react-hot-toast";
-import { z } from "zod";
-import { useAuthStore } from "@/store/auth.store";
-import { TruckIcon as CarIcon } from "@heroicons/react/24/outline";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
+import { z } from 'zod';
+import { useAuthStore } from '@/store/auth.store';
+import { TruckIcon as CarIcon } from '@heroicons/react/24/outline';
 
 // Define the login schema directly to avoid import issues
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 type LoginRequest = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((state) => state.login);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const login = useAuthStore(state => state.login);
+  const isLoading = useAuthStore(state => state.isLoading);
 
   const {
     register,
@@ -34,10 +34,10 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginRequest) => {
     try {
       await login(data);
-      toast.success("Welcome back!");
-      router.push("/dashboard");
+      toast.success('Welcome back!');
+      router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || "Login failed");
+      toast.error(error.message || 'Login failed');
     }
   };
 
@@ -52,7 +52,7 @@ export default function LoginPage() {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
+            Or{' '}
             <Link
               href="/register"
               className="font-medium text-primary-600 hover:text-primary-500"
@@ -69,7 +69,7 @@ export default function LoginPage() {
                 Email address
               </label>
               <input
-                {...register("email")}
+                {...register('email')}
                 type="email"
                 autoComplete="email"
                 className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
@@ -86,7 +86,7 @@ export default function LoginPage() {
                 Password
               </label>
               <input
-                {...register("password")}
+                {...register('password')}
                 type="password"
                 autoComplete="current-password"
                 className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
@@ -117,7 +117,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>

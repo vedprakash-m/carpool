@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth.store";
-import { apiClient } from "@/lib/api-client";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
+import { apiClient } from '@/lib/api-client';
 import {
   CalendarIcon,
   UserIcon,
@@ -12,13 +12,13 @@ import {
   UserGroupIcon,
   PhoneIcon,
   KeyIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface StudentTrip {
   id: string;
   date: string;
   time: string;
-  type: "pickup" | "dropoff";
+  type: 'pickup' | 'dropoff';
   driver: {
     name: string;
     phone: string;
@@ -60,19 +60,19 @@ export default function StudentDashboardPage() {
     if (isLoading || !hasHydrated) return;
 
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
 
-    if (user?.role !== "student") {
-      router.push("/dashboard");
+    if (user?.role !== 'student') {
+      router.push('/dashboard');
       return;
     }
   }, [isAuthenticated, isLoading, user, router, hasHydrated]);
 
   // Load student data
   useEffect(() => {
-    if (isAuthenticated && user?.role === "student") {
+    if (isAuthenticated && user?.role === 'student') {
       loadStudentProfile();
       loadUpcomingTrips();
     }
@@ -81,35 +81,35 @@ export default function StudentDashboardPage() {
   const loadStudentProfile = async () => {
     try {
       setIsLoadingProfile(true);
-      const response = await apiClient.get<StudentProfile>("/students/profile");
+      const response = await apiClient.get<StudentProfile>('/students/profile');
 
       if (response.success && response.data) {
         setProfile(response.data);
       } else {
         // Mock data for development
         setProfile({
-          id: "student-1",
+          id: 'student-1',
           fullName:
-            `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
-            "Student User",
-          studentId: "ST001",
-          phoneNumber: user?.phoneNumber || "",
-          parentId: "parent-1",
-          parentName: "Parent Guardian",
+            `${user?.firstName || ''} ${user?.lastName || ''}`.trim() ||
+            'Student User',
+          studentId: 'ST001',
+          phoneNumber: user?.phoneNumber || '',
+          parentId: 'parent-1',
+          parentName: 'Parent Guardian',
         });
       }
     } catch (err: any) {
-      console.error("Failed to load student profile:", err);
+      console.error('Failed to load student profile:', err);
       // Use mock data as fallback
       setProfile({
-        id: "student-1",
+        id: 'student-1',
         fullName:
-          `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
-          "Student User",
-        studentId: "ST001",
-        phoneNumber: user?.phoneNumber || "",
-        parentId: "parent-1",
-        parentName: "Parent Guardian",
+          `${user?.firstName || ''} ${user?.lastName || ''}`.trim() ||
+          'Student User',
+        studentId: 'ST001',
+        phoneNumber: user?.phoneNumber || '',
+        parentId: 'parent-1',
+        parentName: 'Parent Guardian',
       });
     } finally {
       setIsLoadingProfile(false);
@@ -119,7 +119,7 @@ export default function StudentDashboardPage() {
   const loadUpcomingTrips = async () => {
     try {
       setIsLoadingTrips(true);
-      const response = await apiClient.get<StudentTrip[]>("/students/trips");
+      const response = await apiClient.get<StudentTrip[]>('/students/trips');
 
       if (response.success && response.data) {
         setUpcomingTrips(response.data);
@@ -127,53 +127,53 @@ export default function StudentDashboardPage() {
         // Mock data for development
         const mockTrips: StudentTrip[] = [
           {
-            id: "trip-1",
+            id: 'trip-1',
             date: new Date(Date.now() + 24 * 60 * 60 * 1000)
               .toISOString()
-              .split("T")[0],
-            time: "07:30",
-            type: "pickup",
+              .split('T')[0],
+            time: '07:30',
+            type: 'pickup',
             driver: {
-              name: "Sarah Johnson",
-              phone: "(555) 123-4567",
+              name: 'Sarah Johnson',
+              phone: '(555) 123-4567',
             },
-            route: "Home → Lincoln Elementary",
-            passengers: ["Emma Wilson", "Jake Thompson"],
+            route: 'Home → Lincoln Elementary',
+            passengers: ['Emma Wilson', 'Jake Thompson'],
           },
           {
-            id: "trip-2",
+            id: 'trip-2',
             date: new Date(Date.now() + 24 * 60 * 60 * 1000)
               .toISOString()
-              .split("T")[0],
-            time: "15:15",
-            type: "dropoff",
+              .split('T')[0],
+            time: '15:15',
+            type: 'dropoff',
             driver: {
-              name: "Mike Chen",
-              phone: "(555) 987-6543",
+              name: 'Mike Chen',
+              phone: '(555) 987-6543',
             },
-            route: "Lincoln Elementary → Home",
-            passengers: ["Sophie Davis", "Alex Rodriguez"],
+            route: 'Lincoln Elementary → Home',
+            passengers: ['Sophie Davis', 'Alex Rodriguez'],
           },
           {
-            id: "trip-3",
+            id: 'trip-3',
             date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
               .toISOString()
-              .split("T")[0],
-            time: "07:30",
-            type: "pickup",
+              .split('T')[0],
+            time: '07:30',
+            type: 'pickup',
             driver: {
-              name: "Lisa Park",
-              phone: "(555) 456-7890",
+              name: 'Lisa Park',
+              phone: '(555) 456-7890',
             },
-            route: "Home → Lincoln Elementary",
-            passengers: ["David Kim", "Maya Patel"],
+            route: 'Home → Lincoln Elementary',
+            passengers: ['David Kim', 'Maya Patel'],
           },
         ];
         setUpcomingTrips(mockTrips);
       }
     } catch (err: any) {
-      console.error("Failed to load upcoming trips:", err);
-      setError("Failed to load upcoming trips");
+      console.error('Failed to load upcoming trips:', err);
+      setError('Failed to load upcoming trips');
     } finally {
       setIsLoadingTrips(false);
     }
@@ -186,14 +186,14 @@ export default function StudentDashboardPage() {
     tomorrow.setDate(today.getDate() + 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return "Today";
+      return 'Today';
     } else if (date.toDateString() === tomorrow.toDateString()) {
-      return "Tomorrow";
+      return 'Tomorrow';
     } else {
-      return date.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "short",
-        day: "numeric",
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
       });
     }
   };
@@ -257,7 +257,7 @@ export default function StudentDashboardPage() {
                     <PhoneIcon className="h-5 w-5 text-gray-400 mr-2" />
                     <div>
                       <p className="text-sm text-gray-900">
-                        {profile.phoneNumber || "No phone number"}
+                        {profile.phoneNumber || 'No phone number'}
                       </p>
                     </div>
                   </div>
@@ -279,7 +279,7 @@ export default function StudentDashboardPage() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <button
-            onClick={() => router.push("/students/profile")}
+            onClick={() => router.push('/students/profile')}
             className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow text-left"
           >
             <div className="flex items-center">
@@ -298,7 +298,7 @@ export default function StudentDashboardPage() {
           </button>
 
           <button
-            onClick={() => router.push("/students/change-password")}
+            onClick={() => router.push('/students/change-password')}
             className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow text-left"
           >
             <div className="flex items-center">
@@ -327,7 +327,7 @@ export default function StudentDashboardPage() {
           <div className="px-6 py-4">
             {isLoadingTrips ? (
               <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3].map(i => (
                   <div key={i} className="animate-pulse border rounded-lg p-4">
                     <div className="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
                     <div className="h-3 bg-gray-300 rounded w-1/2"></div>
@@ -336,7 +336,7 @@ export default function StudentDashboardPage() {
               </div>
             ) : upcomingTrips.length > 0 ? (
               <div className="space-y-4">
-                {upcomingTrips.map((trip) => (
+                {upcomingTrips.map(trip => (
                   <div
                     key={trip.id}
                     className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
@@ -375,7 +375,7 @@ export default function StudentDashboardPage() {
                         <div className="flex items-center">
                           <UserGroupIcon className="h-4 w-4 text-gray-400 mr-2" />
                           <span className="text-sm text-gray-600">
-                            Other passengers: {trip.passengers.join(", ")}
+                            Other passengers: {trip.passengers.join(', ')}
                           </span>
                         </div>
                       </div>
@@ -383,14 +383,14 @@ export default function StudentDashboardPage() {
                       <div className="ml-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            trip.type === "pickup"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-green-100 text-green-800"
+                            trip.type === 'pickup'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-green-100 text-green-800'
                           }`}
                         >
-                          {trip.type === "pickup"
-                            ? "School Drop-off"
-                            : "Home Pick-up"}
+                          {trip.type === 'pickup'
+                            ? 'School Drop-off'
+                            : 'Home Pick-up'}
                         </span>
                       </div>
                     </div>

@@ -3,12 +3,8 @@
  * Consolidates CORS handling across all VCarpool endpoints
  */
 
-import {
-  HttpRequest,
-  HttpResponseInit,
-  InvocationContext,
-} from "@azure/functions";
-import { Middleware } from "./index";
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { Middleware } from './index';
 
 export interface CorsOptions {
   origins?: string | string[];
@@ -21,15 +17,15 @@ export interface CorsOptions {
 
 export class CorsMiddleware {
   private static readonly DEFAULT_OPTIONS: Required<CorsOptions> = {
-    origins: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origins: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Accept",
-      "Origin",
-      "X-Request-ID",
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'X-Request-ID',
     ],
     credentials: false,
     maxAge: 86400, // 24 hours
@@ -43,37 +39,36 @@ export class CorsMiddleware {
     const config = { ...this.DEFAULT_OPTIONS, ...options };
 
     const headers: Record<string, string> = {
-      "Access-Control-Allow-Methods": Array.isArray(config.methods)
-        ? config.methods.join(", ")
+      'Access-Control-Allow-Methods': Array.isArray(config.methods)
+        ? config.methods.join(', ')
         : config.methods,
-      "Access-Control-Allow-Headers": Array.isArray(config.allowedHeaders)
-        ? config.allowedHeaders.join(", ")
+      'Access-Control-Allow-Headers': Array.isArray(config.allowedHeaders)
+        ? config.allowedHeaders.join(', ')
         : config.allowedHeaders,
-      "Access-Control-Max-Age": config.maxAge.toString(),
-      "Content-Type": "application/json",
+      'Access-Control-Max-Age': config.maxAge.toString(),
+      'Content-Type': 'application/json',
       // Security headers
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-      "X-XSS-Protection": "1; mode=block",
-      "Referrer-Policy": "strict-origin-when-cross-origin",
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
     };
 
     // Handle origins
     if (Array.isArray(config.origins)) {
-      headers["Access-Control-Allow-Origin"] = config.origins.join(", ");
+      headers['Access-Control-Allow-Origin'] = config.origins.join(', ');
     } else {
-      headers["Access-Control-Allow-Origin"] = config.origins;
+      headers['Access-Control-Allow-Origin'] = config.origins;
     }
 
     // Handle credentials
     if (config.credentials) {
-      headers["Access-Control-Allow-Credentials"] = "true";
+      headers['Access-Control-Allow-Credentials'] = 'true';
 
       // If credentials are allowed, origin cannot be "*"
-      if (headers["Access-Control-Allow-Origin"] === "*") {
-        headers["Access-Control-Allow-Origin"] =
-          process.env.FRONTEND_URL ||
-          "https://lively-stone-016bfa20f.6.azurestaticapps.net";
+      if (headers['Access-Control-Allow-Origin'] === '*') {
+        headers['Access-Control-Allow-Origin'] =
+          process.env.FRONTEND_URL || 'https://lively-stone-016bfa20f.6.azurestaticapps.net';
       }
     }
 
@@ -83,10 +78,7 @@ export class CorsMiddleware {
   /**
    * Apply CORS headers to response
    */
-  static applyHeaders(
-    response: HttpResponseInit,
-    options: CorsOptions = {}
-  ): HttpResponseInit {
+  static applyHeaders(response: HttpResponseInit, options: CorsOptions = {}): HttpResponseInit {
     const corsHeaders = this.createHeaders(options);
 
     return {
@@ -101,17 +93,14 @@ export class CorsMiddleware {
   /**
    * Handle CORS preflight requests
    */
-  static handlePreflight(
-    request: HttpRequest,
-    options: CorsOptions = {}
-  ): HttpResponseInit | null {
-    if (request.method === "OPTIONS") {
+  static handlePreflight(request: HttpRequest, options: CorsOptions = {}): HttpResponseInit | null {
+    if (request.method === 'OPTIONS') {
       const config = { ...this.DEFAULT_OPTIONS, ...options };
 
       return {
         status: config.optionsSuccessStatus,
         headers: this.createHeaders(options),
-        body: "",
+        body: '',
       };
     }
     return null;
@@ -123,7 +112,7 @@ export class CorsMiddleware {
   static create(options: CorsOptions = {}): Middleware {
     return async (
       request: HttpRequest,
-      context: InvocationContext
+      context: InvocationContext,
     ): Promise<HttpResponseInit | void> => {
       // Handle preflight requests immediately
       const preflightResponse = this.handlePreflight(request, options);
@@ -151,35 +140,35 @@ export class CorsMiddleware {
    */
   static readonly configs = {
     development: {
-      origins: ["http://localhost:3000", "http://localhost:3001"],
+      origins: ['http://localhost:3000', 'http://localhost:3001'],
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     },
 
     staging: {
       origins: [
-        "https://lively-stone-016bfa20f.6.azurestaticapps.net",
-        "https://vcarpool-staging.azurewebsites.net",
+        'https://lively-stone-016bfa20f.6.azurestaticapps.net',
+        'https://vcarpool-staging.azurewebsites.net',
       ],
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     },
 
     production: {
       origins: [
-        "https://lively-stone-016bfa20f.6.azurestaticapps.net",
-        "https://vcarpool.app",
-        "https://www.vcarpool.app",
+        'https://lively-stone-016bfa20f.6.azurestaticapps.net',
+        'https://vcarpool.app',
+        'https://www.vcarpool.app',
       ],
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     },
 
     // Fallback for legacy functions
     permissive: {
-      origins: "*",
+      origins: '*',
       credentials: false,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     },
   };
 
@@ -187,10 +176,8 @@ export class CorsMiddleware {
    * Get environment-appropriate CORS middleware
    */
   static forEnvironment(): Middleware {
-    const env = process.env.NODE_ENV || "development";
-    const config =
-      this.configs[env as keyof typeof this.configs] ||
-      this.configs.development;
+    const env = process.env.NODE_ENV || 'development';
+    const config = this.configs[env as keyof typeof this.configs] || this.configs.development;
 
     return this.create(config);
   }
@@ -202,48 +189,36 @@ export class CorsMiddleware {
     auth: {
       origins: this.configs.production.origins,
       credentials: true,
-      methods: ["POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+      methods: ['POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     },
 
     api: {
       origins: this.configs.production.origins,
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: [
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-        "X-Request-ID",
-      ],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-ID'],
     },
 
     public: {
-      origins: "*",
+      origins: '*',
       credentials: false,
-      methods: ["GET", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Accept"],
+      methods: ['GET', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Accept'],
     },
 
     admin: {
       origins: this.configs.production.origins,
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: [
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-        "X-Admin-Token",
-      ],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Admin-Token'],
     },
   };
 
   /**
    * Create endpoint-specific CORS middleware
    */
-  static forEndpoint(
-    type: keyof typeof CorsMiddleware.endpointConfigs
-  ): Middleware {
+  static forEndpoint(type: keyof typeof CorsMiddleware.endpointConfigs): Middleware {
     const config = this.endpointConfigs[type];
     return this.create(config);
   }
@@ -253,10 +228,10 @@ export class CorsMiddleware {
  * Convenience exports for common use cases
  */
 export const corsMiddleware = CorsMiddleware.forEnvironment();
-export const authCors = CorsMiddleware.forEndpoint("auth");
-export const apiCors = CorsMiddleware.forEndpoint("api");
-export const publicCors = CorsMiddleware.forEndpoint("public");
-export const adminCors = CorsMiddleware.forEndpoint("admin");
+export const authCors = CorsMiddleware.forEndpoint('auth');
+export const apiCors = CorsMiddleware.forEndpoint('api');
+export const publicCors = CorsMiddleware.forEndpoint('public');
+export const adminCors = CorsMiddleware.forEndpoint('admin');
 
 /**
  * Legacy support - maintains compatibility with existing CORS implementations

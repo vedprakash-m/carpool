@@ -1,11 +1,11 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   Trip,
   CreateTripRequest,
   UpdateTripRequest,
   JoinTripRequest,
-} from "@vcarpool/shared";
-import { tripApi, TripFilters, TripStats } from "../lib/trip-api";
+} from '@vcarpool/shared';
+import { tripApi, TripFilters, TripStats } from '../lib/trip-api';
 
 interface TripStore {
   // State
@@ -46,12 +46,12 @@ interface TripStore {
     maxPrice?: number;
     minSeats?: number;
     sortBy?:
-      | "date"
-      | "price"
-      | "destination"
-      | "availableSeats"
-      | "departureTime";
-    sortOrder?: "asc" | "desc";
+      | 'date'
+      | 'price'
+      | 'destination'
+      | 'availableSeats'
+      | 'departureTime';
+    sortOrder?: 'asc' | 'desc';
     page?: number;
     limit?: number;
   }) => Promise<void>;
@@ -74,7 +74,7 @@ const initialState = {
 export const useTripStore = create<TripStore>((set, get) => ({
   ...initialState,
 
-  fetchTrips: async (filters) => {
+  fetchTrips: async filters => {
     set({ loading: true, error: null });
     try {
       const response = await tripApi.getTrips(filters);
@@ -86,17 +86,17 @@ export const useTripStore = create<TripStore>((set, get) => ({
         });
       } else {
         set({
-          error: response.error || "Failed to fetch trips",
+          error: response.error || 'Failed to fetch trips',
           loading: false,
         });
       }
     } catch (error) {
-      console.error("Error fetching trips:", error);
-      set({ error: "Failed to fetch trips", loading: false });
+      console.error('Error fetching trips:', error);
+      set({ error: 'Failed to fetch trips', loading: false });
     }
   },
 
-  fetchTripById: async (tripId) => {
+  fetchTripById: async tripId => {
     set({ loading: true, error: null });
     try {
       const response = await tripApi.getTripById(tripId);
@@ -107,13 +107,13 @@ export const useTripStore = create<TripStore>((set, get) => ({
         });
       } else {
         set({
-          error: response.error || "Failed to fetch trip",
+          error: response.error || 'Failed to fetch trip',
           loading: false,
         });
       }
     } catch (error) {
-      console.error("Error fetching trip:", error);
-      set({ error: "Failed to fetch trip", loading: false });
+      console.error('Error fetching trip:', error);
+      set({ error: 'Failed to fetch trip', loading: false });
     }
   },
 
@@ -129,17 +129,17 @@ export const useTripStore = create<TripStore>((set, get) => ({
         });
       } else {
         set({
-          error: response.error || "Failed to fetch your trips",
+          error: response.error || 'Failed to fetch your trips',
           loading: false,
         });
       }
     } catch (error) {
-      console.error("Error fetching my trips:", error);
-      set({ error: "Failed to fetch your trips", loading: false });
+      console.error('Error fetching my trips:', error);
+      set({ error: 'Failed to fetch your trips', loading: false });
     }
   },
 
-  fetchAvailableTrips: async (date) => {
+  fetchAvailableTrips: async date => {
     set({ loading: true, error: null });
     try {
       const response = await tripApi.getAvailableTrips(date);
@@ -151,13 +151,13 @@ export const useTripStore = create<TripStore>((set, get) => ({
         });
       } else {
         set({
-          error: response.error || "Failed to fetch available trips",
+          error: response.error || 'Failed to fetch available trips',
           loading: false,
         });
       }
     } catch (error) {
-      console.error("Error fetching available trips:", error);
-      set({ error: "Failed to fetch available trips", loading: false });
+      console.error('Error fetching available trips:', error);
+      set({ error: 'Failed to fetch available trips', loading: false });
     }
   },
 
@@ -167,12 +167,12 @@ export const useTripStore = create<TripStore>((set, get) => ({
       set({ stats });
       return stats;
     } catch (error) {
-      console.error("Error fetching trip stats:", error);
+      console.error('Error fetching trip stats:', error);
       throw error;
     }
   },
 
-  createTrip: async (tripData) => {
+  createTrip: async tripData => {
     set({ loading: true, error: null });
     try {
       const response = await tripApi.createTrip(tripData);
@@ -186,14 +186,14 @@ export const useTripStore = create<TripStore>((set, get) => ({
         return true;
       } else {
         set({
-          error: response.error || "Failed to create trip",
+          error: response.error || 'Failed to create trip',
           loading: false,
         });
         return false;
       }
     } catch (error) {
-      console.error("Error creating trip:", error);
-      set({ error: "Failed to create trip", loading: false });
+      console.error('Error creating trip:', error);
+      set({ error: 'Failed to create trip', loading: false });
       return false;
     }
   },
@@ -205,7 +205,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
       if (response.success && response.data) {
         // Update the trip in the list
         const currentTrips = get().trips;
-        const updatedTrips = currentTrips.map((trip) =>
+        const updatedTrips = currentTrips.map(trip =>
           trip.id === tripId ? response.data! : trip
         );
         set({
@@ -219,26 +219,26 @@ export const useTripStore = create<TripStore>((set, get) => ({
         return true;
       } else {
         set({
-          error: response.error || "Failed to update trip",
+          error: response.error || 'Failed to update trip',
           loading: false,
         });
         return false;
       }
     } catch (error) {
-      console.error("Error updating trip:", error);
-      set({ error: "Failed to update trip", loading: false });
+      console.error('Error updating trip:', error);
+      set({ error: 'Failed to update trip', loading: false });
       return false;
     }
   },
 
-  deleteTrip: async (tripId) => {
+  deleteTrip: async tripId => {
     set({ loading: true, error: null });
     try {
       const response = await tripApi.deleteTrip(tripId);
       if (response.success && response.data) {
         // Update the trip in the list
         const currentTrips = get().trips;
-        const updatedTrips = currentTrips.filter((trip) => trip.id !== tripId);
+        const updatedTrips = currentTrips.filter(trip => trip.id !== tripId);
         set({
           trips: updatedTrips,
           loading: false,
@@ -246,14 +246,14 @@ export const useTripStore = create<TripStore>((set, get) => ({
         return true;
       } else {
         set({
-          error: response.error || "Failed to delete trip",
+          error: response.error || 'Failed to delete trip',
           loading: false,
         });
         return false;
       }
     } catch (error) {
-      console.error("Error deleting trip:", error);
-      set({ error: "Failed to delete trip", loading: false });
+      console.error('Error deleting trip:', error);
+      set({ error: 'Failed to delete trip', loading: false });
       return false;
     }
   },
@@ -265,7 +265,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
       if (response.success && response.data) {
         // Update the trip in the list
         const currentTrips = get().trips;
-        const updatedTrips = currentTrips.map((trip) =>
+        const updatedTrips = currentTrips.map(trip =>
           trip.id === tripId ? response.data! : trip
         );
         set({
@@ -274,24 +274,24 @@ export const useTripStore = create<TripStore>((set, get) => ({
         });
         return true;
       } else {
-        set({ error: response.error || "Failed to join trip", loading: false });
+        set({ error: response.error || 'Failed to join trip', loading: false });
         return false;
       }
     } catch (error) {
-      console.error("Error joining trip:", error);
-      set({ error: "Failed to join trip", loading: false });
+      console.error('Error joining trip:', error);
+      set({ error: 'Failed to join trip', loading: false });
       return false;
     }
   },
 
-  leaveTrip: async (tripId) => {
+  leaveTrip: async tripId => {
     set({ loading: true, error: null });
     try {
       const response = await tripApi.leaveTrip(tripId);
       if (response.success && response.data) {
         // Update the trip in the list
         const currentTrips = get().trips;
-        const updatedTrips = currentTrips.map((trip) =>
+        const updatedTrips = currentTrips.map(trip =>
           trip.id === tripId ? response.data! : trip
         );
         set({
@@ -301,19 +301,19 @@ export const useTripStore = create<TripStore>((set, get) => ({
         return true;
       } else {
         set({
-          error: response.error || "Failed to leave trip",
+          error: response.error || 'Failed to leave trip',
           loading: false,
         });
         return false;
       }
     } catch (error) {
-      console.error("Error leaving trip:", error);
-      set({ error: "Failed to leave trip", loading: false });
+      console.error('Error leaving trip:', error);
+      set({ error: 'Failed to leave trip', loading: false });
       return false;
     }
   },
 
-  setCurrentTrip: (trip) => {
+  setCurrentTrip: trip => {
     set({ currentTrip: trip });
   },
 
@@ -325,7 +325,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
     set(initialState);
   },
 
-  searchTrips: async (searchFilters) => {
+  searchTrips: async searchFilters => {
     set({ loading: true, error: null });
     try {
       const response = await tripApi.searchTrips(searchFilters);
@@ -337,13 +337,13 @@ export const useTripStore = create<TripStore>((set, get) => ({
         });
       } else {
         set({
-          error: response.error || "Failed to search trips",
+          error: response.error || 'Failed to search trips',
           loading: false,
         });
       }
     } catch (error) {
-      console.error("Error searching trips:", error);
-      set({ error: "Failed to search trips", loading: false });
+      console.error('Error searching trips:', error);
+      set({ error: 'Failed to search trips', loading: false });
     }
   },
 }));

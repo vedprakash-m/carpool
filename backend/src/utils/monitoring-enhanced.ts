@@ -156,9 +156,10 @@ export class MonitoringService {
     const requestsAll = this.metrics.get('requests.all') || [];
     const errorsAll = this.metrics.get('errors.all') || [];
 
-    const averageResponseTime = responseTimesAll.length > 0 
-      ? responseTimesAll.reduce((sum, time) => sum + time, 0) / responseTimesAll.length 
-      : 0;
+    const averageResponseTime =
+      responseTimesAll.length > 0
+        ? responseTimesAll.reduce((sum, time) => sum + time, 0) / responseTimesAll.length
+        : 0;
 
     const sortedResponseTimes = [...responseTimesAll].sort((a, b) => a - b);
     const p95Index = Math.floor(sortedResponseTimes.length * 0.95);
@@ -203,10 +204,12 @@ export class MonitoringService {
         // Determine overall status
         if (result.status === HealthStatus.UNHEALTHY) {
           overallStatus = HealthStatus.UNHEALTHY;
-        } else if (result.status === HealthStatus.DEGRADED && overallStatus === HealthStatus.HEALTHY) {
+        } else if (
+          result.status === HealthStatus.DEGRADED &&
+          overallStatus === HealthStatus.HEALTHY
+        ) {
           overallStatus = HealthStatus.DEGRADED;
         }
-
       } catch (error) {
         const unhealthyResult: HealthCheckResult = {
           status: HealthStatus.UNHEALTHY,
@@ -215,7 +218,7 @@ export class MonitoringService {
           duration: 0,
           timestamp: new Date().toISOString(),
         };
-        
+
         checks.push(unhealthyResult);
         overallStatus = HealthStatus.UNHEALTHY;
 
@@ -233,7 +236,10 @@ export class MonitoringService {
       overallStatus = HealthStatus.DEGRADED;
     }
 
-    if (metrics.memoryUsage.heapUsed / metrics.memoryUsage.heapTotal > this.config.memoryThreshold) {
+    if (
+      metrics.memoryUsage.heapUsed / metrics.memoryUsage.heapTotal >
+      this.config.memoryThreshold
+    ) {
       overallStatus = HealthStatus.DEGRADED;
     }
 
@@ -270,7 +276,7 @@ export class MonitoringService {
     // Cache health check
     this.registerHealthCheck('cache', async () => {
       const startTime = Date.now();
-      
+
       try {
         // Test cache operations
         const testKey = 'health-check-test';
@@ -288,7 +294,7 @@ export class MonitoringService {
             message: 'Cache is operational',
             duration,
             timestamp: new Date().toISOString(),
-            metadata: { 
+            metadata: {
               hitRate: metrics.hitRate,
               currentSize: metrics.currentSize,
             },
@@ -302,7 +308,6 @@ export class MonitoringService {
             timestamp: new Date().toISOString(),
           };
         }
-
       } catch (error) {
         return {
           status: HealthStatus.UNHEALTHY,
@@ -355,7 +360,7 @@ export class MonitoringService {
     // Collect system metrics every 30 seconds
     setInterval(() => {
       const metrics = this.getPerformanceMetrics();
-      
+
       // Record system metrics
       this.recordMetric('system.memory.heap_used', metrics.memoryUsage.heapUsed);
       this.recordMetric('system.memory.heap_total', metrics.memoryUsage.heapTotal);
@@ -373,7 +378,6 @@ export class MonitoringService {
           heapTotal: metrics.memoryUsage.heapTotal,
         });
       }
-
     }, 30000);
   }
 
@@ -438,9 +442,7 @@ export class MonitoringService {
  * Monitoring middleware for Azure Functions
  */
 export function createMonitoringMiddleware(monitoring: MonitoringService) {
-  return function monitoringMiddleware(
-    handler: any
-  ) {
+  return function monitoringMiddleware(handler: any) {
     return async (request: any, context: any) => {
       const startTime = Date.now();
       const endpoint = `${request.method}:${new URL(request.url).pathname}`;
@@ -454,12 +456,14 @@ export function createMonitoringMiddleware(monitoring: MonitoringService) {
         monitoring.recordResponseTime(endpoint, duration);
 
         return result;
-
       } catch (error) {
         const duration = Date.now() - startTime;
 
         // Record error
-        monitoring.recordError(endpoint, error instanceof Error ? error : new Error('Unknown error'));
+        monitoring.recordError(
+          endpoint,
+          error instanceof Error ? error : new Error('Unknown error'),
+        );
         monitoring.recordResponseTime(endpoint, duration);
 
         throw error;

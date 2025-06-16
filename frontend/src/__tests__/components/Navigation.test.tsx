@@ -1,9 +1,9 @@
-import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
-import Navigation from '@/components/Navigation'
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import Navigation from '@/components/Navigation';
 
 // Mock the auth store
-const mockLogout = jest.fn()
+const mockLogout = jest.fn();
 const mockUser = {
   id: '1',
   email: 'test@example.com',
@@ -14,7 +14,7 @@ const mockUser = {
   updatedAt: new Date(),
   preferences: {
     pickupLocation: 'Test Location',
-    dropoffLocation: 'Test Destination', 
+    dropoffLocation: 'Test Destination',
     preferredTime: '08:00',
     isDriver: true,
     smokingAllowed: false,
@@ -23,20 +23,20 @@ const mockUser = {
       sms: false,
       tripReminders: true,
       swapRequests: true,
-      scheduleChanges: true
-    }
-  }
-}
+      scheduleChanges: true,
+    },
+  },
+};
 
 jest.mock('@/store/auth.store', () => ({
   useAuthStore: () => ({
     user: mockUser,
     logout: mockLogout,
-    isAuthenticated: true
+    isAuthenticated: true,
   }),
-}))
+}));
 
-const mockPush = jest.fn()
+const mockPush = jest.fn();
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -49,44 +49,44 @@ jest.mock('next/navigation', () => ({
     refresh: jest.fn(),
   }),
   usePathname: () => '/dashboard',
-}))
+}));
 
 describe('Navigation', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-  })
+    jest.clearAllMocks();
+  });
 
   it('renders navigation items', () => {
-    render(<Navigation />)
+    render(<Navigation />);
 
-    expect(screen.getByText('Dashboard')).toBeDefined()
-    expect(screen.getByText('My Trips')).toBeDefined()
-    expect(screen.getByText('Profile')).toBeDefined()
-  })
+    expect(screen.getByText('Dashboard')).toBeDefined();
+    expect(screen.getByText('My Trips')).toBeDefined();
+    expect(screen.getByText('Profile')).toBeDefined();
+  });
 
   it('navigates to create trip when create button is clicked', () => {
-    render(<Navigation />)
+    render(<Navigation />);
 
-    const createButton = screen.getByText('Create Trip')
-    fireEvent.click(createButton)
+    const createButton = screen.getByText('Create Trip');
+    fireEvent.click(createButton);
 
-    expect(mockPush).toHaveBeenCalledWith('/trips/create')
-  })
+    expect(mockPush).toHaveBeenCalledWith('/trips/create');
+  });
 
   it('logs out user when logout button is clicked', () => {
-    render(<Navigation />)
+    render(<Navigation />);
 
-    const logoutButton = screen.getByText('Sign Out')
-    fireEvent.click(logoutButton)
+    const logoutButton = screen.getByText('Sign Out');
+    fireEvent.click(logoutButton);
 
-    expect(mockLogout).toHaveBeenCalled()
-    expect(mockPush).toHaveBeenCalledWith('/')
-  })
+    expect(mockLogout).toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalledWith('/');
+  });
 
   it('displays user information', () => {
-    render(<Navigation />)
+    render(<Navigation />);
 
-    expect(screen.getByText('Test User')).toBeDefined()
-    expect(screen.getByText('parent')).toBeDefined()
-  })
-})
+    expect(screen.getByText('Test User')).toBeDefined();
+    expect(screen.getByText('parent')).toBeDefined();
+  });
+});

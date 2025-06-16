@@ -3,7 +3,7 @@
  * Handles emergency reporting, backup requests, and contact management
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
 
 interface EmergencyContact {
   id: string;
@@ -44,29 +44,29 @@ interface UseEmergencyDataProps {
 
 const EMERGENCY_CONTACTS: EmergencyContact[] = [
   {
-    id: "admin-primary",
-    name: "School Admin",
-    role: "Primary Contact",
-    phoneNumber: "(555) 123-4567",
-    email: "admin@school.edu",
+    id: 'admin-primary',
+    name: 'School Admin',
+    role: 'Primary Contact',
+    phoneNumber: '(555) 123-4567',
+    email: 'admin@school.edu',
     available: true,
     priority: 1,
   },
   {
-    id: "transport-coordinator",
-    name: "Transport Coordinator",
-    role: "Logistics Manager",
-    phoneNumber: "(555) 234-5678",
-    email: "transport@school.edu",
+    id: 'transport-coordinator',
+    name: 'Transport Coordinator',
+    role: 'Logistics Manager',
+    phoneNumber: '(555) 234-5678',
+    email: 'transport@school.edu',
     available: true,
     priority: 2,
   },
   {
-    id: "emergency-hotline",
-    name: "Emergency Hotline",
-    role: "24/7 Support",
-    phoneNumber: "(555) 911-HELP",
-    email: "emergency@school.edu",
+    id: 'emergency-hotline',
+    name: 'Emergency Hotline',
+    role: '24/7 Support',
+    phoneNumber: '(555) 911-HELP',
+    email: 'emergency@school.edu',
     available: true,
     priority: 1,
   },
@@ -74,62 +74,62 @@ const EMERGENCY_CONTACTS: EmergencyContact[] = [
 
 const BACKUP_DRIVERS: BackupDriver[] = [
   {
-    id: "backup-1",
-    name: "Sarah Johnson",
-    phoneNumber: "(555) 345-6789",
-    email: "sarah.j@email.com",
+    id: 'backup-1',
+    name: 'Sarah Johnson',
+    phoneNumber: '(555) 345-6789',
+    email: 'sarah.j@email.com',
     available: true,
-    proximity: "0.8 miles",
-    estimatedArrival: "7 minutes",
+    proximity: '0.8 miles',
+    estimatedArrival: '7 minutes',
   },
   {
-    id: "backup-2",
-    name: "Mike Chen",
-    phoneNumber: "(555) 456-7890",
-    email: "mike.chen@email.com",
+    id: 'backup-2',
+    name: 'Mike Chen',
+    phoneNumber: '(555) 456-7890',
+    email: 'mike.chen@email.com',
     available: true,
-    proximity: "1.2 miles",
-    estimatedArrival: "10 minutes",
+    proximity: '1.2 miles',
+    estimatedArrival: '10 minutes',
   },
   {
-    id: "backup-3",
-    name: "Lisa Rodriguez",
-    phoneNumber: "(555) 567-8901",
-    email: "lisa.r@email.com",
+    id: 'backup-3',
+    name: 'Lisa Rodriguez',
+    phoneNumber: '(555) 567-8901',
+    email: 'lisa.r@email.com',
     available: false,
-    proximity: "2.1 miles",
-    estimatedArrival: "15 minutes",
+    proximity: '2.1 miles',
+    estimatedArrival: '15 minutes',
   },
 ];
 
 const EMERGENCY_TYPES: EmergencyType[] = [
-  { value: "medical", label: "Medical Emergency", icon: "🚑", urgency: "high" },
+  { value: 'medical', label: 'Medical Emergency', icon: '🚑', urgency: 'high' },
   {
-    value: "breakdown",
-    label: "Vehicle Breakdown",
-    icon: "🔧",
-    urgency: "medium",
+    value: 'breakdown',
+    label: 'Vehicle Breakdown',
+    icon: '🔧',
+    urgency: 'medium',
   },
-  { value: "accident", label: "Traffic Accident", icon: "🚗", urgency: "high" },
+  { value: 'accident', label: 'Traffic Accident', icon: '🚗', urgency: 'high' },
   {
-    value: "weather",
-    label: "Weather Emergency",
-    icon: "⛈️",
-    urgency: "medium",
-  },
-  {
-    value: "route_blocked",
-    label: "Route Blocked",
-    icon: "🚧",
-    urgency: "medium",
+    value: 'weather',
+    label: 'Weather Emergency',
+    icon: '⛈️',
+    urgency: 'medium',
   },
   {
-    value: "late_emergency",
-    label: "Emergency Delay",
-    icon: "⏰",
-    urgency: "low",
+    value: 'route_blocked',
+    label: 'Route Blocked',
+    icon: '🚧',
+    urgency: 'medium',
   },
-  { value: "other", label: "Other Emergency", icon: "🚨", urgency: "medium" },
+  {
+    value: 'late_emergency',
+    label: 'Emergency Delay',
+    icon: '⏰',
+    urgency: 'low',
+  },
+  { value: 'other', label: 'Other Emergency', icon: '🚨', urgency: 'medium' },
 ];
 
 export function useEmergencyData({
@@ -143,28 +143,28 @@ export function useEmergencyData({
   const [showBackupRequest, setShowBackupRequest] = useState(false);
 
   // Form State
-  const [selectedEmergencyType, setSelectedEmergencyType] = useState("");
-  const [emergencyDescription, setEmergencyDescription] = useState("");
-  const [backupReason, setBackupReason] = useState("");
+  const [selectedEmergencyType, setSelectedEmergencyType] = useState('');
+  const [emergencyDescription, setEmergencyDescription] = useState('');
+  const [backupReason, setBackupReason] = useState('');
 
   // Handlers
   const handleEmergencySubmit = useCallback(() => {
     if (selectedEmergencyType && emergencyDescription.trim()) {
       const urgency =
-        EMERGENCY_TYPES.find((t) => t.value === selectedEmergencyType)
-          ?.urgency || "medium";
+        EMERGENCY_TYPES.find(t => t.value === selectedEmergencyType)?.urgency ||
+        'medium';
       onEmergencyReport(selectedEmergencyType, emergencyDescription, urgency);
       setShowEmergencyForm(false);
-      setSelectedEmergencyType("");
-      setEmergencyDescription("");
+      setSelectedEmergencyType('');
+      setEmergencyDescription('');
     }
   }, [selectedEmergencyType, emergencyDescription, onEmergencyReport]);
 
   const handleBackupRequest = useCallback(() => {
     if (backupReason.trim()) {
-      onRequestBackup("current-assignment", backupReason);
+      onRequestBackup('current-assignment', backupReason);
       setShowBackupRequest(false);
-      setBackupReason("");
+      setBackupReason('');
     }
   }, [backupReason, onRequestBackup]);
 
@@ -178,14 +178,14 @@ export function useEmergencyData({
   // Utility functions
   const getUrgencyColor = useCallback((urgency: string) => {
     switch (urgency) {
-      case "high":
-        return "text-red-600 bg-red-50 border-red-200";
-      case "medium":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "low":
-        return "text-blue-600 bg-blue-50 border-blue-200";
+      case 'high':
+        return 'text-red-600 bg-red-50 border-red-200';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'low':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
       default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   }, []);
 
@@ -199,8 +199,8 @@ export function useEmergencyData({
 
   const hideEmergencyReportForm = useCallback(() => {
     setShowEmergencyForm(false);
-    setSelectedEmergencyType("");
-    setEmergencyDescription("");
+    setSelectedEmergencyType('');
+    setEmergencyDescription('');
   }, []);
 
   const showBackupRequestForm = useCallback(() => {
@@ -209,7 +209,7 @@ export function useEmergencyData({
 
   const hideBackupRequestForm = useCallback(() => {
     setShowBackupRequest(false);
-    setBackupReason("");
+    setBackupReason('');
   }, []);
 
   return {

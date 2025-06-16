@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
 import {
   MapPinIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface AddressValidationProps {
   onValidationComplete?: (verified: boolean) => void;
@@ -47,13 +47,13 @@ export default function AddressValidation({
   required = false,
 }: AddressValidationProps) {
   const { user } = useAuthStore();
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState('');
   const [status, setStatus] = useState<AddressStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [message, setMessage] = useState<{
-    type: "success" | "error" | "info";
+    type: 'success' | 'error' | 'info';
     text: string;
   } | null>(null);
 
@@ -65,9 +65,9 @@ export default function AddressValidation({
   const loadAddressStatus = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/address-validation-secure?action=status",
+        '/api/address-validation-secure?action=status',
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -86,7 +86,7 @@ export default function AddressValidation({
         }
       }
     } catch (error) {
-      console.error("Failed to load address status:", error);
+      console.error('Failed to load address status:', error);
     } finally {
       setLoading(false);
     }
@@ -95,8 +95,8 @@ export default function AddressValidation({
   const validateAddress = async () => {
     if (!address.trim()) {
       setMessage({
-        type: "error",
-        text: "Please enter your home address",
+        type: 'error',
+        text: 'Please enter your home address',
       });
       return;
     }
@@ -106,13 +106,13 @@ export default function AddressValidation({
     setSuggestions([]);
 
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/address-validation-secure?action=validate",
+        '/api/address-validation-secure?action=validate',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ address }),
@@ -124,7 +124,7 @@ export default function AddressValidation({
       if (response.ok) {
         const result: ValidationResult = data.data;
         setMessage({
-          type: "success",
+          type: 'success',
           text: `Address verified! Distance to ${
             result.serviceArea.school
           }: ${result.distanceToSchool.toFixed(1)} miles`,
@@ -140,14 +140,14 @@ export default function AddressValidation({
           suggestions: errorSuggestions,
         } = data.error;
 
-        if (errorCode === "OUTSIDE_SERVICE_AREA") {
+        if (errorCode === 'OUTSIDE_SERVICE_AREA') {
           setMessage({
-            type: "error",
+            type: 'error',
             text: errorMessage,
           });
-        } else if (errorCode === "INVALID_ADDRESS") {
+        } else if (errorCode === 'INVALID_ADDRESS') {
           setMessage({
-            type: "error",
+            type: 'error',
             text: errorMessage,
           });
           if (errorSuggestions && errorSuggestions.length > 0) {
@@ -155,15 +155,15 @@ export default function AddressValidation({
           }
         } else {
           setMessage({
-            type: "error",
-            text: errorMessage || "Failed to validate address",
+            type: 'error',
+            text: errorMessage || 'Failed to validate address',
           });
         }
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error validating address",
+        type: 'error',
+        text: 'Error validating address',
       });
     } finally {
       setValidating(false);
@@ -199,7 +199,7 @@ export default function AddressValidation({
             </h3>
             <p className="text-green-700 mb-2">✓ {status.homeAddress}</p>
             <p className="text-sm text-green-600">
-              Within {status.serviceArea.maxDistance} miles of{" "}
+              Within {status.serviceArea.maxDistance} miles of{' '}
               {status.serviceArea.school}
             </p>
           </div>
@@ -232,11 +232,11 @@ export default function AddressValidation({
       {message && (
         <div
           className={`mb-4 p-3 rounded-md ${
-            message.type === "success"
-              ? "bg-green-50 border border-green-200 text-green-800"
-              : message.type === "error"
-              ? "bg-red-50 border border-red-200 text-red-800"
-              : "bg-blue-50 border border-blue-200 text-blue-800"
+            message.type === 'success'
+              ? 'bg-green-50 border border-green-200 text-green-800'
+              : message.type === 'error'
+                ? 'bg-red-50 border border-red-200 text-red-800'
+                : 'bg-blue-50 border border-blue-200 text-blue-800'
           }`}
         >
           {message.text}
@@ -252,7 +252,7 @@ export default function AddressValidation({
             <input
               type="text"
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={e => setAddress(e.target.value)}
               placeholder="123 Main St, Redmond, WA 98052"
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />

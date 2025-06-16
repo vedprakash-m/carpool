@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
   ClockIcon,
   ChatBubbleLeftEllipsisIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface Assignment {
   id: string;
@@ -17,10 +17,10 @@ interface Assignment {
   startTime: string;
   endTime: string;
   routeType:
-    | "school_dropoff"
-    | "school_pickup"
-    | "multi_stop"
-    | "point_to_point";
+    | 'school_dropoff'
+    | 'school_pickup'
+    | 'multi_stop'
+    | 'point_to_point';
   description: string;
   driverId: string;
   driverName: string;
@@ -32,19 +32,19 @@ interface Assignment {
   passengerCount: number;
   pickupLocation: string;
   dropoffLocation: string;
-  status: "confirmed" | "pending" | "cancelled";
-  assignmentMethod: "automatic" | "manual";
+  status: 'confirmed' | 'pending' | 'cancelled';
+  assignmentMethod: 'automatic' | 'manual';
   createdAt: string;
   updatedAt: string;
 }
 
 interface ConfirmationStatus {
   id: string;
-  status: "pending" | "confirmed" | "declined" | "no_response";
+  status: 'pending' | 'confirmed' | 'declined' | 'no_response';
   confirmationDate?: string;
   responseTime?: number;
   issues?: Array<{
-    type: "late" | "absent" | "route_change" | "emergency" | "other";
+    type: 'late' | 'absent' | 'route_change' | 'emergency' | 'other';
     description: string;
     reportedAt: string;
   }>;
@@ -66,30 +66,30 @@ interface AssignmentConfirmationProps {
 
 const ISSUE_TYPES = [
   {
-    value: "late",
-    label: "Running Late",
-    icon: "⏰",
-    color: "text-yellow-600",
+    value: 'late',
+    label: 'Running Late',
+    icon: '⏰',
+    color: 'text-yellow-600',
   },
   {
-    value: "absent",
-    label: "Cannot Make It",
-    icon: "❌",
-    color: "text-red-600",
+    value: 'absent',
+    label: 'Cannot Make It',
+    icon: '❌',
+    color: 'text-red-600',
   },
   {
-    value: "route_change",
-    label: "Route Change Needed",
-    icon: "🗺️",
-    color: "text-blue-600",
+    value: 'route_change',
+    label: 'Route Change Needed',
+    icon: '🗺️',
+    color: 'text-blue-600',
   },
   {
-    value: "emergency",
-    label: "Emergency Situation",
-    icon: "🚨",
-    color: "text-red-600",
+    value: 'emergency',
+    label: 'Emergency Situation',
+    icon: '🚨',
+    color: 'text-red-600',
   },
-  { value: "other", label: "Other Issue", icon: "❓", color: "text-gray-600" },
+  { value: 'other', label: 'Other Issue', icon: '❓', color: 'text-gray-600' },
 ];
 
 export default function AssignmentConfirmation({
@@ -103,28 +103,28 @@ export default function AssignmentConfirmation({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
   const [showIssueDialog, setShowIssueDialog] = useState(false);
-  const [confirmationNotes, setConfirmationNotes] = useState("");
-  const [declineReason, setDeclineReason] = useState("");
-  const [selectedIssueType, setSelectedIssueType] = useState("");
-  const [issueDescription, setIssueDescription] = useState("");
+  const [confirmationNotes, setConfirmationNotes] = useState('');
+  const [declineReason, setDeclineReason] = useState('');
+  const [selectedIssueType, setSelectedIssueType] = useState('');
+  const [issueDescription, setIssueDescription] = useState('');
 
-  const currentStatus = confirmationStatus?.status || "pending";
-  const isAssignmentPending = currentStatus === "pending";
-  const isAssignmentConfirmed = currentStatus === "confirmed";
-  const isAssignmentDeclined = currentStatus === "declined";
+  const currentStatus = confirmationStatus?.status || 'pending';
+  const isAssignmentPending = currentStatus === 'pending';
+  const isAssignmentConfirmed = currentStatus === 'confirmed';
+  const isAssignmentDeclined = currentStatus === 'declined';
 
   const handleConfirm = () => {
     onConfirm(assignment.id, confirmationNotes);
     setShowConfirmDialog(false);
-    setConfirmationNotes("");
+    setConfirmationNotes('');
   };
 
   const handleDecline = () => {
     if (declineReason.trim() && selectedIssueType) {
       onDecline(assignment.id, declineReason, selectedIssueType);
       setShowDeclineDialog(false);
-      setDeclineReason("");
-      setSelectedIssueType("");
+      setDeclineReason('');
+      setSelectedIssueType('');
     }
   };
 
@@ -132,35 +132,35 @@ export default function AssignmentConfirmation({
     if (issueDescription.trim() && selectedIssueType) {
       onReportIssue(assignment.id, selectedIssueType, issueDescription);
       setShowIssueDialog(false);
-      setIssueDescription("");
-      setSelectedIssueType("");
+      setIssueDescription('');
+      setSelectedIssueType('');
     }
   };
 
   const getStatusDisplay = () => {
     switch (currentStatus) {
-      case "confirmed":
+      case 'confirmed':
         return {
-          text: "Confirmed",
-          color: "text-green-600 bg-green-50 border-green-200",
+          text: 'Confirmed',
+          color: 'text-green-600 bg-green-50 border-green-200',
           icon: <CheckCircleIcon className="w-4 h-4" />,
         };
-      case "declined":
+      case 'declined':
         return {
-          text: "Declined",
-          color: "text-red-600 bg-red-50 border-red-200",
+          text: 'Declined',
+          color: 'text-red-600 bg-red-50 border-red-200',
           icon: <XCircleIcon className="w-4 h-4" />,
         };
-      case "no_response":
+      case 'no_response':
         return {
-          text: "No Response",
-          color: "text-gray-600 bg-gray-50 border-gray-200",
+          text: 'No Response',
+          color: 'text-gray-600 bg-gray-50 border-gray-200',
           icon: <ClockIcon className="w-4 h-4" />,
         };
       default:
         return {
-          text: "Pending Confirmation",
-          color: "text-yellow-600 bg-yellow-50 border-yellow-200",
+          text: 'Pending Confirmation',
+          color: 'text-yellow-600 bg-yellow-50 border-yellow-200',
           icon: <ClockIcon className="w-4 h-4" />,
         };
     }
@@ -198,7 +198,7 @@ export default function AssignmentConfirmation({
           </h5>
           <div className="space-y-2">
             {confirmationStatus.issues.map((issue, index) => {
-              const issueType = ISSUE_TYPES.find((t) => t.value === issue.type);
+              const issueType = ISSUE_TYPES.find(t => t.value === issue.type);
               return (
                 <div key={index} className="flex items-start space-x-2 text-sm">
                   <span className="text-base">{issueType?.icon}</span>
@@ -261,7 +261,7 @@ export default function AssignmentConfirmation({
               Confirm Assignment
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-              Are you ready to drive for "{assignment.description}" on{" "}
+              Are you ready to drive for "{assignment.description}" on{' '}
               {assignment.date} at {assignment.startTime}?
             </p>
 
@@ -271,7 +271,7 @@ export default function AssignmentConfirmation({
               </label>
               <textarea
                 value={confirmationNotes}
-                onChange={(e) => setConfirmationNotes(e.target.value)}
+                onChange={e => setConfirmationNotes(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 rows={3}
                 placeholder="Any additional information..."
@@ -310,11 +310,11 @@ export default function AssignmentConfirmation({
               </label>
               <select
                 value={selectedIssueType}
-                onChange={(e) => setSelectedIssueType(e.target.value)}
+                onChange={e => setSelectedIssueType(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
                 <option value="">Select a reason...</option>
-                {ISSUE_TYPES.map((type) => (
+                {ISSUE_TYPES.map(type => (
                   <option key={type.value} value={type.value}>
                     {type.icon} {type.label}
                   </option>
@@ -328,7 +328,7 @@ export default function AssignmentConfirmation({
               </label>
               <textarea
                 value={declineReason}
-                onChange={(e) => setDeclineReason(e.target.value)}
+                onChange={e => setDeclineReason(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 rows={3}
                 placeholder="Please provide details about why you cannot make this assignment..."
@@ -369,11 +369,11 @@ export default function AssignmentConfirmation({
               </label>
               <select
                 value={selectedIssueType}
-                onChange={(e) => setSelectedIssueType(e.target.value)}
+                onChange={e => setSelectedIssueType(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               >
                 <option value="">Select issue type...</option>
-                {ISSUE_TYPES.map((type) => (
+                {ISSUE_TYPES.map(type => (
                   <option key={type.value} value={type.value}>
                     {type.icon} {type.label}
                   </option>
@@ -387,7 +387,7 @@ export default function AssignmentConfirmation({
               </label>
               <textarea
                 value={issueDescription}
-                onChange={(e) => setIssueDescription(e.target.value)}
+                onChange={e => setIssueDescription(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 rows={3}
                 placeholder="Please describe the issue in detail..."

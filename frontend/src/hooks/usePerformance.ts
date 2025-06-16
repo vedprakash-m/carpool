@@ -16,7 +16,7 @@ export function usePerformanceMonitor() {
   }>({
     renderTime: 0,
     loadTime: 0,
-    interactionTime: 0
+    interactionTime: 0,
   });
 
   const startTime = useRef<number>(0);
@@ -28,10 +28,10 @@ export function usePerformanceMonitor() {
   const endTimer = useCallback((type: 'render' | 'load' | 'interaction') => {
     const endTime = performance.now();
     const duration = endTime - startTime.current;
-    
+
     setMetrics(prev => ({
       ...prev,
-      [`${type}Time`]: duration
+      [`${type}Time`]: duration,
     }));
 
     // Log slow operations
@@ -72,20 +72,26 @@ export function useThrottle<T extends (...args: any[]) => any>(
   const lastCall = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  return useCallback(((...args: Parameters<T>) => {
-    const now = Date.now();
-    
-    if (now - lastCall.current >= delay) {
-      lastCall.current = now;
-      return func(...args);
-    } else {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
-        lastCall.current = Date.now();
-        func(...args);
-      }, delay - (now - lastCall.current));
-    }
-  }) as T, [func, delay]);
+  return useCallback(
+    ((...args: Parameters<T>) => {
+      const now = Date.now();
+
+      if (now - lastCall.current >= delay) {
+        lastCall.current = now;
+        return func(...args);
+      } else {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(
+          () => {
+            lastCall.current = Date.now();
+            func(...args);
+          },
+          delay - (now - lastCall.current)
+        );
+      }
+    }) as T,
+    [func, delay]
+  );
 }
 
 /**
@@ -144,17 +150,23 @@ export function useCachedState<T>(
     return initialValue;
   });
 
-  const setCachedState = useCallback((value: T) => {
-    setState(value);
-    try {
-      localStorage.setItem(key, JSON.stringify({
-        value,
-        timestamp: Date.now()
-      }));
-    } catch (error) {
-      console.warn('Failed to cache state:', error);
-    }
-  }, [key]);
+  const setCachedState = useCallback(
+    (value: T) => {
+      setState(value);
+      try {
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            value,
+            timestamp: Date.now(),
+          })
+        );
+      } catch (error) {
+        console.warn('Failed to cache state:', error);
+      }
+    },
+    [key]
+  );
 
   return [state, setCachedState];
 }
@@ -168,13 +180,13 @@ export function useVirtualScroll<T>(
   containerHeight: number
 ) {
   const [scrollTop, setScrollTop] = useState(0);
-  
+
   const visibleStart = Math.floor(scrollTop / itemHeight);
   const visibleEnd = Math.min(
     visibleStart + Math.ceil(containerHeight / itemHeight) + 1,
     items.length
   );
-  
+
   const visibleItems = items.slice(visibleStart, visibleEnd);
   const totalHeight = items.length * itemHeight;
   const offsetY = visibleStart * itemHeight;
@@ -189,7 +201,7 @@ export function useVirtualScroll<T>(
     offsetY,
     handleScroll,
     visibleStart,
-    visibleEnd
+    visibleEnd,
   };
 }
 
@@ -204,13 +216,14 @@ export function useAsyncOperation<T>() {
   const execute = useCallback(async (operation: () => Promise<T>) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await operation();
       setData(result);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Operation failed';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Operation failed';
       setError(errorMessage);
       throw err;
     } finally {

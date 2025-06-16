@@ -1,4 +1,4 @@
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock } from 'lucide-react';
 
 interface TravelPeriod {
   startDate: string;
@@ -17,10 +17,10 @@ export function TravelScheduleCard({
   travelPeriods,
 }: TravelScheduleCardProps) {
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
   };
 
@@ -36,9 +36,9 @@ export function TravelScheduleCard({
             <p className="text-sm text-gray-600">
               {hasUpcomingTravel
                 ? `${travelPeriods.length} upcoming travel period${
-                    travelPeriods.length !== 1 ? "s" : ""
+                    travelPeriods.length !== 1 ? 's' : ''
                   }`
-                : "No upcoming travel scheduled"}
+                : 'No upcoming travel scheduled'}
             </p>
           </div>
         </div>
@@ -53,7 +53,7 @@ export function TravelScheduleCard({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-gray-900">
-                      {formatDate(period.startDate)} -{" "}
+                      {formatDate(period.startDate)} -{' '}
                       {formatDate(period.endDate)}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">

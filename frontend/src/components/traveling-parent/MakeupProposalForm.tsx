@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Plus, X } from "lucide-react";
-import type { MakeupProposal } from "@/hooks/useTravelingParentData";
+import { useState } from 'react';
+import { Plus, X } from 'lucide-react';
+import type { MakeupProposal } from '@/hooks/useTravelingParentData';
 
 interface MakeupProposalFormProps {
   onSubmit: (
@@ -22,11 +22,11 @@ export function MakeupProposalForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [proposal, setProposal] = useState<MakeupProposal>({
-    proposedDate: "",
-    proposedTime: "07:30",
-    makeupType: "extra_week",
+    proposedDate: '',
+    proposedTime: '07:30',
+    makeupType: 'extra_week',
     tripsToMakeup: 1,
-    notes: "",
+    notes: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,25 +40,25 @@ export function MakeupProposalForm({
       if (result.success) {
         // Reset form and close
         setProposal({
-          proposedDate: "",
-          proposedTime: "07:30",
-          makeupType: "extra_week",
+          proposedDate: '',
+          proposedTime: '07:30',
+          makeupType: 'extra_week',
           tripsToMakeup: 1,
-          notes: "",
+          notes: '',
         });
         setIsOpen(false);
       } else {
-        setError(result.error || "Failed to submit proposal");
+        setError(result.error || 'Failed to submit proposal');
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError('An unexpected error occurred');
     } finally {
       setSubmitting(false);
     }
   };
 
   const getAvailableDatesForSelect = () => {
-    return availableDates.filter((date) => date.available).slice(0, 30); // Limit to next 30 available dates
+    return availableDates.filter(date => date.available).slice(0, 30); // Limit to next 30 available dates
   };
 
   if (!isOpen) {
@@ -118,20 +118,20 @@ export function MakeupProposalForm({
             <select
               id="proposedDate"
               value={proposal.proposedDate}
-              onChange={(e) =>
+              onChange={e =>
                 setProposal({ ...proposal, proposedDate: e.target.value })
               }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
               <option value="">Select a date...</option>
-              {getAvailableDatesForSelect().map((date) => (
+              {getAvailableDatesForSelect().map(date => (
                 <option key={date.date} value={date.date}>
-                  {new Date(date.date).toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
+                  {new Date(date.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
                   })}
                 </option>
               ))}
@@ -148,7 +148,7 @@ export function MakeupProposalForm({
             <select
               id="proposedTime"
               value={proposal.proposedTime}
-              onChange={(e) =>
+              onChange={e =>
                 setProposal({ ...proposal, proposedTime: e.target.value })
               }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -173,7 +173,7 @@ export function MakeupProposalForm({
             <select
               id="makeupType"
               value={proposal.makeupType}
-              onChange={(e) =>
+              onChange={e =>
                 setProposal({ ...proposal, makeupType: e.target.value as any })
               }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -195,7 +195,7 @@ export function MakeupProposalForm({
             <select
               id="tripsToMakeup"
               value={proposal.tripsToMakeup}
-              onChange={(e) =>
+              onChange={e =>
                 setProposal({
                   ...proposal,
                   tripsToMakeup: parseInt(e.target.value),
@@ -204,7 +204,7 @@ export function MakeupProposalForm({
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
             >
-              {[1, 2, 3, 4, 5].map((num) => (
+              {[1, 2, 3, 4, 5].map(num => (
                 <option key={num} value={num}>
                   {num}
                 </option>
@@ -223,7 +223,7 @@ export function MakeupProposalForm({
               id="notes"
               rows={3}
               value={proposal.notes}
-              onChange={(e) =>
+              onChange={e =>
                 setProposal({ ...proposal, notes: e.target.value })
               }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -248,7 +248,7 @@ export function MakeupProposalForm({
               disabled={submitting}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? "Submitting..." : "Submit Proposal"}
+              {submitting ? 'Submitting...' : 'Submit Proposal'}
             </button>
           </div>
         </form>

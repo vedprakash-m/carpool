@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 interface EmergencyAlertProps {
   groupId: string;
@@ -9,29 +9,29 @@ const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
   groupId,
   onClose,
 }) => {
-  const [alertType, setAlertType] = useState("");
-  const [description, setDescription] = useState("");
+  const [alertType, setAlertType] = useState('');
+  const [description, setDescription] = useState('');
   const [showDetails, setShowDetails] = useState(false);
 
   const emergencyTypes = [
     {
-      id: "traffic_vehicle",
-      title: "🚗 Traffic/Vehicle Issue",
-      subtitle: "Car trouble, accident, traffic delay",
+      id: 'traffic_vehicle',
+      title: '🚗 Traffic/Vehicle Issue',
+      subtitle: 'Car trouble, accident, traffic delay',
     },
     {
-      id: "schedule_emergency",
-      title: "⏰ Schedule Emergency",
+      id: 'schedule_emergency',
+      title: '⏰ Schedule Emergency',
       subtitle: "Can't make pickup, need immediate help",
     },
     {
-      id: "medical_personal",
-      title: "🏥 Medical/Personal Emergency",
-      subtitle: "Health issue, family emergency",
+      id: 'medical_personal',
+      title: '🏥 Medical/Personal Emergency',
+      subtitle: 'Health issue, family emergency',
     },
     {
-      id: "contact_needed",
-      title: "📞 Need Immediate Contact",
+      id: 'contact_needed',
+      title: '📞 Need Immediate Contact',
       subtitle: "Can't reach driver/parent, need assistance",
     },
   ];
@@ -43,7 +43,7 @@ const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
 
   const handleSendAlert = () => {
     // API call would go here
-    console.log("Sending emergency alert:", {
+    console.log('Sending emergency alert:', {
       alertType,
       description,
       groupId,
@@ -51,7 +51,7 @@ const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
 
     // Show success message
     alert(
-      "Emergency alert sent to your carpool group for coordination assistance."
+      'Emergency alert sent to your carpool group for coordination assistance.'
     );
     onClose();
   };
@@ -77,7 +77,7 @@ const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
           </p>
 
           <div className="space-y-3">
-            {emergencyTypes.map((type) => (
+            {emergencyTypes.map(type => (
               <button
                 key={type.id}
                 onClick={() => handleTypeSelect(type.id)}
@@ -104,7 +104,7 @@ const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
     );
   }
 
-  const selectedType = emergencyTypes.find((t) => t.id === alertType);
+  const selectedType = emergencyTypes.find(t => t.id === alertType);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -128,7 +128,7 @@ const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-md resize-none"
               rows={3}
               placeholder="Minor fender bender on Oak Street. Kids are safe but car is not drivable. Need pickup assistance."

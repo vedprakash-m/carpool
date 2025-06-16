@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   UserIcon,
   KeyIcon,
   AcademicCapIcon,
   PhoneIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface ChildRegistrationData {
   firstName: string;
@@ -26,20 +26,20 @@ interface ChildRegistrationData {
 export default function ChildRegistrationPage() {
   const router = useRouter();
   const [formData, setFormData] = useState<ChildRegistrationData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    parentInviteCode: "",
-    phoneNumber: "",
-    grade: "",
-    studentId: "",
-    emergencyContact: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    parentInviteCode: '',
+    phoneNumber: '',
+    grade: '',
+    studentId: '',
+    emergencyContact: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{
-    type: "success" | "error";
+    type: 'success' | 'error';
     text: string;
   } | null>(null);
 
@@ -47,7 +47,7 @@ export default function ChildRegistrationPage() {
     field: keyof ChildRegistrationData,
     value: string
   ) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [field]: value,
     }));
@@ -55,38 +55,38 @@ export default function ChildRegistrationPage() {
 
   const validateForm = () => {
     if (!formData.firstName.trim()) {
-      setMessage({ type: "error", text: "First name is required" });
+      setMessage({ type: 'error', text: 'First name is required' });
       return false;
     }
     if (!formData.lastName.trim()) {
-      setMessage({ type: "error", text: "Last name is required" });
+      setMessage({ type: 'error', text: 'Last name is required' });
       return false;
     }
     if (!formData.email.trim()) {
-      setMessage({ type: "error", text: "Email is required" });
+      setMessage({ type: 'error', text: 'Email is required' });
       return false;
     }
-    if (!formData.email.includes("@")) {
-      setMessage({ type: "error", text: "Please enter a valid email address" });
+    if (!formData.email.includes('@')) {
+      setMessage({ type: 'error', text: 'Please enter a valid email address' });
       return false;
     }
     if (formData.password.length < 8) {
       setMessage({
-        type: "error",
-        text: "Password must be at least 8 characters",
+        type: 'error',
+        text: 'Password must be at least 8 characters',
       });
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setMessage({ type: "error", text: "Passwords do not match" });
+      setMessage({ type: 'error', text: 'Passwords do not match' });
       return false;
     }
     if (!formData.parentInviteCode.trim()) {
-      setMessage({ type: "error", text: "Parent invitation code is required" });
+      setMessage({ type: 'error', text: 'Parent invitation code is required' });
       return false;
     }
     if (!formData.studentId.trim()) {
-      setMessage({ type: "error", text: "Student ID is required" });
+      setMessage({ type: 'error', text: 'Student ID is required' });
       return false;
     }
     return true;
@@ -104,21 +104,21 @@ export default function ChildRegistrationPage() {
 
     try {
       // Mock successful registration for now
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       setMessage({
-        type: "success",
-        text: "Registration successful! You can now sign in with your credentials.",
+        type: 'success',
+        text: 'Registration successful! You can now sign in with your credentials.',
       });
 
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        router.push("/login?registered=true");
+        router.push('/login?registered=true');
       }, 2000);
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Registration failed. Please try again.",
+        type: 'error',
+        text: 'Registration failed. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
@@ -158,8 +158,8 @@ export default function ChildRegistrationPage() {
                       id="firstName"
                       type="text"
                       value={formData.firstName}
-                      onChange={(e) =>
-                        handleInputChange("firstName", e.target.value)
+                      onChange={e =>
+                        handleInputChange('firstName', e.target.value)
                       }
                       className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       placeholder="John"
@@ -179,8 +179,8 @@ export default function ChildRegistrationPage() {
                       id="lastName"
                       type="text"
                       value={formData.lastName}
-                      onChange={(e) =>
-                        handleInputChange("lastName", e.target.value)
+                      onChange={e =>
+                        handleInputChange('lastName', e.target.value)
                       }
                       className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Smith"
@@ -201,7 +201,7 @@ export default function ChildRegistrationPage() {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  onChange={e => handleInputChange('email', e.target.value)}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   placeholder="john.smith@example.com"
                 />
@@ -221,8 +221,8 @@ export default function ChildRegistrationPage() {
                     id="parentInviteCode"
                     type="text"
                     value={formData.parentInviteCode}
-                    onChange={(e) =>
-                      handleInputChange("parentInviteCode", e.target.value)
+                    onChange={e =>
+                      handleInputChange('parentInviteCode', e.target.value)
                     }
                     className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     placeholder="ABC123XYZ"
@@ -246,8 +246,8 @@ export default function ChildRegistrationPage() {
                     id="password"
                     type="password"
                     value={formData.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
+                    onChange={e =>
+                      handleInputChange('password', e.target.value)
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     placeholder="••••••••"
@@ -264,8 +264,8 @@ export default function ChildRegistrationPage() {
                     id="confirmPassword"
                     type="password"
                     value={formData.confirmPassword}
-                    onChange={(e) =>
-                      handleInputChange("confirmPassword", e.target.value)
+                    onChange={e =>
+                      handleInputChange('confirmPassword', e.target.value)
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     placeholder="••••••••"
@@ -286,8 +286,8 @@ export default function ChildRegistrationPage() {
                     id="studentId"
                     type="text"
                     value={formData.studentId}
-                    onChange={(e) =>
-                      handleInputChange("studentId", e.target.value)
+                    onChange={e =>
+                      handleInputChange('studentId', e.target.value)
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     placeholder="STU12345"
@@ -303,7 +303,7 @@ export default function ChildRegistrationPage() {
                   <select
                     id="grade"
                     value={formData.grade}
-                    onChange={(e) => handleInputChange("grade", e.target.value)}
+                    onChange={e => handleInputChange('grade', e.target.value)}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select Grade</option>
@@ -338,8 +338,8 @@ export default function ChildRegistrationPage() {
                     id="phoneNumber"
                     type="tel"
                     value={formData.phoneNumber}
-                    onChange={(e) =>
-                      handleInputChange("phoneNumber", e.target.value)
+                    onChange={e =>
+                      handleInputChange('phoneNumber', e.target.value)
                     }
                     className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     placeholder="(555) 123-4567"
@@ -358,8 +358,8 @@ export default function ChildRegistrationPage() {
                   id="emergencyContact"
                   type="text"
                   value={formData.emergencyContact}
-                  onChange={(e) =>
-                    handleInputChange("emergencyContact", e.target.value)
+                  onChange={e =>
+                    handleInputChange('emergencyContact', e.target.value)
                   }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Parent/Guardian name and phone"
@@ -370,16 +370,16 @@ export default function ChildRegistrationPage() {
             {message && (
               <div
                 className={`mt-4 p-3 rounded-md ${
-                  message.type === "success"
-                    ? "bg-green-50 border border-green-200"
-                    : "bg-red-50 border border-red-200"
+                  message.type === 'success'
+                    ? 'bg-green-50 border border-green-200'
+                    : 'bg-red-50 border border-red-200'
                 }`}
               >
                 <p
                   className={`text-sm ${
-                    message.type === "success"
-                      ? "text-green-800"
-                      : "text-red-800"
+                    message.type === 'success'
+                      ? 'text-green-800'
+                      : 'text-red-800'
                   }`}
                 >
                   {message.text}
@@ -399,14 +399,14 @@ export default function ChildRegistrationPage() {
                     Creating Account...
                   </>
                 ) : (
-                  "Create Student Account"
+                  'Create Student Account'
                 )}
               </button>
             </div>
 
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-600">
-                Already have an account?{" "}
+                Already have an account?{' '}
                 <Link
                   href="/login"
                   className="font-medium text-blue-600 hover:text-blue-500"
@@ -418,7 +418,7 @@ export default function ChildRegistrationPage() {
 
             <div className="mt-2 text-center">
               <p className="text-sm text-gray-600">
-                Are you a parent?{" "}
+                Are you a parent?{' '}
                 <Link
                   href="/register"
                   className="font-medium text-blue-600 hover:text-blue-500"

@@ -3,9 +3,9 @@
  * Modal form for reporting emergency situations
  */
 
-import React from "react";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { EmergencyType } from "@/hooks/useEmergencyData";
+import React from 'react';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { EmergencyType } from '@/hooks/useEmergencyData';
 
 interface EmergencyReportModalProps {
   isVisible: boolean;
@@ -34,7 +34,7 @@ export function EmergencyReportModal({
 
   const canSubmit = selectedEmergencyType && emergencyDescription.trim();
   const selectedType = emergencyTypes.find(
-    (t) => t.value === selectedEmergencyType
+    t => t.value === selectedEmergencyType
   );
 
   return (
@@ -51,11 +51,11 @@ export function EmergencyReportModal({
           </label>
           <select
             value={selectedEmergencyType}
-            onChange={(e) => onTypeChange(e.target.value)}
+            onChange={e => onTypeChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
           >
             <option value="">Select emergency type...</option>
-            {emergencyTypes.map((type) => (
+            {emergencyTypes.map(type => (
               <option key={type.value} value={type.value}>
                 {type.icon} {type.label}
               </option>
@@ -69,7 +69,7 @@ export function EmergencyReportModal({
           </label>
           <textarea
             value={emergencyDescription}
-            onChange={(e) => onDescriptionChange(e.target.value)}
+            onChange={e => onDescriptionChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             rows={4}
             placeholder="Describe the emergency situation, your current location, and immediate needs..."

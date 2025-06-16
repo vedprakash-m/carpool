@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useAuthStore } from "../../store/auth.store";
+import { useEffect, useState } from 'react';
+import { useAuthStore } from '../../store/auth.store';
 
 export default function MinimalDashboard() {
   const [mounted, setMounted] = useState(false);
@@ -11,7 +11,7 @@ export default function MinimalDashboard() {
     setMounted(true);
   }, []);
 
-  console.log("MinimalDashboard render:", {
+  console.log('MinimalDashboard render:', {
     mounted,
     user,
     isAuthenticated,
@@ -19,19 +19,19 @@ export default function MinimalDashboard() {
   });
 
   if (!mounted) {
-    return <div style={{ padding: "20px" }}>Mounting...</div>;
+    return <div style={{ padding: '20px' }}>Mounting...</div>;
   }
 
   if (isLoading) {
-    return <div style={{ padding: "20px" }}>Loading auth...</div>;
+    return <div style={{ padding: '20px' }}>Loading auth...</div>;
   }
 
   if (!isAuthenticated) {
     return (
-      <div style={{ padding: "20px" }}>
+      <div style={{ padding: '20px' }}>
         <h1>Not Authenticated</h1>
         <p>isAuthenticated: {String(isAuthenticated)}</p>
-        <p>user: {user ? "exists" : "null"}</p>
+        <p>user: {user ? 'exists' : 'null'}</p>
         <a href="/login">Go to Login</a>
       </div>
     );
@@ -39,7 +39,7 @@ export default function MinimalDashboard() {
 
   if (!user) {
     return (
-      <div style={{ padding: "20px" }}>
+      <div style={{ padding: '20px' }}>
         <h1>No User Data</h1>
         <p>isAuthenticated: {String(isAuthenticated)}</p>
         <p>user: {String(user)}</p>
@@ -49,11 +49,11 @@ export default function MinimalDashboard() {
   }
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1 style={{ color: "green" }}>✅ Minimal Dashboard Working!</h1>
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1 style={{ color: 'green' }}>✅ Minimal Dashboard Working!</h1>
 
       <div
-        style={{ background: "#f0f0f0", padding: "10px", marginBottom: "20px" }}
+        style={{ background: '#f0f0f0', padding: '10px', marginBottom: '20px' }}
       >
         <h2>User Info:</h2>
         <p>
@@ -71,7 +71,7 @@ export default function MinimalDashboard() {
       </div>
 
       <div
-        style={{ background: "#e8f5e8", padding: "10px", marginBottom: "20px" }}
+        style={{ background: '#e8f5e8', padding: '10px', marginBottom: '20px' }}
       >
         <h3>🎉 Authentication is working!</h3>
         <p>

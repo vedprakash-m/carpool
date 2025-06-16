@@ -3,7 +3,7 @@
  * Displays safety guidelines and procedures for emergency situations
  */
 
-import React from "react";
+import React from 'react';
 
 export function EmergencyGuidelines() {
   return (

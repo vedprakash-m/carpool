@@ -3,7 +3,7 @@
 // This is a placeholder service to unblock development.
 // In a real implementation, this would interact with a database.
 
-import { Child } from "@vcarpool/shared";
+import { Child } from '@vcarpool/shared';
 
 export class ChildService {
   private static children: Child[] = [
@@ -11,12 +11,9 @@ export class ChildService {
   ];
 
   public static async createChild(
-    childData: Omit<
-      Child,
-      "id" | "familyId" | "parentId" | "createdAt" | "updatedAt"
-    >,
+    childData: Omit<Child, 'id' | 'familyId' | 'parentId' | 'createdAt' | 'updatedAt'>,
     familyId: string,
-    parentId: string
+    parentId: string,
   ): Promise<Child> {
     const newChild: Child = {
       id: `child-${Date.now()}`,
@@ -31,12 +28,9 @@ export class ChildService {
   }
 
   async createChild(
-    childData: Omit<
-      Child,
-      "id" | "familyId" | "parentId" | "createdAt" | "updatedAt"
-    >,
+    childData: Omit<Child, 'id' | 'familyId' | 'parentId' | 'createdAt' | 'updatedAt'>,
     familyId: string,
-    parentId: string
+    parentId: string,
   ): Promise<Child> {
     const newChild: Child = {
       id: `child-${Date.now()}`,

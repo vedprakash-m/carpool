@@ -3,7 +3,7 @@
  * Provides basic performance optimization without complex dependencies
  */
 
-import { InvocationContext } from "@azure/functions";
+import { InvocationContext } from '@azure/functions';
 
 interface PerformanceMetrics {
   executionTime: number;
@@ -33,10 +33,7 @@ export class PerformanceOptimizer {
   /**
    * Memoize a function with caching
    */
-  memoize<T extends (...args: any[]) => Promise<any>>(
-    fn: T,
-    options: CacheOptions
-  ): T {
+  memoize<T extends (...args: any[]) => Promise<any>>(fn: T, options: CacheOptions): T {
     return (async (...args: any[]) => {
       const cacheKey = `${options.key}_${JSON.stringify(args)}`;
       const cached = this.cache.get(cacheKey);
@@ -60,7 +57,7 @@ export class PerformanceOptimizer {
    */
   optimizeFunction<T extends (...args: any[]) => Promise<any>>(
     fn: T,
-    options: OptimizationOptions = {}
+    options: OptimizationOptions = {},
   ): T {
     const { timeout = 30000, retries = 0 } = options;
 
@@ -70,7 +67,7 @@ export class PerformanceOptimizer {
       for (let attempt = 0; attempt <= retries; attempt++) {
         try {
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Function timeout")), timeout)
+            setTimeout(() => reject(new Error('Function timeout')), timeout),
           );
 
           return await Promise.race([fn(...args), timeoutPromise]);
@@ -80,9 +77,7 @@ export class PerformanceOptimizer {
             throw lastError;
           }
           // Wait before retry
-          await new Promise((resolve) =>
-            setTimeout(resolve, 1000 * (attempt + 1))
-          );
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
         }
       }
 
@@ -95,7 +90,7 @@ export class PerformanceOptimizer {
    */
   async measurePerformance<T>(
     fn: () => Promise<T>,
-    context?: InvocationContext
+    context?: InvocationContext,
   ): Promise<{ result: T; metrics: PerformanceMetrics }> {
     const startTime = Date.now();
     const startMemory = process.memoryUsage().heapUsed;
@@ -156,23 +151,16 @@ export class PerformanceOptimizer {
    * Performance monitoring decorator
    */
   static monitor(options: { name?: string } = {}) {
-    return function (
-      target: any,
-      propertyName: string,
-      descriptor: PropertyDescriptor
-    ) {
+    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
       const method = descriptor.value;
       const optimizer = new PerformanceOptimizer();
 
       descriptor.value = async function (...args: any[]) {
         const { result, metrics } = await optimizer.measurePerformance(() =>
-          method.apply(this, args)
+          method.apply(this, args),
         );
 
-        console.log(
-          `Performance metrics for ${options.name || propertyName}:`,
-          metrics
-        );
+        console.log(`Performance metrics for ${options.name || propertyName}:`, metrics);
         return result;
       };
 

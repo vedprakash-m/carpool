@@ -22,4 +22,18 @@ export class PushService {
       console.error('Error sending push', err);
     }
   }
-} 
+
+  async sendPushNotification(userId: string, payload: any): Promise<void> {
+    if (!this.vapidSet) return;
+
+    try {
+      // In a real implementation, you would:
+      // 1. Get user's push subscription from database
+      // 2. Send the notification
+      // For now, we'll just log and return
+      console.log(`Push notification would be sent to user ${userId}:`, payload);
+    } catch (err) {
+      console.error('Error sending push notification', err);
+    }
+  }
+}

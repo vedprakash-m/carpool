@@ -4,7 +4,11 @@
  */
 
 import { renderHook, act } from '@testing-library/react';
-import { usePerformanceMonitor, useDebounce, useThrottle } from '../../hooks/usePerformance';
+import {
+  usePerformanceMonitor,
+  useDebounce,
+  useThrottle,
+} from '../../hooks/usePerformance';
 
 // Mock performance.now for consistent testing
 const mockPerformanceNow = jest.fn();
@@ -180,7 +184,7 @@ describe('useDebounce', () => {
     );
 
     rerender({ value: 'changed', delay: 100 });
-    
+
     act(() => {
       jest.advanceTimersByTime(99);
     });

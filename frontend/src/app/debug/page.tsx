@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useAuthStore } from "../../store/auth.store";
-import { useTripStore } from "../../store/trip.store";
-import { tripApi } from "../../lib/trip-api";
+import { useEffect, useState } from 'react';
+import { useAuthStore } from '../../store/auth.store';
+import { useTripStore } from '../../store/trip.store';
+import { tripApi } from '../../lib/trip-api';
 
 export default function DebugPage() {
   const { user, isAuthenticated } = useAuthStore();
@@ -15,32 +15,32 @@ export default function DebugPage() {
 
   const testDirectAPI = async () => {
     try {
-      console.log("Testing direct API call...");
+      console.log('Testing direct API call...');
       const response = await tripApi.getTripStats();
-      console.log("Direct API response:", response);
+      console.log('Direct API response:', response);
       setDirectApiResponse(response);
     } catch (error) {
-      console.error("Direct API error:", error);
+      console.error('Direct API error:', error);
       setDirectApiError(
-        error instanceof Error ? error.message : "Unknown error"
+        error instanceof Error ? error.message : 'Unknown error'
       );
     }
   };
 
   const testSimpleFetch = async () => {
     try {
-      console.log("Testing simple fetch without custom headers...");
+      console.log('Testing simple fetch without custom headers...');
       const response = await fetch(
-        "https://vcarpool-api-prod.azurewebsites.net/api/trips/stats"
+        'https://vcarpool-api-prod.azurewebsites.net/api/trips/stats'
       );
       const data = await response.json();
-      console.log("Simple fetch response:", data);
+      console.log('Simple fetch response:', data);
       setSimpleFetchResponse(data);
       setSimpleFetchError(null);
     } catch (error) {
-      console.error("Simple fetch error:", error);
+      console.error('Simple fetch error:', error);
       setSimpleFetchError(
-        error instanceof Error ? error.message : "Unknown error"
+        error instanceof Error ? error.message : 'Unknown error'
       );
     }
   };
@@ -65,9 +65,9 @@ export default function DebugPage() {
             <div className="flex justify-between">
               <span className="font-medium">Authenticated:</span>
               <span
-                className={isAuthenticated ? "text-green-600" : "text-red-600"}
+                className={isAuthenticated ? 'text-green-600' : 'text-red-600'}
               >
-                {isAuthenticated ? "Yes" : "No"}
+                {isAuthenticated ? 'Yes' : 'No'}
               </span>
             </div>
             <div className="flex justify-between">
@@ -75,12 +75,12 @@ export default function DebugPage() {
               <span>
                 {user
                   ? `${user.firstName} ${user.lastName} (${user.email})`
-                  : "None"}
+                  : 'None'}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Role:</span>
-              <span>{user?.role || "None"}</span>
+              <span>{user?.role || 'None'}</span>
             </div>
           </div>
         </div>
@@ -140,10 +140,10 @@ export default function DebugPage() {
               <span className="font-medium">Loading:</span>
               <span
                 className={`ml-2 ${
-                  statsLoading ? "text-yellow-600" : "text-green-600"
+                  statsLoading ? 'text-yellow-600' : 'text-green-600'
                 }`}
               >
-                {statsLoading ? "Yes" : "No"}
+                {statsLoading ? 'Yes' : 'No'}
               </span>
             </div>
 

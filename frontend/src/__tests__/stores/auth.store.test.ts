@@ -3,9 +3,9 @@
  * Testing authentication state management with Zustand
  */
 
-import { act, renderHook } from "@testing-library/react";
-import { useAuthStore } from "../../store/auth.store";
-import { apiClient } from "../../lib/api-client";
+import { act, renderHook } from '@testing-library/react';
+import { useAuthStore } from '../../store/auth.store';
+import { apiClient } from '../../lib/api-client';
 import {
   User,
   LoginRequest,
@@ -13,10 +13,10 @@ import {
   AuthResponse,
   UpdateUserRequest,
   ApiResponse,
-} from "../../types/shared";
+} from '../../types/shared';
 
 // Mock the API client
-jest.mock("../../lib/api-client");
+jest.mock('../../lib/api-client');
 const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
 // Mock localStorage
@@ -26,23 +26,23 @@ const mockLocalStorage = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-Object.defineProperty(window, "localStorage", {
+Object.defineProperty(window, 'localStorage', {
   value: mockLocalStorage,
 });
 
-describe("useAuthStore", () => {
+describe('useAuthStore', () => {
   const mockUser: User = {
-    id: "user-123",
-    email: "test@example.com",
-    firstName: "Test",
-    lastName: "User",
-    phoneNumber: "+1234567890",
-    department: "Engineering",
-    role: "student",
+    id: 'user-123',
+    email: 'test@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    phoneNumber: '+1234567890',
+    department: 'Engineering',
+    role: 'student',
     preferences: {
-      pickupLocation: "Campus North",
-      dropoffLocation: "Downtown",
-      preferredTime: "08:00",
+      pickupLocation: 'Campus North',
+      dropoffLocation: 'Downtown',
+      preferredTime: '08:00',
       isDriver: false,
       smokingAllowed: false,
       notifications: {
@@ -53,14 +53,14 @@ describe("useAuthStore", () => {
         scheduleChanges: true,
       },
     },
-    createdAt: new Date("2024-01-01"),
-    updatedAt: new Date("2024-01-01"),
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   };
 
   const mockAuthResponse: AuthResponse = {
     user: mockUser,
-    token: "mock-access-token",
-    refreshToken: "mock-refresh-token",
+    token: 'mock-access-token',
+    refreshToken: 'mock-refresh-token',
   };
 
   beforeEach(() => {
@@ -80,8 +80,8 @@ describe("useAuthStore", () => {
     mockLocalStorage.getItem.mockReturnValue(null);
   });
 
-  describe("initial state", () => {
-    it("should have correct initial state", () => {
+  describe('initial state', () => {
+    it('should have correct initial state', () => {
       const { result } = renderHook(() => useAuthStore());
 
       expect(result.current.user).toBeNull();
@@ -94,11 +94,11 @@ describe("useAuthStore", () => {
     });
   });
 
-  describe("login", () => {
-    it("should handle successful login", async () => {
+  describe('login', () => {
+    it('should handle successful login', async () => {
       const loginRequest: LoginRequest = {
-        email: "test@example.com",
-        password: "password123",
+        email: 'test@example.com',
+        password: 'password123',
       };
 
       mockApiClient.post.mockResolvedValueOnce({
@@ -113,30 +113,30 @@ describe("useAuthStore", () => {
       });
 
       expect(mockApiClient.post).toHaveBeenCalledWith(
-        "/v1/auth/token",
+        '/v1/auth/token',
         loginRequest
       );
       expect(mockApiClient.setToken).toHaveBeenCalledWith(
-        "mock-access-token",
-        "mock-refresh-token"
+        'mock-access-token',
+        'mock-refresh-token'
       );
       expect(result.current.user).toEqual(mockUser);
-      expect(result.current.token).toBe("mock-access-token");
-      expect(result.current.refreshToken).toBe("mock-refresh-token");
+      expect(result.current.token).toBe('mock-access-token');
+      expect(result.current.refreshToken).toBe('mock-refresh-token');
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
     });
 
-    it("should handle failed login", async () => {
+    it('should handle failed login', async () => {
       const loginRequest: LoginRequest = {
-        email: "test@example.com",
-        password: "wrongpassword",
+        email: 'test@example.com',
+        password: 'wrongpassword',
       };
 
       mockApiClient.post.mockResolvedValueOnce({
         success: false,
-        error: "Invalid credentials",
+        error: 'Invalid credentials',
       });
 
       const { result } = renderHook(() => useAuthStore());
@@ -155,13 +155,13 @@ describe("useAuthStore", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it("should handle login network error", async () => {
+    it('should handle login network error', async () => {
       const loginRequest: LoginRequest = {
-        email: "test@example.com",
-        password: "password123",
+        email: 'test@example.com',
+        password: 'password123',
       };
 
-      mockApiClient.post.mockRejectedValueOnce(new Error("Network error"));
+      mockApiClient.post.mockRejectedValueOnce(new Error('Network error'));
 
       const { result } = renderHook(() => useAuthStore());
 
@@ -177,14 +177,14 @@ describe("useAuthStore", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it("should set loading state during login", async () => {
+    it('should set loading state during login', async () => {
       const loginRequest: LoginRequest = {
-        email: "test@example.com",
-        password: "password123",
+        email: 'test@example.com',
+        password: 'password123',
       };
 
       let resolveLogin: (value: ApiResponse<AuthResponse>) => void;
-      const loginPromise = new Promise<ApiResponse<AuthResponse>>((resolve) => {
+      const loginPromise = new Promise<ApiResponse<AuthResponse>>(resolve => {
         resolveLogin = resolve;
       });
 
@@ -213,15 +213,15 @@ describe("useAuthStore", () => {
     });
   });
 
-  describe("register", () => {
-    it("should handle successful registration", async () => {
+  describe('register', () => {
+    it('should handle successful registration', async () => {
       const registerRequest: RegisterRequest = {
-        email: "newuser@example.com",
-        password: "password123",
-        firstName: "New",
-        lastName: "User",
-        phoneNumber: "+1234567890",
-        department: "Engineering",
+        email: 'newuser@example.com',
+        password: 'password123',
+        firstName: 'New',
+        lastName: 'User',
+        phoneNumber: '+1234567890',
+        department: 'Engineering',
       };
 
       mockApiClient.post.mockResolvedValueOnce({
@@ -236,26 +236,26 @@ describe("useAuthStore", () => {
       });
 
       expect(mockApiClient.post).toHaveBeenCalledWith(
-        "/v1/auth/register",
+        '/v1/auth/register',
         registerRequest
       );
       expect(result.current.user).toEqual(mockUser);
       expect(result.current.isAuthenticated).toBe(true);
     });
 
-    it("should handle registration failure", async () => {
+    it('should handle registration failure', async () => {
       const registerRequest: RegisterRequest = {
-        email: "existing@example.com",
-        password: "password123",
-        firstName: "Existing",
-        lastName: "User",
-        phoneNumber: "+1234567890",
-        department: "Engineering",
+        email: 'existing@example.com',
+        password: 'password123',
+        firstName: 'Existing',
+        lastName: 'User',
+        phoneNumber: '+1234567890',
+        department: 'Engineering',
       };
 
       mockApiClient.post.mockResolvedValueOnce({
         success: false,
-        error: "User already exists",
+        error: 'User already exists',
       });
 
       const { result } = renderHook(() => useAuthStore());
@@ -274,13 +274,13 @@ describe("useAuthStore", () => {
     });
   });
 
-  describe("logout", () => {
-    it("should clear auth state on logout", () => {
+  describe('logout', () => {
+    it('should clear auth state on logout', () => {
       // Set initial authenticated state
       useAuthStore.setState({
         user: mockUser,
-        token: "access-token",
-        refreshToken: "refresh-token",
+        token: 'access-token',
+        refreshToken: 'refresh-token',
         isAuthenticated: true,
       });
 
@@ -298,15 +298,15 @@ describe("useAuthStore", () => {
     });
   });
 
-  describe("refreshAuth", () => {
-    it("should refresh authentication with valid refresh token", async () => {
+  describe('refreshAuth', () => {
+    it('should refresh authentication with valid refresh token', async () => {
       useAuthStore.setState({
-        refreshToken: "valid-refresh-token",
+        refreshToken: 'valid-refresh-token',
       });
 
       // Mock the refreshAccessToken method
       mockApiClient.refreshAccessToken.mockResolvedValueOnce(
-        "new-access-token"
+        'new-access-token'
       );
 
       // Mock the get user call
@@ -322,20 +322,20 @@ describe("useAuthStore", () => {
       });
 
       expect(mockApiClient.refreshAccessToken).toHaveBeenCalled();
-      expect(mockApiClient.get).toHaveBeenCalledWith("/v1/users/me");
-      expect(result.current.token).toBe("new-access-token");
+      expect(mockApiClient.get).toHaveBeenCalledWith('/v1/users/me');
+      expect(result.current.token).toBe('new-access-token');
       expect(result.current.user).toEqual(mockUser);
       expect(result.current.isAuthenticated).toBe(true);
     });
 
-    it("should handle refresh failure", async () => {
+    it('should handle refresh failure', async () => {
       useAuthStore.setState({
-        refreshToken: "invalid-refresh-token",
+        refreshToken: 'invalid-refresh-token',
         isAuthenticated: true,
       });
 
       mockApiClient.refreshAccessToken.mockRejectedValueOnce(
-        new Error("Invalid refresh token")
+        new Error('Invalid refresh token')
       );
 
       const { result } = renderHook(() => useAuthStore());
@@ -347,10 +347,10 @@ describe("useAuthStore", () => {
       expect(result.current.token).toBeNull();
       expect(result.current.refreshToken).toBeNull();
       expect(result.current.isAuthenticated).toBe(false);
-      expect(result.current.error).toBe("Invalid refresh token");
+      expect(result.current.error).toBe('Invalid refresh token');
     });
 
-    it("should not refresh without refresh token", async () => {
+    it('should not refresh without refresh token', async () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
@@ -361,18 +361,18 @@ describe("useAuthStore", () => {
     });
   });
 
-  describe("updateProfile", () => {
-    it("should update user profile successfully", async () => {
+  describe('updateProfile', () => {
+    it('should update user profile successfully', async () => {
       useAuthStore.setState({
         user: mockUser,
-        token: "access-token",
+        token: 'access-token',
         isAuthenticated: true,
       });
 
       const updates: UpdateUserRequest = {
-        firstName: "Updated",
-        lastName: "Name",
-        department: "Marketing",
+        firstName: 'Updated',
+        lastName: 'Name',
+        department: 'Marketing',
       };
 
       const updatedUser = { ...mockUser, ...updates };
@@ -389,26 +389,26 @@ describe("useAuthStore", () => {
         updateResult = await result.current.updateProfile(updates);
       });
 
-      expect(mockApiClient.put).toHaveBeenCalledWith("/v1/users/me", updates);
+      expect(mockApiClient.put).toHaveBeenCalledWith('/v1/users/me', updates);
       expect(result.current.user).toEqual(updatedUser);
       expect(updateResult!).toBe(true);
       expect(result.current.loading).toBe(false);
     });
 
-    it("should handle profile update failure", async () => {
+    it('should handle profile update failure', async () => {
       useAuthStore.setState({
         user: mockUser,
-        token: "access-token",
+        token: 'access-token',
         isAuthenticated: true,
       });
 
       const updates: UpdateUserRequest = {
-        firstName: "Updated",
+        firstName: 'Updated',
       };
 
       mockApiClient.put.mockResolvedValueOnce({
         success: false,
-        error: "Update failed",
+        error: 'Update failed',
       });
 
       const { result } = renderHook(() => useAuthStore());
@@ -419,15 +419,15 @@ describe("useAuthStore", () => {
       });
 
       expect(updateResult!).toBe(false);
-      expect(result.current.error).toBe("Update failed");
+      expect(result.current.error).toBe('Update failed');
       expect(result.current.user).toEqual(mockUser); // Should remain unchanged
     });
   });
 
-  describe("clearError", () => {
-    it("should clear error state", () => {
+  describe('clearError', () => {
+    it('should clear error state', () => {
       useAuthStore.setState({
-        error: "Some error message",
+        error: 'Some error message',
       });
 
       const { result } = renderHook(() => useAuthStore());
@@ -440,10 +440,10 @@ describe("useAuthStore", () => {
     });
   });
 
-  describe("initialize", () => {
-    it("should initialize auth state with existing token", () => {
+  describe('initialize', () => {
+    it('should initialize auth state with existing token', () => {
       useAuthStore.setState({
-        token: "existing-token",
+        token: 'existing-token',
       });
 
       const { result } = renderHook(() => useAuthStore());
@@ -452,11 +452,11 @@ describe("useAuthStore", () => {
         result.current.initialize();
       });
 
-      expect(mockApiClient.setToken).toHaveBeenCalledWith("existing-token");
+      expect(mockApiClient.setToken).toHaveBeenCalledWith('existing-token');
       expect(result.current.isAuthenticated).toBe(true);
     });
 
-    it("should not initialize without token", () => {
+    it('should not initialize without token', () => {
       const { result } = renderHook(() => useAuthStore());
 
       act(() => {

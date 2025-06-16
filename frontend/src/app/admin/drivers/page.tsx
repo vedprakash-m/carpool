@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   UserIcon,
   PhoneIcon,
@@ -15,7 +15,7 @@ import {
   UserGroupIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface PotentialDriver {
   id: string;
@@ -56,7 +56,7 @@ export default function AdminDriversPage() {
   const [currentWeekData, setCurrentWeekData] = useState<WeekDriverData | null>(
     null
   );
-  const [selectedWeek, setSelectedWeek] = useState<string>("");
+  const [selectedWeek, setSelectedWeek] = useState<string>('');
   const [isLoadingDrivers, setIsLoadingDrivers] = useState(true);
   const [isLoadingWeek, setIsLoadingWeek] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -64,14 +64,14 @@ export default function AdminDriversPage() {
     new Set()
   );
   const [message, setMessage] = useState<{
-    type: "success" | "error";
+    type: 'success' | 'error';
     text: string;
   } | null>(null);
 
   // Redirect if not admin
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "admin")) {
-      router.push("/dashboard");
+    if (!isLoading && (!user || user.role !== 'admin')) {
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
@@ -83,7 +83,7 @@ export default function AdminDriversPage() {
       const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
       const nextMonday = new Date(today);
       nextMonday.setDate(today.getDate() + daysUntilMonday);
-      return nextMonday.toISOString().split("T")[0];
+      return nextMonday.toISOString().split('T')[0];
     };
 
     setSelectedWeek(getNextMonday());
@@ -91,14 +91,14 @@ export default function AdminDriversPage() {
 
   // Load potential drivers
   useEffect(() => {
-    if (user && user.role === "admin") {
+    if (user && user.role === 'admin') {
       loadPotentialDrivers();
     }
   }, [user]);
 
   // Load week data when week changes
   useEffect(() => {
-    if (selectedWeek && user && user.role === "admin") {
+    if (selectedWeek && user && user.role === 'admin') {
       loadWeekDriverData(selectedWeek);
     }
   }, [selectedWeek, user]);
@@ -111,7 +111,7 @@ export default function AdminDriversPage() {
     );
   }
 
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -129,16 +129,16 @@ export default function AdminDriversPage() {
   const loadPotentialDrivers = async () => {
     try {
       setIsLoadingDrivers(true);
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
 
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          "https://vcarpool-api-prod.azurewebsites.net/api"
+          'https://vcarpool-api-prod.azurewebsites.net/api'
         }/v1/admin/driver-designations`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -148,19 +148,19 @@ export default function AdminDriversPage() {
       const result = await response.json();
       if (!response.ok) {
         throw new Error(
-          result.error?.message || "Failed to load potential drivers"
+          result.error?.message || 'Failed to load potential drivers'
         );
       }
 
       setPotentialDrivers(result.data || []);
     } catch (error) {
-      console.error("Load potential drivers error:", error);
+      console.error('Load potential drivers error:', error);
       setMessage({
-        type: "error",
+        type: 'error',
         text:
           error instanceof Error
             ? error.message
-            : "Failed to load potential drivers",
+            : 'Failed to load potential drivers',
       });
     } finally {
       setIsLoadingDrivers(false);
@@ -170,16 +170,16 @@ export default function AdminDriversPage() {
   const loadWeekDriverData = async (weekStartDate: string) => {
     try {
       setIsLoadingWeek(true);
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
 
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          "https://vcarpool-api-prod.azurewebsites.net/api"
+          'https://vcarpool-api-prod.azurewebsites.net/api'
         }/v1/admin/driver-designations/${weekStartDate}`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -189,7 +189,7 @@ export default function AdminDriversPage() {
       const result = await response.json();
       if (!response.ok) {
         throw new Error(
-          result.error?.message || "Failed to load week driver data"
+          result.error?.message || 'Failed to load week driver data'
         );
       }
 
@@ -204,13 +204,13 @@ export default function AdminDriversPage() {
       );
       setSelectedDriverIds(activeIds);
     } catch (error) {
-      console.error("Load week driver data error:", error);
+      console.error('Load week driver data error:', error);
       setMessage({
-        type: "error",
+        type: 'error',
         text:
           error instanceof Error
             ? error.message
-            : "Failed to load week driver data",
+            : 'Failed to load week driver data',
       });
     } finally {
       setIsLoadingWeek(false);
@@ -222,18 +222,18 @@ export default function AdminDriversPage() {
       setIsSaving(true);
       setMessage(null);
 
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
 
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          "https://vcarpool-api-prod.azurewebsites.net/api"
+          'https://vcarpool-api-prod.azurewebsites.net/api'
         }/v1/admin/driver-designations`,
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
@@ -246,12 +246,12 @@ export default function AdminDriversPage() {
       const result = await response.json();
       if (!response.ok) {
         throw new Error(
-          result.error?.message || "Failed to save driver designations"
+          result.error?.message || 'Failed to save driver designations'
         );
       }
 
       setMessage({
-        type: "success",
+        type: 'success',
         text: `✅ Driver designations saved for week of ${formatDate(
           selectedWeek
         )}! ${selectedDriverIds.size} drivers designated.`,
@@ -260,13 +260,13 @@ export default function AdminDriversPage() {
       // Reload week data to reflect changes
       loadWeekDriverData(selectedWeek);
     } catch (error) {
-      console.error("Save driver designations error:", error);
+      console.error('Save driver designations error:', error);
       setMessage({
-        type: "error",
+        type: 'error',
         text:
           error instanceof Error
             ? error.message
-            : "Failed to save driver designations",
+            : 'Failed to save driver designations',
       });
     } finally {
       setIsSaving(false);
@@ -284,34 +284,34 @@ export default function AdminDriversPage() {
   };
 
   const selectAllDrivers = () => {
-    setSelectedDriverIds(new Set(potentialDrivers.map((d) => d.id)));
+    setSelectedDriverIds(new Set(potentialDrivers.map(d => d.id)));
   };
 
   const clearAllDrivers = () => {
     setSelectedDriverIds(new Set());
   };
 
-  const navigateWeek = (direction: "prev" | "next") => {
+  const navigateWeek = (direction: 'prev' | 'next') => {
     const currentDate = new Date(selectedWeek);
     const newDate = new Date(currentDate);
-    newDate.setDate(currentDate.getDate() + (direction === "next" ? 7 : -7));
-    setSelectedWeek(newDate.toISOString().split("T")[0]);
+    newDate.setDate(currentDate.getDate() + (direction === 'next' ? 7 : -7));
+    setSelectedWeek(newDate.toISOString().split('T')[0]);
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
   const hasChanges = currentWeekData
     ? selectedDriverIds.size !== currentWeekData.activeDriverCount ||
       !currentWeekData.drivers.every(
-        (d) => d.isActive === selectedDriverIds.has(d.id)
+        d => d.isActive === selectedDriverIds.has(d.id)
       )
     : false;
 
@@ -345,9 +345,9 @@ export default function AdminDriversPage() {
           <div className="mb-6">
             <div
               className={`p-4 rounded-lg ${
-                message.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
+                message.type === 'success'
+                  ? 'bg-green-50 text-green-800 border border-green-200'
+                  : 'bg-red-50 text-red-800 border border-red-200'
               }`}
             >
               {message.text}
@@ -365,7 +365,7 @@ export default function AdminDriversPage() {
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <button
-                onClick={() => navigateWeek("prev")}
+                onClick={() => navigateWeek('prev')}
                 className="flex items-center px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 <ArrowLeftIcon className="h-5 w-5 mr-2" />
@@ -379,13 +379,13 @@ export default function AdminDriversPage() {
                 <input
                   type="date"
                   value={selectedWeek}
-                  onChange={(e) => setSelectedWeek(e.target.value)}
+                  onChange={e => setSelectedWeek(e.target.value)}
                   className="mt-2 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <button
-                onClick={() => navigateWeek("next")}
+                onClick={() => navigateWeek('next')}
                 className="flex items-center px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 Next Week
@@ -453,7 +453,7 @@ export default function AdminDriversPage() {
                   disabled={!hasChanges || isSaving}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isSaving ? "Saving..." : "Save Designations"}
+                  {isSaving ? 'Saving...' : 'Save Designations'}
                 </button>
               </div>
             </div>
@@ -479,10 +479,10 @@ export default function AdminDriversPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {potentialDrivers.map((driver) => {
+                {potentialDrivers.map(driver => {
                   const isSelected = selectedDriverIds.has(driver.id);
                   const currentDesignation = currentWeekData?.drivers.find(
-                    (d) => d.id === driver.id
+                    d => d.id === driver.id
                   )?.designation;
 
                   return (
@@ -490,8 +490,8 @@ export default function AdminDriversPage() {
                       key={driver.id}
                       className={`border rounded-lg p-4 cursor-pointer transition-all ${
                         isSelected
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                       onClick={() => toggleDriverSelection(driver.id)}
                     >
@@ -537,7 +537,7 @@ export default function AdminDriversPage() {
                               {driver.joinedDate && (
                                 <div className="flex items-center">
                                   <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
-                                  Joined{" "}
+                                  Joined{' '}
                                   {new Date(
                                     driver.joinedDate
                                   ).toLocaleDateString()}

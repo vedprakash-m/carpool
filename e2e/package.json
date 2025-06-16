@@ -1,0 +1,35 @@
+{
+  "name": "@vcarpool/e2e-tests",
+  "version": "1.0.0",
+  "description": "Comprehensive E2E testing suite for VCarpool application",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ci": "playwright test --reporter=html --reporter=json",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
+    "test:setup": "node utils/test-setup.js",
+    "test:cleanup": "node utils/test-cleanup.js",
+    "test:db:seed": "node utils/seed-database.js",
+    "test:db:reset": "node utils/reset-database.js",
+    "start:services": "docker-compose -f ../docker-compose.e2e.yml up -d mongodb-test backend-test frontend-test",
+    "stop:services": "docker-compose -f ../docker-compose.e2e.yml down",
+    "logs:backend": "docker-compose -f ../docker-compose.e2e.yml logs -f backend-test",
+    "logs:frontend": "docker-compose -f ../docker-compose.e2e.yml logs -f frontend-test",
+    "health:check": "node utils/health-check.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.1.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "@types/node": "^20.8.0",
+    "typescript": "^5.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

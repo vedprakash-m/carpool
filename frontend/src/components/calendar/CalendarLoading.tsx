@@ -2,7 +2,7 @@
  * Calendar loading state component
  */
 
-import { memo } from "react";
+import { memo } from 'react';
 
 export const CalendarLoading = memo(function CalendarLoading() {
   return (

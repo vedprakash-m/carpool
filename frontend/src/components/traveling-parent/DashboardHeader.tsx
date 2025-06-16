@@ -15,7 +15,7 @@ export function DashboardHeader({
             Traveling Parent Dashboard
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            Manage your carpool makeup schedules for{" "}
+            Manage your carpool makeup schedules for{' '}
             <strong>{groupName}</strong>
           </p>
           <div className="mt-4 flex items-center space-x-4">

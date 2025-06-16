@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Notification as RTNotification } from '@vcarpool/shared';
 import toast from 'react-hot-toast';
 
@@ -8,9 +14,13 @@ interface NotificationContextValue {
   markAllRead: () => void;
 }
 
-const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextValue | undefined>(
+  undefined
+);
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [notifications, setNotifications] = useState<RTNotification[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -20,11 +30,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
-    ws.onmessage = (evt) => {
+    ws.onmessage = evt => {
       try {
         const n: RTNotification = JSON.parse(evt.data);
-        setNotifications((prev) => [n, ...prev]);
-        toast.custom((t) => (
+        setNotifications(prev => [n, ...prev]);
+        toast.custom(t => (
           <div
             className={`bg-white shadow-lg rounded-lg px-4 py-3 border border-gray-200 flex items-start space-x-3 ${t.visible ? 'animate-enter' : 'animate-leave'}`}
           >
@@ -39,18 +49,20 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
     };
 
-    ws.onerror = (e) => console.error('WebSocket error', e);
+    ws.onerror = e => console.error('WebSocket error', e);
     ws.onclose = () => console.log('WebSocket closed');
 
     return () => ws.close();
   }, []);
 
   const markRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setNotifications(prev =>
+      prev.map(n => (n.id === id ? { ...n, read: true } : n))
+    );
   };
 
   const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
   const value: NotificationContextValue = {
@@ -59,11 +71,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     markAllRead,
   };
 
-  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
+  return (
+    <NotificationContext.Provider value={value}>
+      {children}
+    </NotificationContext.Provider>
+  );
 };
 
 export const useNotifications = () => {
   const ctx = useContext(NotificationContext);
-  if (!ctx) throw new Error('useNotifications must be used within NotificationProvider');
+  if (!ctx)
+    throw new Error(
+      'useNotifications must be used within NotificationProvider'
+    );
   return ctx;
-}; 
+};

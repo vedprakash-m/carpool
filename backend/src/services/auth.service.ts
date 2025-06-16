@@ -1,9 +1,9 @@
-import * as jwt from "jsonwebtoken";
-import * as bcrypt from "bcryptjs";
-import { User, UserRole } from "@vcarpool/shared";
-import { UserRepository } from "../repositories/user.repository";
-import { Errors } from "../utils/error-handler";
-import { ILogger } from "../utils/logger";
+import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcryptjs';
+import { User, UserRole } from '@vcarpool/shared';
+import { UserRepository } from '../repositories/user.repository';
+import { Errors } from '../utils/error-handler';
+import { ILogger } from '../utils/logger';
 
 // Internal type for database records that include password hash
 interface UserRecord extends User {
@@ -17,52 +17,43 @@ function sanitizeUser(userRecord: UserRecord): User {
 }
 
 // JWT Configuration
-const JWT_SECRET = process.env.JWT_SECRET || "default-secret";
-const JWT_REFRESH_SECRET =
-  process.env.JWT_REFRESH_SECRET || "default-refresh-secret";
-const JWT_EXPIRES_IN = "24h";
-const JWT_REFRESH_EXPIRES_IN = "7d";
+const JWT_SECRET = process.env.JWT_SECRET || 'default-secret';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'default-refresh-secret';
+const JWT_EXPIRES_IN = '24h';
+const JWT_REFRESH_EXPIRES_IN = '7d';
 
 // Role permissions mapping
 const ROLE_PERMISSIONS: Record<UserRole, readonly string[]> = {
   admin: [
-    "create_users",
-    "generate_schedule",
-    "view_all_data",
-    "manage_system",
-    "manage_groups",
-    "manage_roles",
+    'create_users',
+    'generate_schedule',
+    'view_all_data',
+    'manage_system',
+    'manage_groups',
+    'manage_roles',
   ] as const,
   group_admin: [
-    "manage_group",
-    "assign_trips",
-    "view_group_data",
-    "manage_group_members",
-    "submit_preferences",
+    'manage_group',
+    'assign_trips',
+    'view_group_data',
+    'manage_group_members',
+    'submit_preferences',
   ] as const,
   parent: [
-    "submit_preferences",
-    "view_own_trips",
-    "manage_children",
-    "edit_profile",
-    "view_group_schedule",
+    'submit_preferences',
+    'view_own_trips',
+    'manage_children',
+    'edit_profile',
+    'view_group_schedule',
   ] as const,
-  child: [
-    "view_own_schedule",
-    "update_limited_profile",
-    "view_assignments",
-  ] as const,
-  student: [
-    "view_own_schedule",
-    "update_limited_profile",
-    "view_assignments",
-  ] as const,
+  child: ['view_own_schedule', 'update_limited_profile', 'view_assignments'] as const,
+  student: ['view_own_schedule', 'update_limited_profile', 'view_assignments'] as const,
   trip_admin: [
-    "manage_trip",
-    "assign_passengers",
-    "view_trip_data",
-    "manage_trip_schedule",
-    "submit_preferences",
+    'manage_trip',
+    'assign_passengers',
+    'view_trip_data',
+    'manage_trip_schedule',
+    'submit_preferences',
   ] as const,
 };
 
@@ -145,10 +136,7 @@ export class AuthService {
   /**
    * Verify password against hash
    */
-  async verifyPasswordInstance(
-    password: string,
-    hash: string
-  ): Promise<boolean> {
+  async verifyPasswordInstance(password: string, hash: string): Promise<boolean> {
     return bcrypt.compare(password, hash);
   }
 
@@ -159,7 +147,7 @@ export class AuthService {
     try {
       return jwt.verify(token, JWT_SECRET) as JwtPayload;
     } catch (error) {
-      throw Errors.Unauthorized("Invalid or expired token");
+      throw Errors.Unauthorized('Invalid or expired token');
     }
   }
 
@@ -170,7 +158,7 @@ export class AuthService {
     try {
       return jwt.verify(token, JWT_REFRESH_SECRET) as JwtPayload;
     } catch (error) {
-      throw Errors.Unauthorized("Invalid or expired refresh token");
+      throw Errors.Unauthorized('Invalid or expired refresh token');
     }
   }
 
@@ -178,7 +166,7 @@ export class AuthService {
    * Extract token from Authorization header
    */
   extractTokenFromHeader(authHeader?: string): string | null {
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
 
@@ -188,9 +176,7 @@ export class AuthService {
   /**
    * Refresh access token using refresh token
    */
-  async refreshAccessToken(
-    refreshToken: string
-  ): Promise<{ accessToken: string; user: User }> {
+  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; user: User }> {
     try {
       // Verify the refresh token
       const payload = this.verifyRefreshToken(refreshToken);
@@ -199,7 +185,7 @@ export class AuthService {
       const user = await this.userRepository.findById(payload.userId);
 
       if (!user) {
-        throw Errors.NotFound("User not found");
+        throw Errors.NotFound('User not found');
       }
 
       // Generate new access token
@@ -207,7 +193,7 @@ export class AuthService {
 
       return { accessToken, user };
     } catch (error) {
-      throw Errors.Unauthorized("Invalid refresh token");
+      throw Errors.Unauthorized('Invalid refresh token');
     }
   }
 
@@ -223,7 +209,7 @@ export class AuthService {
       passwordHash,
       createdAt: new Date(),
       updatedAt: new Date(),
-      role: userData.role || "parent",
+      role: userData.role || 'parent',
       preferences: userData.preferences || {},
     };
     // In a real implementation, save to DB
@@ -236,17 +222,12 @@ export class AuthService {
    */
   async login(
     email: string,
-    password: string
+    password: string,
   ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
-    const userRecord = (await this.userRepository.findByEmail(
-      email
-    )) as UserRecord | null;
-    if (!userRecord) throw Errors.Unauthorized("Invalid credentials");
-    const valid = await this.verifyPasswordInstance(
-      password,
-      userRecord.passwordHash
-    );
-    if (!valid) throw Errors.Unauthorized("Invalid credentials");
+    const userRecord = (await this.userRepository.findByEmail(email)) as UserRecord | null;
+    if (!userRecord) throw Errors.Unauthorized('Invalid credentials');
+    const valid = await this.verifyPasswordInstance(password, userRecord.passwordHash);
+    if (!valid) throw Errors.Unauthorized('Invalid credentials');
     const user = sanitizeUser(userRecord);
     const accessToken = this.generateAccessTokenInstance(user);
     const refreshToken = this.generateRefreshTokenInstance(user);
@@ -258,7 +239,7 @@ export class AuthService {
    */
   async generatePasswordResetToken(user: User): Promise<string> {
     // For demo, just sign a JWT with a short expiry
-    return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1h" });
+    return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
   }
 
   /**
@@ -278,20 +259,11 @@ export class AuthService {
   /**
    * Change a user's password
    */
-  async changePassword(
-    userId: string,
-    oldPassword: string,
-    newPassword: string
-  ): Promise<void> {
-    const userRecord = (await this.userRepository.findById(
-      userId
-    )) as UserRecord | null;
-    if (!userRecord) throw Errors.NotFound("User not found");
-    const valid = await this.verifyPasswordInstance(
-      oldPassword,
-      userRecord.passwordHash
-    );
-    if (!valid) throw Errors.Unauthorized("Invalid current password");
+  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
+    const userRecord = (await this.userRepository.findById(userId)) as UserRecord | null;
+    if (!userRecord) throw Errors.NotFound('User not found');
+    const valid = await this.verifyPasswordInstance(oldPassword, userRecord.passwordHash);
+    if (!valid) throw Errors.Unauthorized('Invalid current password');
     userRecord.passwordHash = await this.hashPassword(newPassword);
     await this.userRepository.update(userId, userRecord);
   }

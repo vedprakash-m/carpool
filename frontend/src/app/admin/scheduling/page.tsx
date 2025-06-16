@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 import {
   CalendarIcon,
   UsersIcon,
@@ -13,7 +13,7 @@ import {
   ExclamationTriangleIcon,
   ChartBarIcon,
   ArrowPathIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface WeeklySchedule {
   id: string;
@@ -25,13 +25,13 @@ interface WeeklySchedule {
   weekStartDate: string;
   weekEndDate: string;
   status:
-    | "preferences_open"
-    | "preferences_closed"
-    | "scheduling"
-    | "swaps_open"
-    | "finalized"
-    | "active"
-    | "completed";
+    | 'preferences_open'
+    | 'preferences_closed'
+    | 'scheduling'
+    | 'swaps_open'
+    | 'finalized'
+    | 'active'
+    | 'completed';
   preferencesDeadline: string;
   swapsDeadline: string;
   assignments: any[];
@@ -55,24 +55,24 @@ export default function SchedulingDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState<{
-    type: "success" | "error" | "warning" | "info";
+    type: 'success' | 'error' | 'warning' | 'info';
     text: string;
   } | null>(null);
 
   // New schedule form
   const [showNewScheduleForm, setShowNewScheduleForm] = useState(false);
   const [newScheduleData, setNewScheduleData] = useState({
-    groupId: "group-1", // Default to first group
-    weekStartDate: "",
+    groupId: 'group-1', // Default to first group
+    weekStartDate: '',
   });
 
   // Redirect if not Group Admin
   useEffect(() => {
     if (
       !isLoading &&
-      (!user || (user.role !== "group_admin" && user.role !== "admin"))
+      (!user || (user.role !== 'group_admin' && user.role !== 'admin'))
     ) {
-      router.push("/dashboard");
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
@@ -85,9 +85,9 @@ export default function SchedulingDashboardPage() {
   const loadSchedules = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/admin/weekly-scheduling?action=schedules&limit=20",
+        '/api/admin/weekly-scheduling?action=schedules&limit=20',
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -104,14 +104,14 @@ export default function SchedulingDashboardPage() {
         }
       } else {
         setMessage({
-          type: "error",
-          text: "Failed to load schedules",
+          type: 'error',
+          text: 'Failed to load schedules',
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error loading schedules",
+        type: 'error',
+        text: 'Error loading schedules',
       });
     } finally {
       setLoading(false);
@@ -121,21 +121,21 @@ export default function SchedulingDashboardPage() {
   const createNewSchedule = async () => {
     if (!newScheduleData.weekStartDate) {
       setMessage({
-        type: "error",
-        text: "Please select a week start date",
+        type: 'error',
+        text: 'Please select a week start date',
       });
       return;
     }
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/admin/weekly-scheduling?action=create-schedule",
+        '/api/admin/weekly-scheduling?action=create-schedule',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(newScheduleData),
@@ -145,23 +145,23 @@ export default function SchedulingDashboardPage() {
       if (response.ok) {
         const data = await response.json();
         setMessage({
-          type: "success",
-          text: "Weekly schedule created successfully",
+          type: 'success',
+          text: 'Weekly schedule created successfully',
         });
         setShowNewScheduleForm(false);
-        setNewScheduleData({ groupId: "group-1", weekStartDate: "" });
+        setNewScheduleData({ groupId: 'group-1', weekStartDate: '' });
         loadSchedules();
       } else {
         const errorData = await response.json();
         setMessage({
-          type: "error",
+          type: 'error',
           text: errorData.error.message,
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error creating schedule",
+        type: 'error',
+        text: 'Error creating schedule',
       });
     } finally {
       setLoading(false);
@@ -175,13 +175,13 @@ export default function SchedulingDashboardPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/admin/weekly-scheduling?action=generate-assignments",
+        '/api/admin/weekly-scheduling?action=generate-assignments',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
@@ -194,7 +194,7 @@ export default function SchedulingDashboardPage() {
       if (response.ok) {
         const data = await response.json();
         setMessage({
-          type: "success",
+          type: 'success',
           text: data.data.message,
         });
 
@@ -203,8 +203,8 @@ export default function SchedulingDashboardPage() {
         setSelectedSchedule(updatedSchedule);
 
         // Update schedules list
-        setSchedules((prev) =>
-          prev.map((s) => (s.id === updatedSchedule.id ? updatedSchedule : s))
+        setSchedules(prev =>
+          prev.map(s => (s.id === updatedSchedule.id ? updatedSchedule : s))
         );
 
         // Set stats from algorithm output
@@ -222,14 +222,14 @@ export default function SchedulingDashboardPage() {
       } else {
         const errorData = await response.json();
         setMessage({
-          type: "error",
+          type: 'error',
           text: errorData.error.message,
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error generating assignments",
+        type: 'error',
+        text: 'Error generating assignments',
       });
     } finally {
       setGenerating(false);
@@ -239,39 +239,39 @@ export default function SchedulingDashboardPage() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       preferences_open: {
-        color: "bg-blue-100 text-blue-800",
+        color: 'bg-blue-100 text-blue-800',
         icon: ClockIcon,
-        label: "Preferences Open",
+        label: 'Preferences Open',
       },
       preferences_closed: {
-        color: "bg-yellow-100 text-yellow-800",
+        color: 'bg-yellow-100 text-yellow-800',
         icon: ExclamationTriangleIcon,
-        label: "Preferences Closed",
+        label: 'Preferences Closed',
       },
       scheduling: {
-        color: "bg-purple-100 text-purple-800",
+        color: 'bg-purple-100 text-purple-800',
         icon: AdjustmentsHorizontalIcon,
-        label: "Scheduling",
+        label: 'Scheduling',
       },
       swaps_open: {
-        color: "bg-green-100 text-green-800",
+        color: 'bg-green-100 text-green-800',
         icon: ArrowPathIcon,
-        label: "Swaps Open",
+        label: 'Swaps Open',
       },
       finalized: {
-        color: "bg-green-100 text-green-800",
+        color: 'bg-green-100 text-green-800',
         icon: CheckCircleIcon,
-        label: "Finalized",
+        label: 'Finalized',
       },
       active: {
-        color: "bg-indigo-100 text-indigo-800",
+        color: 'bg-indigo-100 text-indigo-800',
         icon: PlayIcon,
-        label: "Active",
+        label: 'Active',
       },
       completed: {
-        color: "bg-gray-100 text-gray-800",
+        color: 'bg-gray-100 text-gray-800',
         icon: CheckCircleIcon,
-        label: "Completed",
+        label: 'Completed',
       },
     };
 
@@ -305,7 +305,7 @@ export default function SchedulingDashboardPage() {
     nextMonday.setDate(
       today.getDate() + (daysUntilMonday === 0 ? 7 : daysUntilMonday)
     );
-    return nextMonday.toISOString().split("T")[0];
+    return nextMonday.toISOString().split('T')[0];
   };
 
   if (isLoading) {
@@ -316,7 +316,7 @@ export default function SchedulingDashboardPage() {
     );
   }
 
-  if (!user || (user.role !== "group_admin" && user.role !== "admin")) {
+  if (!user || (user.role !== 'group_admin' && user.role !== 'admin')) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -359,13 +359,13 @@ export default function SchedulingDashboardPage() {
         {message && (
           <div
             className={`mb-6 p-4 rounded-md border ${
-              message.type === "success"
-                ? "bg-green-50 border-green-200 text-green-800"
-                : message.type === "warning"
-                ? "bg-yellow-50 border-yellow-200 text-yellow-800"
-                : message.type === "info"
-                ? "bg-blue-50 border-blue-200 text-blue-800"
-                : "bg-red-50 border-red-200 text-red-800"
+              message.type === 'success'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : message.type === 'warning'
+                  ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                  : message.type === 'info'
+                    ? 'bg-blue-50 border-blue-200 text-blue-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             <p className="text-sm">{message.text}</p>
@@ -390,8 +390,8 @@ export default function SchedulingDashboardPage() {
                       type="date"
                       value={newScheduleData.weekStartDate}
                       min={getNextMonday()}
-                      onChange={(e) =>
-                        setNewScheduleData((prev) => ({
+                      onChange={e =>
+                        setNewScheduleData(prev => ({
                           ...prev,
                           weekStartDate: e.target.value,
                         }))
@@ -413,7 +413,7 @@ export default function SchedulingDashboardPage() {
                     disabled={loading}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {loading ? "Creating..." : "Create Schedule"}
+                    {loading ? 'Creating...' : 'Create Schedule'}
                   </button>
                 </div>
               </div>
@@ -435,7 +435,7 @@ export default function SchedulingDashboardPage() {
                 {loading ? (
                   <div className="p-6">
                     <div className="animate-pulse space-y-3">
-                      {[1, 2, 3].map((i) => (
+                      {[1, 2, 3].map(i => (
                         <div key={i} className="h-16 bg-gray-300 rounded"></div>
                       ))}
                     </div>
@@ -451,14 +451,14 @@ export default function SchedulingDashboardPage() {
                     </p>
                   </div>
                 ) : (
-                  schedules.map((schedule) => (
+                  schedules.map(schedule => (
                     <div
                       key={schedule.id}
                       onClick={() => setSelectedSchedule(schedule)}
                       className={`p-4 cursor-pointer hover:bg-gray-50 ${
                         selectedSchedule?.id === schedule.id
-                          ? "bg-blue-50 border-r-4 border-blue-500"
-                          : ""
+                          ? 'bg-blue-50 border-r-4 border-blue-500'
+                          : ''
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -492,7 +492,7 @@ export default function SchedulingDashboardPage() {
                         {selectedSchedule.group.name}
                       </h2>
                       <p className="text-gray-600">
-                        Week of {formatDate(selectedSchedule.weekStartDate)} -{" "}
+                        Week of {formatDate(selectedSchedule.weekStartDate)} -{' '}
                         {formatDate(selectedSchedule.weekEndDate)}
                       </p>
                     </div>
@@ -556,8 +556,8 @@ export default function SchedulingDashboardPage() {
                         <div
                           className={`text-2xl font-bold ${
                             stats.conflicts > 0
-                              ? "text-red-600"
-                              : "text-green-600"
+                              ? 'text-red-600'
+                              : 'text-green-600'
                           }`}
                         >
                           {stats.conflicts}
@@ -575,7 +575,7 @@ export default function SchedulingDashboardPage() {
                   </h3>
 
                   <div className="space-y-4">
-                    {selectedSchedule.status === "preferences_open" && (
+                    {selectedSchedule.status === 'preferences_open' && (
                       <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                         <div>
                           <h4 className="font-medium text-blue-900">
@@ -589,8 +589,8 @@ export default function SchedulingDashboardPage() {
                       </div>
                     )}
 
-                    {(selectedSchedule.status === "preferences_closed" ||
-                      selectedSchedule.status === "scheduling") && (
+                    {(selectedSchedule.status === 'preferences_closed' ||
+                      selectedSchedule.status === 'scheduling') && (
                       <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
                         <div>
                           <h4 className="font-medium text-purple-900">
@@ -642,7 +642,7 @@ export default function SchedulingDashboardPage() {
                       </div>
                     )}
 
-                    {selectedSchedule.status === "swaps_open" && (
+                    {selectedSchedule.status === 'swaps_open' && (
                       <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                         <div>
                           <h4 className="font-medium text-green-900">
@@ -673,7 +673,7 @@ export default function SchedulingDashboardPage() {
                         >
                           <div className="flex items-center justify-between mb-2">
                             <h4 className="font-medium text-gray-900 capitalize">
-                              {assignment.dayOfWeek} -{" "}
+                              {assignment.dayOfWeek} -{' '}
                               {formatDate(assignment.date)}
                             </h4>
                             <span className="text-sm text-gray-600">
@@ -683,11 +683,11 @@ export default function SchedulingDashboardPage() {
 
                           {assignment.morningTrip && (
                             <div className="text-sm text-gray-700">
-                              <span className="font-medium">Driver:</span>{" "}
-                              {assignment.morningTrip.driver.firstName}{" "}
+                              <span className="font-medium">Driver:</span>{' '}
+                              {assignment.morningTrip.driver.firstName}{' '}
                               {assignment.morningTrip.driver.lastName}
                               <span className="ml-4">
-                                <span className="font-medium">Passengers:</span>{" "}
+                                <span className="font-medium">Passengers:</span>{' '}
                                 {assignment.morningTrip.passengers.length}
                               </span>
                             </div>

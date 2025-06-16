@@ -1,5 +1,5 @@
-import { Container } from "@azure/cosmos";
-import { Child } from "@vcarpool/shared";
+import { Container } from '@azure/cosmos';
+import { Child } from '@vcarpool/shared';
 
 export class ChildRepository {
   constructor(private container: Container) {}
@@ -12,9 +12,7 @@ export class ChildRepository {
   async findById(id: string, familyId: string): Promise<Child | null> {
     try {
       // Both id and partition key (familyId) are needed for lookup
-      const { resource } = await this.container
-        .item(id, familyId)
-        .read<Child>();
+      const { resource } = await this.container.item(id, familyId).read<Child>();
       return resource || null;
     } catch (error: any) {
       if (error.code === 404) {
@@ -35,13 +33,11 @@ export class ChildRepository {
 
   async findByFamilyId(familyId: string): Promise<Child[]> {
     const query = {
-      query: "SELECT * FROM c WHERE c.familyId = @familyId",
-      parameters: [{ name: "@familyId", value: familyId }],
+      query: 'SELECT * FROM c WHERE c.familyId = @familyId',
+      parameters: [{ name: '@familyId', value: familyId }],
     };
 
-    const { resources } = await this.container.items
-      .query<Child>(query)
-      .fetchAll();
+    const { resources } = await this.container.items.query<Child>(query).fetchAll();
     return resources;
   }
 }

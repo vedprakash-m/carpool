@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth.store";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
 import {
   UserIcon,
   PhoneIcon,
   ArrowLeftIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 export default function StudentProfilePage() {
   const { user, isAuthenticated, isLoading, updateProfile } = useAuthStore();
   const router = useRouter();
 
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -32,12 +32,12 @@ export default function StudentProfilePage() {
     if (isLoading || !hasHydrated) return;
 
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
 
-    if (user?.role !== "student") {
-      router.push("/dashboard");
+    if (user?.role !== 'student') {
+      router.push('/dashboard');
       return;
     }
   }, [isAuthenticated, isLoading, user, router, hasHydrated]);
@@ -45,7 +45,7 @@ export default function StudentProfilePage() {
   // Initialize form with user data
   useEffect(() => {
     if (user) {
-      setPhoneNumber(user.phoneNumber || "");
+      setPhoneNumber(user.phoneNumber || '');
     }
   }, [user]);
 
@@ -61,12 +61,12 @@ export default function StudentProfilePage() {
       });
 
       if (success) {
-        setSuccess("Profile updated successfully!");
+        setSuccess('Profile updated successfully!');
       } else {
-        setError("Failed to update profile. Please try again.");
+        setError('Failed to update profile. Please try again.');
       }
     } catch (err: any) {
-      setError(err.message || "Failed to update profile");
+      setError(err.message || 'Failed to update profile');
     } finally {
       setIsSubmitting(false);
     }
@@ -94,7 +94,7 @@ export default function StudentProfilePage() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.push("/students/dashboard")}
+            onClick={() => router.push('/students/dashboard')}
             className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
@@ -124,7 +124,7 @@ export default function StudentProfilePage() {
                   <UserIcon className="h-5 w-5 text-gray-400 mr-2" />
                   <input
                     type="text"
-                    value={user?.firstName || ""}
+                    value={user?.firstName || ''}
                     disabled
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
                   />
@@ -142,7 +142,7 @@ export default function StudentProfilePage() {
                   <UserIcon className="h-5 w-5 text-gray-400 mr-2" />
                   <input
                     type="text"
-                    value={user?.lastName || ""}
+                    value={user?.lastName || ''}
                     disabled
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
                   />
@@ -159,7 +159,7 @@ export default function StudentProfilePage() {
               </label>
               <input
                 type="email"
-                value={user?.email || ""}
+                value={user?.email || ''}
                 disabled
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
               />
@@ -178,7 +178,7 @@ export default function StudentProfilePage() {
                 <input
                   type="tel"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={e => setPhoneNumber(e.target.value)}
                   placeholder="(555) 123-4567"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -205,7 +205,7 @@ export default function StudentProfilePage() {
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => router.push("/students/dashboard")}
+                onClick={() => router.push('/students/dashboard')}
                 className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
@@ -216,7 +216,7 @@ export default function StudentProfilePage() {
                 disabled={isSubmitting}
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isSubmitting ? "Saving..." : "Save Changes"}
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>

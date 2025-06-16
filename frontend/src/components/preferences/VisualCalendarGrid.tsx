@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ClockIcon,
   InformationCircleIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface TimeSlot {
   id: string;
   dayOfWeek: number;
   startTime: string;
   endTime: string;
-  routeType: "school_dropoff" | "school_pickup";
+  routeType: 'school_dropoff' | 'school_pickup';
   description: string;
   maxPassengers: number;
 }
@@ -21,7 +21,7 @@ interface TimeSlot {
 interface CalendarGridProps {
   slots: TimeSlot[];
   preferences: {
-    [slotId: string]: "preferable" | "less_preferable" | "unavailable" | "";
+    [slotId: string]: 'preferable' | 'less_preferable' | 'unavailable' | '';
   };
   onPreferenceChange: (slotId: string, level: string) => void;
   canEdit: boolean;
@@ -34,35 +34,35 @@ interface CalendarGridProps {
 
 const PREFERENCE_LEVELS = [
   {
-    value: "",
-    label: "No Preference",
-    color: "bg-gray-100 border-gray-200 text-gray-600",
+    value: '',
+    label: 'No Preference',
+    color: 'bg-gray-100 border-gray-200 text-gray-600',
     disabled: false,
   },
   {
-    value: "preferable",
-    label: "Prefer",
-    color: "bg-green-100 border-green-300 text-green-800",
+    value: 'preferable',
+    label: 'Prefer',
+    color: 'bg-green-100 border-green-300 text-green-800',
     maxCount: 3,
   },
   {
-    value: "less_preferable",
-    label: "If Needed",
-    color: "bg-yellow-100 border-yellow-300 text-yellow-800",
+    value: 'less_preferable',
+    label: 'If Needed',
+    color: 'bg-yellow-100 border-yellow-300 text-yellow-800',
     maxCount: 2,
   },
   {
-    value: "unavailable",
+    value: 'unavailable',
     label: "Can't Drive",
-    color: "bg-red-100 border-red-300 text-red-800",
+    color: 'bg-red-100 border-red-300 text-red-800',
     maxCount: 2,
   },
 ];
 
-const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const TIME_PERIODS = [
-  { label: "Morning Drop-off", routeType: "school_dropoff", icon: "🌅" },
-  { label: "Afternoon Pick-up", routeType: "school_pickup", icon: "🌇" },
+  { label: 'Morning Drop-off', routeType: 'school_dropoff', icon: '🌅' },
+  { label: 'Afternoon Pick-up', routeType: 'school_pickup', icon: '🌇' },
 ];
 
 export default function VisualCalendarGrid({
@@ -77,31 +77,31 @@ export default function VisualCalendarGrid({
 
   const getSlotByDayAndType = (dayOfWeek: number, routeType: string) => {
     return slots.find(
-      (slot) => slot.dayOfWeek === dayOfWeek && slot.routeType === routeType
+      slot => slot.dayOfWeek === dayOfWeek && slot.routeType === routeType
     );
   };
 
   const getPreferenceStyle = (slotId: string) => {
     const preference = preferences[slotId];
-    const level = PREFERENCE_LEVELS.find((l) => l.value === preference);
+    const level = PREFERENCE_LEVELS.find(l => l.value === preference);
     return level
       ? level.color
       : PREFERENCE_LEVELS.length > 0
-      ? PREFERENCE_LEVELS[0].color
-      : "#gray-200";
+        ? PREFERENCE_LEVELS[0].color
+        : '#gray-200';
   };
 
   const isPreferenceLimitReached = (level: string, currentSlotId: string) => {
-    if (level === "" || !canEdit) return false;
+    if (level === '' || !canEdit) return false;
 
     const currentPreference = preferences[currentSlotId];
     if (currentPreference === level) return false; // Allow deselecting current
 
-    const levelConfig = PREFERENCE_LEVELS.find((l) => l.value === level);
+    const levelConfig = PREFERENCE_LEVELS.find(l => l.value === level);
     if (!levelConfig?.maxCount) return false;
 
     const currentCount = Object.values(preferences).filter(
-      (p) => p === level
+      p => p === level
     ).length;
     return currentCount >= levelConfig.maxCount;
   };
@@ -113,14 +113,14 @@ export default function VisualCalendarGrid({
 
   const getSlotProgressionText = (preference: string) => {
     switch (preference) {
-      case "preferable":
-        return "High likelihood of assignment";
-      case "less_preferable":
-        return "May be assigned if needed";
-      case "unavailable":
-        return "Will not be assigned";
+      case 'preferable':
+        return 'High likelihood of assignment';
+      case 'less_preferable':
+        return 'May be assigned if needed';
+      case 'unavailable':
+        return 'Will not be assigned';
       default:
-        return "Available for any assignment";
+        return 'Available for any assignment';
     }
   };
 
@@ -133,7 +133,7 @@ export default function VisualCalendarGrid({
           Preference Levels
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-          {PREFERENCE_LEVELS.map((level) => (
+          {PREFERENCE_LEVELS.map(level => (
             <div
               key={level.value}
               className={`p-2 rounded border text-center ${level.color}`}
@@ -159,7 +159,7 @@ export default function VisualCalendarGrid({
           <div className="text-center">
             <div
               className={`text-lg font-bold ${
-                constraints.preferable > 3 ? "text-red-600" : "text-green-600"
+                constraints.preferable > 3 ? 'text-red-600' : 'text-green-600'
               }`}
             >
               {constraints.preferable}/3
@@ -170,8 +170,8 @@ export default function VisualCalendarGrid({
             <div
               className={`text-lg font-bold ${
                 constraints.lessPreferable > 2
-                  ? "text-red-600"
-                  : "text-yellow-600"
+                  ? 'text-red-600'
+                  : 'text-yellow-600'
               }`}
             >
               {constraints.lessPreferable}/2
@@ -181,7 +181,7 @@ export default function VisualCalendarGrid({
           <div className="text-center">
             <div
               className={`text-lg font-bold ${
-                constraints.unavailable > 2 ? "text-red-600" : "text-red-600"
+                constraints.unavailable > 2 ? 'text-red-600' : 'text-red-600'
               }`}
             >
               {constraints.unavailable}/2
@@ -219,7 +219,7 @@ export default function VisualCalendarGrid({
 
         <div className="p-4">
           {/* Time Period Headers */}
-          {TIME_PERIODS.map((period) => (
+          {TIME_PERIODS.map(period => (
             <div key={period.routeType} className="mb-8 last:mb-0">
               <div className="mb-4">
                 <h4 className="text-md font-medium text-gray-900 flex items-center mb-2">
@@ -241,7 +241,7 @@ export default function VisualCalendarGrid({
                     );
 
                   const isSelected = selectedSlot === slot.id;
-                  const preference = preferences[slot.id] || "";
+                  const preference = preferences[slot.id] || '';
                   const isDisabled = !canEdit;
 
                   return (
@@ -254,11 +254,11 @@ export default function VisualCalendarGrid({
                       {/* Time Slot */}
                       <div
                         className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all duration-200 ${
-                          isSelected ? "ring-2 ring-blue-500 ring-offset-2" : ""
+                          isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''
                         } ${
                           isDisabled
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:shadow-md"
+                            ? 'opacity-50 cursor-not-allowed'
+                            : 'hover:shadow-md'
                         } ${getPreferenceStyle(slot.id)}`}
                         onClick={() => handleSlotClick(slot.id)}
                         onMouseEnter={() => setShowTooltip(slot.id)}
@@ -277,7 +277,7 @@ export default function VisualCalendarGrid({
                               <div className="text-xs font-medium">
                                 {
                                   PREFERENCE_LEVELS.find(
-                                    (l) => l.value === preference
+                                    l => l.value === preference
                                   )?.label
                                 }
                               </div>
@@ -321,7 +321,7 @@ export default function VisualCalendarGrid({
           </div>
 
           {(() => {
-            const slot = slots.find((s) => s.id === selectedSlot);
+            const slot = slots.find(s => s.id === selectedSlot);
             if (!slot) return null;
 
             return (
@@ -329,12 +329,12 @@ export default function VisualCalendarGrid({
                 <div className="text-sm text-gray-600 mb-4">
                   <span className="font-medium">{slot.description}</span>
                   <br />
-                  {slot.startTime} - {slot.endTime} • Max {slot.maxPassengers}{" "}
+                  {slot.startTime} - {slot.endTime} • Max {slot.maxPassengers}{' '}
                   passengers
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {PREFERENCE_LEVELS.map((level) => {
+                  {PREFERENCE_LEVELS.map(level => {
                     const isCurrentLevel =
                       preferences[selectedSlot] === level.value;
                     const isLimitReached = isPreferenceLimitReached(
@@ -352,10 +352,10 @@ export default function VisualCalendarGrid({
                         disabled={isDisabled}
                         className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
                           isCurrentLevel
-                            ? level.color + " ring-2 ring-blue-500"
+                            ? level.color + ' ring-2 ring-blue-500'
                             : isDisabled
-                            ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                            : level.color + " hover:shadow-md"
+                              ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                              : level.color + ' hover:shadow-md'
                         }`}
                       >
                         <div>{level.label}</div>

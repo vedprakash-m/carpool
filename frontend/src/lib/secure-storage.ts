@@ -12,9 +12,9 @@ interface TokenData {
 }
 
 class SecureStorage {
-  private readonly TOKEN_KEY = "vcarpool_token";
-  private readonly REFRESH_TOKEN_KEY = "vcarpool_refresh_token";
-  private readonly EXPIRES_KEY = "vcarpool_token_expires";
+  private readonly TOKEN_KEY = 'vcarpool_token';
+  private readonly REFRESH_TOKEN_KEY = 'vcarpool_refresh_token';
+  private readonly EXPIRES_KEY = 'vcarpool_token_expires';
 
   /**
    * Store tokens securely
@@ -80,7 +80,7 @@ class SecureStorage {
         expiresAt: expiration,
       };
     } catch (error) {
-      console.error("Failed to retrieve tokens:", error);
+      console.error('Failed to retrieve tokens:', error);
       return null;
     }
   }
@@ -114,9 +114,9 @@ class SecureStorage {
   private setCookie(name: string, value: string, maxAge: number): void {
     // This would typically be handled server-side via API calls
     // For now, we'll use regular cookies with secure flags
-    const secure = this.isProduction() ? "; Secure" : "";
-    const sameSite = "; SameSite=Strict";
-    const httpOnly = ""; // Note: httpOnly can only be set server-side
+    const secure = this.isProduction() ? '; Secure' : '';
+    const sameSite = '; SameSite=Strict';
+    const httpOnly = ''; // Note: httpOnly can only be set server-side
 
     document.cookie = `${name}=${value}; Max-Age=${Math.floor(
       maxAge / 1000
@@ -130,7 +130,7 @@ class SecureStorage {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) {
-      const cookieValue = parts.pop()?.split(";").shift();
+      const cookieValue = parts.pop()?.split(';').shift();
       return cookieValue || null;
     }
     return null;
@@ -147,7 +147,7 @@ class SecureStorage {
    * Check if running in production
    */
   private isProduction(): boolean {
-    return process.env.NODE_ENV === "production";
+    return process.env.NODE_ENV === 'production';
   }
 }
 

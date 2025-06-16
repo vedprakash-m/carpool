@@ -8,18 +8,18 @@
  * - Clear value proposition for school carpool coordination
  * - Accessible navigation to registration and login flows
  */
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { useRouter } from "next/navigation";
-import HomePage from "../../app/page";
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { useRouter } from 'next/navigation';
+import HomePage from '../../app/page';
 
 // Mock Next.js router
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 
 // Mock Link component
-jest.mock("next/link", () => {
+jest.mock('next/link', () => {
   return ({ children, href, className }: any) => (
     <a href={href} className={className}>
       {children}
@@ -27,17 +27,17 @@ jest.mock("next/link", () => {
   );
 });
 
-describe("HomePage - Streamlined Family Onboarding Entry", () => {
+describe('HomePage - Streamlined Family Onboarding Entry', () => {
   const mockRouter = {
     push: jest.fn(),
     replace: jest.fn(),
-    pathname: "/",
+    pathname: '/',
     query: {},
-    asPath: "/",
+    asPath: '/',
     back: jest.fn(),
     forward: jest.fn(),
     reload: jest.fn(),
-    route: "/",
+    route: '/',
     events: {
       on: jest.fn(),
       off: jest.fn(),
@@ -50,47 +50,47 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
     jest.clearAllMocks();
   });
 
-  describe("Family-Oriented VCarpool Branding", () => {
-    it("should display VCarpool brand with family-focused messaging", () => {
+  describe('Family-Oriented VCarpool Branding', () => {
+    it('should display VCarpool brand with family-focused messaging', () => {
       render(<HomePage />);
 
-      expect(screen.getByText("VCarpool")).toBeInTheDocument();
+      expect(screen.getByText('VCarpool')).toBeInTheDocument();
       expect(
-        screen.getByRole("link", { name: /sign in/i })
+        screen.getByRole('link', { name: /sign in/i })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("link", { name: /join today/i })
+        screen.getByRole('link', { name: /join today/i })
       ).toBeInTheDocument();
     });
 
-    it("should have correct navigation links in header", () => {
+    it('should have correct navigation links in header', () => {
       render(<HomePage />);
 
-      const signInLink = screen.getByRole("link", { name: /sign in/i });
-      const joinTodayLink = screen.getByRole("link", { name: /join today/i });
+      const signInLink = screen.getByRole('link', { name: /sign in/i });
+      const joinTodayLink = screen.getByRole('link', { name: /join today/i });
 
-      expect(signInLink).toHaveAttribute("href", "/login");
-      expect(joinTodayLink).toHaveAttribute("href", "/register");
+      expect(signInLink).toHaveAttribute('href', '/login');
+      expect(joinTodayLink).toHaveAttribute('href', '/register');
     });
 
-    it("should display car icon for VCarpool branding", () => {
+    it('should display car icon for VCarpool branding', () => {
       render(<HomePage />);
 
       // Check for SVG elements that represent the car icon
-      const carIcons = document.querySelectorAll("svg");
+      const carIcons = document.querySelectorAll('svg');
       expect(carIcons.length).toBeGreaterThan(0);
     });
   });
 
-  describe("Family Onboarding Hero Section", () => {
-    it("should display family-centered school carpool messaging", () => {
+  describe('Family Onboarding Hero Section', () => {
+    it('should display family-centered school carpool messaging', () => {
       render(<HomePage />);
 
-      expect(screen.getByText("Smart School")).toBeInTheDocument();
-      expect(screen.getByText("Carpool Coordination")).toBeInTheDocument();
+      expect(screen.getByText('Smart School')).toBeInTheDocument();
+      expect(screen.getByText('Carpool Coordination')).toBeInTheDocument();
     });
 
-    it("should display Enhanced Family Unit Registration value proposition", () => {
+    it('should display Enhanced Family Unit Registration value proposition', () => {
       render(<HomePage />);
 
       const description = screen.getByText(
@@ -108,52 +108,52 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       ).toBeInTheDocument();
     });
 
-    it("should have Progressive Parent Onboarding call-to-action buttons", () => {
+    it('should have Progressive Parent Onboarding call-to-action buttons', () => {
       render(<HomePage />);
 
-      const startCarpoolingBtn = screen.getByRole("link", {
+      const startCarpoolingBtn = screen.getByRole('link', {
         name: /start carpooling/i,
       });
-      const parentLoginBtn = screen.getByRole("link", {
+      const parentLoginBtn = screen.getByRole('link', {
         name: /parent login/i,
       });
 
-      expect(startCarpoolingBtn).toHaveAttribute("href", "/register");
-      expect(parentLoginBtn).toHaveAttribute("href", "/login");
+      expect(startCarpoolingBtn).toHaveAttribute('href', '/register');
+      expect(parentLoginBtn).toHaveAttribute('href', '/login');
     });
 
-    it("should use family-friendly styling for hero section", () => {
+    it('should use family-friendly styling for hero section', () => {
       render(<HomePage />);
 
-      const heroHeading = screen.getByText("Smart School");
-      expect(heroHeading.closest("h1")).toHaveClass(
-        "text-4xl",
-        "tracking-tight",
-        "font-extrabold"
+      const heroHeading = screen.getByText('Smart School');
+      expect(heroHeading.closest('h1')).toHaveClass(
+        'text-4xl',
+        'tracking-tight',
+        'font-extrabold'
       );
     });
 
-    it("should provide clear entry points for new families", () => {
+    it('should provide clear entry points for new families', () => {
       render(<HomePage />);
 
       // The registration button should be prominent for new families
-      const startCarpoolingBtn = screen.getByRole("link", {
+      const startCarpoolingBtn = screen.getByRole('link', {
         name: /start carpooling/i,
       });
 
       expect(startCarpoolingBtn).toBeInTheDocument();
-      expect(startCarpoolingBtn).toHaveAttribute("href", "/register");
+      expect(startCarpoolingBtn).toHaveAttribute('href', '/register');
 
       // Should support the Enhanced Family Unit Registration flow
       expect(startCarpoolingBtn).toBeVisible();
     });
   });
 
-  describe("Family-Centered School Community Features", () => {
-    it("should highlight Enhanced Family Unit Registration through parent community network", () => {
+  describe('Family-Centered School Community Features', () => {
+    it('should highlight Enhanced Family Unit Registration through parent community network', () => {
       render(<HomePage />);
 
-      expect(screen.getByText("Parent Community Network")).toBeInTheDocument();
+      expect(screen.getByText('Parent Community Network')).toBeInTheDocument();
       expect(
         screen.getByText(/connect with parents from your school community/i)
       ).toBeInTheDocument();
@@ -162,11 +162,11 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       ).toBeInTheDocument();
     });
 
-    it("should describe family-friendly flexible school scheduling", () => {
+    it('should describe family-friendly flexible school scheduling', () => {
       render(<HomePage />);
 
       expect(
-        screen.getByText("Flexible School Scheduling")
+        screen.getByText('Flexible School Scheduling')
       ).toBeInTheDocument();
       expect(
         screen.getByText(/coordinate morning drop-offs and afternoon pickups/i)
@@ -178,11 +178,11 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       ).toBeInTheDocument();
     });
 
-    it("should emphasize family cost-effective transportation benefits", () => {
+    it('should emphasize family cost-effective transportation benefits', () => {
       render(<HomePage />);
 
       expect(
-        screen.getByText("Cost-Effective Transportation")
+        screen.getByText('Cost-Effective Transportation')
       ).toBeInTheDocument();
       expect(
         screen.getByText(/share fuel costs and reduce wear on your vehicle/i)
@@ -194,7 +194,7 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       ).toBeInTheDocument();
     });
 
-    it("should display family-oriented feature cards with accessible icons", () => {
+    it('should display family-oriented feature cards with accessible icons', () => {
       render(<HomePage />);
 
       const featureCards = screen.getAllByText(
@@ -203,17 +203,17 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       expect(featureCards.length).toBeGreaterThanOrEqual(3);
 
       // Check for SVG icons in each feature card
-      const svgElements = document.querySelectorAll("svg");
+      const svgElements = document.querySelectorAll('svg');
       expect(svgElements.length).toBeGreaterThan(3); // Header + 3 feature icons + others
     });
   });
 
-  describe("Family-Focused School Value Proposition", () => {
+  describe('Family-Focused School Value Proposition', () => {
     it('should display "Built for School Communities" with family emphasis', () => {
       render(<HomePage />);
 
       expect(
-        screen.getByText("Built for School Communities")
+        screen.getByText('Built for School Communities')
       ).toBeInTheDocument();
       expect(
         screen.getByText(
@@ -222,46 +222,46 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       ).toBeInTheDocument();
     });
 
-    it("should highlight family-oriented organized trip planning", () => {
+    it('should highlight family-oriented organized trip planning', () => {
       render(<HomePage />);
 
-      expect(screen.getByText("Organized")).toBeInTheDocument();
-      expect(screen.getByText("Structured trip planning")).toBeInTheDocument();
+      expect(screen.getByText('Organized')).toBeInTheDocument();
+      expect(screen.getByText('Structured trip planning')).toBeInTheDocument();
     });
 
-    it("should emphasize family-friendly simplicity", () => {
+    it('should emphasize family-friendly simplicity', () => {
       render(<HomePage />);
 
-      expect(screen.getByText("Simple")).toBeInTheDocument();
-      expect(screen.getByText("Easy trip coordination")).toBeInTheDocument();
+      expect(screen.getByText('Simple')).toBeInTheDocument();
+      expect(screen.getByText('Easy trip coordination')).toBeInTheDocument();
     });
 
-    it("should promote family savings benefit", () => {
+    it('should promote family savings benefit', () => {
       render(<HomePage />);
 
-      expect(screen.getByText("Savings")).toBeInTheDocument();
+      expect(screen.getByText('Savings')).toBeInTheDocument();
       expect(
-        screen.getByText("Reduced transportation costs")
+        screen.getByText('Reduced transportation costs')
       ).toBeInTheDocument();
     });
 
-    it("should support Progressive Parent Onboarding through clear messaging", () => {
+    it('should support Progressive Parent Onboarding through clear messaging', () => {
       render(<HomePage />);
 
       // Value propositions should be accessible and clear for new families
-      expect(screen.getByText("Organized")).toBeInTheDocument();
-      expect(screen.getByText("Simple")).toBeInTheDocument();
-      expect(screen.getByText("Savings")).toBeInTheDocument();
+      expect(screen.getByText('Organized')).toBeInTheDocument();
+      expect(screen.getByText('Simple')).toBeInTheDocument();
+      expect(screen.getByText('Savings')).toBeInTheDocument();
 
       // These should guide families toward registration
       expect(
-        screen.getByText("Built for School Communities")
+        screen.getByText('Built for School Communities')
       ).toBeInTheDocument();
     });
   });
 
-  describe("Responsive Design and Accessibility", () => {
-    it("should have responsive grid layouts", () => {
+  describe('Responsive Design and Accessibility', () => {
+    it('should have responsive grid layouts', () => {
       render(<HomePage />);
 
       // Check for responsive classes in the DOM
@@ -275,41 +275,41 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       expect(responsiveElements.length).toBeGreaterThan(0);
     });
 
-    it("should use semantic HTML elements", () => {
+    it('should use semantic HTML elements', () => {
       render(<HomePage />);
 
-      expect(document.querySelector("header")).toBeInTheDocument();
-      expect(document.querySelector("main")).toBeInTheDocument();
-      expect(document.querySelector("h1")).toBeInTheDocument();
-      expect(document.querySelector("nav")).toBeDefined();
+      expect(document.querySelector('header')).toBeInTheDocument();
+      expect(document.querySelector('main')).toBeInTheDocument();
+      expect(document.querySelector('h1')).toBeInTheDocument();
+      expect(document.querySelector('nav')).toBeDefined();
     });
 
-    it("should have proper heading hierarchy", () => {
+    it('should have proper heading hierarchy', () => {
       render(<HomePage />);
 
-      const h1 = document.querySelector("h1");
-      const h2 = document.querySelector("h2");
-      const h3Elements = document.querySelectorAll("h3");
+      const h1 = document.querySelector('h1');
+      const h2 = document.querySelector('h2');
+      const h3Elements = document.querySelectorAll('h3');
 
       expect(h1).toBeInTheDocument();
       expect(h2).toBeInTheDocument();
       expect(h3Elements.length).toBeGreaterThan(0);
     });
 
-    it("should include accessibility attributes for icons", () => {
+    it('should include accessibility attributes for icons', () => {
       render(<HomePage />);
 
       // Check for SVG elements with accessibility attributes
-      const svgElements = document.querySelectorAll("svg");
-      svgElements.forEach((svg) => {
+      const svgElements = document.querySelectorAll('svg');
+      svgElements.forEach(svg => {
         // SVGs should have proper accessibility handling
         expect(svg).toBeDefined();
       });
     });
   });
 
-  describe("VCarpool Brand Consistency", () => {
-    it("should use consistent primary color theming", () => {
+  describe('VCarpool Brand Consistency', () => {
+    it('should use consistent primary color theming', () => {
       render(<HomePage />);
 
       // Check for primary color classes
@@ -319,7 +319,7 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       expect(primaryColorElements.length).toBeGreaterThan(0);
     });
 
-    it("should display school transportation terminology consistently", () => {
+    it('should display school transportation terminology consistently', () => {
       render(<HomePage />);
 
       expect(screen.getByText(/school transportation/i)).toBeInTheDocument();
@@ -328,7 +328,7 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       expect(screen.getByText(/children/i)).toBeInTheDocument();
     });
 
-    it("should use professional card-based layout", () => {
+    it('should use professional card-based layout', () => {
       render(<HomePage />);
 
       // Check for card classes
@@ -339,63 +339,63 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
     });
   });
 
-  describe("Family Onboarding User Journey - Progressive Entry Points", () => {
-    it("should provide clear Enhanced Family Unit Registration path for new families", () => {
+  describe('Family Onboarding User Journey - Progressive Entry Points', () => {
+    it('should provide clear Enhanced Family Unit Registration path for new families', () => {
       render(<HomePage />);
 
-      const registrationLinks = screen.getAllByRole("link", {
+      const registrationLinks = screen.getAllByRole('link', {
         name: /start carpooling|join today/i,
       });
       expect(registrationLinks.length).toBeGreaterThanOrEqual(2);
 
-      registrationLinks.forEach((link) => {
-        expect(link).toHaveAttribute("href", "/register");
+      registrationLinks.forEach(link => {
+        expect(link).toHaveAttribute('href', '/register');
       });
     });
 
-    it("should provide Progressive Parent Onboarding login path for existing families", () => {
+    it('should provide Progressive Parent Onboarding login path for existing families', () => {
       render(<HomePage />);
 
-      const loginLinks = screen.getAllByRole("link", {
+      const loginLinks = screen.getAllByRole('link', {
         name: /sign in|parent login/i,
       });
       expect(loginLinks.length).toBeGreaterThanOrEqual(2);
 
-      loginLinks.forEach((link) => {
-        expect(link).toHaveAttribute("href", "/login");
+      loginLinks.forEach(link => {
+        expect(link).toHaveAttribute('href', '/login');
       });
     });
 
-    it("should differentiate between family registration and family login actions", () => {
+    it('should differentiate between family registration and family login actions', () => {
       render(<HomePage />);
 
-      const startCarpoolingBtn = screen.getByRole("link", {
+      const startCarpoolingBtn = screen.getByRole('link', {
         name: /start carpooling/i,
       });
-      const parentLoginBtn = screen.getByRole("link", {
+      const parentLoginBtn = screen.getByRole('link', {
         name: /parent login/i,
       });
 
       // Primary action (family registration) should have primary styling
-      expect(startCarpoolingBtn).toHaveClass("bg-primary-600");
+      expect(startCarpoolingBtn).toHaveClass('bg-primary-600');
 
       // Secondary action (family login) should have different styling
-      expect(parentLoginBtn).toHaveClass("bg-white");
+      expect(parentLoginBtn).toHaveClass('bg-white');
     });
 
-    it("should support streamlined family onboarding flow", () => {
+    it('should support streamlined family onboarding flow', () => {
       render(<HomePage />);
 
       // Multiple entry points for different family onboarding paths
-      const heroRegisterBtn = screen.getByRole("link", {
+      const heroRegisterBtn = screen.getByRole('link', {
         name: /start carpooling/i,
       });
-      const headerJoinBtn = screen.getByRole("link", {
+      const headerJoinBtn = screen.getByRole('link', {
         name: /join today/i,
       });
 
-      expect(heroRegisterBtn).toHaveAttribute("href", "/register");
-      expect(headerJoinBtn).toHaveAttribute("href", "/register");
+      expect(heroRegisterBtn).toHaveAttribute('href', '/register');
+      expect(headerJoinBtn).toHaveAttribute('href', '/register');
 
       // Both should support the Enhanced Family Unit Registration flow
       expect(heroRegisterBtn).toBeVisible();
@@ -403,53 +403,53 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
     });
   });
 
-  describe("Performance and Loading", () => {
-    it("should render without throwing errors", () => {
+  describe('Performance and Loading', () => {
+    it('should render without throwing errors', () => {
       expect(() => render(<HomePage />)).not.toThrow();
     });
 
-    it("should have minimal initial render complexity", () => {
+    it('should have minimal initial render complexity', () => {
       const { container } = render(<HomePage />);
 
       // Should not have overly complex nested structures
       const deeplyNestedElements = container.querySelectorAll(
-        "div > div > div > div > div > div"
+        'div > div > div > div > div > div'
       );
       expect(deeplyNestedElements.length).toBeLessThan(10);
     });
 
-    it("should not have any async loading states on initial render", () => {
+    it('should not have any async loading states on initial render', () => {
       render(<HomePage />);
 
       // HomePage should be static - no loading spinners or async content
       expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
   });
 
-  describe("Family-Focused Content Validation", () => {
-    it("should have complete family onboarding hero section content", () => {
+  describe('Family-Focused Content Validation', () => {
+    it('should have complete family onboarding hero section content', () => {
       render(<HomePage />);
 
       // Verify all family-focused hero elements are present
-      expect(screen.getByText("Smart School")).toBeInTheDocument();
-      expect(screen.getByText("Carpool Coordination")).toBeInTheDocument();
+      expect(screen.getByText('Smart School')).toBeInTheDocument();
+      expect(screen.getByText('Carpool Coordination')).toBeInTheDocument();
       expect(
         screen.getByText(/connect with other parents/i)
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("link", { name: /start carpooling/i })
+        screen.getByRole('link', { name: /start carpooling/i })
       ).toBeInTheDocument();
     });
 
-    it("should not have any placeholder or development text", () => {
+    it('should not have any placeholder or development text', () => {
       render(<HomePage />);
 
       const textContent = document.body.textContent;
       expect(textContent).not.toMatch(/lorem ipsum|placeholder|todo|fixme/i);
     });
 
-    it("should have family and school-specific language throughout", () => {
+    it('should have family and school-specific language throughout', () => {
       render(<HomePage />);
 
       const textContent = document.body.textContent;
@@ -460,7 +460,7 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       expect(textContent).toMatch(/family|families/i);
     });
 
-    it("should support Progressive Parent Onboarding messaging", () => {
+    it('should support Progressive Parent Onboarding messaging', () => {
       render(<HomePage />);
 
       // Content should clearly guide families through the onboarding process
@@ -473,7 +473,7 @@ describe("HomePage - Streamlined Family Onboarding Entry", () => {
       expect(screen.getByText(/school communities/i)).toBeInTheDocument();
     });
 
-    it("should provide Enhanced Family Unit Registration context", () => {
+    it('should provide Enhanced Family Unit Registration context', () => {
       render(<HomePage />);
 
       // Should emphasize family-unit benefits and coordination

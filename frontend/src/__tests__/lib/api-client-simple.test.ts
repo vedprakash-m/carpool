@@ -5,7 +5,7 @@
  */
 
 // Simple test that bypasses axios constructor issues
-describe("ApiClient - VCarpool Core Functionality", () => {
+describe('ApiClient - VCarpool Core Functionality', () => {
   // Mock localStorage
   const mockLocalStorage = {
     getItem: jest.fn(),
@@ -16,7 +16,7 @@ describe("ApiClient - VCarpool Core Functionality", () => {
 
   beforeAll(() => {
     // Mock localStorage globally
-    Object.defineProperty(window, "localStorage", {
+    Object.defineProperty(window, 'localStorage', {
       value: mockLocalStorage,
       writable: true,
     });
@@ -26,8 +26,8 @@ describe("ApiClient - VCarpool Core Functionality", () => {
     jest.clearAllMocks();
   });
 
-  describe("Mock Mode Testing", () => {
-    it("should validate mock user data structure for VCarpool", () => {
+  describe('Mock Mode Testing', () => {
+    it('should validate mock user data structure for VCarpool', () => {
       // Test the MOCK_USER constant that's used in the ApiClient
       const expectedUserStructure = {
         id: expect.any(String),
@@ -43,16 +43,16 @@ describe("ApiClient - VCarpool Core Functionality", () => {
 
       // This tests the structure without instantiating ApiClient
       const mockUser = {
-        id: "mock-user-123",
-        email: "admin@vcarpool.com",
-        firstName: "Admin",
-        lastName: "User",
-        role: "admin",
-        phoneNumber: "+1-555-0123",
+        id: 'mock-user-123',
+        email: 'admin@vcarpool.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
+        phoneNumber: '+1-555-0123',
         preferences: {
           notifications: true,
           emailUpdates: true,
-          theme: "light",
+          theme: 'light',
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -61,7 +61,7 @@ describe("ApiClient - VCarpool Core Functionality", () => {
       expect(mockUser).toMatchObject(expectedUserStructure);
     });
 
-    it("should validate trip statistics structure for school carpool", () => {
+    it('should validate trip statistics structure for school carpool', () => {
       const expectedTripStats = {
         totalTrips: expect.any(Number),
         tripsAsDriver: expect.any(Number),
@@ -85,7 +85,7 @@ describe("ApiClient - VCarpool Core Functionality", () => {
       ).toBeLessThanOrEqual(mockTripStats.totalTrips);
     });
 
-    it("should validate trip list structure for school carpool management", () => {
+    it('should validate trip list structure for school carpool management', () => {
       const expectedTrip = {
         id: expect.any(String),
         driverId: expect.any(String),
@@ -102,19 +102,19 @@ describe("ApiClient - VCarpool Core Functionality", () => {
       };
 
       const mockTrip = {
-        id: "trip-1",
-        driverId: "mock-driver-1",
-        destination: "Lincoln Elementary School",
+        id: 'trip-1',
+        driverId: 'mock-driver-1',
+        destination: 'Lincoln Elementary School',
         pickupLocations: [],
         date: new Date(Date.now() + 86400000),
-        departureTime: "07:45",
-        arrivalTime: "08:00",
+        departureTime: '07:45',
+        arrivalTime: '08:00',
         maxPassengers: 4,
-        passengers: ["child-1"],
+        passengers: ['child-1'],
         availableSeats: 3,
         cost: 0,
-        status: "planned",
-        notes: "Morning school drop-off",
+        status: 'planned',
+        notes: 'Morning school drop-off',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -123,12 +123,12 @@ describe("ApiClient - VCarpool Core Functionality", () => {
       expect(mockTrip.availableSeats).toBeLessThanOrEqual(
         mockTrip.maxPassengers
       );
-      expect(mockTrip.destination).toContain("School");
+      expect(mockTrip.destination).toContain('School');
     });
   });
 
-  describe("Authentication Data Validation", () => {
-    it("should validate auth response structure", () => {
+  describe('Authentication Data Validation', () => {
+    it('should validate auth response structure', () => {
       const expectedAuthResponse = {
         success: expect.any(Boolean),
         data: {
@@ -142,28 +142,28 @@ describe("ApiClient - VCarpool Core Functionality", () => {
         success: true,
         data: {
           user: {
-            id: "user-123",
-            email: "test@school.edu",
-            firstName: "Test",
-            lastName: "User",
-            role: "parent",
+            id: 'user-123',
+            email: 'test@school.edu',
+            firstName: 'Test',
+            lastName: 'User',
+            role: 'parent',
           },
-          token: "mock-token-" + Date.now(),
-          refreshToken: "mock-refresh-token-" + Date.now(),
+          token: 'mock-token-' + Date.now(),
+          refreshToken: 'mock-refresh-token-' + Date.now(),
         },
       };
 
       expect(mockAuthResponse).toMatchObject(expectedAuthResponse);
       expect(mockAuthResponse.success).toBe(true);
-      expect(mockAuthResponse.data.token).toContain("mock-token-");
+      expect(mockAuthResponse.data.token).toContain('mock-token-');
     });
 
-    it("should validate user roles for school carpool system", () => {
-      const validRoles = ["admin", "parent", "student"];
+    it('should validate user roles for school carpool system', () => {
+      const validRoles = ['admin', 'parent', 'student'];
 
-      validRoles.forEach((role) => {
+      validRoles.forEach(role => {
         const user = {
-          id: "user-123",
+          id: 'user-123',
           email: `${role}@school.edu`,
           role: role,
         };
@@ -172,13 +172,13 @@ describe("ApiClient - VCarpool Core Functionality", () => {
       });
 
       // Test invalid role
-      const invalidRole = "teacher";
+      const invalidRole = 'teacher';
       expect(validRoles).not.toContain(invalidRole);
     });
   });
 
-  describe("API Response Format Consistency", () => {
-    it("should follow consistent ApiResponse format", () => {
+  describe('API Response Format Consistency', () => {
+    it('should follow consistent ApiResponse format', () => {
       const expectedFormat = {
         success: expect.any(Boolean),
       };
@@ -187,13 +187,13 @@ describe("ApiClient - VCarpool Core Functionality", () => {
         { success: true, data: { user: {} } },
         { success: true, data: { totalTrips: 5 } },
         { success: true, data: [] },
-        { success: false, data: null, error: "Not found" },
+        { success: false, data: null, error: 'Not found' },
       ];
 
-      mockResponses.forEach((response) => {
+      mockResponses.forEach(response => {
         expect(response).toMatchObject(expectedFormat);
         // All responses should have a success property
-        expect(typeof response.success).toBe("boolean");
+        expect(typeof response.success).toBe('boolean');
 
         // Success responses should have data, error responses can have null data
         if (response.success) {
@@ -204,7 +204,7 @@ describe("ApiClient - VCarpool Core Functionality", () => {
       });
     });
 
-    it("should validate pagination structure", () => {
+    it('should validate pagination structure', () => {
       const expectedPagination = {
         page: expect.any(Number),
         limit: expect.any(Number),
@@ -226,48 +226,48 @@ describe("ApiClient - VCarpool Core Functionality", () => {
     });
   });
 
-  describe("School-Specific Business Logic", () => {
-    it("should validate school schedule timing constraints", () => {
+  describe('School-Specific Business Logic', () => {
+    it('should validate school schedule timing constraints', () => {
       const schoolTrips = [
         {
-          type: "dropoff",
-          departureTime: "07:45",
-          arrivalTime: "08:00",
-          destination: "Lincoln Elementary School",
+          type: 'dropoff',
+          departureTime: '07:45',
+          arrivalTime: '08:00',
+          destination: 'Lincoln Elementary School',
         },
         {
-          type: "pickup",
-          departureTime: "15:15",
-          arrivalTime: "15:30",
-          destination: "Jefferson Middle School",
+          type: 'pickup',
+          departureTime: '15:15',
+          arrivalTime: '15:30',
+          destination: 'Jefferson Middle School',
         },
       ];
 
-      schoolTrips.forEach((trip) => {
+      schoolTrips.forEach(trip => {
         // Validate time format
         expect(trip.departureTime).toMatch(/^\d{2}:\d{2}$/);
         expect(trip.arrivalTime).toMatch(/^\d{2}:\d{2}$/);
 
         // Validate school destination
-        expect(trip.destination).toContain("School");
+        expect(trip.destination).toContain('School');
 
         // Validate trip type
-        expect(["dropoff", "pickup"]).toContain(trip.type);
+        expect(['dropoff', 'pickup']).toContain(trip.type);
       });
     });
 
-    it("should validate passenger capacity constraints", () => {
+    it('should validate passenger capacity constraints', () => {
       const tripCapacityTests = [
-        { maxPassengers: 4, passengers: ["child-1"], availableSeats: 3 },
+        { maxPassengers: 4, passengers: ['child-1'], availableSeats: 3 },
         { maxPassengers: 3, passengers: [], availableSeats: 3 },
         {
           maxPassengers: 2,
-          passengers: ["child-1", "child-2"],
+          passengers: ['child-1', 'child-2'],
           availableSeats: 0,
         },
       ];
 
-      tripCapacityTests.forEach((test) => {
+      tripCapacityTests.forEach(test => {
         expect(test.availableSeats).toBe(
           test.maxPassengers - test.passengers.length
         );
@@ -277,39 +277,39 @@ describe("ApiClient - VCarpool Core Functionality", () => {
     });
   });
 
-  describe("Token Management Logic", () => {
-    it("should handle token storage operations", () => {
-      const token = "test-access-token";
-      const refreshToken = "test-refresh-token";
+  describe('Token Management Logic', () => {
+    it('should handle token storage operations', () => {
+      const token = 'test-access-token';
+      const refreshToken = 'test-refresh-token';
 
       // Simulate token storage
-      mockLocalStorage.setItem("access_token", token);
-      mockLocalStorage.setItem("refresh_token", refreshToken);
+      mockLocalStorage.setItem('access_token', token);
+      mockLocalStorage.setItem('refresh_token', refreshToken);
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "access_token",
+        'access_token',
         token
       );
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "refresh_token",
+        'refresh_token',
         refreshToken
       );
     });
 
-    it("should handle token cleanup operations", () => {
+    it('should handle token cleanup operations', () => {
       // Simulate token cleanup
-      mockLocalStorage.removeItem("access_token");
-      mockLocalStorage.removeItem("refresh_token");
+      mockLocalStorage.removeItem('access_token');
+      mockLocalStorage.removeItem('refresh_token');
 
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("access_token");
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("refresh_token");
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('access_token');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('refresh_token');
     });
   });
 
-  describe("Network Simulation Logic", () => {
-    it("should simulate realistic network delays", async () => {
+  describe('Network Simulation Logic', () => {
+    it('should simulate realistic network delays', async () => {
       const simulateNetworkDelay = (ms: number) => {
-        return new Promise((resolve) => setTimeout(resolve, ms));
+        return new Promise(resolve => setTimeout(resolve, ms));
       };
 
       const startTime = Date.now();

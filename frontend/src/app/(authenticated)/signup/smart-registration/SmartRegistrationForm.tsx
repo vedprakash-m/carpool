@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import AddressValidation from "@/components/AddressValidation";
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import AddressValidation from '@/components/AddressValidation';
 import {
   Users,
   User,
@@ -19,7 +19,7 @@ import {
   X,
   MapPinIcon,
   GraduationCap,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface SmartChild {
   name: string;
@@ -85,20 +85,20 @@ export default function SmartRegistrationForm() {
 
   const [formData, setFormData] = useState<SmartRegistrationData>({
     primaryParent: {
-      name: "",
-      email: "",
-      phone: "",
+      name: '',
+      email: '',
+      phone: '',
     },
     address: {
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
+      street: '',
+      city: '',
+      state: '',
+      zipCode: '',
     },
     children: [
       {
-        name: "",
-        birthDate: "",
+        name: '',
+        birthDate: '',
       },
     ],
     canDrive: false,
@@ -123,15 +123,15 @@ export default function SmartRegistrationForm() {
       const fullAddress = `${formData.address.street}, ${formData.address.city}, ${formData.address.state} ${formData.address.zipCode}`;
 
       // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Mock school detection result
       const mockResult: SchoolDetectionResult = {
         school: {
-          name: "Lincoln Elementary School",
-          address: "123 Oak Street, Springfield, IL 62701",
-          type: "elementary",
-          grades: ["K", "1", "2", "3", "4", "5"],
+          name: 'Lincoln Elementary School',
+          address: '123 Oak Street, Springfield, IL 62701',
+          type: 'elementary',
+          grades: ['K', '1', '2', '3', '4', '5'],
         },
         distance: 2.3,
         confidence: 0.89,
@@ -140,7 +140,7 @@ export default function SmartRegistrationForm() {
       setSchoolDetectionResult(mockResult);
 
       // Auto-update form data with detected school
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         detectedSchool: {
           name: mockResult.school.name,
@@ -148,13 +148,13 @@ export default function SmartRegistrationForm() {
           distance: mockResult.distance,
           confidence: mockResult.confidence,
         },
-        children: prev.children.map((child) => ({
+        children: prev.children.map(child => ({
           ...child,
           school: child.school || mockResult.school.name,
         })),
       }));
     } catch (error) {
-      console.error("School detection failed:", error);
+      console.error('School detection failed:', error);
     } finally {
       setIsLoading(false);
     }
@@ -162,7 +162,7 @@ export default function SmartRegistrationForm() {
 
   // Smart grade inference from birth date
   const inferGradeFromAge = (birthDate: string): string => {
-    if (!birthDate) return "";
+    if (!birthDate) return '';
 
     const birth = new Date(birthDate);
     const now = new Date();
@@ -175,22 +175,22 @@ export default function SmartRegistrationForm() {
 
     // Standard grade mapping (can be customized)
     const gradeMap: { [key: number]: string } = {
-      5: "K",
-      6: "1",
-      7: "2",
-      8: "3",
-      9: "4",
-      10: "5",
-      11: "6",
-      12: "7",
-      13: "8",
-      14: "9",
-      15: "10",
-      16: "11",
-      17: "12",
+      5: 'K',
+      6: '1',
+      7: '2',
+      8: '3',
+      9: '4',
+      10: '5',
+      11: '6',
+      12: '7',
+      13: '8',
+      14: '9',
+      15: '10',
+      16: '11',
+      17: '12',
     };
 
-    return gradeMap[actualAge] || "";
+    return gradeMap[actualAge] || '';
   };
 
   const handleChildChange = (
@@ -198,14 +198,14 @@ export default function SmartRegistrationForm() {
     field: keyof SmartChild,
     value: any
   ) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       children: prev.children.map((child, i) => {
         if (i === index) {
           const updatedChild = { ...child, [field]: value };
 
           // Auto-infer grade when birth date changes
-          if (field === "birthDate") {
+          if (field === 'birthDate') {
             updatedChild.grade = inferGradeFromAge(value);
           }
 
@@ -217,14 +217,14 @@ export default function SmartRegistrationForm() {
   };
 
   const addChild = () => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       children: [
         ...prev.children,
         {
-          name: "",
-          birthDate: "",
-          school: schoolDetectionResult?.school.name || "",
+          name: '',
+          birthDate: '',
+          school: schoolDetectionResult?.school.name || '',
         },
       ],
     }));
@@ -232,25 +232,25 @@ export default function SmartRegistrationForm() {
 
   const removeChild = (index: number) => {
     if (formData.children.length > 1) {
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         children: prev.children.filter((_, i) => i !== index),
       }));
     }
   };
 
-  const nextStep = () => setCurrentStep((prev) => prev + 1);
-  const prevStep = () => setCurrentStep((prev) => prev - 1);
+  const nextStep = () => setCurrentStep(prev => prev + 1);
+  const prevStep = () => setCurrentStep(prev => prev - 1);
 
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
       // Mock submission
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Smart registration data:", formData);
-      router.push("/parents/registration-complete");
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('Smart registration data:', formData);
+      router.push('/parents/registration-complete');
     } catch (error) {
-      console.error("Registration failed:", error);
+      console.error('Registration failed:', error);
     } finally {
       setIsLoading(false);
     }
@@ -278,14 +278,14 @@ export default function SmartRegistrationForm() {
           <div className="flex items-center justify-between">
             <div
               className={`flex items-center ${
-                currentStep >= 1 ? "text-blue-600" : "text-gray-400"
+                currentStep >= 1 ? 'text-blue-600' : 'text-gray-400'
               }`}
             >
               <div
                 className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
                   currentStep >= 1
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : "border-gray-300"
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'border-gray-300'
                 }`}
               >
                 1
@@ -294,14 +294,14 @@ export default function SmartRegistrationForm() {
             </div>
             <div
               className={`flex items-center ${
-                currentStep >= 2 ? "text-blue-600" : "text-gray-400"
+                currentStep >= 2 ? 'text-blue-600' : 'text-gray-400'
               }`}
             >
               <div
                 className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
                   currentStep >= 2
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : "border-gray-300"
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'border-gray-300'
                 }`}
               >
                 2
@@ -310,14 +310,14 @@ export default function SmartRegistrationForm() {
             </div>
             <div
               className={`flex items-center ${
-                currentStep >= 3 ? "text-blue-600" : "text-gray-400"
+                currentStep >= 3 ? 'text-blue-600' : 'text-gray-400'
               }`}
             >
               <div
                 className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
                   currentStep >= 3
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : "border-gray-300"
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'border-gray-300'
                 }`}
               >
                 3
@@ -346,8 +346,8 @@ export default function SmartRegistrationForm() {
                     <input
                       type="text"
                       value={formData.primaryParent.name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
+                      onChange={e =>
+                        setFormData(prev => ({
                           ...prev,
                           primaryParent: {
                             ...prev.primaryParent,
@@ -370,8 +370,8 @@ export default function SmartRegistrationForm() {
                     <input
                       type="email"
                       value={formData.primaryParent.email}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
+                      onChange={e =>
+                        setFormData(prev => ({
                           ...prev,
                           primaryParent: {
                             ...prev.primaryParent,
@@ -395,8 +395,8 @@ export default function SmartRegistrationForm() {
                   <input
                     type="tel"
                     value={formData.primaryParent.phone}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
+                    onChange={e =>
+                      setFormData(prev => ({
                         ...prev,
                         primaryParent: {
                           ...prev.primaryParent,
@@ -425,8 +425,8 @@ export default function SmartRegistrationForm() {
                       <input
                         type="text"
                         value={formData.address.street}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
+                        onChange={e =>
+                          setFormData(prev => ({
                             ...prev,
                             address: {
                               ...prev.address,
@@ -448,8 +448,8 @@ export default function SmartRegistrationForm() {
                       <input
                         type="text"
                         value={formData.address.city}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
+                        onChange={e =>
+                          setFormData(prev => ({
                             ...prev,
                             address: { ...prev.address, city: e.target.value },
                           }))
@@ -466,8 +466,8 @@ export default function SmartRegistrationForm() {
                       <input
                         type="text"
                         value={formData.address.state}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
+                        onChange={e =>
+                          setFormData(prev => ({
                             ...prev,
                             address: { ...prev.address, state: e.target.value },
                           }))
@@ -484,8 +484,8 @@ export default function SmartRegistrationForm() {
                       <input
                         type="text"
                         value={formData.address.zipCode}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
+                        onChange={e =>
+                          setFormData(prev => ({
                             ...prev,
                             address: {
                               ...prev.address,
@@ -503,7 +503,7 @@ export default function SmartRegistrationForm() {
 
               {/* Address Validation Component */}
               <AddressValidation
-                onValidationComplete={(isValid) => setAddressValidated(isValid)}
+                onValidationComplete={isValid => setAddressValidated(isValid)}
                 required={true}
               />
 
@@ -528,14 +528,14 @@ export default function SmartRegistrationForm() {
                         School Automatically Detected!
                       </h4>
                       <p className="text-green-800 mt-1">
-                        <strong>{schoolDetectionResult.school.name}</strong> -{" "}
+                        <strong>{schoolDetectionResult.school.name}</strong> -{' '}
                         {schoolDetectionResult.distance} miles away
                       </p>
                       <p className="text-sm text-green-600 mt-1">
                         {schoolDetectionResult.school.address}
                       </p>
                       <p className="text-xs text-green-600 mt-1">
-                        Confidence:{" "}
+                        Confidence:{' '}
                         {Math.round(schoolDetectionResult.confidence * 100)}%
                       </p>
                       <button
@@ -557,8 +557,8 @@ export default function SmartRegistrationForm() {
                   <input
                     type="checkbox"
                     checked={formData.canDrive}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
+                    onChange={e =>
+                      setFormData(prev => ({
                         ...prev,
                         canDrive: e.target.checked,
                       }))
@@ -638,8 +638,8 @@ export default function SmartRegistrationForm() {
                       <input
                         type="text"
                         value={child.name}
-                        onChange={(e) =>
-                          handleChildChange(index, "name", e.target.value)
+                        onChange={e =>
+                          handleChildChange(index, 'name', e.target.value)
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Emma Smith"
@@ -653,8 +653,8 @@ export default function SmartRegistrationForm() {
                       <input
                         type="date"
                         value={child.birthDate}
-                        onChange={(e) =>
-                          handleChildChange(index, "birthDate", e.target.value)
+                        onChange={e =>
+                          handleChildChange(index, 'birthDate', e.target.value)
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -667,17 +667,17 @@ export default function SmartRegistrationForm() {
                       <div className="flex items-center space-x-2">
                         <GraduationCap className="h-5 w-5 text-green-600" />
                         <span className="text-green-800 text-sm">
-                          <strong>Inferred Grade:</strong>{" "}
-                          {child.grade === "K"
-                            ? "Kindergarten"
+                          <strong>Inferred Grade:</strong>{' '}
+                          {child.grade === 'K'
+                            ? 'Kindergarten'
                             : `${child.grade}${
-                                child.grade === "1"
-                                  ? "st"
-                                  : child.grade === "2"
-                                  ? "nd"
-                                  : child.grade === "3"
-                                  ? "rd"
-                                  : "th"
+                                child.grade === '1'
+                                  ? 'st'
+                                  : child.grade === '2'
+                                    ? 'nd'
+                                    : child.grade === '3'
+                                      ? 'rd'
+                                      : 'th'
                               } Grade`}
                         </span>
                       </div>
@@ -717,7 +717,7 @@ export default function SmartRegistrationForm() {
                 <button
                   onClick={nextStep}
                   disabled={formData.children.some(
-                    (child) => !child.name || !child.birthDate
+                    child => !child.name || !child.birthDate
                   )}
                   className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
@@ -768,7 +768,7 @@ export default function SmartRegistrationForm() {
                   <p className="text-gray-600">
                     {formData.address.street}
                     <br />
-                    {formData.address.city}, {formData.address.state}{" "}
+                    {formData.address.city}, {formData.address.state}{' '}
                     {formData.address.zipCode}
                   </p>
                 </div>
@@ -804,8 +804,8 @@ export default function SmartRegistrationForm() {
                   <h4 className="font-medium text-gray-900">Driving</h4>
                   <p className="text-gray-600">
                     {formData.canDrive
-                      ? "Available to drive"
-                      : "Not available to drive"}
+                      ? 'Available to drive'
+                      : 'Not available to drive'}
                   </p>
                 </div>
               </div>

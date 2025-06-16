@@ -5,8 +5,8 @@ import {
   JoinTripRequest,
   ApiResponse,
   PaginatedResponse,
-} from "@vcarpool/shared";
-import { apiClient } from "./api-client";
+} from '@vcarpool/shared';
+import { apiClient } from './api-client';
 
 export interface TripFilters {
   driverId?: string;
@@ -21,12 +21,12 @@ export interface TripFilters {
   dateFrom?: string;
   dateTo?: string;
   sortBy?:
-    | "date"
-    | "price"
-    | "destination"
-    | "availableSeats"
-    | "departureTime";
-  sortOrder?: "asc" | "desc";
+    | 'date'
+    | 'price'
+    | 'destination'
+    | 'availableSeats'
+    | 'departureTime';
+  sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
 }
@@ -60,11 +60,11 @@ class TripApiService {
     }
 
     const queryString = params.toString();
-    const url = `/v1/trips${queryString ? `?${queryString}` : ""}`;
+    const url = `/v1/trips${queryString ? `?${queryString}` : ''}`;
 
     const response = await apiClient.get<any>(url);
     if (!response.success || !response.data) {
-      throw new Error("Failed to fetch trips");
+      throw new Error('Failed to fetch trips');
     }
     return response as PaginatedResponse<Trip>;
   }
@@ -74,11 +74,11 @@ class TripApiService {
    */
   async createTrip(tripData: CreateTripRequest): Promise<ApiResponse<Trip>> {
     const response = await apiClient.post<ApiResponse<Trip>>(
-      "/v1/trips",
+      '/v1/trips',
       tripData
     );
     if (!response.data) {
-      throw new Error("Failed to create trip");
+      throw new Error('Failed to create trip');
     }
     return response.data;
   }
@@ -95,7 +95,7 @@ class TripApiService {
       updates
     );
     if (!response.data) {
-      throw new Error("Failed to update trip");
+      throw new Error('Failed to update trip');
     }
     return response.data;
   }
@@ -112,7 +112,7 @@ class TripApiService {
       joinData
     );
     if (!response.data) {
-      throw new Error("Failed to join trip");
+      throw new Error('Failed to join trip');
     }
     return response.data;
   }
@@ -125,7 +125,7 @@ class TripApiService {
       `/v1/trips/${tripId}/leave`
     );
     if (!response.data) {
-      throw new Error("Failed to leave trip");
+      throw new Error('Failed to leave trip');
     }
     return response.data;
   }
@@ -138,7 +138,7 @@ class TripApiService {
       `/v1/trips/${tripId}`
     );
     if (!response.data) {
-      throw new Error("Failed to delete trip");
+      throw new Error('Failed to delete trip');
     }
     return response.data;
   }
@@ -151,7 +151,7 @@ class TripApiService {
       // TEMPORARY CORS WORKAROUND: Use simple fetch without custom headers
       // to bypass CORS preflight issues
       const response = await fetch(
-        "https://vcarpool-api-prod.azurewebsites.net/api/v1/trips/stats"
+        'https://vcarpool-api-prod.azurewebsites.net/api/v1/trips/stats'
       );
 
       if (!response.ok) {
@@ -161,12 +161,12 @@ class TripApiService {
       const data = await response.json();
 
       if (!data.success || !data.data) {
-        throw new Error("Failed to fetch trip stats");
+        throw new Error('Failed to fetch trip stats');
       }
 
       return data.data;
     } catch (error) {
-      console.error("Trip stats fetch error:", error);
+      console.error('Trip stats fetch error:', error);
       // Fallback: return zero stats for new users
       return {
         totalTrips: 0,
@@ -189,57 +189,57 @@ class TripApiService {
   async getAvailableTrips(date?: string): Promise<PaginatedResponse<Trip>> {
     try {
       const params = new URLSearchParams();
-      params.append("status", "planned");
+      params.append('status', 'planned');
 
       if (date) {
-        params.append("date", date);
+        params.append('date', date);
       }
 
       const response = await apiClient.get<PaginatedResponse<Trip>>(
         `/v1/trips?${params.toString()}`
       );
       if (!response.success || !response.data) {
-        throw new Error("Failed to fetch available trips");
+        throw new Error('Failed to fetch available trips');
       }
       return response.data;
     } catch (error) {
-      console.error("Available trips fetch error:", error);
+      console.error('Available trips fetch error:', error);
       // Fallback: return mock available trips
       return {
         success: true,
         data: [
           {
-            id: "available-trip-1",
-            driverId: "neighbor-parent-1",
-            destination: "Lincoln Elementary School",
+            id: 'available-trip-1',
+            driverId: 'neighbor-parent-1',
+            destination: 'Lincoln Elementary School',
             pickupLocations: [],
             date: new Date(Date.now() + 86400000), // Tomorrow
-            departureTime: "08:00",
-            arrivalTime: "08:15",
+            departureTime: '08:00',
+            arrivalTime: '08:15',
             maxPassengers: 4,
-            passengers: ["neighbor-child"],
+            passengers: ['neighbor-child'],
             availableSeats: 3,
             cost: 0,
-            status: "planned" as const,
-            notes: "Daily school run - additional passengers welcome!",
+            status: 'planned' as const,
+            notes: 'Daily school run - additional passengers welcome!',
             createdAt: new Date(),
             updatedAt: new Date(),
           },
           {
-            id: "available-trip-2",
-            driverId: "neighbor-parent-2",
-            destination: "Jefferson Middle School",
+            id: 'available-trip-2',
+            driverId: 'neighbor-parent-2',
+            destination: 'Jefferson Middle School',
             pickupLocations: [],
             date: new Date(Date.now() + 86400000),
-            departureTime: "07:30",
-            arrivalTime: "07:50",
+            departureTime: '07:30',
+            arrivalTime: '07:50',
             maxPassengers: 5,
             passengers: [],
             availableSeats: 5,
             cost: 0,
-            status: "planned" as const,
+            status: 'planned' as const,
             notes:
-              "Heading to Jefferson Middle School, can pick up along the way",
+              'Heading to Jefferson Middle School, can pick up along the way',
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -259,66 +259,66 @@ class TripApiService {
    */
   async getMyTrips(): Promise<PaginatedResponse<Trip>> {
     try {
-      const response = await apiClient.get<any>("/v1/trips");
+      const response = await apiClient.get<any>('/v1/trips');
       if (!response.success || !response.data) {
-        throw new Error("Failed to fetch my trips");
+        throw new Error('Failed to fetch my trips');
       }
       // Backend returns { success: true, data: trips, pagination: ... }
       return response as PaginatedResponse<Trip>;
     } catch (error) {
-      console.error("My trips fetch error:", error);
+      console.error('My trips fetch error:', error);
       // Fallback: return mock data if API fails
       return {
         success: true,
         data: [
           {
-            id: "trip-mock-1",
-            driverId: "current-user",
-            destination: "Lincoln Elementary School",
+            id: 'trip-mock-1',
+            driverId: 'current-user',
+            destination: 'Lincoln Elementary School',
             pickupLocations: [
               {
-                userId: "child-1",
-                address: "123 Maplewood Drive",
-                estimatedTime: "07:45",
+                userId: 'child-1',
+                address: '123 Maplewood Drive',
+                estimatedTime: '07:45',
               },
               {
-                userId: "child-2",
-                address: "456 Oak Avenue",
-                estimatedTime: "07:50",
+                userId: 'child-2',
+                address: '456 Oak Avenue',
+                estimatedTime: '07:50',
               },
             ],
             date: new Date(Date.now() + 86400000), // Tomorrow
-            departureTime: "07:45",
-            arrivalTime: "08:00",
+            departureTime: '07:45',
+            arrivalTime: '08:00',
             maxPassengers: 4,
-            passengers: ["child-1", "child-2"],
+            passengers: ['child-1', 'child-2'],
             availableSeats: 2,
             cost: 0, // Free school carpool
-            status: "planned" as const,
-            notes: "Morning school drop-off route",
+            status: 'planned' as const,
+            notes: 'Morning school drop-off route',
             createdAt: new Date(),
             updatedAt: new Date(),
           },
           {
-            id: "trip-mock-2",
-            driverId: "parent-neighbor",
-            destination: "Lincoln Elementary School",
+            id: 'trip-mock-2',
+            driverId: 'parent-neighbor',
+            destination: 'Lincoln Elementary School',
             pickupLocations: [
               {
-                userId: "current-user-child",
-                address: "789 Pine Street",
-                estimatedTime: "15:15",
+                userId: 'current-user-child',
+                address: '789 Pine Street',
+                estimatedTime: '15:15',
               },
             ],
             date: new Date(Date.now() + 172800000), // Day after tomorrow
-            departureTime: "15:15",
-            arrivalTime: "15:30",
+            departureTime: '15:15',
+            arrivalTime: '15:30',
             maxPassengers: 3,
-            passengers: ["current-user-child"],
+            passengers: ['current-user-child'],
             availableSeats: 2,
             cost: 0,
-            status: "planned" as const,
-            notes: "Afternoon pickup from school",
+            status: 'planned' as const,
+            notes: 'Afternoon pickup from school',
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -340,10 +340,10 @@ class TripApiService {
     // The backend will default to showing user's trips when no specific filters are provided
     // We can add a query parameter to be explicit
     const response = await apiClient.get<PaginatedResponse<Trip>>(
-      "/v1/trips?driver=me"
+      '/v1/trips?driver=me'
     );
     if (!response.data) {
-      throw new Error("Failed to fetch driver trips");
+      throw new Error('Failed to fetch driver trips');
     }
     return response.data;
   }
@@ -353,10 +353,10 @@ class TripApiService {
    */
   async getMyPassengerTrips(): Promise<PaginatedResponse<Trip>> {
     const response = await apiClient.get<PaginatedResponse<Trip>>(
-      "/v1/trips?passenger=me"
+      '/v1/trips?passenger=me'
     );
     if (!response.data) {
-      throw new Error("Failed to fetch passenger trips");
+      throw new Error('Failed to fetch passenger trips');
     }
     return response.data;
   }
@@ -369,7 +369,7 @@ class TripApiService {
       `/v1/trips/${tripId}`
     );
     if (!response.data) {
-      throw new Error("Failed to fetch trip");
+      throw new Error('Failed to fetch trip');
     }
     return response.data;
   }
@@ -386,12 +386,12 @@ class TripApiService {
     maxPrice?: number;
     minSeats?: number;
     sortBy?:
-      | "date"
-      | "price"
-      | "destination"
-      | "availableSeats"
-      | "departureTime";
-    sortOrder?: "asc" | "desc";
+      | 'date'
+      | 'price'
+      | 'destination'
+      | 'availableSeats'
+      | 'departureTime';
+    sortOrder?: 'asc' | 'desc';
     page?: number;
     limit?: number;
   }): Promise<PaginatedResponse<Trip>> {
@@ -399,17 +399,17 @@ class TripApiService {
 
     // Convert search filters to query parameters
     Object.entries(searchFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
+      if (value !== undefined && value !== null && value !== '') {
         params.append(key, value.toString());
       }
     });
 
     const queryString = params.toString();
-    const url = `/v1/trips${queryString ? `?${queryString}` : ""}`;
+    const url = `/v1/trips${queryString ? `?${queryString}` : ''}`;
 
     const response = await apiClient.get<PaginatedResponse<Trip>>(url);
     if (!response.data) {
-      throw new Error("Failed to search trips");
+      throw new Error('Failed to search trips');
     }
     return response.data;
   }

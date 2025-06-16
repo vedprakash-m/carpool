@@ -1,5 +1,5 @@
-import { CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
-import type { MakeupOption } from "@/hooks/useTravelingParentData";
+import { CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
+import type { MakeupOption } from '@/hooks/useTravelingParentData';
 
 interface MakeupOptionsListProps {
   makeupOptions: MakeupOption[];
@@ -12,74 +12,74 @@ export function MakeupOptionsList({
   makeupOptions,
   onDelete,
 }: MakeupOptionsListProps) {
-  const getStatusIcon = (status: MakeupOption["status"]) => {
+  const getStatusIcon = (status: MakeupOption['status']) => {
     switch (status) {
-      case "approved":
+      case 'approved':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case "rejected":
+      case 'rejected':
         return <XCircle className="h-5 w-5 text-red-600" />;
-      case "completed":
+      case 'completed':
         return <CheckCircle className="h-5 w-5 text-blue-600" />;
       default:
         return <Clock className="h-5 w-5 text-yellow-600" />;
     }
   };
 
-  const getStatusColor = (status: MakeupOption["status"]) => {
+  const getStatusColor = (status: MakeupOption['status']) => {
     switch (status) {
-      case "approved":
-        return "bg-green-50 text-green-700 border-green-200";
-      case "rejected":
-        return "bg-red-50 text-red-700 border-red-200";
-      case "completed":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+      case 'approved':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'rejected':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'completed':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       default:
-        return "bg-yellow-50 text-yellow-700 border-yellow-200";
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
     }
   };
 
-  const getMakeupTypeLabel = (type: MakeupOption["makeupType"]) => {
+  const getMakeupTypeLabel = (type: MakeupOption['makeupType']) => {
     switch (type) {
-      case "extra_week":
-        return "Extra Week Day";
-      case "split_weeks":
-        return "Split Between Weeks";
-      case "weekend_trip":
-        return "Weekend Trip";
+      case 'extra_week':
+        return 'Extra Week Day';
+      case 'split_weeks':
+        return 'Split Between Weeks';
+      case 'weekend_trip':
+        return 'Weekend Trip';
       default:
         return type;
     }
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
     });
   };
 
   const formatTime = (timeStr: string) => {
-    const [hours, minutes] = timeStr.split(":");
+    const [hours, minutes] = timeStr.split(':');
     const hour24 = parseInt(hours);
     const hour12 = hour24 > 12 ? hour24 - 12 : hour24 === 0 ? 12 : hour24;
-    const ampm = hour24 >= 12 ? "PM" : "AM";
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  const canDelete = (status: MakeupOption["status"]) => {
-    return status === "proposed" || status === "rejected";
+  const canDelete = (status: MakeupOption['status']) => {
+    return status === 'proposed' || status === 'rejected';
   };
 
   const handleDelete = async (proposalId: string) => {
-    if (!confirm("Are you sure you want to delete this proposal?")) {
+    if (!confirm('Are you sure you want to delete this proposal?')) {
       return;
     }
 
     const result = await onDelete(proposalId);
     if (!result.success) {
-      alert(result.error || "Failed to delete proposal");
+      alert(result.error || 'Failed to delete proposal');
     }
   };
 
@@ -110,7 +110,7 @@ export function MakeupOptionsList({
           Makeup Proposals
         </h3>
         <div className="space-y-4">
-          {makeupOptions.map((option) => (
+          {makeupOptions.map(option => (
             <div
               key={option.id}
               className="border border-gray-200 rounded-lg p-4"
@@ -155,7 +155,7 @@ export function MakeupOptionsList({
                       </p>
                       <p className="text-sm text-gray-600">
                         {option.tripsToMakeup} trip
-                        {option.tripsToMakeup !== 1 ? "s" : ""}
+                        {option.tripsToMakeup !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>

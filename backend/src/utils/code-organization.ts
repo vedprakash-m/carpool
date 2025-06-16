@@ -66,7 +66,7 @@ class CodeOrganizationManager {
     /dist/,
     /build/,
     /coverage/,
-    /\.next/
+    /\.next/,
   ];
 
   constructor(projectRoot: string) {
@@ -85,11 +85,11 @@ class CodeOrganizationManager {
 
     // Scan all TypeScript and JavaScript files
     const files = await this.getSourceFiles();
-    
+
     for (const file of files) {
       try {
         const content = await fs.readFile(file, 'utf-8');
-        
+
         for (const rule of this.rules) {
           const ruleViolations = await rule.check(file, content);
           violations.push(...ruleViolations);
@@ -105,14 +105,14 @@ class CodeOrganizationManager {
     logger.info('Architecture analysis completed', {
       violations: violations.length,
       score: compliance.score,
-      grade: compliance.grade
+      grade: compliance.grade,
     });
 
     return {
       violations,
       metrics,
       compliance,
-      trends
+      trends,
     };
   }
 
@@ -127,7 +127,7 @@ class CodeOrganizationManager {
     const results = {
       fixed: 0,
       failed: 0,
-      details: [] as Array<{ file: string; ruleId: string; success: boolean; error?: string }>
+      details: [] as Array<{ file: string; ruleId: string; success: boolean; error?: string }>,
     };
 
     for (const violation of violations) {
@@ -138,7 +138,7 @@ class CodeOrganizationManager {
           results.details.push({
             file: violation.file,
             ruleId: violation.ruleId,
-            success: true
+            success: true,
           });
         }
       } catch (error) {
@@ -147,7 +147,7 @@ class CodeOrganizationManager {
           file: violation.file,
           ruleId: violation.ruleId,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
@@ -162,13 +162,13 @@ class CodeOrganizationManager {
     const recommendations: string[] = [];
 
     // Structure recommendations
-    if (report.violations.filter(v => v.ruleId.includes('structure')).length > 0) {
+    if (report.violations.filter((v) => v.ruleId.includes('structure')).length > 0) {
       recommendations.push('Consider reorganizing files according to feature-based structure');
       recommendations.push('Move shared utilities to common directories');
     }
 
     // Naming recommendations
-    if (report.violations.filter(v => v.ruleId.includes('naming')).length > 0) {
+    if (report.violations.filter((v) => v.ruleId.includes('naming')).length > 0) {
       recommendations.push('Adopt consistent naming conventions across the codebase');
       recommendations.push('Use descriptive names for functions and variables');
     }
@@ -204,20 +204,24 @@ class CodeOrganizationManager {
         severity: 'warning',
         check: async (filePath: string, content: string) => {
           const violations: ArchitectureViolation[] = [];
-          
+
           // Check if files are organized by type instead of feature
-          if (filePath.includes('/controllers/') || filePath.includes('/models/') || filePath.includes('/views/')) {
+          if (
+            filePath.includes('/controllers/') ||
+            filePath.includes('/models/') ||
+            filePath.includes('/views/')
+          ) {
             violations.push({
               ruleId: 'structure_feature_based',
               file: filePath,
               message: 'Consider organizing files by feature instead of type',
               severity: 'warning',
-              suggestion: 'Move files to feature-based directories like /user/, /trip/, etc.'
+              suggestion: 'Move files to feature-based directories like /user/, /trip/, etc.',
             });
           }
-          
+
           return violations;
-        }
+        },
       },
       {
         id: 'naming_function_convention',
@@ -229,11 +233,11 @@ class CodeOrganizationManager {
         check: async (filePath: string, content: string) => {
           const violations: ArchitectureViolation[] = [];
           const lines = content.split('\n');
-          
+
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             const match = line.match(/(?:function\s+|const\s+)([A-Z][a-zA-Z0-9]*)/);
-            
+
             if (match) {
               violations.push({
                 ruleId: 'naming_function_convention',
@@ -241,13 +245,13 @@ class CodeOrganizationManager {
                 line: i + 1,
                 message: `Function '${match[1]}' should use camelCase naming`,
                 severity: 'warning',
-                suggestion: `Rename to '${match[1].charAt(0).toLowerCase() + match[1].slice(1)}'`
+                suggestion: `Rename to '${match[1].charAt(0).toLowerCase() + match[1].slice(1)}'`,
               });
             }
           }
-          
+
           return violations;
-        }
+        },
       },
       {
         id: 'dependency_circular',
@@ -257,24 +261,24 @@ class CodeOrganizationManager {
         severity: 'error',
         check: async (filePath: string, content: string) => {
           const violations: ArchitectureViolation[] = [];
-          
+
           // This would require a more sophisticated dependency graph analysis
           // For now, we'll check for obvious patterns
           const imports = content.match(/import.*from\s+['"]([^'"]+)['"]/g) || [];
-          const relativePaths = imports.filter(imp => imp.includes('../'));
-          
+          const relativePaths = imports.filter((imp) => imp.includes('../'));
+
           if (relativePaths.length > 5) {
             violations.push({
               ruleId: 'dependency_circular',
               file: filePath,
               message: 'Too many relative imports may indicate circular dependencies',
               severity: 'warning',
-              suggestion: 'Consider using absolute imports or restructuring modules'
+              suggestion: 'Consider using absolute imports or restructuring modules',
             });
           }
-          
+
           return violations;
-        }
+        },
       },
       {
         id: 'security_hardcoded_secrets',
@@ -286,11 +290,11 @@ class CodeOrganizationManager {
         check: async (filePath: string, content: string) => {
           const violations: ArchitectureViolation[] = [];
           const lines = content.split('\n');
-          
+
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             const match = line.match(/(password|secret|key|token)\s*[:=]\s*['"][^'"]+['"]/i);
-            
+
             if (match && !line.includes('process.env') && !line.includes('example')) {
               violations.push({
                 ruleId: 'security_hardcoded_secrets',
@@ -298,13 +302,13 @@ class CodeOrganizationManager {
                 line: i + 1,
                 message: 'Potential hardcoded secret detected',
                 severity: 'error',
-                suggestion: 'Use environment variables instead'
+                suggestion: 'Use environment variables instead',
               });
             }
           }
-          
+
           return violations;
-        }
+        },
       },
       {
         id: 'performance_large_function',
@@ -317,23 +321,25 @@ class CodeOrganizationManager {
           const lines = content.split('\n');
           let currentFunction: { name: string; start: number } | null = null;
           let braceCount = 0;
-          
+
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
-            
+
             // Detect function start
-            const functionMatch = line.match(/(?:function\s+(\w+)|const\s+(\w+)\s*=|\w+\s*\([^)]*\)\s*[{:])/);
+            const functionMatch = line.match(
+              /(?:function\s+(\w+)|const\s+(\w+)\s*=|\w+\s*\([^)]*\)\s*[{:])/,
+            );
             if (functionMatch && line.includes('{')) {
               currentFunction = {
                 name: functionMatch[1] || functionMatch[2] || 'anonymous',
-                start: i + 1
+                start: i + 1,
               };
               braceCount = 1;
             } else if (currentFunction) {
               // Count braces to find function end
               braceCount += (line.match(/{/g) || []).length;
               braceCount -= (line.match(/}/g) || []).length;
-              
+
               if (braceCount === 0) {
                 const functionLength = i - currentFunction.start + 1;
                 if (functionLength > 50) {
@@ -343,16 +349,16 @@ class CodeOrganizationManager {
                     line: currentFunction.start,
                     message: `Function '${currentFunction.name}' is ${functionLength} lines long`,
                     severity: 'warning',
-                    suggestion: 'Consider breaking down into smaller functions'
+                    suggestion: 'Consider breaking down into smaller functions',
                   });
                 }
                 currentFunction = null;
               }
             }
           }
-          
+
           return violations;
-        }
+        },
       },
       {
         id: 'structure_file_size',
@@ -363,37 +369,37 @@ class CodeOrganizationManager {
         check: async (filePath: string, content: string) => {
           const violations: ArchitectureViolation[] = [];
           const lineCount = content.split('\n').length;
-          
+
           if (lineCount > 500) {
             violations.push({
               ruleId: 'structure_file_size',
               file: filePath,
               message: `File has ${lineCount} lines, exceeds 500 line limit`,
               severity: 'warning',
-              suggestion: 'Consider splitting into multiple files'
+              suggestion: 'Consider splitting into multiple files',
             });
           }
-          
+
           return violations;
-        }
-      }
+        },
+      },
     ];
   }
 
   private async getSourceFiles(): Promise<string[]> {
     const files: string[] = [];
-    
+
     const scanDirectory = async (dir: string): Promise<void> => {
       try {
         const entries = await fs.readdir(dir, { withFileTypes: true });
-        
+
         for (const entry of entries) {
           const fullPath = path.join(dir, entry.name);
-          
-          if (this.excludePatterns.some(pattern => pattern.test(fullPath))) {
+
+          if (this.excludePatterns.some((pattern) => pattern.test(fullPath))) {
             continue;
           }
-          
+
           if (entry.isDirectory()) {
             await scanDirectory(fullPath);
           } else if (entry.isFile() && /\.(ts|js|tsx|jsx)$/.test(entry.name)) {
@@ -404,7 +410,7 @@ class CodeOrganizationManager {
         logger.warn(`Failed to scan directory: ${dir}`, { error });
       }
     };
-    
+
     await scanDirectory(this.projectRoot);
     return files;
   }
@@ -415,33 +421,37 @@ class CodeOrganizationManager {
     let totalFunctions = 0;
     let totalClasses = 0;
     let totalComplexity = 0;
-    
+
     for (const file of files) {
       try {
         const content = await fs.readFile(file, 'utf-8');
         const lines = content.split('\n').length;
         totalLines += lines;
-        
+
         // Count functions
-        const functionMatches = content.match(/(?:function\s+\w+|const\s+\w+\s*=|\w+\s*\([^)]*\)\s*=>)/g) || [];
+        const functionMatches =
+          content.match(/(?:function\s+\w+|const\s+\w+\s*=|\w+\s*\([^)]*\)\s*=>)/g) || [];
         totalFunctions += functionMatches.length;
-        
+
         // Count classes
         const classMatches = content.match(/class\s+\w+/g) || [];
         totalClasses += classMatches.length;
-        
+
         // Calculate cyclomatic complexity (simplified)
-        const complexityKeywords = content.match(/\b(if|else|while|for|switch|case|catch|&&|\|\|)\b/g) || [];
+        const complexityKeywords =
+          content.match(/\b(if|else|while|for|switch|case|catch|&&|\|\|)\b/g) || [];
         totalComplexity += complexityKeywords.length;
-        
       } catch (error) {
         logger.warn(`Failed to analyze file metrics: ${file}`, { error });
       }
     }
-    
+
     const averageComplexity = totalFunctions > 0 ? totalComplexity / totalFunctions : 0;
-    const maintainabilityIndex = Math.max(0, 171 - 5.2 * Math.log(totalLines) - 0.23 * averageComplexity);
-    
+    const maintainabilityIndex = Math.max(
+      0,
+      171 - 5.2 * Math.log(totalLines) - 0.23 * averageComplexity,
+    );
+
     return {
       files: files.length,
       lines: totalLines,
@@ -453,59 +463,67 @@ class CodeOrganizationManager {
       dependencies: {
         internal: 50, // Would be calculated from imports
         external: 25, // Would be calculated from package.json
-        circular: [] // Would be detected by dependency analysis
-      }
+        circular: [], // Would be detected by dependency analysis
+      },
     };
   }
 
-  private calculateCompliance(violations: ArchitectureViolation[], metrics: CodeMetrics): {
+  private calculateCompliance(
+    violations: ArchitectureViolation[],
+    metrics: CodeMetrics,
+  ): {
     score: number;
     grade: 'A' | 'B' | 'C' | 'D' | 'F';
     recommendations: string[];
   } {
     let score = 100;
-    
+
     // Deduct points for violations
-    const errorViolations = violations.filter(v => v.severity === 'error').length;
-    const warningViolations = violations.filter(v => v.severity === 'warning').length;
-    
+    const errorViolations = violations.filter((v) => v.severity === 'error').length;
+    const warningViolations = violations.filter((v) => v.severity === 'warning').length;
+
     score -= errorViolations * 5;
     score -= warningViolations * 2;
-    
+
     // Deduct points for poor metrics
     if (metrics.complexity > 10) score -= 10;
     if (metrics.maintainabilityIndex < 70) score -= 15;
     if (metrics.testCoverage < 80) score -= 20;
-    
+
     score = Math.max(0, score);
-    
+
     let grade: 'A' | 'B' | 'C' | 'D' | 'F';
     if (score >= 90) grade = 'A';
     else if (score >= 80) grade = 'B';
     else if (score >= 70) grade = 'C';
     else if (score >= 60) grade = 'D';
     else grade = 'F';
-    
-    const recommendations = this.generateRecommendations({ violations, metrics } as ArchitectureReport);
-    
+
+    const recommendations = this.generateRecommendations({
+      violations,
+      metrics,
+    } as ArchitectureReport);
+
     return { score, grade, recommendations };
   }
 
-  private async getComplianceTrends(): Promise<Array<{ date: string; score: number; violations: number }>> {
+  private async getComplianceTrends(): Promise<
+    Array<{ date: string; score: number; violations: number }>
+  > {
     // In a real implementation, this would load historical data
     // For now, return simulated trend data
     const trends = [];
     const now = new Date();
-    
+
     for (let i = 29; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       trends.push({
         date: date.toISOString().split('T')[0],
         score: 85 + Math.random() * 10,
-        violations: Math.floor(Math.random() * 20)
+        violations: Math.floor(Math.random() * 20),
       });
     }
-    
+
     return trends;
   }
 
@@ -515,14 +533,14 @@ class CodeOrganizationManager {
       try {
         const content = await fs.readFile(violation.file, 'utf-8');
         const lines = content.split('\n');
-        
+
         if (violation.line && violation.line <= lines.length) {
           // This is a simplified fix - in reality, you'd need more sophisticated parsing
-          const oldName = violation.message.match(/'([^']+)'/) ![1];
-          const newName = violation.suggestion.match(/'([^']+)'/) ![1];
-          
+          const oldName = violation.message.match(/'([^']+)'/)![1];
+          const newName = violation.suggestion.match(/'([^']+)'/)![1];
+
           lines[violation.line - 1] = lines[violation.line - 1].replace(oldName, newName);
-          
+
           await fs.writeFile(violation.file, lines.join('\n'));
           return true;
         }
@@ -530,7 +548,7 @@ class CodeOrganizationManager {
         logger.warn(`Failed to fix violation in ${violation.file}`, { error });
       }
     }
-    
+
     return false;
   }
 }

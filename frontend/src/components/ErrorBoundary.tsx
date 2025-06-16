@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import {
   errorHandler,
   getUserFriendlyMessage,
   isRecoverableError,
-} from "@/lib/error-handling";
+} from '@/lib/error-handling';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -51,7 +51,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     // Report error using centralized error handling
     errorHandler
       .handleError(error, {
-        errorBoundary: "ErrorBoundary",
+        errorBoundary: 'ErrorBoundary',
         componentStack: errorInfo.componentStack || undefined,
       })
       .catch(console.error);
@@ -127,7 +127,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
               <p className="text-gray-600 mb-6">{userFriendlyMessage}</p>
 
-              {process.env.NODE_ENV === "development" && (
+              {process.env.NODE_ENV === 'development' && (
                 <details className="mb-6 text-left">
                   <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
                     Technical Details (Development)

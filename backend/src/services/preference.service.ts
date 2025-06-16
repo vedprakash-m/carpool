@@ -3,7 +3,7 @@
 // This is a placeholder service to unblock development.
 // In a real implementation, this would interact with a database.
 
-import { PreferenceRepository, WeeklyPreference } from "../repositories/preference.repository";
+import { PreferenceRepository, WeeklyPreference } from '../repositories/preference.repository';
 
 export class PreferenceService {
   private readonly repo: PreferenceRepository;
@@ -13,8 +13,12 @@ export class PreferenceService {
     this.repo = repo ?? new PreferenceRepository();
   }
 
-  async getPreferencesForWeek(groupId: string, weekStart: string | Date): Promise<WeeklyPreference[]> {
-    const weekStartStr = typeof weekStart === 'string' ? weekStart : weekStart.toISOString().split('T')[0];
+  async getPreferencesForWeek(
+    groupId: string,
+    weekStart: string | Date,
+  ): Promise<WeeklyPreference[]> {
+    const weekStartStr =
+      typeof weekStart === 'string' ? weekStart : weekStart.toISOString().split('T')[0];
     return this.repo.getByGroupAndWeek(groupId, weekStartStr);
   }
 
@@ -22,7 +26,7 @@ export class PreferenceService {
     parentId: string,
     groupId: string,
     weekStart: string,
-    prefs: any[]
+    prefs: any[],
   ): Promise<void> {
     await this.repo.upsert(parentId, groupId, weekStart, prefs as any);
   }

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
+import React, { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
 import {
   UserIcon,
   PhoneIcon,
   MapPinIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface ProfileCompletionProps {
   onNext: () => void;
@@ -31,11 +31,11 @@ export default function ProfileCompletion({
 }: ProfileCompletionProps) {
   const { user } = useAuthStore();
   const [profileData, setProfileData] = useState<ProfileData>({
-    phoneNumber: user?.phoneNumber || "",
-    homeAddress: "",
-    emergencyContactName: "",
-    emergencyContactPhone: "",
-    emergencyContactRelation: "",
+    phoneNumber: user?.phoneNumber || '',
+    homeAddress: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelation: '',
   });
 
   const [errors, setErrors] = useState<Partial<ProfileData>>({});
@@ -45,7 +45,7 @@ export default function ProfileCompletion({
   // Auto-populate from user data if available
   useEffect(() => {
     if (user) {
-      setProfileData((prev) => ({
+      setProfileData(prev => ({
         ...prev,
         phoneNumber: user.phoneNumber || prev.phoneNumber,
       }));
@@ -58,30 +58,30 @@ export default function ProfileCompletion({
     // Phone number validation
     if (!profileData.phoneNumber.trim()) {
       newErrors.phoneNumber =
-        "Phone number is required for carpool coordination";
+        'Phone number is required for carpool coordination';
     } else if (!/^\+?[\d\s\-\(\)]+$/.test(profileData.phoneNumber)) {
-      newErrors.phoneNumber = "Please enter a valid phone number";
+      newErrors.phoneNumber = 'Please enter a valid phone number';
     }
 
     // Home address validation
     if (!profileData.homeAddress.trim()) {
-      newErrors.homeAddress = "Home address helps with pickup/dropoff planning";
+      newErrors.homeAddress = 'Home address helps with pickup/dropoff planning';
     }
 
     // Emergency contact validation
     if (!profileData.emergencyContactName.trim()) {
       newErrors.emergencyContactName =
-        "Emergency contact is required for safety";
+        'Emergency contact is required for safety';
     }
 
     if (!profileData.emergencyContactPhone.trim()) {
-      newErrors.emergencyContactPhone = "Emergency contact phone is required";
+      newErrors.emergencyContactPhone = 'Emergency contact phone is required';
     } else if (!/^\+?[\d\s\-\(\)]+$/.test(profileData.emergencyContactPhone)) {
-      newErrors.emergencyContactPhone = "Please enter a valid phone number";
+      newErrors.emergencyContactPhone = 'Please enter a valid phone number';
     }
 
     if (!profileData.emergencyContactRelation.trim()) {
-      newErrors.emergencyContactRelation = "Please specify the relationship";
+      newErrors.emergencyContactRelation = 'Please specify the relationship';
     }
 
     setErrors(newErrors);
@@ -89,10 +89,10 @@ export default function ProfileCompletion({
   };
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
-    setProfileData((prev) => ({ ...prev, [field]: value }));
+    setProfileData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+      setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -103,7 +103,7 @@ export default function ProfileCompletion({
     try {
       // In production, this would call an API to update user profile
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       setShowSuccess(true);
       setTimeout(() => {
@@ -111,7 +111,7 @@ export default function ProfileCompletion({
         onComplete();
       }, 1500);
     } catch (error) {
-      console.error("Failed to save profile:", error);
+      console.error('Failed to save profile:', error);
     } finally {
       setIsSaving(false);
     }
@@ -181,12 +181,12 @@ export default function ProfileCompletion({
             <input
               type="tel"
               value={profileData.phoneNumber}
-              onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+              onChange={e => handleInputChange('phoneNumber', e.target.value)}
               placeholder="(555) 123-4567"
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                 errors.phoneNumber
-                  ? "border-red-300 bg-red-50"
-                  : "border-gray-300"
+                  ? 'border-red-300 bg-red-50'
+                  : 'border-gray-300'
               }`}
             />
             {errors.phoneNumber && (
@@ -204,12 +204,12 @@ export default function ProfileCompletion({
             <input
               type="text"
               value={profileData.homeAddress}
-              onChange={(e) => handleInputChange("homeAddress", e.target.value)}
+              onChange={e => handleInputChange('homeAddress', e.target.value)}
               placeholder="123 Main Street, City, State 12345"
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                 errors.homeAddress
-                  ? "border-red-300 bg-red-50"
-                  : "border-gray-300"
+                  ? 'border-red-300 bg-red-50'
+                  : 'border-gray-300'
               }`}
             />
             {errors.homeAddress && (
@@ -246,14 +246,14 @@ export default function ProfileCompletion({
             <input
               type="text"
               value={profileData.emergencyContactName}
-              onChange={(e) =>
-                handleInputChange("emergencyContactName", e.target.value)
+              onChange={e =>
+                handleInputChange('emergencyContactName', e.target.value)
               }
               placeholder="John Smith"
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                 errors.emergencyContactName
-                  ? "border-red-300 bg-red-50"
-                  : "border-gray-300"
+                  ? 'border-red-300 bg-red-50'
+                  : 'border-gray-300'
               }`}
             />
             {errors.emergencyContactName && (
@@ -271,14 +271,14 @@ export default function ProfileCompletion({
               <input
                 type="tel"
                 value={profileData.emergencyContactPhone}
-                onChange={(e) =>
-                  handleInputChange("emergencyContactPhone", e.target.value)
+                onChange={e =>
+                  handleInputChange('emergencyContactPhone', e.target.value)
                 }
                 placeholder="(555) 987-6543"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                   errors.emergencyContactPhone
-                    ? "border-red-300 bg-red-50"
-                    : "border-gray-300"
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-300'
                 }`}
               />
               {errors.emergencyContactPhone && (
@@ -294,13 +294,13 @@ export default function ProfileCompletion({
               </label>
               <select
                 value={profileData.emergencyContactRelation}
-                onChange={(e) =>
-                  handleInputChange("emergencyContactRelation", e.target.value)
+                onChange={e =>
+                  handleInputChange('emergencyContactRelation', e.target.value)
                 }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                   errors.emergencyContactRelation
-                    ? "border-red-300 bg-red-50"
-                    : "border-gray-300"
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-300'
                 }`}
               >
                 <option value="">Select relationship</option>
@@ -346,8 +346,8 @@ export default function ProfileCompletion({
           disabled={!isFormValid || isSaving}
           className={`px-6 py-3 rounded-lg font-medium transition-colors ${
             isFormValid && !isSaving
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
           {isSaving ? (
@@ -356,7 +356,7 @@ export default function ProfileCompletion({
               Saving Profile...
             </>
           ) : (
-            "Save & Continue"
+            'Save & Continue'
           )}
         </button>
 

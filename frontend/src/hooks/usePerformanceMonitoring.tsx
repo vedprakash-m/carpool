@@ -9,7 +9,7 @@
  * - Network performance tracking
  */
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 interface PerformanceMetrics {
   // Core Web Vitals
@@ -129,7 +129,7 @@ export function usePerformanceMonitoring(
       const renderTime = performance.now() - renderStart;
       lastRenderTimeRef.current = renderTime;
 
-      setMetrics((prev) => ({
+      setMetrics(prev => ({
         ...prev,
         componentRenderTime: renderTime,
         reRenderCount: renderCountRef.current,
@@ -140,7 +140,7 @@ export function usePerformanceMonitoring(
 
       // Alert on slow renders
       if (renderTime > fullConfig.alertThresholds.componentRender) {
-        reportPerformanceIssue("slow_render", {
+        reportPerformanceIssue('slow_render', {
           componentName,
           renderTime,
           threshold: fullConfig.alertThresholds.componentRender,
@@ -158,17 +158,17 @@ export function usePerformanceMonitoring(
    */
   const initializeWebVitalsTracking = useCallback(() => {
     // Track Largest Contentful Paint (LCP)
-    if ("PerformanceObserver" in window) {
-      observersRef.current.lcp = new PerformanceObserver((list) => {
+    if ('PerformanceObserver' in window) {
+      observersRef.current.lcp = new PerformanceObserver(list => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1] as any;
 
         if (lastEntry) {
           const lcp = lastEntry.startTime;
-          setMetrics((prev) => ({ ...prev, largestContentfulPaint: lcp }));
+          setMetrics(prev => ({ ...prev, largestContentfulPaint: lcp }));
 
           if (lcp > fullConfig.alertThresholds.lcp) {
-            reportPerformanceIssue("slow_lcp", {
+            reportPerformanceIssue('slow_lcp', {
               componentName,
               lcp,
               threshold: fullConfig.alertThresholds.lcp,
@@ -179,23 +179,23 @@ export function usePerformanceMonitoring(
 
       try {
         observersRef.current.lcp.observe({
-          entryTypes: ["largest-contentful-paint"],
+          entryTypes: ['largest-contentful-paint'],
         });
       } catch (e) {
-        console.warn("LCP observer not supported");
+        console.warn('LCP observer not supported');
       }
     }
 
     // Track First Input Delay (FID)
-    if ("PerformanceObserver" in window) {
-      observersRef.current.fid = new PerformanceObserver((list) => {
+    if ('PerformanceObserver' in window) {
+      observersRef.current.fid = new PerformanceObserver(list => {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
           const fid = entry.processingStart - entry.startTime;
-          setMetrics((prev) => ({ ...prev, firstInputDelay: fid }));
+          setMetrics(prev => ({ ...prev, firstInputDelay: fid }));
 
           if (fid > fullConfig.alertThresholds.fid) {
-            reportPerformanceIssue("slow_fid", {
+            reportPerformanceIssue('slow_fid', {
               componentName,
               fid,
               threshold: fullConfig.alertThresholds.fid,
@@ -205,28 +205,28 @@ export function usePerformanceMonitoring(
       });
 
       try {
-        observersRef.current.fid.observe({ entryTypes: ["first-input"] });
+        observersRef.current.fid.observe({ entryTypes: ['first-input'] });
       } catch (e) {
-        console.warn("FID observer not supported");
+        console.warn('FID observer not supported');
       }
     }
 
     // Track Cumulative Layout Shift (CLS)
-    if ("PerformanceObserver" in window) {
+    if ('PerformanceObserver' in window) {
       let clsValue = 0;
 
-      observersRef.current.cls = new PerformanceObserver((list) => {
+      observersRef.current.cls = new PerformanceObserver(list => {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
           if (!entry.hadRecentInput) {
             clsValue += entry.value;
-            setMetrics((prev) => ({
+            setMetrics(prev => ({
               ...prev,
               cumulativeLayoutShift: clsValue,
             }));
 
             if (clsValue > fullConfig.alertThresholds.cls) {
-              reportPerformanceIssue("high_cls", {
+              reportPerformanceIssue('high_cls', {
                 componentName,
                 cls: clsValue,
                 threshold: fullConfig.alertThresholds.cls,
@@ -237,23 +237,23 @@ export function usePerformanceMonitoring(
       });
 
       try {
-        observersRef.current.cls.observe({ entryTypes: ["layout-shift"] });
+        observersRef.current.cls.observe({ entryTypes: ['layout-shift'] });
       } catch (e) {
-        console.warn("CLS observer not supported");
+        console.warn('CLS observer not supported');
       }
     }
 
     // Track First Contentful Paint from PerformancePaintTiming
-    if ("performance" in window && "getEntriesByType" in performance) {
+    if ('performance' in window && 'getEntriesByType' in performance) {
       const paintEntries = performance.getEntriesByType(
-        "paint"
+        'paint'
       ) as PerformancePaintTiming[];
       const fcpEntry = paintEntries.find(
-        (entry) => entry.name === "first-contentful-paint"
+        entry => entry.name === 'first-contentful-paint'
       );
 
       if (fcpEntry) {
-        setMetrics((prev) => ({
+        setMetrics(prev => ({
           ...prev,
           firstContentfulPaint: fcpEntry.startTime,
         }));
@@ -265,7 +265,7 @@ export function usePerformanceMonitoring(
    * Track memory usage
    */
   const trackMemoryUsage = useCallback(() => {
-    if ("memory" in performance) {
+    if ('memory' in performance) {
       const memory = (performance as any).memory;
       const memoryMetrics = {
         used: Math.round(memory.usedJSHeapSize / 1024 / 1024), // MB
@@ -273,11 +273,11 @@ export function usePerformanceMonitoring(
         limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024), // MB
       };
 
-      setMetrics((prev) => ({ ...prev, memoryUsage: memoryMetrics }));
+      setMetrics(prev => ({ ...prev, memoryUsage: memoryMetrics }));
 
       // Alert on high memory usage (80% of limit)
       if (memoryMetrics.used > memoryMetrics.limit * 0.8) {
-        reportPerformanceIssue("high_memory", {
+        reportPerformanceIssue('high_memory', {
           componentName,
           memoryUsed: memoryMetrics.used,
           memoryLimit: memoryMetrics.limit,
@@ -290,20 +290,20 @@ export function usePerformanceMonitoring(
    * Track network performance
    */
   const trackNetworkPerformance = useCallback(() => {
-    if ("performance" in window && "getEntriesByType" in performance) {
+    if ('performance' in window && 'getEntriesByType' in performance) {
       // Navigation timing
       const navEntries = performance.getEntriesByType(
-        "navigation"
+        'navigation'
       ) as PerformanceNavigationTiming[];
       if (navEntries.length > 0) {
-        setMetrics((prev) => ({ ...prev, navigationTiming: navEntries[0] }));
+        setMetrics(prev => ({ ...prev, navigationTiming: navEntries[0] }));
       }
 
       // Resource timing
       const resourceEntries = performance.getEntriesByType(
-        "resource"
+        'resource'
       ) as PerformanceResourceTiming[];
-      setMetrics((prev) => ({ ...prev, resourceTiming: resourceEntries }));
+      setMetrics(prev => ({ ...prev, resourceTiming: resourceEntries }));
     }
   }, []);
 
@@ -317,10 +317,10 @@ export function usePerformanceMonitoring(
       // Send to monitoring service if endpoint configured
       if (fullConfig.reportingEndpoint) {
         fetch(fullConfig.reportingEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            type: "performance_issue",
+            type: 'performance_issue',
             issueType: type,
             componentName,
             timestamp: new Date().toISOString(),
@@ -332,9 +332,9 @@ export function usePerformanceMonitoring(
       }
 
       // Track with analytics if available
-      if (typeof window !== "undefined" && (window as any).gtag) {
-        (window as any).gtag("event", "performance_issue", {
-          event_category: "Performance",
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'performance_issue', {
+          event_category: 'Performance',
           event_label: type,
           value: Math.round(
             data.renderTime || data.lcp || data.fid || data.cls * 1000 || 0
@@ -349,7 +349,7 @@ export function usePerformanceMonitoring(
    * Manually track custom metric
    */
   const trackCustomMetric = useCallback((name: string, value: number) => {
-    setMetrics((prev) => ({
+    setMetrics(prev => ({
       ...prev,
       customMetrics: {
         ...prev.customMetrics,
@@ -417,7 +417,7 @@ export function usePerformanceMonitoring(
    * Clean up observers
    */
   const cleanup = useCallback(() => {
-    Object.values(observersRef.current).forEach((observer) => {
+    Object.values(observersRef.current).forEach(observer => {
       if (observer) {
         observer.disconnect();
       }
@@ -459,7 +459,7 @@ export function withPerformanceMonitoring<P extends object>(
 ) {
   const ComponentWithPerformanceMonitoring = (props: P) => {
     const componentName =
-      WrappedComponent.displayName || WrappedComponent.name || "Anonymous";
+      WrappedComponent.displayName || WrappedComponent.name || 'Anonymous';
     const { metrics, isTracking } = usePerformanceMonitoring(
       componentName,
       config

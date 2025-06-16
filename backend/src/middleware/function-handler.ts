@@ -1,12 +1,8 @@
-import {
-  HttpRequest,
-  HttpResponseInit,
-  InvocationContext,
-} from "@azure/functions";
-import { ZodSchema } from "zod";
-import { container } from "../container";
-import { ILogger } from "../utils/logger";
-import { handleError } from "../utils/error-handler";
+import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { ZodSchema } from 'zod';
+import { container } from '../container';
+import { ILogger } from '../utils/logger';
+import { handleError } from '../utils/error-handler';
 
 /**
  * Factory to create thin Azure Function handlers.
@@ -21,19 +17,16 @@ import { handleError } from "../utils/error-handler";
  */
 export function createFunctionHandler<TInput, TResult>(
   useCaseToken: string,
-  inputSchema: ZodSchema<TInput>
+  inputSchema: ZodSchema<TInput>,
 ) {
-  return async (
-    request: HttpRequest,
-    context: InvocationContext
-  ): Promise<HttpResponseInit> => {
-    const logger = container.resolve<ILogger>("ILogger");
+  return async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    const logger = container.resolve<ILogger>('ILogger');
 
     try {
       // 1. Authentication (assumed done by upstream middleware)
       const userId = request.auth?.userId;
       if (!userId) {
-        throw new Error("User not authenticated.");
+        throw new Error('User not authenticated.');
       }
 
       // 2. Validate input

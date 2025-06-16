@@ -15,19 +15,19 @@ class SimpleCache<T> {
   get(key: string): T | undefined {
     const entry = this.cache.get(key);
     if (!entry) return undefined;
-    
+
     if (Date.now() > entry.expiry) {
       this.cache.delete(key);
       return undefined;
     }
-    
+
     return entry.value;
   }
 
   set(key: string, value: T, ttl: number = 300000): void {
     this.cache.set(key, {
       value,
-      expiry: Date.now() + ttl
+      expiry: Date.now() + ttl,
     });
   }
 
@@ -50,7 +50,9 @@ export const storeCache = new SimpleCache();
 /**
  * Simple store factory
  */
-export function createOptimizedStore<T extends Record<string, any>>(initialState: T) {
+export function createOptimizedStore<T extends Record<string, any>>(
+  initialState: T
+) {
   return create<T>(() => initialState);
 }
 
@@ -114,23 +116,25 @@ interface TripActions {
   setError: (error: string | null) => void;
 }
 
-export const useSimpleTripStore = create<TripState & TripActions>((set) => ({
+export const useSimpleTripStore = create<TripState & TripActions>(set => ({
   // State
   trips: [],
   loading: false,
   error: null,
 
   // Actions
-  setTrips: (trips) => set({ trips }),
-  addTrip: (trip) => set((state) => ({ trips: [trip, ...state.trips] })),
-  updateTrip: (id, updates) => set((state) => ({
-    trips: state.trips.map((trip: any) => 
-      trip.id === id ? { ...trip, ...updates } : trip
-    )
-  })),
-  removeTrip: (id) => set((state) => ({
-    trips: state.trips.filter((trip: any) => trip.id !== id)
-  })),
-  setLoading: (loading) => set({ loading }),
-  setError: (error) => set({ error })
+  setTrips: trips => set({ trips }),
+  addTrip: trip => set(state => ({ trips: [trip, ...state.trips] })),
+  updateTrip: (id, updates) =>
+    set(state => ({
+      trips: state.trips.map((trip: any) =>
+        trip.id === id ? { ...trip, ...updates } : trip
+      ),
+    })),
+  removeTrip: id =>
+    set(state => ({
+      trips: state.trips.filter((trip: any) => trip.id !== id),
+    })),
+  setLoading: loading => set({ loading }),
+  setError: error => set({ error }),
 }));

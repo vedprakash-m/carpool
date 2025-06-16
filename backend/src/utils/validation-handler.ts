@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { Errors } from "./error-handler";
+import { z } from 'zod';
+import { Errors } from './error-handler';
 
 /**
  * Validates input data against a Zod schema
@@ -11,11 +11,11 @@ export function handleValidation<T>(schema: z.ZodSchema<T>, data: unknown): T {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const messages = error.errors.map((err) => {
-        const path = err.path.join(".");
+        const path = err.path.join('.');
         return path ? `${path}: ${err.message}` : err.message;
       });
 
-      throw Errors.BadRequest(`Validation failed: ${messages.join(", ")}`);
+      throw Errors.BadRequest(`Validation failed: ${messages.join(', ')}`);
     }
 
     throw error;
@@ -28,7 +28,7 @@ export function handleValidation<T>(schema: z.ZodSchema<T>, data: unknown): T {
  */
 export function validateSafely<T>(
   schema: z.ZodSchema<T>,
-  data: unknown
+  data: unknown,
 ): {
   success: boolean;
   data?: T;
@@ -40,13 +40,13 @@ export function validateSafely<T>(
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errors = error.errors.map((err) => {
-        const path = err.path.join(".");
+        const path = err.path.join('.');
         return path ? `${path}: ${err.message}` : err.message;
       });
 
       return { success: false, errors };
     }
 
-    return { success: false, errors: ["Unknown validation error"] };
+    return { success: false, errors: ['Unknown validation error'] };
   }
 }

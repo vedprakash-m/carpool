@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import SmartRegistrationForm from "./SmartRegistrationForm";
+import SmartRegistrationForm from './SmartRegistrationForm';
 
 export default function SmartRegistrationPage() {
   return <SmartRegistrationForm />;

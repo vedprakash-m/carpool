@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createTripSchema, CreateTripRequest } from "../../../types/shared";
-import { useTripStore } from "../../../store/trip.store";
-import DashboardLayout from "../../../components/DashboardLayout";
-import { SectionErrorBoundary } from "../../../components/SectionErrorBoundary";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createTripSchema, CreateTripRequest } from '../../../types/shared';
+import { useTripStore } from '../../../store/trip.store';
+import DashboardLayout from '../../../components/DashboardLayout';
+import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export default function CreateTripPage() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function CreateTripPage() {
     try {
       const success = await createTrip(data);
       if (success) {
-        router.push("/trips");
+        router.push('/trips');
       }
     } finally {
       setIsSubmitting(false);
@@ -42,7 +42,7 @@ export default function CreateTripPage() {
   const getTomorrowDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0];
+    return tomorrow.toISOString().split('T')[0];
   };
 
   return (
@@ -91,7 +91,7 @@ export default function CreateTripPage() {
                   type="date"
                   id="date"
                   min={getTomorrowDate()}
-                  {...register("date")}
+                  {...register('date')}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
                 {errors.date && (
@@ -113,7 +113,7 @@ export default function CreateTripPage() {
                   <input
                     type="time"
                     id="departureTime"
-                    {...register("departureTime")}
+                    {...register('departureTime')}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   />
                   {errors.departureTime && (
@@ -133,7 +133,7 @@ export default function CreateTripPage() {
                   <input
                     type="time"
                     id="arrivalTime"
-                    {...register("arrivalTime")}
+                    {...register('arrivalTime')}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   />
                   {errors.arrivalTime && (
@@ -156,7 +156,7 @@ export default function CreateTripPage() {
                   type="text"
                   id="destination"
                   placeholder="Enter destination address"
-                  {...register("destination")}
+                  {...register('destination')}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
                 {errors.destination && (
@@ -176,10 +176,10 @@ export default function CreateTripPage() {
                 </label>
                 <select
                   id="maxPassengers"
-                  {...register("maxPassengers", { valueAsNumber: true })}
+                  {...register('maxPassengers', { valueAsNumber: true })}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
                     <option key={num} value={num}>
                       {num}
                     </option>
@@ -204,7 +204,7 @@ export default function CreateTripPage() {
                   id="notes"
                   rows={3}
                   placeholder="Add any additional information about the trip..."
-                  {...register("notes")}
+                  {...register('notes')}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
                 {errors.notes && (
@@ -234,7 +234,7 @@ export default function CreateTripPage() {
                       Creating...
                     </>
                   ) : (
-                    "Create Trip"
+                    'Create Trip'
                   )}
                 </button>
               </div>

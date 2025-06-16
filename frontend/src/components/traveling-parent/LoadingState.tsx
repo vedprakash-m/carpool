@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { Users } from 'lucide-react';
 
 export function LoadingState() {
   return (

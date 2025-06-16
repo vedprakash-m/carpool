@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 import {
   CalendarIcon,
   ClockIcon,
@@ -10,12 +10,12 @@ import {
   CheckCircleIcon,
   InformationCircleIcon,
   UserIcon,
-} from "@heroicons/react/24/outline";
-import { TruckIcon as CarIcon } from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
+import { TruckIcon as CarIcon } from '@heroicons/react/24/outline';
 
 interface DayPreference {
   canDrive: boolean;
-  preferredRole: "driver" | "passenger" | "either" | "unavailable";
+  preferredRole: 'driver' | 'passenger' | 'either' | 'unavailable';
   timeConstraints?: {
     earliestPickup?: string;
     latestDropoff?: string;
@@ -61,40 +61,40 @@ export default function WeeklyPreferencesPage() {
   const [selectedSchedule, setSelectedSchedule] =
     useState<WeeklySchedule | null>(null);
   const [preferences, setPreferences] = useState<WeeklyPreferences>({
-    scheduleId: "",
+    scheduleId: '',
     drivingAvailability: {
-      monday: { canDrive: false, preferredRole: "either" },
-      tuesday: { canDrive: false, preferredRole: "either" },
-      wednesday: { canDrive: false, preferredRole: "either" },
-      thursday: { canDrive: false, preferredRole: "either" },
-      friday: { canDrive: false, preferredRole: "either" },
+      monday: { canDrive: false, preferredRole: 'either' },
+      tuesday: { canDrive: false, preferredRole: 'either' },
+      wednesday: { canDrive: false, preferredRole: 'either' },
+      thursday: { canDrive: false, preferredRole: 'either' },
+      friday: { canDrive: false, preferredRole: 'either' },
     },
-    specialRequests: "",
-    emergencyContact: "",
+    specialRequests: '',
+    emergencyContact: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{
-    type: "success" | "error" | "warning" | "info";
+    type: 'success' | 'error' | 'warning' | 'info';
     text: string;
   } | null>(null);
 
   const daysOfWeek = [
-    { key: "monday", label: "Monday", date: "" },
-    { key: "tuesday", label: "Tuesday", date: "" },
-    { key: "wednesday", label: "Wednesday", date: "" },
-    { key: "thursday", label: "Thursday", date: "" },
-    { key: "friday", label: "Friday", date: "" },
+    { key: 'monday', label: 'Monday', date: '' },
+    { key: 'tuesday', label: 'Tuesday', date: '' },
+    { key: 'wednesday', label: 'Wednesday', date: '' },
+    { key: 'thursday', label: 'Thursday', date: '' },
+    { key: 'friday', label: 'Friday', date: '' },
   ];
 
   // Redirect if not parent
   useEffect(() => {
     if (
       !isLoading &&
-      (!user || (user.role !== "parent" && user.role !== "trip_admin"))
+      (!user || (user.role !== 'parent' && user.role !== 'trip_admin'))
     ) {
-      router.push("/dashboard");
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
@@ -108,9 +108,9 @@ export default function WeeklyPreferencesPage() {
   const loadSchedules = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/admin/weekly-scheduling?action=schedules&status=preferences_open",
+        '/api/admin/weekly-scheduling?action=schedules&status=preferences_open',
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -125,19 +125,19 @@ export default function WeeklyPreferencesPage() {
         if (data.data.schedules.length > 0) {
           const firstSchedule = data.data.schedules[0];
           setSelectedSchedule(firstSchedule);
-          setPreferences((prev) => ({ ...prev, scheduleId: firstSchedule.id }));
+          setPreferences(prev => ({ ...prev, scheduleId: firstSchedule.id }));
           loadExistingPreferences(firstSchedule.id);
         }
       } else {
         setMessage({
-          type: "error",
-          text: "Failed to load weekly schedules",
+          type: 'error',
+          text: 'Failed to load weekly schedules',
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error loading schedules",
+        type: 'error',
+        text: 'Error loading schedules',
       });
     } finally {
       setLoading(false);
@@ -146,7 +146,7 @@ export default function WeeklyPreferencesPage() {
 
   const loadExistingPreferences = async (scheduleId: string) => {
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
         `/api/admin/weekly-scheduling?action=my-preferences&scheduleId=${scheduleId}`,
         {
@@ -161,15 +161,15 @@ export default function WeeklyPreferencesPage() {
         if (data.data.preferences) {
           setPreferences(data.data.preferences);
           setMessage({
-            type: "info",
+            type: 'info',
             text: `Preferences already submitted${
-              data.data.preferences.isLateSubmission ? " (late submission)" : ""
+              data.data.preferences.isLateSubmission ? ' (late submission)' : ''
             }. You can update them below.`,
           });
         }
       }
     } catch (error) {
-      console.error("Error loading existing preferences:", error);
+      console.error('Error loading existing preferences:', error);
     }
   };
 
@@ -178,7 +178,7 @@ export default function WeeklyPreferencesPage() {
     field: keyof DayPreference,
     value: any
   ) => {
-    setPreferences((prev) => ({
+    setPreferences(prev => ({
       ...prev,
       drivingAvailability: {
         ...prev.drivingAvailability,
@@ -193,10 +193,10 @@ export default function WeeklyPreferencesPage() {
   };
 
   const handleScheduleChange = (scheduleId: string) => {
-    const schedule = schedules.find((s) => s.id === scheduleId);
+    const schedule = schedules.find(s => s.id === scheduleId);
     if (schedule) {
       setSelectedSchedule(schedule);
-      setPreferences((prev) => ({ ...prev, scheduleId }));
+      setPreferences(prev => ({ ...prev, scheduleId }));
       loadExistingPreferences(scheduleId);
     }
   };
@@ -215,17 +215,17 @@ export default function WeeklyPreferencesPage() {
 
     if (hoursUntilDeadline < 0) {
       return {
-        type: "error",
-        message: "Deadline has passed - submissions at Group Admin discretion",
+        type: 'error',
+        message: 'Deadline has passed - submissions at Group Admin discretion',
       };
     } else if (hoursUntilDeadline < 24) {
       return {
-        type: "warning",
+        type: 'warning',
         message: `Deadline in ${Math.round(hoursUntilDeadline)} hours`,
       };
     } else {
       return {
-        type: "info",
+        type: 'info',
         message: `Deadline: ${deadline.toLocaleDateString()} at ${deadline.toLocaleTimeString()}`,
       };
     }
@@ -236,11 +236,11 @@ export default function WeeklyPreferencesPage() {
 
     // Check if at least one day has availability
     const hasAvailability = Object.values(preferences.drivingAvailability).some(
-      (day) => day.preferredRole !== "unavailable"
+      day => day.preferredRole !== 'unavailable'
     );
 
     if (!hasAvailability) {
-      errors.push("Please indicate availability for at least one day");
+      errors.push('Please indicate availability for at least one day');
     }
 
     // Check driving days have passenger capacity
@@ -248,7 +248,7 @@ export default function WeeklyPreferencesPage() {
       ([day, dayPref]) => {
         if (
           dayPref.canDrive &&
-          dayPref.preferredRole === "driver" &&
+          dayPref.preferredRole === 'driver' &&
           !dayPref.maxPassengers
         ) {
           errors.push(
@@ -265,8 +265,8 @@ export default function WeeklyPreferencesPage() {
     const errors = validatePreferences();
     if (errors.length > 0) {
       setMessage({
-        type: "error",
-        text: errors.join(". "),
+        type: 'error',
+        text: errors.join('. '),
       });
       return;
     }
@@ -275,13 +275,13 @@ export default function WeeklyPreferencesPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/admin/weekly-scheduling?action=submit-preferences",
+        '/api/admin/weekly-scheduling?action=submit-preferences',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
@@ -296,7 +296,7 @@ export default function WeeklyPreferencesPage() {
       if (response.ok) {
         const data = await response.json();
         setMessage({
-          type: "success",
+          type: 'success',
           text: data.data.message,
         });
 
@@ -307,14 +307,14 @@ export default function WeeklyPreferencesPage() {
       } else {
         const errorData = await response.json();
         setMessage({
-          type: "error",
+          type: 'error',
           text: errorData.error.message,
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error submitting preferences",
+        type: 'error',
+        text: 'Error submitting preferences',
       });
     } finally {
       setSubmitting(false);
@@ -347,7 +347,7 @@ export default function WeeklyPreferencesPage() {
     );
   }
 
-  if (!user || (user.role !== "parent" && user.role !== "trip_admin")) {
+  if (!user || (user.role !== 'parent' && user.role !== 'trip_admin')) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -382,23 +382,23 @@ export default function WeeklyPreferencesPage() {
         {message && (
           <div
             className={`mb-6 p-4 rounded-md border ${
-              message.type === "success"
-                ? "bg-green-50 border-green-200 text-green-800"
-                : message.type === "warning"
-                ? "bg-yellow-50 border-yellow-200 text-yellow-800"
-                : message.type === "info"
-                ? "bg-blue-50 border-blue-200 text-blue-800"
-                : "bg-red-50 border-red-200 text-red-800"
+              message.type === 'success'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : message.type === 'warning'
+                  ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                  : message.type === 'info'
+                    ? 'bg-blue-50 border-blue-200 text-blue-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             <div className="flex items-center">
-              {message.type === "success" && (
+              {message.type === 'success' && (
                 <CheckCircleIcon className="h-5 w-5 mr-2" />
               )}
-              {message.type === "warning" && (
+              {message.type === 'warning' && (
                 <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
               )}
-              {message.type === "info" && (
+              {message.type === 'info' && (
                 <InformationCircleIcon className="h-5 w-5 mr-2" />
               )}
               <p className="text-sm">{message.text}</p>
@@ -429,13 +429,13 @@ export default function WeeklyPreferencesPage() {
           ) : (
             <div>
               <select
-                value={selectedSchedule?.id || ""}
-                onChange={(e) => handleScheduleChange(e.target.value)}
+                value={selectedSchedule?.id || ''}
+                onChange={e => handleScheduleChange(e.target.value)}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               >
-                {schedules.map((schedule) => (
+                {schedules.map(schedule => (
                   <option key={schedule.id} value={schedule.id}>
-                    {schedule.group.name} - Week of{" "}
+                    {schedule.group.name} - Week of{' '}
                     {formatDate(schedule.weekStartDate)} (
                     {schedule.group.targetSchool.name})
                   </option>
@@ -445,11 +445,11 @@ export default function WeeklyPreferencesPage() {
               {deadlineStatus && (
                 <div
                   className={`mt-3 p-3 rounded-md ${
-                    deadlineStatus.type === "error"
-                      ? "bg-red-50 text-red-800"
-                      : deadlineStatus.type === "warning"
-                      ? "bg-yellow-50 text-yellow-800"
-                      : "bg-blue-50 text-blue-800"
+                    deadlineStatus.type === 'error'
+                      ? 'bg-red-50 text-red-800'
+                      : deadlineStatus.type === 'warning'
+                        ? 'bg-yellow-50 text-yellow-800'
+                        : 'bg-blue-50 text-blue-800'
                   }`}
                 >
                   <div className="flex items-center">
@@ -472,7 +472,7 @@ export default function WeeklyPreferencesPage() {
             </h2>
 
             <div className="space-y-6">
-              {weekDates.map((day) => {
+              {weekDates.map(day => {
                 const dayPref =
                   preferences.drivingAvailability[
                     day.key as keyof typeof preferences.drivingAvailability
@@ -500,10 +500,10 @@ export default function WeeklyPreferencesPage() {
                         </label>
                         <select
                           value={dayPref.preferredRole}
-                          onChange={(e) =>
+                          onChange={e =>
                             updateDayPreference(
                               day.key,
-                              "preferredRole",
+                              'preferredRole',
                               e.target.value
                             )
                           }
@@ -529,14 +529,14 @@ export default function WeeklyPreferencesPage() {
                           <input
                             type="checkbox"
                             checked={dayPref.canDrive}
-                            onChange={(e) =>
+                            onChange={e =>
                               updateDayPreference(
                                 day.key,
-                                "canDrive",
+                                'canDrive',
                                 e.target.checked
                               )
                             }
-                            disabled={dayPref.preferredRole === "unavailable"}
+                            disabled={dayPref.preferredRole === 'unavailable'}
                             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
                           <span className="ml-2 text-sm text-gray-700">
@@ -553,11 +553,11 @@ export default function WeeklyPreferencesPage() {
                             Max Passengers
                           </label>
                           <select
-                            value={dayPref.maxPassengers || ""}
-                            onChange={(e) =>
+                            value={dayPref.maxPassengers || ''}
+                            onChange={e =>
                               updateDayPreference(
                                 day.key,
-                                "maxPassengers",
+                                'maxPassengers',
                                 parseInt(e.target.value)
                               )
                             }
@@ -579,11 +579,11 @@ export default function WeeklyPreferencesPage() {
                         </label>
                         <input
                           type="text"
-                          value={dayPref.notes || ""}
-                          onChange={(e) =>
+                          value={dayPref.notes || ''}
+                          onChange={e =>
                             updateDayPreference(
                               day.key,
-                              "notes",
+                              'notes',
                               e.target.value
                             )
                           }
@@ -613,9 +613,9 @@ export default function WeeklyPreferencesPage() {
                 </label>
                 <input
                   type="text"
-                  value={preferences.emergencyContact || ""}
-                  onChange={(e) =>
-                    setPreferences((prev) => ({
+                  value={preferences.emergencyContact || ''}
+                  onChange={e =>
+                    setPreferences(prev => ({
                       ...prev,
                       emergencyContact: e.target.value,
                     }))
@@ -630,9 +630,9 @@ export default function WeeklyPreferencesPage() {
                   Special Requests
                 </label>
                 <textarea
-                  value={preferences.specialRequests || ""}
-                  onChange={(e) =>
-                    setPreferences((prev) => ({
+                  value={preferences.specialRequests || ''}
+                  onChange={e =>
+                    setPreferences(prev => ({
                       ...prev,
                       specialRequests: e.target.value,
                     }))

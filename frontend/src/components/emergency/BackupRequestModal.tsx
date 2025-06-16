@@ -3,8 +3,8 @@
  * Modal form for requesting backup driver assistance
  */
 
-import React from "react";
-import { UserGroupIcon } from "@heroicons/react/24/outline";
+import React from 'react';
+import { UserGroupIcon } from '@heroicons/react/24/outline';
 
 interface BackupRequestModalProps {
   isVisible: boolean;
@@ -39,7 +39,7 @@ export function BackupRequestModal({
           </label>
           <textarea
             value={backupReason}
-            onChange={(e) => onReasonChange(e.target.value)}
+            onChange={e => onReasonChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             rows={3}
             placeholder="Explain why you need backup assistance (e.g., vehicle issue, family emergency, running late)..."

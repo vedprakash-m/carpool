@@ -12,9 +12,10 @@ export function initializeMonitoring(): void {
     console.warn('Application Insights connection string not found. Telemetry is disabled.');
     return;
   }
-  
+
   try {
-    appInsights.setup(APPINSIGHTS_CONNECTION_STRING)
+    appInsights
+      .setup(APPINSIGHTS_CONNECTION_STRING)
       // Optional configurations
       .setAutoDependencyCorrelation(true)
       .setAutoCollectRequests(true)
@@ -26,13 +27,14 @@ export function initializeMonitoring(): void {
       .setUseDiskRetryCaching(true)
       .setSendLiveMetrics(true)
       .setDistributedTracingMode(appInsights.DistributedTracingModes.AI_AND_W3C);
-    
+
     // Start Application Insights
     if (appInsights.defaultClient) {
-      appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.cloudRole] = "vCarpool-Backend";
+      appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.cloudRole] =
+        'vCarpool-Backend';
     }
     appInsights.start();
-    
+
     console.info('Application Insights initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Application Insights', error);
@@ -41,60 +43,76 @@ export function initializeMonitoring(): void {
 
 // Performance monitoring helpers
 export const performance = {
-  trackDependency: (name: string, dependencyTypeName: string, data: string, duration: number, success: boolean) => {
+  trackDependency: (
+    name: string,
+    dependencyTypeName: string,
+    data: string,
+    duration: number,
+    success: boolean,
+  ) => {
     if (appInsights.defaultClient) {
       appInsights.defaultClient.trackDependency({
-        target: name, 
+        target: name,
         name: dependencyTypeName,
         data: data,
         duration: duration,
         resultCode: success ? '200' : '500',
         success: success,
-        dependencyTypeName: dependencyTypeName
+        dependencyTypeName: dependencyTypeName,
       });
     }
   },
-  
-  trackEvent: (name: string, properties?: { [key: string]: string }, measurements?: { [key: string]: number }) => {
+
+  trackEvent: (
+    name: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number },
+  ) => {
     if (appInsights.defaultClient) {
       appInsights.defaultClient.trackEvent({ name, properties, measurements });
     }
   },
-  
+
   trackException: (error: Error, properties?: { [key: string]: string }) => {
     if (appInsights.defaultClient) {
       appInsights.defaultClient.trackException({ exception: error, properties });
     }
   },
-  
-  trackRequest: (name: string, url: string, duration: number, resultCode: string, success: boolean) => {
+
+  trackRequest: (
+    name: string,
+    url: string,
+    duration: number,
+    resultCode: string,
+    success: boolean,
+  ) => {
     if (appInsights.defaultClient) {
       appInsights.defaultClient.trackRequest({
         name,
         url,
         duration,
         resultCode,
-        success
+        success,
       });
     }
   },
-  
+
   trackMetric: (name: string, value: number, properties?: { [key: string]: string }) => {
     if (appInsights.defaultClient) {
       appInsights.defaultClient.trackMetric({ name, value, properties });
     }
-  }
+  },
 };
 
 // Helper to track function execution time
 export async function trackExecutionTime<T>(
-  name: string, 
+  name: string,
   operation: () => Promise<T>,
-  category: string = 'Function'
+  category: string = 'Function',
 ): Promise<T> {
   const startTime = Date.now();
   let success = true;
-  
+
   try {
     const result = await operation();
     return result;
@@ -104,11 +122,11 @@ export async function trackExecutionTime<T>(
   } finally {
     const duration = Date.now() - startTime;
     performance.trackMetric(`${category}.${name}.Duration`, duration, { category, name });
-    performance.trackEvent(`${category}.${name}.Executed`, { 
-      category, 
+    performance.trackEvent(`${category}.${name}.Executed`, {
+      category,
       name,
       success: success.toString(),
-      durationMs: duration.toString() 
+      durationMs: duration.toString(),
     });
   }
 }

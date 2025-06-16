@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 import {
   CalendarIcon,
   ClockIcon,
@@ -14,8 +14,8 @@ import {
   XMarkIcon,
   ExclamationTriangleIcon,
   ChatBubbleLeftRightIcon,
-} from "@heroicons/react/24/outline";
-import { apiClient } from "@/lib/api-client";
+} from '@heroicons/react/24/outline';
+import { apiClient } from '@/lib/api-client';
 
 interface SwapRequest {
   id: string;
@@ -36,7 +36,7 @@ interface SwapRequest {
   };
   requestedDate: string;
   requestMessage: string;
-  status: "pending" | "accepted" | "declined" | "cancelled";
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled';
   responseMessage?: string;
   createdAt: string;
   updatedAt: string;
@@ -60,10 +60,10 @@ interface SwapRequestData {
 }
 
 const STATUS_COLORS = {
-  pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  accepted: "bg-green-100 text-green-800 border-green-200",
-  declined: "bg-red-100 text-red-800 border-red-200",
-  cancelled: "bg-gray-100 text-gray-800 border-gray-200",
+  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  accepted: 'bg-green-100 text-green-800 border-green-200',
+  declined: 'bg-red-100 text-red-800 border-red-200',
+  cancelled: 'bg-gray-100 text-gray-800 border-gray-200',
 };
 
 const STATUS_ICONS = {
@@ -79,19 +79,19 @@ export default function SwapRequestsPage() {
 
   const [swapRequests, setSwapRequests] = useState<SwapRequest[]>([]);
   const [isLoadingRequests, setIsLoadingRequests] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Authentication check
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
 
-    if (!isLoading && user?.role !== "parent" && user?.role !== "admin") {
-      router.push("/dashboard");
+    if (!isLoading && user?.role !== 'parent' && user?.role !== 'admin') {
+      router.push('/dashboard');
       return;
     }
   }, [isAuthenticated, isLoading, user, router]);
@@ -114,8 +114,8 @@ export default function SwapRequestsPage() {
         userId: user.id,
       });
 
-      if (selectedStatus !== "all") {
-        params.append("status", selectedStatus);
+      if (selectedStatus !== 'all') {
+        params.append('status', selectedStatus);
       }
 
       const response = await apiClient.get<SwapRequestData>(
@@ -125,11 +125,11 @@ export default function SwapRequestsPage() {
       if (response.success && response.data) {
         setSwapRequests(response.data.swapRequests);
       } else {
-        setError("Failed to load swap requests");
+        setError('Failed to load swap requests');
       }
     } catch (err: any) {
       setError(
-        `Failed to load swap requests: ${err.message || "Unknown error"}`
+        `Failed to load swap requests: ${err.message || 'Unknown error'}`
       );
     } finally {
       setIsLoadingRequests(false);
@@ -138,13 +138,13 @@ export default function SwapRequestsPage() {
 
   const handleSwapAction = async (
     swapId: string,
-    action: "accept" | "decline",
+    action: 'accept' | 'decline',
     responseMessage?: string
   ) => {
     try {
       const response = await apiClient.put(`/v1/swap-requests/${swapId}`, {
         action,
-        responseMessage: responseMessage || "",
+        responseMessage: responseMessage || '',
       });
 
       if (response.success) {
@@ -155,33 +155,33 @@ export default function SwapRequestsPage() {
       }
     } catch (err: any) {
       setError(
-        `Failed to ${action} swap request: ${err.message || "Unknown error"}`
+        `Failed to ${action} swap request: ${err.message || 'Unknown error'}`
       );
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
     });
   };
 
   const getRequestsByStatus = (status: string) => {
-    if (status === "all") return swapRequests;
-    return swapRequests.filter((req) => req.status === status);
+    if (status === 'all') return swapRequests;
+    return swapRequests.filter(req => req.status === status);
   };
 
   const isUserRequestReceiver = (request: SwapRequest) => {
@@ -226,7 +226,7 @@ export default function SwapRequestsPage() {
                 Request Swap
               </button>
               <button
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.push('/dashboard')}
                 className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 ← Back to Dashboard
@@ -241,33 +241,33 @@ export default function SwapRequestsPage() {
             <nav className="-mb-px flex">
               {[
                 {
-                  key: "all",
-                  label: "All Requests",
+                  key: 'all',
+                  label: 'All Requests',
                   count: swapRequests.length,
                 },
                 {
-                  key: "pending",
-                  label: "Pending",
-                  count: getRequestsByStatus("pending").length,
+                  key: 'pending',
+                  label: 'Pending',
+                  count: getRequestsByStatus('pending').length,
                 },
                 {
-                  key: "accepted",
-                  label: "Accepted",
-                  count: getRequestsByStatus("accepted").length,
+                  key: 'accepted',
+                  label: 'Accepted',
+                  count: getRequestsByStatus('accepted').length,
                 },
                 {
-                  key: "declined",
-                  label: "Declined",
-                  count: getRequestsByStatus("declined").length,
+                  key: 'declined',
+                  label: 'Declined',
+                  count: getRequestsByStatus('declined').length,
                 },
-              ].map((tab) => (
+              ].map(tab => (
                 <button
                   key={tab.key}
                   onClick={() => setSelectedStatus(tab.key)}
                   className={`py-4 px-6 border-b-2 font-medium text-sm transition-colors ${
                     selectedStatus === tab.key
-                      ? "border-green-500 text-green-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   {tab.label}
@@ -275,8 +275,8 @@ export default function SwapRequestsPage() {
                     <span
                       className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
                         selectedStatus === tab.key
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-600"
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-600'
                       }`}
                     >
                       {tab.count}
@@ -310,16 +310,16 @@ export default function SwapRequestsPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
             <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {selectedStatus === "all"
-                ? "No Swap Requests"
+              {selectedStatus === 'all'
+                ? 'No Swap Requests'
                 : `No ${selectedStatus} Requests`}
             </h3>
             <p className="text-gray-600 mb-4">
-              {selectedStatus === "all"
+              {selectedStatus === 'all'
                 ? "You haven't created or received any swap requests yet."
                 : `You don't have any ${selectedStatus} swap requests.`}
             </p>
-            {selectedStatus === "all" && (
+            {selectedStatus === 'all' && (
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -331,7 +331,7 @@ export default function SwapRequestsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {getRequestsByStatus(selectedStatus).map((request) => {
+            {getRequestsByStatus(selectedStatus).map(request => {
               const StatusIcon = STATUS_ICONS[request.status];
               const isReceiver = isUserRequestReceiver(request);
               const otherDriver = isReceiver
@@ -367,14 +367,14 @@ export default function SwapRequestsPage() {
                         </div>
                         <div className="flex items-center">
                           <ClockIcon className="h-4 w-4 mr-2" />
-                          {request.originalAssignment.startTime} -{" "}
+                          {request.originalAssignment.startTime} -{' '}
                           {request.originalAssignment.endTime}
                         </div>
                         <div className="flex items-center">
                           <UserGroupIcon className="h-4 w-4 mr-2" />
                           {isReceiver
-                            ? "Swap Request Received"
-                            : "Swap Request Sent"}
+                            ? 'Swap Request Received'
+                            : 'Swap Request Sent'}
                         </div>
                       </div>
                     </div>
@@ -383,7 +383,7 @@ export default function SwapRequestsPage() {
                   {/* Other Driver Info */}
                   <div className="bg-gray-50 rounded-lg p-4 mb-4">
                     <h4 className="font-medium text-gray-900 mb-2">
-                      {isReceiver ? "Requesting Driver" : "Receiving Driver"}
+                      {isReceiver ? 'Requesting Driver' : 'Receiving Driver'}
                     </h4>
                     <div className="flex items-center justify-between">
                       <div>
@@ -418,32 +418,32 @@ export default function SwapRequestsPage() {
                         Request Message:
                       </h5>
                       <p className="text-sm text-blue-800">
-                        {request.requestMessage || "No message provided"}
+                        {request.requestMessage || 'No message provided'}
                       </p>
                     </div>
 
                     {request.responseMessage && (
                       <div
                         className={`border rounded-lg p-3 ${
-                          request.status === "accepted"
-                            ? "bg-green-50 border-green-200"
-                            : "bg-red-50 border-red-200"
+                          request.status === 'accepted'
+                            ? 'bg-green-50 border-green-200'
+                            : 'bg-red-50 border-red-200'
                         }`}
                       >
                         <h5
                           className={`font-medium mb-1 ${
-                            request.status === "accepted"
-                              ? "text-green-900"
-                              : "text-red-900"
+                            request.status === 'accepted'
+                              ? 'text-green-900'
+                              : 'text-red-900'
                           }`}
                         >
                           Response Message:
                         </h5>
                         <p
                           className={`text-sm ${
-                            request.status === "accepted"
-                              ? "text-green-800"
-                              : "text-red-800"
+                            request.status === 'accepted'
+                              ? 'text-green-800'
+                              : 'text-red-800'
                           }`}
                         >
                           {request.responseMessage}
@@ -455,7 +455,7 @@ export default function SwapRequestsPage() {
                   {/* Action Buttons */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                     <div className="text-sm text-gray-500">
-                      {request.status === "pending"
+                      {request.status === 'pending'
                         ? `Created ${formatDateTime(request.createdAt)}`
                         : `${
                             request.status.charAt(0).toUpperCase() +
@@ -465,11 +465,11 @@ export default function SwapRequestsPage() {
                           )}`}
                     </div>
 
-                    {isReceiver && request.status === "pending" && (
+                    {isReceiver && request.status === 'pending' && (
                       <div className="flex space-x-2">
                         <button
                           onClick={() =>
-                            handleSwapAction(request.id, "decline")
+                            handleSwapAction(request.id, 'decline')
                           }
                           className="inline-flex items-center px-3 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition-colors"
                         >
@@ -477,7 +477,7 @@ export default function SwapRequestsPage() {
                           Decline
                         </button>
                         <button
-                          onClick={() => handleSwapAction(request.id, "accept")}
+                          onClick={() => handleSwapAction(request.id, 'accept')}
                           className="inline-flex items-center px-3 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
                         >
                           <CheckIcon className="h-4 w-4 mr-2" />

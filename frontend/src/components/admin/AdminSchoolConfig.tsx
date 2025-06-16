@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Plus, Edit, Trash2, Save, X, MapPin, Users } from "lucide-react";
+import React, { useState } from 'react';
+import { Plus, Edit, Trash2, Save, X, MapPin, Users } from 'lucide-react';
 import {
   School,
   GradeConfig,
   SUPPORTED_GRADES,
   DEFAULT_SCHOOLS,
-} from "@/config/schools";
+} from '@/config/schools';
 
 interface AdminSchoolConfigProps {
   onSchoolsChange?: (schools: School[]) => void;
@@ -26,7 +26,7 @@ export default function AdminSchoolConfig({
   const [showAddGrade, setShowAddGrade] = useState(false);
 
   // School management
-  const addSchool = (school: Omit<School, "id">) => {
+  const addSchool = (school: Omit<School, 'id'>) => {
     const newSchool: School = {
       ...school,
       id: `school-${Date.now()}`,
@@ -38,7 +38,7 @@ export default function AdminSchoolConfig({
   };
 
   const updateSchool = (schoolId: string, updates: Partial<School>) => {
-    const updatedSchools = schools.map((school) =>
+    const updatedSchools = schools.map(school =>
       school.id === schoolId ? { ...school, ...updates } : school
     );
     setSchools(updatedSchools);
@@ -47,13 +47,13 @@ export default function AdminSchoolConfig({
   };
 
   const deleteSchool = (schoolId: string) => {
-    const updatedSchools = schools.filter((school) => school.id !== schoolId);
+    const updatedSchools = schools.filter(school => school.id !== schoolId);
     setSchools(updatedSchools);
     onSchoolsChange?.(updatedSchools);
   };
 
   // Grade management
-  const addGrade = (grade: Omit<GradeConfig, "id">) => {
+  const addGrade = (grade: Omit<GradeConfig, 'id'>) => {
     const newGrade: GradeConfig = {
       ...grade,
       id: `grade-${Date.now()}`,
@@ -65,7 +65,7 @@ export default function AdminSchoolConfig({
   };
 
   const updateGrade = (gradeId: string, updates: Partial<GradeConfig>) => {
-    const updatedGrades = grades.map((grade) =>
+    const updatedGrades = grades.map(grade =>
       grade.id === gradeId ? { ...grade, ...updates } : grade
     );
     setGrades(updatedGrades);
@@ -74,7 +74,7 @@ export default function AdminSchoolConfig({
   };
 
   const deleteGrade = (gradeId: string) => {
-    const updatedGrades = grades.filter((grade) => grade.id !== gradeId);
+    const updatedGrades = grades.filter(grade => grade.id !== gradeId);
     setGrades(updatedGrades);
     onGradesChange?.(updatedGrades);
   };
@@ -104,13 +104,13 @@ export default function AdminSchoolConfig({
           </div>
 
           <div className="grid gap-4">
-            {schools.map((school) => (
+            {schools.map(school => (
               <SchoolCard
                 key={school.id}
                 school={school}
                 onEdit={() => setEditingSchool(school)}
                 onDelete={() => deleteSchool(school.id)}
-                onToggleActive={(active) =>
+                onToggleActive={active =>
                   updateSchool(school.id, { isActive: active })
                 }
               />
@@ -134,7 +134,7 @@ export default function AdminSchoolConfig({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {grades.map((grade) => (
+            {grades.map(grade => (
               <GradeCard
                 key={grade.id}
                 grade={grade}
@@ -152,7 +152,7 @@ export default function AdminSchoolConfig({
           school={editingSchool}
           onSave={
             editingSchool
-              ? (updates) => updateSchool(editingSchool.id, updates)
+              ? updates => updateSchool(editingSchool.id, updates)
               : addSchool
           }
           onCancel={() => {
@@ -168,7 +168,7 @@ export default function AdminSchoolConfig({
           grade={editingGrade}
           onSave={
             editingGrade
-              ? (updates) => updateGrade(editingGrade.id, updates)
+              ? updates => updateGrade(editingGrade.id, updates)
               : addGrade
           }
           onCancel={() => {
@@ -198,8 +198,8 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
   <div
     className={`border rounded-lg p-4 ${
       school.isActive
-        ? "border-green-200 bg-green-50"
-        : "border-gray-200 bg-gray-50"
+        ? 'border-green-200 bg-green-50'
+        : 'border-gray-200 bg-gray-50'
     }`}
   >
     <div className="flex items-start justify-between">
@@ -209,11 +209,11 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           <span
             className={`px-2 py-1 text-xs rounded-full ${
               school.isActive
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-600"
+                ? 'bg-green-100 text-green-800'
+                : 'bg-gray-100 text-gray-600'
             }`}
           >
-            {school.isActive ? "Active" : "Inactive"}
+            {school.isActive ? 'Active' : 'Inactive'}
           </span>
           <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full capitalize">
             {school.type}
@@ -225,7 +225,7 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
         </div>
         <div className="flex items-center text-sm text-gray-600 mb-2">
           <Users className="h-4 w-4 mr-1" />
-          Grades: {school.grades.join(", ")}
+          Grades: {school.grades.join(', ')}
         </div>
         <p className="text-sm text-gray-600">
           Service Radius: {school.serviceRadius} miles
@@ -236,11 +236,11 @@ const SchoolCard: React.FC<SchoolCardProps> = ({
           onClick={() => onToggleActive(!school.isActive)}
           className={`px-3 py-1 text-sm rounded-md ${
             school.isActive
-              ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-              : "bg-green-100 text-green-800 hover:bg-green-200"
+              ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+              : 'bg-green-100 text-green-800 hover:bg-green-200'
           }`}
         >
-          {school.isActive ? "Deactivate" : "Activate"}
+          {school.isActive ? 'Deactivate' : 'Activate'}
         </button>
         <button
           onClick={onEdit}
@@ -275,7 +275,7 @@ const GradeCard: React.FC<GradeCardProps> = ({ grade, onEdit, onDelete }) => (
           Numeric: {grade.numericValue}
         </p>
         <div className="flex flex-wrap gap-1">
-          {grade.schoolTypes.map((type) => (
+          {grade.schoolTypes.map(type => (
             <span
               key={type}
               className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full capitalize"
@@ -316,22 +316,22 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
   onCancel,
 }) => {
   const [formData, setFormData] = useState({
-    name: school?.name || "",
-    address: school?.address || "",
-    city: school?.city || "",
-    state: school?.state || "",
-    zipCode: school?.zipCode || "",
-    type: school?.type || "elementary",
+    name: school?.name || '',
+    address: school?.address || '',
+    city: school?.city || '',
+    state: school?.state || '',
+    zipCode: school?.zipCode || '',
+    type: school?.type || 'elementary',
     grades: school?.grades || [],
     serviceRadius: school?.serviceRadius || 10,
     isActive: school?.isActive ?? true,
   });
 
   const handleGradeToggle = (gradeId: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       grades: prev.grades.includes(gradeId)
-        ? prev.grades.filter((g) => g !== gradeId)
+        ? prev.grades.filter(g => g !== gradeId)
         : [...prev.grades, gradeId],
     }));
   };
@@ -347,7 +347,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
-              {school ? "Edit School" : "Add New School"}
+              {school ? 'Edit School' : 'Add New School'}
             </h2>
             <button
               onClick={onCancel}
@@ -367,7 +367,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, name: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -380,7 +380,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 <select
                   required
                   value={formData.type}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, type: e.target.value as any })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -401,7 +401,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 type="text"
                 required
                 value={formData.address}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, address: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -417,7 +417,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                   type="text"
                   required
                   value={formData.city}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, city: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -431,7 +431,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                   type="text"
                   required
                   value={formData.state}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, state: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -445,7 +445,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                   type="text"
                   required
                   value={formData.zipCode}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, zipCode: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -462,7 +462,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 min="1"
                 max="50"
                 value={formData.serviceRadius}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     serviceRadius: parseInt(e.target.value),
@@ -477,7 +477,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 Supported Grades *
               </label>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                {SUPPORTED_GRADES.map((grade) => (
+                {SUPPORTED_GRADES.map(grade => (
                   <label
                     key={grade.id}
                     className="flex items-center space-x-2 text-sm"
@@ -498,7 +498,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
               <input
                 type="checkbox"
                 checked={formData.isActive}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, isActive: e.target.checked })
                 }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -521,7 +521,7 @@ const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 <Save className="h-4 w-4 mr-2" />
-                {school ? "Update School" : "Add School"}
+                {school ? 'Update School' : 'Add School'}
               </button>
             </div>
           </form>
@@ -544,16 +544,16 @@ const GradeFormModal: React.FC<GradeFormModalProps> = ({
   onCancel,
 }) => {
   const [formData, setFormData] = useState({
-    label: grade?.label || "",
+    label: grade?.label || '',
     numericValue: grade?.numericValue || 0,
-    schoolTypes: grade?.schoolTypes || ["elementary"],
+    schoolTypes: grade?.schoolTypes || ['elementary'],
   });
 
   const handleSchoolTypeToggle = (type: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       schoolTypes: prev.schoolTypes.includes(type)
-        ? prev.schoolTypes.filter((t) => t !== type)
+        ? prev.schoolTypes.filter(t => t !== type)
         : [...prev.schoolTypes, type],
     }));
   };
@@ -569,7 +569,7 @@ const GradeFormModal: React.FC<GradeFormModalProps> = ({
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
-              {grade ? "Edit Grade" : "Add New Grade"}
+              {grade ? 'Edit Grade' : 'Add New Grade'}
             </h2>
             <button
               onClick={onCancel}
@@ -588,7 +588,7 @@ const GradeFormModal: React.FC<GradeFormModalProps> = ({
                 type="text"
                 required
                 value={formData.label}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, label: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -606,7 +606,7 @@ const GradeFormModal: React.FC<GradeFormModalProps> = ({
                 min="0"
                 max="12"
                 value={formData.numericValue}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     numericValue: parseInt(e.target.value),
@@ -621,7 +621,7 @@ const GradeFormModal: React.FC<GradeFormModalProps> = ({
                 School Types *
               </label>
               <div className="space-y-2">
-                {["elementary", "middle", "high", "k12"].map((type) => (
+                {['elementary', 'middle', 'high', 'k12'].map(type => (
                   <label key={type} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -648,7 +648,7 @@ const GradeFormModal: React.FC<GradeFormModalProps> = ({
                 className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
               >
                 <Save className="h-4 w-4 mr-2" />
-                {grade ? "Update Grade" : "Add Grade"}
+                {grade ? 'Update Grade' : 'Add Grade'}
               </button>
             </div>
           </form>

@@ -3,12 +3,12 @@
  * Testing date, validation, format, and async utilities
  */
 
-import { 
-  dateUtils, 
-  validationUtils, 
-  formatUtils, 
-  stringUtils, 
-  asyncUtils 
+import {
+  dateUtils,
+  validationUtils,
+  formatUtils,
+  stringUtils,
+  asyncUtils,
 } from '@vcarpool/shared';
 
 describe('dateUtils', () => {
@@ -125,7 +125,7 @@ describe('validationUtils', () => {
         'test@example.com',
         'user.name@domain.co.uk',
         'user+tag@example.org',
-        'user123@test-domain.com'
+        'user123@test-domain.com',
       ];
 
       validEmails.forEach(email => {
@@ -139,7 +139,7 @@ describe('validationUtils', () => {
         '@example.com',
         'user@',
         'user@.com',
-        'user name@example.com'
+        'user name@example.com',
       ];
 
       invalidEmails.forEach(email => {
@@ -155,7 +155,7 @@ describe('validationUtils', () => {
         '(555) 123-4567',
         '555-123-4567',
         '555 123 4567',
-        '+44 20 7946 0958'
+        '+44 20 7946 0958',
       ];
 
       validPhones.forEach(phone => {
@@ -164,12 +164,7 @@ describe('validationUtils', () => {
     });
 
     it('should reject invalid phone numbers', () => {
-      const invalidPhones = [
-        '123',
-        'abc-def-ghij',
-        '555-abc-1234',
-        ''
-      ];
+      const invalidPhones = ['123', 'abc-def-ghij', '555-abc-1234', ''];
 
       invalidPhones.forEach(phone => {
         expect(validationUtils.isValidPhone(phone)).toBe(false);
@@ -179,14 +174,7 @@ describe('validationUtils', () => {
 
   describe('isValidTime', () => {
     it('should validate correct time formats', () => {
-      const validTimes = [
-        '09:00',
-        '23:59',
-        '00:00',
-        '12:30',
-        '1:05',
-        '01:05'
-      ];
+      const validTimes = ['09:00', '23:59', '00:00', '12:30', '1:05', '01:05'];
 
       validTimes.forEach(time => {
         expect(validationUtils.isValidTime(time)).toBe(true);
@@ -200,7 +188,7 @@ describe('validationUtils', () => {
         '9:5',
         'abc:def',
         '12:5a',
-        '24:00'
+        '24:00',
       ];
 
       invalidTimes.forEach(time => {
@@ -213,14 +201,14 @@ describe('validationUtils', () => {
 describe('formatUtils', () => {
   describe('currency', () => {
     it('should format currency correctly', () => {
-      expect(formatUtils.currency(15.50)).toBe('$15.50');
+      expect(formatUtils.currency(15.5)).toBe('$15.50');
       expect(formatUtils.currency(100)).toBe('$100.00');
       expect(formatUtils.currency(0)).toBe('$0.00');
     });
 
     it('should handle different currencies', () => {
-      expect(formatUtils.currency(15.50, 'EUR')).toContain('15.50');
-      expect(formatUtils.currency(15.50, 'GBP')).toContain('15.50');
+      expect(formatUtils.currency(15.5, 'EUR')).toContain('15.50');
+      expect(formatUtils.currency(15.5, 'GBP')).toContain('15.50');
     });
 
     it('should handle large amounts', () => {
@@ -308,7 +296,7 @@ describe('asyncUtils', () => {
       const start = Date.now();
       await asyncUtils.sleep(100);
       const end = Date.now();
-      
+
       // Allow some tolerance for timing
       expect(end - start).toBeGreaterThanOrEqual(90);
       expect(end - start).toBeLessThan(150);
@@ -323,21 +311,22 @@ describe('asyncUtils', () => {
   describe('retry', () => {
     it('should succeed on first attempt', async () => {
       const mockFn = jest.fn().mockResolvedValue('success');
-      
+
       const result = await asyncUtils.retry(mockFn, 3, 100);
-      
+
       expect(result).toBe('success');
       expect(mockFn).toHaveBeenCalledTimes(1);
     });
 
     it('should retry on failure and eventually succeed', async () => {
-      const mockFn = jest.fn()
+      const mockFn = jest
+        .fn()
         .mockRejectedValueOnce(new Error('Fail 1'))
         .mockRejectedValueOnce(new Error('Fail 2'))
         .mockResolvedValue('success');
-      
+
       const result = await asyncUtils.retry(mockFn, 3, 10); // Small delay for fast test
-      
+
       expect(result).toBe('success');
       expect(mockFn).toHaveBeenCalledTimes(3);
     });
@@ -345,16 +334,18 @@ describe('asyncUtils', () => {
     it('should fail after max attempts', async () => {
       const error = new Error('Always fails');
       const mockFn = jest.fn().mockRejectedValue(error);
-      
-      await expect(asyncUtils.retry(mockFn, 2, 10)).rejects.toThrow('Always fails');
+
+      await expect(asyncUtils.retry(mockFn, 2, 10)).rejects.toThrow(
+        'Always fails'
+      );
       expect(mockFn).toHaveBeenCalledTimes(2);
     });
 
     it('should handle synchronous functions that return promises', async () => {
       const mockFn = jest.fn(() => Promise.resolve('sync result'));
-      
+
       const result = await asyncUtils.retry(mockFn, 3, 100);
-      
+
       expect(result).toBe('sync result');
       expect(mockFn).toHaveBeenCalledTimes(1);
     });

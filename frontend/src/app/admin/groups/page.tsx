@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   UserGroupIcon,
   PlusIcon,
@@ -19,9 +19,9 @@ import {
   CogIcon,
   ClipboardDocumentCheckIcon,
   ExclamationTriangleIcon,
-} from "@heroicons/react/24/outline";
-import { Dialog } from "@headlessui/react";
-import { toast } from "react-hot-toast";
+} from '@heroicons/react/24/outline';
+import { Dialog } from '@headlessui/react';
+import { toast } from 'react-hot-toast';
 
 interface CarpoolGroup {
   id: string;
@@ -32,7 +32,7 @@ interface CarpoolGroup {
   dropoffLocation: string;
   maxMembers: number;
   currentMembers: number;
-  status: "active" | "pending" | "inactive";
+  status: 'active' | 'pending' | 'inactive';
   schedule: {
     days: string[];
     startTime: string;
@@ -49,7 +49,7 @@ interface GroupMember {
   userId: string;
   name: string;
   email: string;
-  role: "parent" | "student";
+  role: 'parent' | 'student';
   joinedAt: string;
   children?: {
     id: string;
@@ -62,8 +62,8 @@ interface GroupInvitation {
   id: string;
   email: string;
   name: string;
-  role: "parent" | "student";
-  status: "pending" | "accepted" | "declined";
+  role: 'parent' | 'student';
+  status: 'pending' | 'accepted' | 'declined';
   sentAt: string;
   expiresAt: string;
 }
@@ -104,39 +104,39 @@ export default function AdminGroupsPage() {
 
   // Form data
   const [createForm, setCreateForm] = useState<CreateGroupForm>({
-    name: "",
-    description: "",
-    school: "",
-    pickupLocation: "",
-    dropoffLocation: "",
+    name: '',
+    description: '',
+    school: '',
+    pickupLocation: '',
+    dropoffLocation: '',
     maxMembers: 8,
     schedule: {
       days: [],
-      startTime: "07:30",
-      endTime: "08:30",
+      startTime: '07:30',
+      endTime: '08:30',
     },
   });
 
   const [inviteForm, setInviteForm] = useState<InviteForm>({
-    emails: "",
-    message: "",
+    emails: '',
+    message: '',
   });
 
   const [message, setMessage] = useState<{
-    type: "success" | "error" | "info";
+    type: 'success' | 'error' | 'info';
     text: string;
   } | null>(null);
 
   // Auth guard
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "admin")) {
-      router.push("/dashboard");
+    if (!isLoading && (!user || user.role !== 'admin')) {
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
   // Load groups
   useEffect(() => {
-    if (user?.role === "admin") {
+    if (user?.role === 'admin') {
       loadGroups();
     }
   }, [user]);
@@ -147,85 +147,85 @@ export default function AdminGroupsPage() {
       // For now, use mock data - in production this would call the API
       const mockGroups: CarpoolGroup[] = [
         {
-          id: "group-1",
-          name: "Lincoln Elementary Morning Carpool",
+          id: 'group-1',
+          name: 'Lincoln Elementary Morning Carpool',
           description:
-            "Daily morning drop-off carpool for Lincoln Elementary School",
-          school: "Lincoln Elementary School",
-          pickupLocation: "Maple Street Neighborhood",
-          dropoffLocation: "Lincoln Elementary School",
+            'Daily morning drop-off carpool for Lincoln Elementary School',
+          school: 'Lincoln Elementary School',
+          pickupLocation: 'Maple Street Neighborhood',
+          dropoffLocation: 'Lincoln Elementary School',
           maxMembers: 8,
           currentMembers: 5,
-          status: "active",
+          status: 'active',
           schedule: {
-            days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            startTime: "07:30",
-            endTime: "08:30",
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            startTime: '07:30',
+            endTime: '08:30',
           },
-          createdAt: "2025-01-01T00:00:00Z",
-          adminId: user?.id || "",
+          createdAt: '2025-01-01T00:00:00Z',
+          adminId: user?.id || '',
           members: [
             {
-              id: "member-1",
-              userId: "parent-1",
-              name: "Sarah Johnson",
-              email: "sarah.j@example.com",
-              role: "parent",
-              joinedAt: "2025-01-01T00:00:00Z",
+              id: 'member-1',
+              userId: 'parent-1',
+              name: 'Sarah Johnson',
+              email: 'sarah.j@example.com',
+              role: 'parent',
+              joinedAt: '2025-01-01T00:00:00Z',
               children: [
-                { id: "child-1", name: "Emma Johnson", grade: "3rd" },
-                { id: "child-2", name: "Jake Johnson", grade: "1st" },
+                { id: 'child-1', name: 'Emma Johnson', grade: '3rd' },
+                { id: 'child-2', name: 'Jake Johnson', grade: '1st' },
               ],
             },
             {
-              id: "member-2",
-              userId: "parent-2",
-              name: "Michael Chen",
-              email: "m.chen@example.com",
-              role: "parent",
-              joinedAt: "2025-01-02T00:00:00Z",
-              children: [{ id: "child-3", name: "Lucas Chen", grade: "2nd" }],
+              id: 'member-2',
+              userId: 'parent-2',
+              name: 'Michael Chen',
+              email: 'm.chen@example.com',
+              role: 'parent',
+              joinedAt: '2025-01-02T00:00:00Z',
+              children: [{ id: 'child-3', name: 'Lucas Chen', grade: '2nd' }],
             },
           ],
           invitations: [
             {
-              id: "invite-1",
-              email: "new.parent@example.com",
-              name: "Jennifer Davis",
-              role: "parent",
-              status: "pending",
-              sentAt: "2025-01-05T00:00:00Z",
-              expiresAt: "2025-01-12T00:00:00Z",
+              id: 'invite-1',
+              email: 'new.parent@example.com',
+              name: 'Jennifer Davis',
+              role: 'parent',
+              status: 'pending',
+              sentAt: '2025-01-05T00:00:00Z',
+              expiresAt: '2025-01-12T00:00:00Z',
             },
           ],
         },
         {
-          id: "group-2",
-          name: "Lincoln Elementary Afternoon Pickup",
+          id: 'group-2',
+          name: 'Lincoln Elementary Afternoon Pickup',
           description:
-            "Daily afternoon pickup carpool for Lincoln Elementary School",
-          school: "Lincoln Elementary School",
-          pickupLocation: "Lincoln Elementary School",
-          dropoffLocation: "Oak Avenue Neighborhood",
+            'Daily afternoon pickup carpool for Lincoln Elementary School',
+          school: 'Lincoln Elementary School',
+          pickupLocation: 'Lincoln Elementary School',
+          dropoffLocation: 'Oak Avenue Neighborhood',
           maxMembers: 6,
           currentMembers: 3,
-          status: "active",
+          status: 'active',
           schedule: {
-            days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            startTime: "15:00",
-            endTime: "16:00",
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            startTime: '15:00',
+            endTime: '16:00',
           },
-          createdAt: "2025-01-02T00:00:00Z",
-          adminId: user?.id || "",
+          createdAt: '2025-01-02T00:00:00Z',
+          adminId: user?.id || '',
           members: [
             {
-              id: "member-3",
-              userId: "parent-3",
-              name: "Jennifer Davis",
-              email: "j.davis@example.com",
-              role: "parent",
-              joinedAt: "2025-01-02T00:00:00Z",
-              children: [{ id: "child-4", name: "Sophie Davis", grade: "4th" }],
+              id: 'member-3',
+              userId: 'parent-3',
+              name: 'Jennifer Davis',
+              email: 'j.davis@example.com',
+              role: 'parent',
+              joinedAt: '2025-01-02T00:00:00Z',
+              children: [{ id: 'child-4', name: 'Sophie Davis', grade: '4th' }],
             },
           ],
           invitations: [],
@@ -233,10 +233,10 @@ export default function AdminGroupsPage() {
       ];
       setGroups(mockGroups);
     } catch (error) {
-      console.error("Error loading groups:", error);
+      console.error('Error loading groups:', error);
       setMessage({
-        type: "error",
-        text: "Failed to load carpool groups",
+        type: 'error',
+        text: 'Failed to load carpool groups',
       });
     } finally {
       setIsLoading_groups(false);
@@ -254,11 +254,11 @@ export default function AdminGroupsPage() {
         !createForm.school ||
         !createForm.pickupLocation
       ) {
-        throw new Error("Please fill in all required fields");
+        throw new Error('Please fill in all required fields');
       }
 
       if (createForm.schedule.days.length === 0) {
-        throw new Error("Please select at least one day");
+        throw new Error('Please select at least one day');
       }
 
       // In production, this would call the API
@@ -271,38 +271,38 @@ export default function AdminGroupsPage() {
         dropoffLocation: createForm.dropoffLocation,
         maxMembers: createForm.maxMembers,
         currentMembers: 0,
-        status: "active",
+        status: 'active',
         schedule: createForm.schedule,
         createdAt: new Date().toISOString(),
-        adminId: user?.id || "",
+        adminId: user?.id || '',
         members: [],
         invitations: [],
       };
 
-      setGroups((prev) => [newGroup, ...prev]);
+      setGroups(prev => [newGroup, ...prev]);
       setShowCreateForm(false);
       setCreateForm({
-        name: "",
-        description: "",
-        school: "",
-        pickupLocation: "",
-        dropoffLocation: "",
+        name: '',
+        description: '',
+        school: '',
+        pickupLocation: '',
+        dropoffLocation: '',
         maxMembers: 8,
         schedule: {
           days: [],
-          startTime: "07:30",
-          endTime: "08:30",
+          startTime: '07:30',
+          endTime: '08:30',
         },
       });
 
       setMessage({
-        type: "success",
+        type: 'success',
         text: `🎉 Carpool group "${newGroup.name}" created successfully!`,
       });
     } catch (error) {
       setMessage({
-        type: "error",
-        text: error instanceof Error ? error.message : "Failed to create group",
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Failed to create group',
       });
     } finally {
       setIsCreating(false);
@@ -317,35 +317,35 @@ export default function AdminGroupsPage() {
 
     try {
       const emails = inviteForm.emails
-        .split("\n")
-        .map((email) => email.trim())
-        .filter((email) => email.length > 0);
+        .split('\n')
+        .map(email => email.trim())
+        .filter(email => email.length > 0);
 
       if (emails.length === 0) {
-        throw new Error("Please enter at least one email address");
+        throw new Error('Please enter at least one email address');
       }
 
       // Validate emails
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const invalidEmails = emails.filter((email) => !emailRegex.test(email));
+      const invalidEmails = emails.filter(email => !emailRegex.test(email));
       if (invalidEmails.length > 0) {
-        throw new Error(`Invalid email addresses: ${invalidEmails.join(", ")}`);
+        throw new Error(`Invalid email addresses: ${invalidEmails.join(', ')}`);
       }
 
       // In production, this would call the API
-      const newInvitations: GroupInvitation[] = emails.map((email) => ({
+      const newInvitations: GroupInvitation[] = emails.map(email => ({
         id: `invite-${Date.now()}-${Math.random()}`,
         email,
-        name: email.split("@")[0].replace(/[._]/g, " "),
-        role: "parent" as const,
-        status: "pending" as const,
+        name: email.split('@')[0].replace(/[._]/g, ' '),
+        role: 'parent' as const,
+        status: 'pending' as const,
         sentAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       }));
 
       // Update the selected group
-      setGroups((prev) =>
-        prev.map((group) =>
+      setGroups(prev =>
+        prev.map(group =>
           group.id === selectedGroup.id
             ? {
                 ...group,
@@ -356,7 +356,7 @@ export default function AdminGroupsPage() {
       );
 
       // Update selected group
-      setSelectedGroup((prev) =>
+      setSelectedGroup(prev =>
         prev
           ? {
               ...prev,
@@ -366,17 +366,17 @@ export default function AdminGroupsPage() {
       );
 
       setShowInviteForm(false);
-      setInviteForm({ emails: "", message: "" });
+      setInviteForm({ emails: '', message: '' });
 
       setMessage({
-        type: "success",
+        type: 'success',
         text: `📧 Sent ${emails.length} invitation(s) to join "${selectedGroup.name}"`,
       });
     } catch (error) {
       setMessage({
-        type: "error",
+        type: 'error',
         text:
-          error instanceof Error ? error.message : "Failed to send invitations",
+          error instanceof Error ? error.message : 'Failed to send invitations',
       });
     } finally {
       setIsInviting(false);
@@ -384,12 +384,12 @@ export default function AdminGroupsPage() {
   };
 
   const toggleDay = (day: string) => {
-    setCreateForm((prev) => ({
+    setCreateForm(prev => ({
       ...prev,
       schedule: {
         ...prev.schedule,
         days: prev.schedule.days.includes(day)
-          ? prev.schedule.days.filter((d) => d !== day)
+          ? prev.schedule.days.filter(d => d !== day)
           : [...prev.schedule.days, day],
       },
     }));
@@ -397,21 +397,21 @@ export default function AdminGroupsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "active":
+      case 'active':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
             <CheckCircleIcon className="w-3 h-3 mr-1" />
             Active
           </span>
         );
-      case "pending":
+      case 'pending':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
             <ClockIcon className="w-3 h-3 mr-1" />
             Pending
           </span>
         );
-      case "inactive":
+      case 'inactive':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
             <XCircleIcon className="w-3 h-3 mr-1" />
@@ -425,19 +425,19 @@ export default function AdminGroupsPage() {
 
   const getInviteStatusBadge = (status: string) => {
     switch (status) {
-      case "pending":
+      case 'pending':
         return (
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
             Pending
           </span>
         );
-      case "accepted":
+      case 'accepted':
         return (
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
             Accepted
           </span>
         );
-      case "declined":
+      case 'declined':
         return (
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
             Declined
@@ -458,7 +458,7 @@ export default function AdminGroupsPage() {
 
     toast.loading(`Leaving ${groupToLeave.name}...`);
     // Mock API call
-    await new Promise((res) => setTimeout(res, 1500));
+    await new Promise(res => setTimeout(res, 1500));
     toast.dismiss();
     toast.success(`Your family has left the group: ${groupToLeave.name}`);
 
@@ -475,7 +475,7 @@ export default function AdminGroupsPage() {
     );
   }
 
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -519,11 +519,11 @@ export default function AdminGroupsPage() {
         {message && (
           <div
             className={`mb-6 p-4 rounded-lg ${
-              message.type === "success"
-                ? "bg-green-50 border border-green-200 text-green-800"
-                : message.type === "error"
-                ? "bg-red-50 border border-red-200 text-red-800"
-                : "bg-blue-50 border border-blue-200 text-blue-800"
+              message.type === 'success'
+                ? 'bg-green-50 border border-green-200 text-green-800'
+                : message.type === 'error'
+                  ? 'bg-red-50 border border-red-200 text-red-800'
+                  : 'bg-blue-50 border border-blue-200 text-blue-800'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -545,7 +545,7 @@ export default function AdminGroupsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {groups.map((group) => (
+            {groups.map(group => (
               <div
                 key={group.id}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
@@ -575,7 +575,7 @@ export default function AdminGroupsPage() {
                     </div>
                     <div className="flex items-center">
                       <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
-                      {group.schedule.days.join(", ")}
+                      {group.schedule.days.join(', ')}
                     </div>
                     <div className="flex items-center">
                       <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
@@ -600,7 +600,7 @@ export default function AdminGroupsPage() {
                         <ClipboardDocumentCheckIcon className="w-5 h-5" />
                       </Link>
                       <button
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           setSelectedGroup(group);
                           setShowInviteForm(true);
@@ -683,7 +683,7 @@ export default function AdminGroupsPage() {
                         <div>
                           <span className="text-sm text-gray-500">Route:</span>
                           <div className="text-gray-900">
-                            {selectedGroup.pickupLocation} →{" "}
+                            {selectedGroup.pickupLocation} →{' '}
                             {selectedGroup.dropoffLocation}
                           </div>
                         </div>
@@ -695,8 +695,8 @@ export default function AdminGroupsPage() {
                             Schedule:
                           </span>
                           <div className="text-gray-900">
-                            {selectedGroup.schedule.days.join(", ")} at{" "}
-                            {selectedGroup.schedule.startTime} -{" "}
+                            {selectedGroup.schedule.days.join(', ')} at{' '}
+                            {selectedGroup.schedule.startTime} -{' '}
                             {selectedGroup.schedule.endTime}
                           </div>
                         </div>
@@ -722,7 +722,7 @@ export default function AdminGroupsPage() {
                       Members ({selectedGroup.members.length})
                     </h3>
                     <div className="space-y-3">
-                      {selectedGroup.members.map((member) => (
+                      {selectedGroup.members.map(member => (
                         <div
                           key={member.id}
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -736,10 +736,10 @@ export default function AdminGroupsPage() {
                             </div>
                             {member.children && member.children.length > 0 && (
                               <div className="text-xs text-gray-500 mt-1">
-                                Children:{" "}
+                                Children:{' '}
                                 {member.children
-                                  .map((c) => `${c.name} (${c.grade})`)
-                                  .join(", ")}
+                                  .map(c => `${c.name} (${c.grade})`)
+                                  .join(', ')}
                               </div>
                             )}
                           </div>
@@ -764,7 +764,7 @@ export default function AdminGroupsPage() {
                       Pending Invitations ({selectedGroup.invitations.length})
                     </h3>
                     <div className="space-y-2">
-                      {selectedGroup.invitations.map((invitation) => (
+                      {selectedGroup.invitations.map(invitation => (
                         <div
                           key={invitation.id}
                           className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200"
@@ -777,7 +777,7 @@ export default function AdminGroupsPage() {
                               {invitation.email}
                             </div>
                             <div className="text-xs text-gray-500">
-                              Sent{" "}
+                              Sent{' '}
                               {new Date(invitation.sentAt).toLocaleDateString()}
                             </div>
                           </div>
@@ -820,8 +820,8 @@ export default function AdminGroupsPage() {
                     <input
                       type="text"
                       value={createForm.name}
-                      onChange={(e) =>
-                        setCreateForm((prev) => ({
+                      onChange={e =>
+                        setCreateForm(prev => ({
                           ...prev,
                           name: e.target.value,
                         }))
@@ -838,8 +838,8 @@ export default function AdminGroupsPage() {
                     <input
                       type="text"
                       value={createForm.school}
-                      onChange={(e) =>
-                        setCreateForm((prev) => ({
+                      onChange={e =>
+                        setCreateForm(prev => ({
                           ...prev,
                           school: e.target.value,
                         }))
@@ -857,8 +857,8 @@ export default function AdminGroupsPage() {
                   </label>
                   <textarea
                     value={createForm.description}
-                    onChange={(e) =>
-                      setCreateForm((prev) => ({
+                    onChange={e =>
+                      setCreateForm(prev => ({
                         ...prev,
                         description: e.target.value,
                       }))
@@ -878,8 +878,8 @@ export default function AdminGroupsPage() {
                     <input
                       type="text"
                       value={createForm.pickupLocation}
-                      onChange={(e) =>
-                        setCreateForm((prev) => ({
+                      onChange={e =>
+                        setCreateForm(prev => ({
                           ...prev,
                           pickupLocation: e.target.value,
                         }))
@@ -896,8 +896,8 @@ export default function AdminGroupsPage() {
                     <input
                       type="text"
                       value={createForm.dropoffLocation}
-                      onChange={(e) =>
-                        setCreateForm((prev) => ({
+                      onChange={e =>
+                        setCreateForm(prev => ({
                           ...prev,
                           dropoffLocation: e.target.value,
                         }))
@@ -921,20 +921,20 @@ export default function AdminGroupsPage() {
                       </span>
                       <div className="flex flex-wrap gap-2">
                         {[
-                          "Monday",
-                          "Tuesday",
-                          "Wednesday",
-                          "Thursday",
-                          "Friday",
-                        ].map((day) => (
+                          'Monday',
+                          'Tuesday',
+                          'Wednesday',
+                          'Thursday',
+                          'Friday',
+                        ].map(day => (
                           <button
                             key={day}
                             type="button"
                             onClick={() => toggleDay(day)}
                             className={`px-3 py-1 text-sm rounded-lg border ${
                               createForm.schedule.days.includes(day)
-                                ? "bg-blue-600 text-white border-blue-600"
-                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                                ? 'bg-blue-600 text-white border-blue-600'
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                             }`}
                           >
                             {day}
@@ -950,8 +950,8 @@ export default function AdminGroupsPage() {
                         <input
                           type="time"
                           value={createForm.schedule.startTime}
-                          onChange={(e) =>
-                            setCreateForm((prev) => ({
+                          onChange={e =>
+                            setCreateForm(prev => ({
                               ...prev,
                               schedule: {
                                 ...prev.schedule,
@@ -969,8 +969,8 @@ export default function AdminGroupsPage() {
                         <input
                           type="time"
                           value={createForm.schedule.endTime}
-                          onChange={(e) =>
-                            setCreateForm((prev) => ({
+                          onChange={e =>
+                            setCreateForm(prev => ({
                               ...prev,
                               schedule: {
                                 ...prev.schedule,
@@ -995,8 +995,8 @@ export default function AdminGroupsPage() {
                     min="2"
                     max="20"
                     value={createForm.maxMembers}
-                    onChange={(e) =>
-                      setCreateForm((prev) => ({
+                    onChange={e =>
+                      setCreateForm(prev => ({
                         ...prev,
                         maxMembers: parseInt(e.target.value),
                       }))
@@ -1019,7 +1019,7 @@ export default function AdminGroupsPage() {
                     disabled={isCreating}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isCreating ? "Creating..." : "Create Group"}
+                    {isCreating ? 'Creating...' : 'Create Group'}
                   </button>
                 </div>
               </form>
@@ -1052,8 +1052,8 @@ export default function AdminGroupsPage() {
                   </label>
                   <textarea
                     value={inviteForm.emails}
-                    onChange={(e) =>
-                      setInviteForm((prev) => ({
+                    onChange={e =>
+                      setInviteForm(prev => ({
                         ...prev,
                         emails: e.target.value,
                       }))
@@ -1075,8 +1075,8 @@ export default function AdminGroupsPage() {
                   </label>
                   <textarea
                     value={inviteForm.message}
-                    onChange={(e) =>
-                      setInviteForm((prev) => ({
+                    onChange={e =>
+                      setInviteForm(prev => ({
                         ...prev,
                         message: e.target.value,
                       }))
@@ -1101,13 +1101,13 @@ export default function AdminGroupsPage() {
                       carpool group at {selectedGroup.school}.
                     </p>
                     <p className="mb-2">
-                      <strong>Schedule:</strong>{" "}
-                      {selectedGroup.schedule.days.join(", ")} from{" "}
-                      {selectedGroup.schedule.startTime} to{" "}
+                      <strong>Schedule:</strong>{' '}
+                      {selectedGroup.schedule.days.join(', ')} from{' '}
+                      {selectedGroup.schedule.startTime} to{' '}
                       {selectedGroup.schedule.endTime}
                     </p>
                     <p className="mb-2">
-                      <strong>Route:</strong> {selectedGroup.pickupLocation} →{" "}
+                      <strong>Route:</strong> {selectedGroup.pickupLocation} →{' '}
                       {selectedGroup.dropoffLocation}
                     </p>
                     {inviteForm.message && (
@@ -1131,7 +1131,7 @@ export default function AdminGroupsPage() {
                     disabled={isInviting}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isInviting ? "Sending..." : "Send Invitations"}
+                    {isInviting ? 'Sending...' : 'Send Invitations'}
                   </button>
                 </div>
               </form>
@@ -1178,7 +1178,7 @@ export default function AdminGroupsPage() {
                   </Dialog.Title>
                   <div className="mt-4">
                     <p className="text-sm text-gray-600">
-                      You are about to leave the group:{" "}
+                      You are about to leave the group:{' '}
                       <strong>{groupToLeave.name}</strong>.
                     </p>
                     <p className="mt-2 text-sm text-gray-600">

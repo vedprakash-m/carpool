@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, memo, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import DashboardLayout from "@/components/DashboardLayout";
-import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
-import { useAuthStore } from "@/store/auth.store";
-import { useTripStore } from "@/store/trip.store";
+import { useEffect, memo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import DashboardLayout from '@/components/DashboardLayout';
+import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
+import { useAuthStore } from '@/store/auth.store';
+import { useTripStore } from '@/store/trip.store';
 import {
   useRenderPerformance,
   useThrottle,
-} from "@/hooks/usePerformanceOptimization";
+} from '@/hooks/usePerformanceOptimization';
 import {
   CalendarIcon,
   TruckIcon,
@@ -23,10 +23,10 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
   InformationCircleIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 export default memo(function DashboardPage() {
-  useRenderPerformance("DashboardPage");
+  useRenderPerformance('DashboardPage');
 
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
@@ -39,10 +39,10 @@ export default memo(function DashboardPage() {
       isAuthenticated &&
       user &&
       fetchTripStats &&
-      typeof fetchTripStats === "function"
+      typeof fetchTripStats === 'function'
     ) {
       const result = fetchTripStats();
-      if (result && typeof result.catch === "function") {
+      if (result && typeof result.catch === 'function') {
         result.catch(console.error);
       }
     }
@@ -55,14 +55,14 @@ export default memo(function DashboardPage() {
 
   const handleWeeklyPreferences = useThrottle(
     useCallback(() => {
-      router.push("/parents/preferences");
+      router.push('/parents/preferences');
     }, [router]),
     1000
   );
 
   const handleManageChildren = useThrottle(
     useCallback(() => {
-      router.push("/family/children");
+      router.push('/family/children');
     }, [router]),
     1000
   );
@@ -105,7 +105,7 @@ export default memo(function DashboardPage() {
                       This Week's School Runs
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {loading ? "..." : stats?.weeklySchoolTrips || 0}
+                      {loading ? '...' : stats?.weeklySchoolTrips || 0}
                     </p>
                     <p className="text-sm text-gray-500">
                       Morning + afternoon trips
@@ -122,7 +122,7 @@ export default memo(function DashboardPage() {
                       Children in Carpool
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {loading ? "..." : stats?.childrenCount || 0}
+                      {loading ? '...' : stats?.childrenCount || 0}
                     </p>
                     <p className="text-sm text-gray-500">
                       Active student profiles
@@ -139,7 +139,7 @@ export default memo(function DashboardPage() {
                       Miles Saved
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {loading ? "..." : `${stats?.milesSaved || 0} miles`}
+                      {loading ? '...' : `${stats?.milesSaved || 0} miles`}
                     </p>
                     <p className="text-sm text-gray-500">through carpooling</p>
                   </div>
@@ -154,7 +154,7 @@ export default memo(function DashboardPage() {
                       Time Saved This Month
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {loading ? "..." : `${stats?.timeSavedHours || 0}h`}
+                      {loading ? '...' : `${stats?.timeSavedHours || 0}h`}
                     </p>
                     <p className="text-sm text-gray-500">
                       from coordinated pickups
@@ -216,7 +216,7 @@ export default memo(function DashboardPage() {
                   </button>
 
                   <button
-                    onClick={() => router.push("/parents/groups")}
+                    onClick={() => router.push('/parents/groups')}
                     className="flex flex-col items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
                   >
                     <UserGroupIcon className="h-8 w-8 text-blue-600 mb-2" />
@@ -254,7 +254,7 @@ export default memo(function DashboardPage() {
                     neighborhood.
                   </p>
                   <button
-                    onClick={() => router.push("/parents/discover")}
+                    onClick={() => router.push('/parents/discover')}
                     className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                   >
                     Discover Groups
@@ -271,7 +271,7 @@ export default memo(function DashboardPage() {
                     become a Group Admin.
                   </p>
                   <button
-                    onClick={() => router.push("/parents/groups/create")}
+                    onClick={() => router.push('/parents/groups/create')}
                     className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Create Group
@@ -313,7 +313,7 @@ export default memo(function DashboardPage() {
                     weekly schedule.
                   </p>
                   <button
-                    onClick={() => router.push("/parents/schedule")}
+                    onClick={() => router.push('/parents/schedule')}
                     className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     View Full Schedule

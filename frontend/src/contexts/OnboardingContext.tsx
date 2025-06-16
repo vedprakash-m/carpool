@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
 
 export interface OnboardingStep {
   id: string;
@@ -36,49 +36,49 @@ interface OnboardingContextType {
   completeOnboarding: () => void;
   toggleTooltips: () => void;
   updateUserProgress: (
-    progress: Partial<OnboardingState["userProgress"]>
+    progress: Partial<OnboardingState['userProgress']>
   ) => void;
   resetOnboarding: () => void;
 }
 
 const defaultSteps: OnboardingStep[] = [
   {
-    id: "welcome_tour",
-    title: "Welcome to VCarpool",
+    id: 'welcome_tour',
+    title: 'Welcome to VCarpool',
     description: "Let's take a quick tour of your dashboard and key features",
-    component: "WelcomeTour",
+    component: 'WelcomeTour',
     isCompleted: false,
     isOptional: false,
   },
   {
-    id: "profile_completion",
-    title: "Complete Your Profile",
-    description: "Add contact information and emergency details",
-    component: "ProfileCompletion",
+    id: 'profile_completion',
+    title: 'Complete Your Profile',
+    description: 'Add contact information and emergency details',
+    component: 'ProfileCompletion',
     isCompleted: false,
     isOptional: false,
   },
   {
-    id: "notification_setup",
-    title: "Notification Preferences",
+    id: 'notification_setup',
+    title: 'Notification Preferences',
     description: "Choose how you'd like to receive carpool updates",
-    component: "NotificationSetup",
+    component: 'NotificationSetup',
     isCompleted: false,
     isOptional: true,
   },
   {
-    id: "preference_tutorial",
-    title: "Weekly Preferences Guide",
-    description: "Learn how to submit your driving preferences",
-    component: "PreferenceTutorial",
+    id: 'preference_tutorial',
+    title: 'Weekly Preferences Guide',
+    description: 'Learn how to submit your driving preferences',
+    component: 'PreferenceTutorial',
     isCompleted: false,
     isOptional: false,
   },
   {
-    id: "first_week_simulation",
-    title: "How It All Works",
-    description: "See an example of assignments and swap requests",
-    component: "FirstWeekSimulation",
+    id: 'first_week_simulation',
+    title: 'How It All Works',
+    description: 'See an example of assignments and swap requests',
+    component: 'FirstWeekSimulation',
     isCompleted: false,
     isOptional: true,
   },
@@ -118,7 +118,7 @@ export function OnboardingProvider({
       if (savedState) {
         setOnboardingState(savedState);
       } else {
-        setOnboardingState((prev) => ({ ...prev, isOnboardingActive: true }));
+        setOnboardingState(prev => ({ ...prev, isOnboardingActive: true }));
       }
     }
   }, [user]);
@@ -131,7 +131,7 @@ export function OnboardingProvider({
   }, [user?.id, onboardingState]);
 
   const startOnboarding = () => {
-    setOnboardingState((prev) => ({
+    setOnboardingState(prev => ({
       ...prev,
       isOnboardingActive: true,
       currentStepIndex: 0,
@@ -139,16 +139,16 @@ export function OnboardingProvider({
   };
 
   const completeStep = (stepId: string) => {
-    setOnboardingState((prev) => ({
+    setOnboardingState(prev => ({
       ...prev,
-      steps: prev.steps.map((step) =>
+      steps: prev.steps.map(step =>
         step.id === stepId ? { ...step, isCompleted: true } : step
       ),
     }));
   };
 
   const nextStep = () => {
-    setOnboardingState((prev) => {
+    setOnboardingState(prev => {
       const nextIndex = prev.currentStepIndex + 1;
       if (nextIndex >= prev.steps.length) {
         return { ...prev, isOnboardingActive: false };
@@ -158,24 +158,24 @@ export function OnboardingProvider({
   };
 
   const previousStep = () => {
-    setOnboardingState((prev) => ({
+    setOnboardingState(prev => ({
       ...prev,
       currentStepIndex: Math.max(0, prev.currentStepIndex - 1),
     }));
   };
 
   const skipOnboarding = () => {
-    setOnboardingState((prev) => ({ ...prev, isOnboardingActive: false }));
+    setOnboardingState(prev => ({ ...prev, isOnboardingActive: false }));
     if (user?.id) {
       markOnboardingCompleted(user.id);
     }
   };
 
   const completeOnboarding = () => {
-    setOnboardingState((prev) => ({
+    setOnboardingState(prev => ({
       ...prev,
       isOnboardingActive: false,
-      steps: prev.steps.map((step) => ({ ...step, isCompleted: true })),
+      steps: prev.steps.map(step => ({ ...step, isCompleted: true })),
     }));
     if (user?.id) {
       markOnboardingCompleted(user.id);
@@ -183,16 +183,16 @@ export function OnboardingProvider({
   };
 
   const toggleTooltips = () => {
-    setOnboardingState((prev) => ({
+    setOnboardingState(prev => ({
       ...prev,
       showTooltips: !prev.showTooltips,
     }));
   };
 
   const updateUserProgress = (
-    progress: Partial<OnboardingState["userProgress"]>
+    progress: Partial<OnboardingState['userProgress']>
   ) => {
-    setOnboardingState((prev) => ({
+    setOnboardingState(prev => ({
       ...prev,
       userProgress: { ...prev.userProgress, ...progress },
     }));
@@ -228,7 +228,7 @@ export function OnboardingProvider({
 export function useOnboarding() {
   const context = useContext(OnboardingContext);
   if (context === undefined) {
-    throw new Error("useOnboarding must be used within an OnboardingProvider");
+    throw new Error('useOnboarding must be used within an OnboardingProvider');
   }
   return context;
 }
@@ -236,7 +236,7 @@ export function useOnboarding() {
 // Helper functions
 function shouldShowOnboarding(user: any): boolean {
   // Show onboarding for new parent users who haven't completed it
-  if (user.role !== "parent") return false;
+  if (user.role !== 'parent') return false;
 
   const completed = localStorage.getItem(`onboarding_completed_${user.id}`);
   return !completed;
@@ -261,7 +261,7 @@ function saveOnboardingState(userId: string, state: OnboardingState) {
 
 function markOnboardingCompleted(userId: string) {
   try {
-    localStorage.setItem(`onboarding_completed_${userId}`, "true");
+    localStorage.setItem(`onboarding_completed_${userId}`, 'true');
     localStorage.removeItem(`onboarding_state_${userId}`);
   } catch {
     // Handle storage errors silently

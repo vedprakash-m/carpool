@@ -1,7 +1,7 @@
-import { HttpRequest, HttpResponseInit } from "@azure/functions";
-import { ApiResponse } from "@vcarpool/shared";
-import { AzureLogger } from "./logger";
-import { ILogger } from "./logger";
+import { HttpRequest, HttpResponseInit } from '@azure/functions';
+import { ApiResponse } from '@vcarpool/shared';
+import { AzureLogger } from './logger';
+import { ILogger } from './logger';
 
 const logger = new AzureLogger();
 
@@ -12,9 +12,9 @@ export class AppError extends Error {
   constructor(
     public message: string,
     public statusCode: number = 500,
-    public code: string = "INTERNAL_ERROR",
+    public code: string = 'INTERNAL_ERROR',
     public isOperational: boolean = true,
-    public details?: any
+    public details?: any,
   ) {
     super(message);
     Object.setPrototypeOf(this, AppError.prototype);
@@ -24,61 +24,57 @@ export class AppError extends Error {
 // Specific error types
 export class ValidationError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(message, 400, "VALIDATION_ERROR", true, details);
+    super(message, 400, 'VALIDATION_ERROR', true, details);
   }
 }
 
 export class AuthenticationError extends AppError {
-  constructor(message: string = "Authentication failed") {
-    super(message, 401, "AUTHENTICATION_ERROR", true);
+  constructor(message: string = 'Authentication failed') {
+    super(message, 401, 'AUTHENTICATION_ERROR', true);
   }
 }
 
 export class AuthorizationError extends AppError {
-  constructor(message: string = "Access denied") {
-    super(message, 403, "AUTHORIZATION_ERROR", true);
+  constructor(message: string = 'Access denied') {
+    super(message, 403, 'AUTHORIZATION_ERROR', true);
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(message: string = "Resource not found") {
-    super(message, 404, "NOT_FOUND_ERROR", true);
+  constructor(message: string = 'Resource not found') {
+    super(message, 404, 'NOT_FOUND_ERROR', true);
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(message: string = "Resource conflict") {
-    super(message, 409, "CONFLICT_ERROR", true);
+  constructor(message: string = 'Resource conflict') {
+    super(message, 409, 'CONFLICT_ERROR', true);
   }
 }
 
 export class RateLimitError extends AppError {
-  constructor(message: string = "Rate limit exceeded", retryAfter?: number) {
-    super(message, 429, "RATE_LIMIT_ERROR", true, { retryAfter });
+  constructor(message: string = 'Rate limit exceeded', retryAfter?: number) {
+    super(message, 429, 'RATE_LIMIT_ERROR', true, { retryAfter });
   }
 }
 
 export class DatabaseError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(message, 500, "DATABASE_ERROR", true, details);
+    super(message, 500, 'DATABASE_ERROR', true, details);
   }
 }
 
 export const Errors = {
-  BadRequest: (msg: string, details?: any) =>
-    new AppError(msg, 400, "BAD_REQUEST", true, details),
+  BadRequest: (msg: string, details?: any) => new AppError(msg, 400, 'BAD_REQUEST', true, details),
   Unauthorized: (msg: string, details?: any) =>
-    new AppError(msg, 401, "UNAUTHORIZED", true, details),
-  Forbidden: (msg: string, details?: any) =>
-    new AppError(msg, 403, "FORBIDDEN", true, details),
-  NotFound: (msg: string, details?: any) =>
-    new AppError(msg, 404, "NOT_FOUND", true, details),
-  Conflict: (msg: string, details?: any) =>
-    new AppError(msg, 409, "CONFLICT", true, details),
+    new AppError(msg, 401, 'UNAUTHORIZED', true, details),
+  Forbidden: (msg: string, details?: any) => new AppError(msg, 403, 'FORBIDDEN', true, details),
+  NotFound: (msg: string, details?: any) => new AppError(msg, 404, 'NOT_FOUND', true, details),
+  Conflict: (msg: string, details?: any) => new AppError(msg, 409, 'CONFLICT', true, details),
   InternalServerError: (msg: string, details?: any) =>
-    new AppError(msg, 500, "INTERNAL_ERROR", true, details),
+    new AppError(msg, 500, 'INTERNAL_ERROR', true, details),
   ValidationError: (msg: string, details?: any) =>
-    new AppError(msg, 422, "VALIDATION_ERROR", true, details),
+    new AppError(msg, 422, 'VALIDATION_ERROR', true, details),
 };
 
 /**
@@ -87,7 +83,7 @@ export const Errors = {
 export function handleError(
   error: unknown,
   requestOrLogger: HttpRequest | ILogger,
-  loggerMaybe?: ILogger
+  loggerMaybe?: ILogger,
 ): HttpResponseInit {
   let logger: ILogger;
   let request: HttpRequest | undefined;
@@ -105,8 +101,8 @@ export function handleError(
     jsonBody: {
       success: false,
       error: {
-        code: "INTERNAL_SERVER_ERROR",
-        message: "An unexpected error occurred.",
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred.',
       },
       requestId: request?.requestId,
     },
@@ -123,30 +119,23 @@ export function handleError(
     }
   } else if (error instanceof Error) {
     (response.jsonBody as ApiResponse<any>).error = {
-      code: "INTERNAL_SERVER_ERROR",
-      message: "An unexpected internal error occurred.",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'An unexpected internal error occurred.',
     } as any;
   }
 
   // Add stack in development
-  if (process.env.NODE_ENV === "development" && error instanceof Error) {
+  if (process.env.NODE_ENV === 'development' && error instanceof Error) {
     response.jsonBody.stack = error.stack;
   }
 
   // Log the error
   const errorObj = (response.jsonBody as ApiResponse<unknown>).error;
-  let logMsg = "Unknown error";
+  let logMsg = 'Unknown error';
 
-  if (
-    errorObj !== null &&
-    errorObj !== undefined &&
-    typeof errorObj === "object"
-  ) {
+  if (errorObj !== null && errorObj !== undefined && typeof errorObj === 'object') {
     const typedErrorObj = errorObj as Record<string, unknown>;
-    if (
-      "message" in typedErrorObj &&
-      typeof typedErrorObj.message === "string"
-    ) {
+    if ('message' in typedErrorObj && typeof typedErrorObj.message === 'string') {
       logMsg = typedErrorObj.message;
     }
   }
@@ -163,17 +152,15 @@ export function handleError(
 /**
  * Sanitize headers for logging
  */
-function sanitizeHeaders(
-  headers?: Record<string, string>
-): Record<string, string> {
+function sanitizeHeaders(headers?: Record<string, string>): Record<string, string> {
   if (!headers) return {};
 
-  const sensitiveFields = ["authorization", "cookie", "x-api-key"];
+  const sensitiveFields = ['authorization', 'cookie', 'x-api-key'];
   const sanitized: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(headers)) {
     if (sensitiveFields.some((field) => key.toLowerCase().includes(field))) {
-      sanitized[key] = "[REDACTED]";
+      sanitized[key] = '[REDACTED]';
     } else {
       sanitized[key] = value;
     }
@@ -185,10 +172,10 @@ function sanitizeHeaders(
 function isHttpRequest(obj: unknown): obj is HttpRequest {
   return (
     obj !== null &&
-    typeof obj === "object" &&
-    "method" in obj &&
-    "url" in obj &&
-    typeof (obj as { method: unknown }).method === "string" &&
-    typeof (obj as { url: unknown }).url === "string"
+    typeof obj === 'object' &&
+    'method' in obj &&
+    'url' in obj &&
+    typeof (obj as { method: unknown }).method === 'string' &&
+    typeof (obj as { url: unknown }).url === 'string'
   );
 }

@@ -2,7 +2,7 @@
  * Calendar footer with legend and actions
  */
 
-import { memo } from "react";
+import { memo } from 'react';
 
 interface CalendarFooterProps {
   showCreateButton?: boolean;
@@ -31,7 +31,7 @@ export const CalendarFooter = memo(function CalendarFooter({
           </div>
         </div>
 
-        {showCreateButton && userRole === "admin" && (
+        {showCreateButton && userRole === 'admin' && (
           <button className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
             + Create Assignment
           </button>

@@ -1,5 +1,5 @@
-import { injectable } from "tsyringe";
-import { CosmosClient } from "@azure/cosmos";
+import { injectable } from 'tsyringe';
+import { CosmosClient } from '@azure/cosmos';
 
 // Preference data model – will be duplicated in shared types soon
 export interface WeeklyPreference {
@@ -21,8 +21,10 @@ export class PreferenceRepository {
     // NOTE: In-memory fallback until Cosmos connection wired in DatabaseService
     if (process.env.COSMOSDB_CONNECTION_STRING) {
       const client = new CosmosClient(process.env.COSMOSDB_CONNECTION_STRING);
-      const database = client.database(process.env.COSMOSDB_DATABASE || "vcarpool");
-      this.container = database.container(process.env.COSMOSDB_PREFERENCES_CONTAINER || "preferences");
+      const database = client.database(process.env.COSMOSDB_DATABASE || 'vcarpool');
+      this.container = database.container(
+        process.env.COSMOSDB_PREFERENCES_CONTAINER || 'preferences',
+      );
     } else {
       this.container = null;
     }
@@ -34,22 +36,27 @@ export class PreferenceRepository {
   async getByGroupAndWeek(groupId: string, weekStartDate: string): Promise<WeeklyPreference[]> {
     if (!this.container) return [];
     const query = {
-      query: `SELECT * FROM c WHERE c.groupId = @groupId AND c.weekStartDate = @weekStartDate` ,
+      query: `SELECT * FROM c WHERE c.groupId = @groupId AND c.weekStartDate = @weekStartDate`,
       parameters: [
-        { name: "@groupId", value: groupId },
-        { name: "@weekStartDate", value: weekStartDate },
+        { name: '@groupId', value: groupId },
+        { name: '@weekStartDate', value: weekStartDate },
       ],
     };
-    const { resources } = await this.container!.items.query<WeeklyPreference>(query).fetchAll();
+    const { resources } = await this.container.items.query<WeeklyPreference>(query).fetchAll();
     return resources;
   }
 
   /**
    * Upserts (creates or replaces) a list of preferences for a parent.
    */
-  async upsert(parentId: string, groupId: string, weekStartDate: string, prefs: Omit<WeeklyPreference, "id" | "submittedAt">[]): Promise<void> {
+  async upsert(
+    parentId: string,
+    groupId: string,
+    weekStartDate: string,
+    prefs: Omit<WeeklyPreference, 'id' | 'submittedAt'>[],
+  ): Promise<void> {
     if (!this.container) {
-      console.warn("[PreferenceRepository] Cosmos container not initialised – skipping db write");
+      console.warn('[PreferenceRepository] Cosmos container not initialised – skipping db write');
       return;
     }
 
@@ -68,4 +75,4 @@ export class PreferenceRepository {
     const promises = operations.map((item) => this.container!.items.upsert(item));
     await Promise.all(promises);
   }
-} 
+}

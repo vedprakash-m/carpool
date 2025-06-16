@@ -1,8 +1,8 @@
-import { FamilyService } from "./family.service";
-import { UserService } from "./user.service";
-import { TripService } from "./trip.service";
-import { PreferenceService } from "./preference.service";
-import { Family, Preference, Assignment } from "@vcarpool/shared";
+import { FamilyService } from './family.service';
+import { UserService } from './user.service';
+import { TripService } from './trip.service';
+import { PreferenceService } from './preference.service';
+import { Family, Assignment } from '@vcarpool/shared';
 
 // Represents the fairness debt for each family
 interface FairnessMetrics {
@@ -19,12 +19,14 @@ export class SchedulingService {
    */
   public static async generateWeeklySchedule(
     groupId: string,
-    weekStartDate: Date
+    weekStartDate: Date,
   ): Promise<Assignment[]> {
     // 1. Fetch all necessary data
     const families: Family[] = await FamilyService.getFamiliesByGroup(groupId);
-    const preferences: Preference[] =
-      await PreferenceService.getPreferencesForWeek(groupId, weekStartDate);
+    const preferences: any[] = await PreferenceService.getPreferencesForWeek(
+      groupId,
+      weekStartDate,
+    );
     const fairnessMetrics = await this.getFairnessMetrics(groupId);
 
     const assignments: Assignment[] = [];
@@ -40,26 +42,21 @@ export class SchedulingService {
         const pref = preferences.find(
           (p: any) =>
             p.parentId === f.id && // mapping parentId
-            p.date === dayIso
+            p.date === dayIso,
         );
         return !pref || pref.canDrive === false;
       });
 
       const potentialDrivers = families.filter((f: Family) => {
         const pref = preferences.find(
-          (p: Preference) =>
-            p.familyId === f.id &&
-            new Date(p.date).getTime() === currentDate.getTime()
+          (p: any) => p.familyId === f.id && new Date(p.date).getTime() === currentDate.getTime(),
         );
         return pref && pref.canDrive === true;
       });
 
       // 3. Simple initial driver selection logic (to be enhanced with fairness)
       if (potentialDrivers.length > 0) {
-        const driverFamily = this.selectBestDriver(
-          potentialDrivers,
-          fairnessMetrics
-        );
+        const driverFamily = this.selectBestDriver(potentialDrivers, fairnessMetrics);
 
         if (driverFamily) {
           assignments.push({
@@ -70,22 +67,14 @@ export class SchedulingService {
           });
 
           // Update fairness metrics conceptually
-          this.updateFairnessOnAssignment(
-            fairnessMetrics,
-            driverFamily.id,
-            families.length
-          );
+          this.updateFairnessOnAssignment(fairnessMetrics, driverFamily.id, families.length);
         } else {
           // Handle conflict: No driver found
-          console.warn(
-            `No driver found for group ${groupId} on ${currentDate}`
-          );
+          console.warn(`No driver found for group ${groupId} on ${currentDate}`);
         }
       } else {
         // Handle conflict: No potential drivers
-        console.warn(
-          `No potential drivers for group ${groupId} on ${currentDate}`
-        );
+        console.warn(`No potential drivers for group ${groupId} on ${currentDate}`);
       }
     }
 
@@ -101,7 +90,7 @@ export class SchedulingService {
    */
   private static selectBestDriver(
     potentialDrivers: Family[],
-    fairnessMetrics: FairnessMetrics
+    fairnessMetrics: FairnessMetrics,
   ): Family | null {
     if (potentialDrivers.length === 0) return null;
 
@@ -121,7 +110,7 @@ export class SchedulingService {
   private static updateFairnessOnAssignment(
     metrics: FairnessMetrics,
     driverFamilyId: string,
-    totalFamilies: number
+    totalFamilies: number,
   ): void {
     const fairShare = 1 / totalFamilies;
 
@@ -137,9 +126,7 @@ export class SchedulingService {
   /**
    * TODO: Implement logic to fetch or calculate fairness metrics from a persistent store.
    */
-  private static async getFairnessMetrics(
-    groupId: string
-  ): Promise<FairnessMetrics> {
+  private static async getFairnessMetrics(groupId: string): Promise<FairnessMetrics> {
     // For now, returning a dummy object.
     // This should fetch historical driving data and calculate the debt.
     const families = await FamilyService.getFamiliesByGroup(groupId);

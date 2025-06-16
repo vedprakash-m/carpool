@@ -1,6 +1,6 @@
-import { Container, SqlQuerySpec, FeedOptions } from "@azure/cosmos";
-import { logger } from "./logger";
-import { globalCache, CacheKeyGenerator } from "./cache";
+import { Container, SqlQuerySpec, FeedOptions } from '@azure/cosmos';
+import { logger } from './logger';
+import { globalCache, CacheKeyGenerator } from './cache';
 
 /**
  * Query performance metrics
@@ -55,7 +55,7 @@ export class DatabaseQueryOptimizer {
     container: Container,
     querySpec: SqlQuerySpec,
     partitionKey?: string,
-    config: Partial<QueryConfig> = {}
+    config: Partial<QueryConfig> = {},
   ): Promise<T[]> {
     const queryConfig = { ...defaultQueryConfig, ...config };
     const startTime = Date.now();
@@ -67,7 +67,7 @@ export class DatabaseQueryOptimizer {
     if (queryConfig.enableCaching) {
       const cached = globalCache.get(cacheKey);
       if (cached) {
-        logger.debug("Query cache hit", {
+        logger.debug('Query cache hit', {
           query: querySpec.query,
           cacheKey,
           duration: Date.now() - startTime,
@@ -90,7 +90,7 @@ export class DatabaseQueryOptimizer {
     }
 
     try {
-      logger.debug("Executing database query", {
+      logger.debug('Executing database query', {
         query: querySpec.query,
         parameters: querySpec.parameters,
         partitionKey,
@@ -115,7 +115,7 @@ export class DatabaseQueryOptimizer {
 
         // Log metrics for each page if it's expensive
         if (response.requestCharge > this.HIGH_RU_THRESHOLD) {
-          logger.warn("High RU consumption detected", {
+          logger.warn('High RU consumption detected', {
             query: querySpec.query,
             page: pageCount,
             requestCharge: response.requestCharge,
@@ -144,9 +144,9 @@ export class DatabaseQueryOptimizer {
     } catch (error) {
       const duration = Date.now() - startTime;
 
-      logger.error("Database query failed", {
+      logger.error('Database query failed', {
         query: querySpec.query,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
         duration,
         partitionKey,
       });
@@ -162,18 +162,18 @@ export class DatabaseQueryOptimizer {
     container: Container,
     id: string,
     partitionKey: string,
-    cacheTtl = 10 * 60 * 1000 // 10 minutes for point reads
+    cacheTtl = 10 * 60 * 1000, // 10 minutes for point reads
   ): Promise<T | null> {
     const startTime = Date.now();
     const cacheKey = CacheKeyGenerator.withNamespace(
-      "point-read",
-      `${container.id}:${id}:${partitionKey}`
+      'point-read',
+      `${container.id}:${id}:${partitionKey}`,
     );
 
     // Try cache first
     const cached = globalCache.get(cacheKey);
     if (cached) {
-      logger.debug("Point read cache hit", {
+      logger.debug('Point read cache hit', {
         id,
         partitionKey,
         duration: Date.now() - startTime,
@@ -182,19 +182,17 @@ export class DatabaseQueryOptimizer {
     }
 
     try {
-      logger.debug("Executing point read", { id, partitionKey });
+      logger.debug('Executing point read', { id, partitionKey });
 
       // Use type assertion to satisfy ItemDefinition constraint
-      const response = await container
-        .item(id, partitionKey)
-        .read<T & Record<string, any>>();
+      const response = await container.item(id, partitionKey).read<T & Record<string, any>>();
       const duration = Date.now() - startTime;
 
       if (response.resource) {
         // Cache the result
         globalCache.set(cacheKey, response.resource, cacheTtl);
 
-        logger.debug("Point read successful", {
+        logger.debug('Point read successful', {
           id,
           partitionKey,
           requestCharge: response.requestCharge,
@@ -209,7 +207,7 @@ export class DatabaseQueryOptimizer {
       const duration = Date.now() - startTime;
 
       if (error.code === 404) {
-        logger.debug("Point read - document not found", {
+        logger.debug('Point read - document not found', {
           id,
           partitionKey,
           duration,
@@ -217,7 +215,7 @@ export class DatabaseQueryOptimizer {
         return null;
       }
 
-      logger.error("Point read failed", {
+      logger.error('Point read failed', {
         id,
         partitionKey,
         error: error.message,
@@ -234,16 +232,16 @@ export class DatabaseQueryOptimizer {
   static async executeBulkOperation<T>(
     container: Container,
     operations: Array<{
-      operationType: "Create" | "Upsert" | "Replace" | "Delete";
+      operationType: 'Create' | 'Upsert' | 'Replace' | 'Delete';
       resourceBody?: T;
       id?: string;
       partitionKey: string;
-    }>
+    }>,
   ): Promise<void> {
     const startTime = Date.now();
 
     try {
-      logger.debug("Executing bulk operation", {
+      logger.debug('Executing bulk operation', {
         operationCount: operations.length,
         operationTypes: [...new Set(operations.map((op) => op.operationType))],
       });
@@ -257,27 +255,27 @@ export class DatabaseQueryOptimizer {
         };
 
         switch (op.operationType) {
-          case "Create":
+          case 'Create':
             return {
-              operationType: "Create" as const,
+              operationType: 'Create' as const,
               ...baseOperation,
               resourceBody: op.resourceBody,
             };
-          case "Upsert":
+          case 'Upsert':
             return {
-              operationType: "Upsert" as const,
+              operationType: 'Upsert' as const,
               ...baseOperation,
               resourceBody: op.resourceBody,
             };
-          case "Replace":
+          case 'Replace':
             return {
-              operationType: "Replace" as const,
+              operationType: 'Replace' as const,
               ...baseOperation,
               resourceBody: op.resourceBody,
             };
-          case "Delete":
+          case 'Delete':
             return {
-              operationType: "Delete" as const,
+              operationType: 'Delete' as const,
               ...baseOperation,
             };
           default:
@@ -290,13 +288,11 @@ export class DatabaseQueryOptimizer {
       const duration = Date.now() - startTime;
 
       // Analyze results
-      const successful = response.filter(
-        (r) => r.statusCode >= 200 && r.statusCode < 300
-      );
+      const successful = response.filter((r) => r.statusCode >= 200 && r.statusCode < 300);
       const failed = response.filter((r) => r.statusCode >= 400);
 
       if (failed.length > 0) {
-        logger.warn("Bulk operation partially failed", {
+        logger.warn('Bulk operation partially failed', {
           total: operations.length,
           successful: successful.length,
           failed: failed.length,
@@ -307,12 +303,9 @@ export class DatabaseQueryOptimizer {
           duration,
         });
       } else {
-        logger.info("Bulk operation successful", {
+        logger.info('Bulk operation successful', {
           operationCount: operations.length,
-          totalRequestCharge: response.reduce(
-            (sum, r) => sum + (r.requestCharge || 0),
-            0
-          ),
+          totalRequestCharge: response.reduce((sum, r) => sum + (r.requestCharge || 0), 0),
           duration,
         });
       }
@@ -322,9 +315,9 @@ export class DatabaseQueryOptimizer {
     } catch (error) {
       const duration = Date.now() - startTime;
 
-      logger.error("Bulk operation failed", {
+      logger.error('Bulk operation failed', {
         operationCount: operations.length,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
         duration,
       });
 
@@ -339,16 +332,16 @@ export class DatabaseQueryOptimizer {
     baseQuery: string,
     parameters: any[] = [],
     continuationToken?: string,
-    pageSize = 20
+    pageSize = 20,
   ): SqlQuerySpec {
     // Add OFFSET LIMIT for pagination if no continuation token
     const query = baseQuery;
     const queryParameters = [...parameters];
 
-    if (!continuationToken && !query.toLowerCase().includes("offset")) {
+    if (!continuationToken && !query.toLowerCase().includes('offset')) {
       // Note: Cosmos DB recommends using continuation tokens over OFFSET for better performance
       logger.warn(
-        "Using OFFSET for pagination - consider using continuation tokens for better performance"
+        'Using OFFSET for pagination - consider using continuation tokens for better performance',
       );
     }
 
@@ -361,19 +354,16 @@ export class DatabaseQueryOptimizer {
   /**
    * Generate cache key for query
    */
-  private static generateCacheKey(
-    querySpec: SqlQuerySpec,
-    partitionKey?: string
-  ): string {
+  private static generateCacheKey(querySpec: SqlQuerySpec, partitionKey?: string): string {
     const queryHash = Buffer.from(
       JSON.stringify({
         query: querySpec.query,
         parameters: querySpec.parameters,
         partitionKey,
-      })
-    ).toString("base64");
+      }),
+    ).toString('base64');
 
-    return CacheKeyGenerator.withNamespace("query", queryHash);
+    return CacheKeyGenerator.withNamespace('query', queryHash);
   }
 
   /**
@@ -387,17 +377,13 @@ export class DatabaseQueryOptimizer {
       resultCount: number;
       pageCount: number;
       cached: boolean;
-    }
+    },
   ): void {
-    const { duration, totalRequestCharge, resultCount, pageCount, cached } =
-      metrics;
+    const { duration, totalRequestCharge, resultCount, pageCount, cached } = metrics;
 
     // Log as warning if query is slow or expensive
-    if (
-      duration > this.SLOW_QUERY_THRESHOLD ||
-      totalRequestCharge > this.HIGH_RU_THRESHOLD
-    ) {
-      logger.warn("Slow or expensive query detected", {
+    if (duration > this.SLOW_QUERY_THRESHOLD || totalRequestCharge > this.HIGH_RU_THRESHOLD) {
+      logger.warn('Slow or expensive query detected', {
         query: querySpec.query.substring(0, 200), // Truncate long queries
         duration,
         totalRequestCharge,
@@ -407,12 +393,11 @@ export class DatabaseQueryOptimizer {
         performance: {
           isSlowQuery: duration > this.SLOW_QUERY_THRESHOLD,
           isExpensiveQuery: totalRequestCharge > this.HIGH_RU_THRESHOLD,
-          avgRuPerResult:
-            resultCount > 0 ? totalRequestCharge / resultCount : 0,
+          avgRuPerResult: resultCount > 0 ? totalRequestCharge / resultCount : 0,
         },
       });
     } else {
-      logger.debug("Query performance metrics", {
+      logger.debug('Query performance metrics', {
         query: querySpec.query.substring(0, 200),
         duration,
         totalRequestCharge,
@@ -427,7 +412,7 @@ export class DatabaseQueryOptimizer {
    * Invalidate cache entries related to bulk operations
    */
   private static invalidateRelatedCache(
-    operations: Array<{ partitionKey: string; id?: string }>
+    operations: Array<{ partitionKey: string; id?: string }>,
   ): void {
     const cacheKeysToInvalidate = new Set<string>();
 
@@ -435,8 +420,8 @@ export class DatabaseQueryOptimizer {
       // Invalidate specific document cache
       if (operation.id) {
         const pointReadKey = CacheKeyGenerator.withNamespace(
-          "point-read",
-          `*:${operation.id}:${operation.partitionKey}`
+          'point-read',
+          `*:${operation.id}:${operation.partitionKey}`,
         );
         cacheKeysToInvalidate.add(pointReadKey);
       }
@@ -445,10 +430,7 @@ export class DatabaseQueryOptimizer {
       // In a real implementation, you might maintain a more sophisticated cache invalidation strategy
       const relatedKeys = globalCache
         .keys()
-        .filter(
-          (key) =>
-            key.includes(operation.partitionKey) || key.includes("query:")
-        );
+        .filter((key) => key.includes(operation.partitionKey) || key.includes('query:'));
 
       relatedKeys.forEach((key) => cacheKeysToInvalidate.add(key));
     }
@@ -457,7 +439,7 @@ export class DatabaseQueryOptimizer {
     cacheKeysToInvalidate.forEach((key) => globalCache.delete(key));
 
     if (cacheKeysToInvalidate.size > 0) {
-      logger.debug("Cache invalidation completed", {
+      logger.debug('Cache invalidation completed', {
         invalidatedKeys: cacheKeysToInvalidate.size,
       });
     }
@@ -468,7 +450,7 @@ export class DatabaseQueryOptimizer {
  * Query builder utility for common patterns
  */
 export class QueryBuilder {
-  private query: string = "";
+  private query: string = '';
   private parameters: any[] = [];
   private parameterIndex: number = 0;
 
@@ -476,18 +458,18 @@ export class QueryBuilder {
     return new QueryBuilder();
   }
 
-  select(fields: string = "*"): this {
+  select(fields: string = '*'): this {
     this.query = `SELECT ${fields}`;
     return this;
   }
 
   from(container: string, alias?: string): this {
-    this.query += ` FROM ${container}${alias ? ` ${alias}` : ""}`;
+    this.query += ` FROM ${container}${alias ? ` ${alias}` : ''}`;
     return this;
   }
 
   where(condition: string, value?: any): this {
-    if (this.query.includes("WHERE")) {
+    if (this.query.includes('WHERE')) {
       this.query += ` AND ${condition}`;
     } else {
       this.query += ` WHERE ${condition}`;
@@ -495,14 +477,14 @@ export class QueryBuilder {
 
     if (value !== undefined) {
       this.parameters.push({ name: `@param${this.parameterIndex}`, value });
-      this.query = this.query.replace("?", `@param${this.parameterIndex}`);
+      this.query = this.query.replace('?', `@param${this.parameterIndex}`);
       this.parameterIndex++;
     }
 
     return this;
   }
 
-  orderBy(field: string, direction: "ASC" | "DESC" = "ASC"): this {
+  orderBy(field: string, direction: 'ASC' | 'DESC' = 'ASC'): this {
     this.query += ` ORDER BY ${field} ${direction}`;
     return this;
   }

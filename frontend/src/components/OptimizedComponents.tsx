@@ -14,9 +14,9 @@ export function createLazyComponent<T extends ComponentType<any>>(
   fallback?: React.ReactNode
 ) {
   const LazyComponent = lazy(importFunc);
-  
+
   return memo((props: React.ComponentProps<T>) => (
-    <Suspense 
+    <Suspense
       fallback={
         fallback || (
           <div className="flex items-center justify-center p-4">
@@ -37,18 +37,22 @@ export function withPerformanceMonitoring<P extends object>(
   WrappedComponent: ComponentType<P>,
   componentName?: string
 ) {
-  const componentDisplayName = componentName || WrappedComponent.displayName || WrappedComponent.name;
-  
+  const componentDisplayName =
+    componentName || WrappedComponent.displayName || WrappedComponent.name;
+
   const PerformanceMonitoredComponent = memo((props: P) => {
     React.useEffect(() => {
       const startTime = performance.now();
-      
+
       return () => {
         const endTime = performance.now();
         const renderTime = endTime - startTime;
-        
-        if (renderTime > 16) { // Frame budget is ~16ms
-          console.warn(`Slow render detected in ${componentDisplayName}: ${renderTime.toFixed(2)}ms`);
+
+        if (renderTime > 16) {
+          // Frame budget is ~16ms
+          console.warn(
+            `Slow render detected in ${componentDisplayName}: ${renderTime.toFixed(2)}ms`
+          );
         }
       };
     });
@@ -88,16 +92,16 @@ export function VirtualizedList<T>({
   containerHeight,
   renderItem,
   overscan = 5,
-  className = ''
+  className = '',
 }: VirtualizedListProps<T>) {
   const [scrollTop, setScrollTop] = React.useState(0);
-  
+
   const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
   const endIndex = Math.min(
     items.length - 1,
     Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
   );
-  
+
   const visibleItems = items.slice(startIndex, endIndex + 1);
   const totalHeight = items.length * itemHeight;
   const offsetY = startIndex * itemHeight;
@@ -139,76 +143,78 @@ interface OptimizedImageProps {
   onError?: () => void;
 }
 
-export const OptimizedImage = memo(({
-  src,
-  alt,
-  width,
-  height,
-  className = '',
-  placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+',
-  onLoad,
-  onError
-}: OptimizedImageProps) => {
-  const [isLoaded, setIsLoaded] = React.useState(false);
-  const [hasError, setHasError] = React.useState(false);
-  const imgRef = React.useRef<HTMLImageElement>(null);
+export const OptimizedImage = memo(
+  ({
+    src,
+    alt,
+    width,
+    height,
+    className = '',
+    placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+',
+    onLoad,
+    onError,
+  }: OptimizedImageProps) => {
+    const [isLoaded, setIsLoaded] = React.useState(false);
+    const [hasError, setHasError] = React.useState(false);
+    const imgRef = React.useRef<HTMLImageElement>(null);
 
-  const handleLoad = React.useCallback(() => {
-    setIsLoaded(true);
-    onLoad?.();
-  }, [onLoad]);
+    const handleLoad = React.useCallback(() => {
+      setIsLoaded(true);
+      onLoad?.();
+    }, [onLoad]);
 
-  const handleError = React.useCallback(() => {
-    setHasError(true);
-    onError?.();
-  }, [onError]);
+    const handleError = React.useCallback(() => {
+      setHasError(true);
+      onError?.();
+    }, [onError]);
 
-  React.useEffect(() => {
-    const img = imgRef.current;
-    if (!img) return;
+    React.useEffect(() => {
+      const img = imgRef.current;
+      if (!img) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          img.src = src;
-          observer.unobserve(img);
-        }
-      },
-      { threshold: 0.1 }
-    );
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            img.src = src;
+            observer.unobserve(img);
+          }
+        },
+        { threshold: 0.1 }
+      );
 
-    observer.observe(img);
+      observer.observe(img);
 
-    return () => {
-      observer.unobserve(img);
-    };
-  }, [src]);
+      return () => {
+        observer.unobserve(img);
+      };
+    }, [src]);
 
-  if (hasError) {
+    if (hasError) {
+      return (
+        <div
+          className={`bg-gray-200 flex items-center justify-center ${className}`}
+          style={{ width, height }}
+        >
+          <span className="text-gray-500 text-sm">Failed to load image</span>
+        </div>
+      );
+    }
+
     return (
-      <div 
-        className={`bg-gray-200 flex items-center justify-center ${className}`}
-        style={{ width, height }}
-      >
-        <span className="text-gray-500 text-sm">Failed to load image</span>
-      </div>
+      <img
+        ref={imgRef}
+        alt={alt}
+        width={width}
+        height={height}
+        className={`transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+        src={placeholder}
+        onLoad={handleLoad}
+        onError={handleError}
+        loading="lazy"
+      />
     );
   }
-
-  return (
-    <img
-      ref={imgRef}
-      alt={alt}
-      width={width}
-      height={height}
-      className={`transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
-      src={placeholder}
-      onLoad={handleLoad}
-      onError={handleError}
-      loading="lazy"
-    />
-  );
-});
+);
 
 OptimizedImage.displayName = 'OptimizedImage';
 
@@ -217,16 +223,25 @@ OptimizedImage.displayName = 'OptimizedImage';
  */
 interface PerformanceErrorBoundaryProps {
   children: React.ReactNode;
-  fallback?: React.ComponentType<{ error: Error; resetErrorBoundary: () => void }>;
+  fallback?: React.ComponentType<{
+    error: Error;
+    resetErrorBoundary: () => void;
+  }>;
   onError?: (error: Error, errorInfo: any) => void;
 }
 
 export function PerformanceErrorBoundary({
   children,
   fallback: Fallback,
-  onError
+  onError,
 }: PerformanceErrorBoundaryProps) {
-  const DefaultFallback = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => (
+  const DefaultFallback = ({
+    error,
+    resetErrorBoundary,
+  }: {
+    error: Error;
+    resetErrorBoundary: () => void;
+  }) => (
     <div className="p-4 border border-red-200 rounded-lg bg-red-50">
       <h2 className="text-red-800 font-semibold mb-2">Something went wrong</h2>
       <p className="text-red-600 text-sm mb-4">{error.message}</p>
@@ -294,37 +309,43 @@ export function OptimizedForm({
   children,
   onSubmit,
   validation,
-  debounceMs = 300
+  debounceMs = 300,
 }: OptimizedFormProps) {
   const [values, setValues] = React.useState<Record<string, any>>({});
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const validationTimeoutRef = React.useRef<NodeJS.Timeout>();
 
-  const handleValueChange = React.useCallback((name: string, value: any) => {
-    setValues(prev => ({ ...prev, [name]: value }));
+  const handleValueChange = React.useCallback(
+    (name: string, value: any) => {
+      setValues(prev => ({ ...prev, [name]: value }));
 
-    if (validation) {
-      clearTimeout(validationTimeoutRef.current);
-      validationTimeoutRef.current = setTimeout(() => {
-        const newErrors = validation({ ...values, [name]: value });
-        setErrors(newErrors);
-      }, debounceMs);
-    }
-  }, [values, validation, debounceMs]);
-
-  const handleSubmit = React.useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (validation) {
-      const validationErrors = validation(values);
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
+      if (validation) {
+        clearTimeout(validationTimeoutRef.current);
+        validationTimeoutRef.current = setTimeout(() => {
+          const newErrors = validation({ ...values, [name]: value });
+          setErrors(newErrors);
+        }, debounceMs);
       }
-    }
+    },
+    [values, validation, debounceMs]
+  );
 
-    onSubmit(values);
-  }, [values, validation, onSubmit]);
+  const handleSubmit = React.useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (validation) {
+        const validationErrors = validation(values);
+        if (Object.keys(validationErrors).length > 0) {
+          setErrors(validationErrors);
+          return;
+        }
+      }
+
+      onSubmit(values);
+    },
+    [values, validation, onSubmit]
+  );
 
   return (
     <form onSubmit={handleSubmit}>
@@ -332,9 +353,9 @@ export function OptimizedForm({
         if (React.isValidElement(child) && child.props.name) {
           return React.cloneElement(child as React.ReactElement<any>, {
             value: values[child.props.name] || '',
-            onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
               handleValueChange(child.props.name, e.target.value),
-            error: errors[child.props.name]
+            error: errors[child.props.name],
           });
         }
         return child;

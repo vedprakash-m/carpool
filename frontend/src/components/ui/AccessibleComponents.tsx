@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
 /**
  * Accessible UI Components
  * WCAG 2.1 AA compliant components for VCarpool
  */
 
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import {
   useAccessibility,
   useFocusManagement,
-} from "../../services/accessibility.service";
+} from '../../services/accessibility.service';
 
 // Skip Link Component
 export function SkipLink({
   targetId,
-  children = "Skip to main content",
+  children = 'Skip to main content',
 }: {
   targetId: string;
   children?: React.ReactNode;
@@ -23,8 +23,8 @@ export function SkipLink({
     <a
       href={`#${targetId}`}
       className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md focus:shadow-lg transition-all"
-      onFocus={(e) => {
-        e.currentTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+      onFocus={e => {
+        e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }}
     >
       {children}
@@ -46,7 +46,7 @@ export function AccessibleModal({
   onClose,
   title,
   children,
-  className = "",
+  className = '',
 }: ModalProps) {
   const { trapFocus } = useAccessibility();
   const { saveFocus, restoreFocus } = useFocusManagement();
@@ -61,11 +61,11 @@ export function AccessibleModal({
       const cleanup = modalRef.current ? trapFocus(modalRef.current) : null;
 
       // Prevent body scroll
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
 
       return () => {
         cleanup?.();
-        document.body.style.overflow = "";
+        document.body.style.overflow = '';
         restoreFocus();
       };
     }
@@ -74,13 +74,13 @@ export function AccessibleModal({
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (e.key === 'Escape' && isOpen) {
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -128,15 +128,15 @@ export function AccessibleModal({
 interface DropdownProps {
   trigger: React.ReactNode;
   children: React.ReactNode;
-  align?: "left" | "right";
+  align?: 'left' | 'right';
   className?: string;
 }
 
 export function AccessibleDropdown({
   trigger,
   children,
-  align = "left",
-  className = "",
+  align = 'left',
+  className = '',
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { trapFocus } = useAccessibility();
@@ -154,14 +154,14 @@ export function AccessibleDropdown({
   }, [isOpen, trapFocus]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       setIsOpen(false);
     }
   };
 
   useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -169,8 +169,8 @@ export function AccessibleDropdown({
       <div
         id={triggerId}
         onClick={() => setIsOpen(!isOpen)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             setIsOpen(!isOpen);
           }
@@ -189,7 +189,7 @@ export function AccessibleDropdown({
           ref={dropdownRef}
           id={menuId}
           className={`absolute z-10 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 ${
-            align === "right" ? "right-0" : "left-0"
+            align === 'right' ? 'right-0' : 'left-0'
           }`}
           role="menu"
           aria-labelledby={triggerId}
@@ -206,10 +206,10 @@ export function AccessibleDropdown({
 // Live Region for Announcements
 export function LiveRegion({
   message,
-  priority = "polite",
+  priority = 'polite',
 }: {
   message: string;
-  priority?: "polite" | "assertive";
+  priority?: 'polite' | 'assertive';
 }) {
   return (
     <div aria-live={priority} aria-atomic="true" className="sr-only">
@@ -238,7 +238,7 @@ export function FormField({
 }: FormFieldProps) {
   const errorId = error ? `${id}-error` : undefined;
   const descId = description ? `${id}-description` : undefined;
-  const describedBy = [errorId, descId].filter(Boolean).join(" ");
+  const describedBy = [errorId, descId].filter(Boolean).join(' ');
 
   return (
     <div className="space-y-1">
@@ -260,9 +260,9 @@ export function FormField({
       <div>
         {React.cloneElement(children as React.ReactElement, {
           id,
-          "aria-describedby": describedBy || undefined,
-          "aria-invalid": error ? "true" : undefined,
-          "aria-required": required,
+          'aria-describedby': describedBy || undefined,
+          'aria-invalid': error ? 'true' : undefined,
+          'aria-required': required,
         })}
       </div>
 
@@ -294,7 +294,7 @@ export function AccessibleProgress({
   max = 100,
   label,
   showPercentage = true,
-  className = "",
+  className = '',
 }: ProgressProps) {
   const percentage = Math.round((value / max) * 100);
 
@@ -325,7 +325,7 @@ export function AccessibleProgress({
 // Accessible Toast Notification
 interface ToastProps {
   message: string;
-  type?: "success" | "error" | "warning" | "info";
+  type?: 'success' | 'error' | 'warning' | 'info';
   onClose: () => void;
   autoClose?: boolean;
   duration?: number;
@@ -333,7 +333,7 @@ interface ToastProps {
 
 export function AccessibleToast({
   message,
-  type = "info",
+  type = 'info',
   onClose,
   autoClose = true,
   duration = 5000,
@@ -342,7 +342,7 @@ export function AccessibleToast({
 
   useEffect(() => {
     // Announce to screen readers
-    const priority = type === "error" ? "assertive" : "polite";
+    const priority = type === 'error' ? 'assertive' : 'polite';
     announceLive(message, priority);
 
     if (autoClose) {
@@ -352,24 +352,24 @@ export function AccessibleToast({
   }, [message, type, onClose, autoClose, duration, announceLive]);
 
   const typeStyles = {
-    success: "bg-green-50 border-green-200 text-green-800",
-    error: "bg-red-50 border-red-200 text-red-800",
-    warning: "bg-yellow-50 border-yellow-200 text-yellow-800",
-    info: "bg-blue-50 border-blue-200 text-blue-800",
+    success: 'bg-green-50 border-green-200 text-green-800',
+    error: 'bg-red-50 border-red-200 text-red-800',
+    warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+    info: 'bg-blue-50 border-blue-200 text-blue-800',
   };
 
   const typeIcons = {
-    success: "✓",
-    error: "✕",
-    warning: "⚠",
-    info: "ℹ",
+    success: '✓',
+    error: '✕',
+    warning: '⚠',
+    info: 'ℹ',
   };
 
   return (
     <div
       className={`fixed top-4 right-4 max-w-sm w-full border rounded-lg p-4 shadow-lg z-50 ${typeStyles[type]}`}
-      role={type === "error" ? "alert" : "status"}
-      aria-live={type === "error" ? "assertive" : "polite"}
+      role={type === 'error' ? 'alert' : 'status'}
+      aria-live={type === 'error' ? 'assertive' : 'polite'}
     >
       <div className="flex items-start">
         <div className="flex-shrink-0">
@@ -397,13 +397,13 @@ export function AccessibleToast({
 }
 
 // High Contrast Toggle
-export function HighContrastToggle({ className = "" }: { className?: string }) {
+export function HighContrastToggle({ className = '' }: { className?: string }) {
   const [highContrast, setHighContrast] = useState(false);
   const { announceLive } = useAccessibility();
 
   useEffect(() => {
     const isHighContrast =
-      document.documentElement.classList.contains("high-contrast");
+      document.documentElement.classList.contains('high-contrast');
     setHighContrast(isHighContrast);
   }, []);
 
@@ -412,11 +412,11 @@ export function HighContrastToggle({ className = "" }: { className?: string }) {
     setHighContrast(newState);
 
     if (newState) {
-      document.documentElement.classList.add("high-contrast");
-      announceLive("High contrast mode enabled");
+      document.documentElement.classList.add('high-contrast');
+      announceLive('High contrast mode enabled');
     } else {
-      document.documentElement.classList.remove("high-contrast");
-      announceLive("High contrast mode disabled");
+      document.documentElement.classList.remove('high-contrast');
+      announceLive('High contrast mode disabled');
     }
   };
 
@@ -425,7 +425,7 @@ export function HighContrastToggle({ className = "" }: { className?: string }) {
       onClick={toggleHighContrast}
       className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${className}`}
       aria-pressed={highContrast}
-      aria-label={`${highContrast ? "Disable" : "Enable"} high contrast mode`}
+      aria-label={`${highContrast ? 'Disable' : 'Enable'} high contrast mode`}
     >
       <svg
         className="w-4 h-4 mr-2"

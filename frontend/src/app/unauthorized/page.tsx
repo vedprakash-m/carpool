@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function UnauthorizedPage() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function UnauthorizedPage() {
             <Button variant="outline" onClick={() => router.back()}>
               Go Back
             </Button>
-            <Button onClick={() => router.push("/")}>Go to Home</Button>
+            <Button onClick={() => router.push('/')}>Go to Home</Button>
           </div>
         </CardContent>
       </Card>

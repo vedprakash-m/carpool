@@ -16,25 +16,25 @@ export interface ErrorReport {
   message: string;
   stack?: string;
   type: string;
-  severity: "low" | "medium" | "high" | "critical";
+  severity: 'low' | 'medium' | 'high' | 'critical';
   context: ErrorInfo;
 }
 
 export class AppError extends Error {
   public readonly code: string;
-  public readonly severity: "low" | "medium" | "high" | "critical";
+  public readonly severity: 'low' | 'medium' | 'high' | 'critical';
   public readonly isRetryable: boolean;
   public readonly details?: Record<string, unknown>;
 
   constructor(
     message: string,
-    code: string = "UNKNOWN_ERROR",
-    severity: "low" | "medium" | "high" | "critical" = "medium",
+    code: string = 'UNKNOWN_ERROR',
+    severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',
     isRetryable: boolean = false,
     details?: Record<string, unknown>
   ) {
     super(message);
-    this.name = "AppError";
+    this.name = 'AppError';
     this.code = code;
     this.severity = severity;
     this.isRetryable = isRetryable;
@@ -44,32 +44,32 @@ export class AppError extends Error {
 
 export class NetworkError extends AppError {
   constructor(
-    message: string = "Network request failed",
+    message: string = 'Network request failed',
     details?: Record<string, unknown>
   ) {
-    super(message, "NETWORK_ERROR", "high", true, details);
-    this.name = "NetworkError";
+    super(message, 'NETWORK_ERROR', 'high', true, details);
+    this.name = 'NetworkError';
   }
 }
 
 export class ValidationError extends AppError {
   constructor(message: string, field?: string) {
-    super(message, "VALIDATION_ERROR", "medium", false, { field });
-    this.name = "ValidationError";
+    super(message, 'VALIDATION_ERROR', 'medium', false, { field });
+    this.name = 'ValidationError';
   }
 }
 
 export class AuthenticationError extends AppError {
-  constructor(message: string = "Authentication failed") {
-    super(message, "AUTH_ERROR", "high", false);
-    this.name = "AuthenticationError";
+  constructor(message: string = 'Authentication failed') {
+    super(message, 'AUTH_ERROR', 'high', false);
+    this.name = 'AuthenticationError';
   }
 }
 
 export class AuthorizationError extends AppError {
-  constructor(message: string = "Access denied") {
-    super(message, "AUTHORIZATION_ERROR", "high", false);
-    this.name = "AuthorizationError";
+  constructor(message: string = 'Access denied') {
+    super(message, 'AUTHORIZATION_ERROR', 'high', false);
+    this.name = 'AuthorizationError';
   }
 }
 
@@ -86,12 +86,12 @@ export interface ErrorReportingService {
 class ConsoleErrorReporting implements ErrorReportingService {
   async reportError(error: ErrorReport): Promise<void> {
     console.group(`🚨 Error Report [${error.severity.toUpperCase()}]`);
-    console.error("Message:", error.message);
-    console.error("Type:", error.type);
-    console.error("Code:", (error as any).code || "N/A");
-    console.error("Context:", error.context);
+    console.error('Message:', error.message);
+    console.error('Type:', error.type);
+    console.error('Code:', (error as any).code || 'N/A');
+    console.error('Context:', error.context);
     if (error.stack) {
-      console.error("Stack:", error.stack);
+      console.error('Stack:', error.stack);
     }
     console.groupEnd();
   }
@@ -104,12 +104,12 @@ class ProductionErrorReporting implements ErrorReportingService {
   async reportError(error: ErrorReport): Promise<void> {
     try {
       // TODO: Implement integration with Application Insights or similar
-      console.warn("Production error reporting not yet implemented");
+      console.warn('Production error reporting not yet implemented');
 
       // For now, still log to console in production but less verbose
       console.error(`${error.type}: ${error.message}`);
     } catch (reportingError) {
-      console.error("Failed to report error:", reportingError);
+      console.error('Failed to report error:', reportingError);
     }
   }
 }
@@ -123,7 +123,7 @@ class ErrorHandler {
 
   private constructor() {
     this.errorReporting =
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? new ProductionErrorReporting()
         : new ConsoleErrorReporting();
   }
@@ -156,8 +156,8 @@ class ErrorHandler {
     const baseContext: ErrorInfo = {
       timestamp: new Date().toISOString(),
       userAgent:
-        typeof window !== "undefined" ? window.navigator.userAgent : "SSR",
-      url: typeof window !== "undefined" ? window.location.href : "SSR",
+        typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR',
+      url: typeof window !== 'undefined' ? window.location.href : 'SSR',
       ...context,
     };
 
@@ -176,15 +176,15 @@ class ErrorHandler {
         message: error.message,
         stack: error.stack,
         type: error.name,
-        severity: "medium",
+        severity: 'medium',
         context: baseContext,
       };
     }
 
     return {
       message: String(error),
-      type: "UnknownError",
-      severity: "medium",
+      type: 'UnknownError',
+      severity: 'medium',
       context: baseContext,
     };
   }
@@ -211,14 +211,14 @@ class ErrorHandler {
 
         if (attempt === maxRetries) {
           await this.handleError(error, {
-            errorBoundary: "RetryOperation",
+            errorBoundary: 'RetryOperation',
             componentStack: `Final attempt ${attempt}/${maxRetries}`,
           });
           throw error;
         }
 
         // Wait before retry
-        await new Promise((resolve) => setTimeout(resolve, delayMs * attempt));
+        await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
       }
     }
 
@@ -271,15 +271,15 @@ export function safeSync<T>(
  */
 export function getUserFriendlyMessage(error: unknown): string {
   if (error instanceof NetworkError) {
-    return "Unable to connect to the server. Please check your internet connection and try again.";
+    return 'Unable to connect to the server. Please check your internet connection and try again.';
   }
 
   if (error instanceof AuthenticationError) {
-    return "Your session has expired. Please log in again.";
+    return 'Your session has expired. Please log in again.';
   }
 
   if (error instanceof AuthorizationError) {
-    return "You do not have permission to perform this action.";
+    return 'You do not have permission to perform this action.';
   }
 
   if (error instanceof ValidationError) {
@@ -292,10 +292,10 @@ export function getUserFriendlyMessage(error: unknown): string {
 
   if (error instanceof Error) {
     // Generic fallback for unknown errors
-    return "An unexpected error occurred. Please try again or contact support if the problem persists.";
+    return 'An unexpected error occurred. Please try again or contact support if the problem persists.';
   }
 
-  return "An unknown error occurred. Please try again.";
+  return 'An unknown error occurred. Please try again.';
 }
 
 /**

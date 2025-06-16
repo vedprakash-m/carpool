@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 export interface MakeupOption {
   id: string;
   proposedDate: string;
   proposedTime: string;
-  makeupType: "extra_week" | "split_weeks" | "weekend_trip";
+  makeupType: 'extra_week' | 'split_weeks' | 'weekend_trip';
   tripsToMakeup: number;
-  status: "proposed" | "approved" | "rejected" | "completed";
+  status: 'proposed' | 'approved' | 'rejected' | 'completed';
   notes?: string;
   adminNotes?: string;
   createdAt: string;
@@ -49,7 +49,7 @@ export interface TravelingParentDashboardData {
 export interface MakeupProposal {
   proposedDate: string;
   proposedTime: string;
-  makeupType: "extra_week" | "split_weeks" | "weekend_trip";
+  makeupType: 'extra_week' | 'split_weeks' | 'weekend_trip';
   tripsToMakeup: number;
   notes: string;
 }
@@ -65,17 +65,17 @@ export function useTravelingParentData() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch("/api/traveling-parent/dashboard");
+      const response = await fetch('/api/traveling-parent/dashboard');
       const data = await response.json();
 
       if (data.success) {
         setDashboardData(data.data);
       } else {
-        setError(data.error || "Failed to load dashboard");
+        setError(data.error || 'Failed to load dashboard');
       }
     } catch (err) {
-      setError("Network error loading dashboard");
-      console.error("Dashboard fetch error:", err);
+      setError('Network error loading dashboard');
+      console.error('Dashboard fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -83,10 +83,10 @@ export function useTravelingParentData() {
 
   const submitMakeupProposal = async (proposal: MakeupProposal) => {
     try {
-      const response = await fetch("/api/traveling-parent/makeup", {
-        method: "POST",
+      const response = await fetch('/api/traveling-parent/makeup', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           makeupProposal: {
@@ -105,12 +105,12 @@ export function useTravelingParentData() {
       } else {
         return {
           success: false,
-          error: data.error || "Failed to submit proposal",
+          error: data.error || 'Failed to submit proposal',
         };
       }
     } catch (err) {
-      console.error("Proposal submission error:", err);
-      return { success: false, error: "Network error submitting proposal" };
+      console.error('Proposal submission error:', err);
+      return { success: false, error: 'Network error submitting proposal' };
     }
   };
 
@@ -119,7 +119,7 @@ export function useTravelingParentData() {
       const response = await fetch(
         `/api/traveling-parent/makeup/${proposalId}`,
         {
-          method: "DELETE",
+          method: 'DELETE',
         }
       );
 
@@ -131,12 +131,12 @@ export function useTravelingParentData() {
       } else {
         return {
           success: false,
-          error: data.error || "Failed to delete proposal",
+          error: data.error || 'Failed to delete proposal',
         };
       }
     } catch (err) {
-      console.error("Proposal deletion error:", err);
-      return { success: false, error: "Network error deleting proposal" };
+      console.error('Proposal deletion error:', err);
+      return { success: false, error: 'Network error deleting proposal' };
     }
   };
 

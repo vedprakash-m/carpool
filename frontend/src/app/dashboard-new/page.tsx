@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useTripStore } from "@/store/trip.store";
+import { useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useTripStore } from '@/store/trip.store';
 
 // Heroicons components
 function CalendarIcon({ className }: { className?: string }) {

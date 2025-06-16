@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   CalendarIcon,
@@ -11,8 +11,8 @@ import {
   ClockIcon,
   UserGroupIcon,
   BellAlertIcon,
-} from "@heroicons/react/24/outline";
-import { FC } from "react";
+} from '@heroicons/react/24/outline';
+import { FC } from 'react';
 
 // Mock data structures
 interface TodayAssignment {
@@ -39,18 +39,18 @@ interface UpcomingDeadline {
 // Mock Data
 const todayAssignments: TodayAssignment[] = [
   {
-    childName: "Emma (2nd)",
-    groupName: "Lincoln Elementary Morning Riders",
+    childName: 'Emma (2nd)',
+    groupName: 'Lincoln Elementary Morning Riders',
     isDriving: true,
-    pickupTime: "7:45 AM",
-    details: "in 35 min | 3 kids total",
+    pickupTime: '7:45 AM',
+    details: 'in 35 min | 3 kids total',
   },
   {
-    childName: "Tommy (5th)",
-    groupName: "Lincoln Afternoon Club",
+    childName: 'Tommy (5th)',
+    groupName: 'Lincoln Afternoon Club',
     isDriving: false,
-    pickupTime: "4:00 PM",
-    details: "Mike is driving",
+    pickupTime: '4:00 PM',
+    details: 'Mike is driving',
   },
 ];
 
@@ -63,14 +63,14 @@ const familyStats: FamilyStats = {
 
 const upcomingDeadlines: UpcomingDeadline[] = [
   {
-    id: "1",
+    id: '1',
     text: "Submit Emma's preferences",
-    dueDate: "Due Sat 10 PM",
+    dueDate: 'Due Sat 10 PM',
   },
   {
-    id: "2",
+    id: '2',
     text: "Tommy's group swap response needed",
-    dueDate: "Due Sun 5 PM",
+    dueDate: 'Due Sun 5 PM',
   },
 ];
 
@@ -100,15 +100,15 @@ const UnifiedFamilyDashboard: FC = () => {
                   key={index}
                   className={`p-4 rounded-lg shadow-sm border-l-4 ${
                     assignment.isDriving
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-green-500 bg-green-50"
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-green-500 bg-green-50'
                   }`}
                 >
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="font-bold text-gray-900">
-                        {assignment.isDriving ? "🚗" : "👥"}{" "}
-                        {assignment.childName} -{" "}
+                        {assignment.isDriving ? '🚗' : '👥'}{' '}
+                        {assignment.childName} -{' '}
                         {assignment.isDriving
                           ? "You're driving"
                           : "You're a passenger"}
@@ -145,7 +145,7 @@ const UnifiedFamilyDashboard: FC = () => {
             </h2>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <ul className="divide-y divide-gray-200">
-                {upcomingDeadlines.map((deadline) => (
+                {upcomingDeadlines.map(deadline => (
                   <li
                     key={deadline.id}
                     className="py-3 flex justify-between items-center"

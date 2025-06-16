@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 import {
   UserGroupIcon,
   AcademicCapIcon,
@@ -14,7 +14,7 @@ import {
   XMarkIcon,
   EnvelopeIcon,
   PhoneIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface CarpoolGroup {
   id: string;
@@ -25,7 +25,7 @@ interface CarpoolGroup {
   dropoffLocation: string;
   maxMembers: number;
   currentMembers: number;
-  status: "active" | "pending" | "inactive";
+  status: 'active' | 'pending' | 'inactive';
   schedule: {
     days: string[];
     startTime: string;
@@ -33,7 +33,7 @@ interface CarpoolGroup {
   };
   createdAt: string;
   members: GroupMember[];
-  userRole?: "member" | "invited" | "none";
+  userRole?: 'member' | 'invited' | 'none';
   invitationId?: string;
 }
 
@@ -42,7 +42,7 @@ interface GroupMember {
   userId: string;
   name: string;
   email: string;
-  role: "parent" | "student";
+  role: 'parent' | 'student';
   joinedAt: string;
   children?: {
     id: string;
@@ -60,23 +60,23 @@ export default function ParentGroupsPage() {
   const [isLoading_groups, setIsLoading_groups] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showDepartureModal, setShowDepartureModal] = useState(false);
-  const [departureReason, setDepartureReason] = useState("");
+  const [departureReason, setDepartureReason] = useState('');
 
   const [message, setMessage] = useState<{
-    type: "success" | "error" | "info";
+    type: 'success' | 'error' | 'info';
     text: string;
   } | null>(null);
 
   // Auth guard
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "parent")) {
-      router.push("/dashboard");
+    if (!isLoading && (!user || user.role !== 'parent')) {
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
   // Load groups
   useEffect(() => {
-    if (user?.role === "parent") {
+    if (user?.role === 'parent') {
       loadGroups();
     }
   }, [user]);
@@ -87,85 +87,85 @@ export default function ParentGroupsPage() {
       // For now, use mock data - in production this would call the API
       const mockGroups: CarpoolGroup[] = [
         {
-          id: "group-1",
-          name: "Lincoln Elementary Morning Carpool",
+          id: 'group-1',
+          name: 'Lincoln Elementary Morning Carpool',
           description:
-            "Daily morning drop-off carpool for Lincoln Elementary School",
-          school: "Lincoln Elementary School",
-          pickupLocation: "Maple Street Neighborhood",
-          dropoffLocation: "Lincoln Elementary School",
+            'Daily morning drop-off carpool for Lincoln Elementary School',
+          school: 'Lincoln Elementary School',
+          pickupLocation: 'Maple Street Neighborhood',
+          dropoffLocation: 'Lincoln Elementary School',
           maxMembers: 8,
           currentMembers: 5,
-          status: "active",
+          status: 'active',
           schedule: {
-            days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            startTime: "07:30",
-            endTime: "08:30",
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            startTime: '07:30',
+            endTime: '08:30',
           },
-          createdAt: "2025-01-01T00:00:00Z",
+          createdAt: '2025-01-01T00:00:00Z',
           members: [
             {
-              id: "member-1",
-              userId: user?.id || "",
+              id: 'member-1',
+              userId: user?.id || '',
               name: `${user?.firstName} ${user?.lastName}`,
-              email: user?.email || "",
-              role: "parent",
-              joinedAt: "2025-01-01T00:00:00Z",
+              email: user?.email || '',
+              role: 'parent',
+              joinedAt: '2025-01-01T00:00:00Z',
               children: [
-                { id: "child-1", name: "Emma Johnson", grade: "3rd" },
-                { id: "child-2", name: "Jake Johnson", grade: "1st" },
+                { id: 'child-1', name: 'Emma Johnson', grade: '3rd' },
+                { id: 'child-2', name: 'Jake Johnson', grade: '1st' },
               ],
             },
             {
-              id: "member-2",
-              userId: "parent-2",
-              name: "Michael Chen",
-              email: "m.chen@example.com",
-              role: "parent",
-              joinedAt: "2025-01-02T00:00:00Z",
-              children: [{ id: "child-3", name: "Lucas Chen", grade: "2nd" }],
+              id: 'member-2',
+              userId: 'parent-2',
+              name: 'Michael Chen',
+              email: 'm.chen@example.com',
+              role: 'parent',
+              joinedAt: '2025-01-02T00:00:00Z',
+              children: [{ id: 'child-3', name: 'Lucas Chen', grade: '2nd' }],
             },
           ],
-          userRole: "member",
+          userRole: 'member',
         },
         {
-          id: "group-2",
-          name: "Lincoln Elementary Afternoon Pickup",
+          id: 'group-2',
+          name: 'Lincoln Elementary Afternoon Pickup',
           description:
-            "Daily afternoon pickup carpool for Lincoln Elementary School",
-          school: "Lincoln Elementary School",
-          pickupLocation: "Lincoln Elementary School",
-          dropoffLocation: "Oak Avenue Neighborhood",
+            'Daily afternoon pickup carpool for Lincoln Elementary School',
+          school: 'Lincoln Elementary School',
+          pickupLocation: 'Lincoln Elementary School',
+          dropoffLocation: 'Oak Avenue Neighborhood',
           maxMembers: 6,
           currentMembers: 3,
-          status: "active",
+          status: 'active',
           schedule: {
-            days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            startTime: "15:00",
-            endTime: "16:00",
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            startTime: '15:00',
+            endTime: '16:00',
           },
-          createdAt: "2025-01-02T00:00:00Z",
+          createdAt: '2025-01-02T00:00:00Z',
           members: [
             {
-              id: "member-3",
-              userId: "parent-3",
-              name: "Jennifer Davis",
-              email: "j.davis@example.com",
-              role: "parent",
-              joinedAt: "2025-01-02T00:00:00Z",
-              children: [{ id: "child-4", name: "Sophie Davis", grade: "4th" }],
+              id: 'member-3',
+              userId: 'parent-3',
+              name: 'Jennifer Davis',
+              email: 'j.davis@example.com',
+              role: 'parent',
+              joinedAt: '2025-01-02T00:00:00Z',
+              children: [{ id: 'child-4', name: 'Sophie Davis', grade: '4th' }],
             },
           ],
-          userRole: "invited",
-          invitationId: "invite-123",
+          userRole: 'invited',
+          invitationId: 'invite-123',
         },
       ];
       setGroups(mockGroups);
     } catch (error) {
-      console.error("Error loading groups:", error);
+      console.error('Error loading groups:', error);
       setMessage({
-        type: "error",
-        text: "Failed to load carpool groups",
+        type: 'error',
+        text: 'Failed to load carpool groups',
       });
     } finally {
       setIsLoading_groups(false);
@@ -179,24 +179,24 @@ export default function ParentGroupsPage() {
     setIsProcessing(true);
     try {
       // In production, this would call the API
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
 
       // Update the group status
-      setGroups((prev) =>
-        prev.map((group) =>
+      setGroups(prev =>
+        prev.map(group =>
           group.id === groupId
             ? {
                 ...group,
-                userRole: "member",
+                userRole: 'member',
                 currentMembers: group.currentMembers + 1,
                 members: [
                   ...group.members,
                   {
                     id: `member-${Date.now()}`,
-                    userId: user?.id || "",
+                    userId: user?.id || '',
                     name: `${user?.firstName} ${user?.lastName}`,
-                    email: user?.email || "",
-                    role: "parent" as const,
+                    email: user?.email || '',
+                    role: 'parent' as const,
                     joinedAt: new Date().toISOString(),
                   },
                 ],
@@ -206,13 +206,13 @@ export default function ParentGroupsPage() {
       );
 
       setMessage({
-        type: "success",
-        text: "🎉 Successfully joined the carpool group!",
+        type: 'success',
+        text: '🎉 Successfully joined the carpool group!',
       });
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Failed to accept invitation. Please try again.",
+        type: 'error',
+        text: 'Failed to accept invitation. Please try again.',
       });
     } finally {
       setIsProcessing(false);
@@ -226,19 +226,19 @@ export default function ParentGroupsPage() {
     setIsProcessing(true);
     try {
       // In production, this would call the API
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
 
       // Remove the group from the list
-      setGroups((prev) => prev.filter((group) => group.id !== groupId));
+      setGroups(prev => prev.filter(group => group.id !== groupId));
 
       setMessage({
-        type: "info",
-        text: "Invitation declined.",
+        type: 'info',
+        text: 'Invitation declined.',
       });
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Failed to decline invitation. Please try again.",
+        type: 'error',
+        text: 'Failed to decline invitation. Please try again.',
       });
     } finally {
       setIsProcessing(false);
@@ -250,20 +250,20 @@ export default function ParentGroupsPage() {
     try {
       // In a real app, this would be an API call
       const mockDeparture = {
-        departedMembers: ["John Parent", "Emma Parent", "Second Parent"].map(
-          (name) => ({ name })
+        departedMembers: ['John Parent', 'Emma Parent', 'Second Parent'].map(
+          name => ({ name })
         ),
       };
       // Simulate success
       setMessage({
-        type: "success",
+        type: 'success',
         text: `Family departure completed. ${mockDeparture.departedMembers.length} family members removed from "${group.name}". Group Admin has been notified.`,
       });
       // Here you would also update the group state or refetch data
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error processing family departure. Please try again.",
+        type: 'error',
+        text: 'Error processing family departure. Please try again.',
       });
     } finally {
       setIsProcessing(false);
@@ -283,29 +283,29 @@ export default function ParentGroupsPage() {
     console.log(
       `Departing from group ${selectedGroup.id} for reason: ${departureReason}`
     );
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    setGroups(groups.filter((g) => g.id !== selectedGroup.id));
+    setGroups(groups.filter(g => g.id !== selectedGroup.id));
     setShowDepartureModal(false);
     setSelectedGroup(null);
     setIsProcessing(false);
 
     setMessage({
-      type: "success",
-      text: "You have successfully left the group.",
+      type: 'success',
+      text: 'You have successfully left the group.',
     });
   };
 
   const getStatusBadge = (userRole: string | undefined) => {
     switch (userRole) {
-      case "member":
+      case 'member':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
             <CheckCircleIcon className="w-3 h-3 mr-1" />
             Member
           </span>
         );
-      case "invited":
+      case 'invited':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
             <ClockIcon className="w-3 h-3 mr-1" />
@@ -325,7 +325,7 @@ export default function ParentGroupsPage() {
     );
   }
 
-  if (!user || user.role !== "parent") {
+  if (!user || user.role !== 'parent') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -340,8 +340,8 @@ export default function ParentGroupsPage() {
     );
   }
 
-  const memberGroups = groups.filter((group) => group.userRole === "member");
-  const invitedGroups = groups.filter((group) => group.userRole === "invited");
+  const memberGroups = groups.filter(group => group.userRole === 'member');
+  const invitedGroups = groups.filter(group => group.userRole === 'invited');
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -361,11 +361,11 @@ export default function ParentGroupsPage() {
         {message && (
           <div
             className={`mb-6 p-4 rounded-lg ${
-              message.type === "success"
-                ? "bg-green-50 border border-green-200 text-green-800"
-                : message.type === "error"
-                ? "bg-red-50 border border-red-200 text-red-800"
-                : "bg-blue-50 border border-blue-200 text-blue-800"
+              message.type === 'success'
+                ? 'bg-green-50 border border-green-200 text-green-800'
+                : message.type === 'error'
+                  ? 'bg-red-50 border border-red-200 text-red-800'
+                  : 'bg-blue-50 border border-blue-200 text-blue-800'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -388,7 +388,7 @@ export default function ParentGroupsPage() {
               Pending Invitations ({invitedGroups.length})
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {invitedGroups.map((group) => (
+              {invitedGroups.map(group => (
                 <div
                   key={group.id}
                   className="bg-white rounded-lg shadow-sm border border-yellow-200 hover:shadow-md transition-shadow"
@@ -417,7 +417,7 @@ export default function ParentGroupsPage() {
                       </div>
                       <div className="flex items-center">
                         <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
-                        {group.schedule.days.join(", ")} at{" "}
+                        {group.schedule.days.join(', ')} at{' '}
                         {group.schedule.startTime} - {group.schedule.endTime}
                       </div>
                       <div className="flex items-center">
@@ -445,7 +445,7 @@ export default function ParentGroupsPage() {
                         className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <CheckCircleIcon className="w-4 h-4 mr-2" />
-                        {isProcessing ? "Joining..." : "Accept & Join"}
+                        {isProcessing ? 'Joining...' : 'Accept & Join'}
                       </button>
                       <button
                         onClick={() =>
@@ -478,7 +478,7 @@ export default function ParentGroupsPage() {
             </div>
           ) : memberGroups.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {memberGroups.map((group) => (
+              {memberGroups.map(group => (
                 <div
                   key={group.id}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
@@ -508,7 +508,7 @@ export default function ParentGroupsPage() {
                       </div>
                       <div className="flex items-center">
                         <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
-                        {group.schedule.days.join(", ")}
+                        {group.schedule.days.join(', ')}
                       </div>
                       <div className="flex items-center">
                         <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
@@ -525,7 +525,7 @@ export default function ParentGroupsPage() {
                         </p>
                         <div>
                           <button
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               initiateFamilyDeparture(group);
                             }}
@@ -601,7 +601,7 @@ export default function ParentGroupsPage() {
                         <div>
                           <span className="text-sm text-gray-500">Route:</span>
                           <div className="text-gray-900">
-                            {selectedGroup.pickupLocation} →{" "}
+                            {selectedGroup.pickupLocation} →{' '}
                             {selectedGroup.dropoffLocation}
                           </div>
                         </div>
@@ -613,8 +613,8 @@ export default function ParentGroupsPage() {
                             Schedule:
                           </span>
                           <div className="text-gray-900">
-                            {selectedGroup.schedule.days.join(", ")} at{" "}
-                            {selectedGroup.schedule.startTime} -{" "}
+                            {selectedGroup.schedule.days.join(', ')} at{' '}
+                            {selectedGroup.schedule.startTime} -{' '}
                             {selectedGroup.schedule.endTime}
                           </div>
                         </div>
@@ -640,7 +640,7 @@ export default function ParentGroupsPage() {
                       Members ({selectedGroup.members.length})
                     </h3>
                     <div className="space-y-3">
-                      {selectedGroup.members.map((member) => (
+                      {selectedGroup.members.map(member => (
                         <div
                           key={member.id}
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -660,10 +660,10 @@ export default function ParentGroupsPage() {
                             </div>
                             {member.children && member.children.length > 0 && (
                               <div className="text-xs text-gray-500 mt-1">
-                                Children:{" "}
+                                Children:{' '}
                                 {member.children
-                                  .map((c) => `${c.name} (${c.grade})`)
-                                  .join(", ")}
+                                  .map(c => `${c.name} (${c.grade})`)
+                                  .join(', ')}
                               </div>
                             )}
                           </div>
@@ -687,7 +687,7 @@ export default function ParentGroupsPage() {
                     <button
                       onClick={() => {
                         setShowDepartureModal(true);
-                        setDepartureReason("");
+                        setDepartureReason('');
                       }}
                       className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
                     >
@@ -717,10 +717,8 @@ export default function ParentGroupsPage() {
                 </p>
                 <ul className="list-disc list-inside mt-2 text-gray-600">
                   {selectedGroup.members
-                    .find((m) => m.userId === user?.id)
-                    ?.children?.map((c) => (
-                      <li key={c.id}>{c.name}</li>
-                    ))}
+                    .find(m => m.userId === user?.id)
+                    ?.children?.map(c => <li key={c.id}>{c.name}</li>)}
                   <li>
                     {user?.firstName} {user?.lastName} (You)
                   </li>
@@ -741,7 +739,7 @@ export default function ParentGroupsPage() {
                 <textarea
                   id="departureReason"
                   value={departureReason}
-                  onChange={(e) => setDepartureReason(e.target.value)}
+                  onChange={e => setDepartureReason(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   rows={3}
                   placeholder="e.g., Schedule changes - new job hours"
@@ -760,7 +758,7 @@ export default function ParentGroupsPage() {
                   className="btn-danger"
                   disabled={isProcessing}
                 >
-                  {isProcessing ? "Processing..." : "Confirm Family Departure"}
+                  {isProcessing ? 'Processing...' : 'Confirm Family Departure'}
                 </button>
               </div>
             </div>

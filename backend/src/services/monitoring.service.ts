@@ -3,17 +3,17 @@
  * Provides basic monitoring functionality without complex Application Insights integration
  */
 
-import { InvocationContext } from "@azure/functions";
-import { v4 as uuidv4 } from "uuid";
+import { InvocationContext } from '@azure/functions';
+import { v4 as uuidv4 } from 'uuid';
 
 interface HealthCheckResult {
-  status: "healthy" | "degraded" | "unhealthy";
+  status: 'healthy' | 'degraded' | 'unhealthy';
   timestamp: string;
   duration: number;
   checks: Record<
     string,
     {
-      status: "pass" | "fail" | "warn";
+      status: 'pass' | 'fail' | 'warn';
       time: number;
       output?: string;
     }
@@ -24,7 +24,7 @@ interface HealthCheckResult {
 
 interface LogEntry {
   timestamp: string;
-  level: "debug" | "info" | "warn" | "error";
+  level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
   correlationId: string;
   userId?: string;
@@ -41,7 +41,7 @@ interface AlertConfig {
   name: string;
   condition: string;
   description: string;
-  severity: "low" | "medium" | "high" | "critical";
+  severity: 'low' | 'medium' | 'high' | 'critical';
   enabled: boolean;
 }
 
@@ -52,7 +52,7 @@ export class MonitoringService {
 
   constructor() {
     this.correlationId = uuidv4();
-    this.log("info", "MonitoringService initialized", {
+    this.log('info', 'MonitoringService initialized', {
       correlationId: this.correlationId,
     });
   }
@@ -74,12 +74,7 @@ export class MonitoringService {
   /**
    * Structured logging with correlation tracking
    */
-  log(
-    level: LogEntry["level"],
-    message: string,
-    data?: any,
-    error?: Error
-  ): void {
+  log(level: LogEntry['level'], message: string, data?: any, error?: Error): void {
     const logEntry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
@@ -91,27 +86,25 @@ export class MonitoringService {
     if (error) {
       logEntry.error = {
         message: error.message,
-        stack: error.stack || "",
+        stack: error.stack || '',
         code: (error as any).code,
       };
     }
 
     // Console output for local development
-    const formattedMessage = `[${level.toUpperCase()}] ${message} - ${
-      this.correlationId
-    }`;
+    const formattedMessage = `[${level.toUpperCase()}] ${message} - ${this.correlationId}`;
 
     switch (level) {
-      case "debug":
+      case 'debug':
         console.debug(formattedMessage, JSON.stringify(logEntry, null, 2));
         break;
-      case "info":
+      case 'info':
         console.info(formattedMessage, JSON.stringify(logEntry, null, 2));
         break;
-      case "warn":
+      case 'warn':
         console.warn(formattedMessage, JSON.stringify(logEntry, null, 2));
         break;
-      case "error":
+      case 'error':
         console.error(formattedMessage, JSON.stringify(logEntry, null, 2));
         break;
     }
@@ -123,27 +116,23 @@ export class MonitoringService {
   trackEvent(
     name: string,
     properties?: Record<string, any>,
-    measurements?: Record<string, number>
+    measurements?: Record<string, number>,
   ): void {
-    this.log("info", `Event tracked: ${name}`, { properties, measurements });
+    this.log('info', `Event tracked: ${name}`, { properties, measurements });
   }
 
   /**
    * Track performance metrics
    */
-  trackMetric(
-    name: string,
-    value: number,
-    properties?: Record<string, any>
-  ): void {
-    this.log("debug", `Metric tracked: ${name} = ${value}`, properties);
+  trackMetric(name: string, value: number, properties?: Record<string, any>): void {
+    this.log('debug', `Metric tracked: ${name} = ${value}`, properties);
   }
 
   /**
    * Track exceptions
    */
   trackException(error: Error, properties?: Record<string, any>): void {
-    this.log("error", "Exception tracked", properties, error);
+    this.log('error', 'Exception tracked', properties, error);
   }
 
   /**
@@ -151,7 +140,7 @@ export class MonitoringService {
    */
   registerHealthCheck(name: string, checkFunction: () => Promise<any>): void {
     this.healthChecks.set(name, checkFunction);
-    this.log("info", `Health check registered: ${name}`);
+    this.log('info', `Health check registered: ${name}`);
   }
 
   /**
@@ -159,29 +148,29 @@ export class MonitoringService {
    */
   async runHealthChecks(): Promise<HealthCheckResult> {
     const startTime = Date.now();
-    const checks: HealthCheckResult["checks"] = {};
-    let overallStatus: HealthCheckResult["status"] = "healthy";
+    const checks: HealthCheckResult['checks'] = {};
+    let overallStatus: HealthCheckResult['status'] = 'healthy';
 
     for (const [name, checkFunction] of this.healthChecks) {
       const checkStartTime = Date.now();
       try {
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Health check timeout")), 5000)
+          setTimeout(() => reject(new Error('Health check timeout')), 5000),
         );
 
         await Promise.race([checkFunction(), timeoutPromise]);
 
         checks[name] = {
-          status: "pass",
+          status: 'pass',
           time: Date.now() - checkStartTime,
         };
       } catch (error) {
         checks[name] = {
-          status: "fail",
+          status: 'fail',
           time: Date.now() - checkStartTime,
           output: error instanceof Error ? error.message : String(error),
         };
-        overallStatus = "unhealthy";
+        overallStatus = 'unhealthy';
       }
     }
 
@@ -190,11 +179,11 @@ export class MonitoringService {
       timestamp: new Date().toISOString(),
       duration: Date.now() - startTime,
       checks,
-      version: process.env.npm_package_version || "1.0.0",
+      version: process.env.npm_package_version || '1.0.0',
       uptime: process.uptime(),
     };
 
-    this.log("info", `Health check completed: ${overallStatus}`, {
+    this.log('info', `Health check completed: ${overallStatus}`, {
       duration: result.duration,
       checksCount: Object.keys(checks).length,
     });
@@ -207,7 +196,7 @@ export class MonitoringService {
    */
   configureAlert(config: AlertConfig): void {
     this.alerts.push(config);
-    this.log("info", `Alert configured: ${config.name}`, {
+    this.log('info', `Alert configured: ${config.name}`, {
       severity: config.severity,
       condition: config.condition,
     });
@@ -217,29 +206,22 @@ export class MonitoringService {
    * Middleware decorator for automatic function monitoring
    */
   static middleware(operationName: string) {
-    return function (
-      target: any,
-      propertyName: string,
-      descriptor: PropertyDescriptor
-    ) {
+    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
       const method = descriptor.value;
 
-      descriptor.value = async function (
-        context: InvocationContext,
-        ...args: any[]
-      ) {
+      descriptor.value = async function (context: InvocationContext, ...args: any[]) {
         const monitor = new MonitoringService();
         const startTime = Date.now();
 
         try {
-          monitor.log("info", `Function started: ${operationName}`, {
+          monitor.log('info', `Function started: ${operationName}`, {
             functionName: propertyName,
             invocationId: context.invocationId,
           });
 
           const result = await method.apply(this, [context, ...args]);
 
-          monitor.log("info", `Function completed: ${operationName}`, {
+          monitor.log('info', `Function completed: ${operationName}`, {
             functionName: propertyName,
             duration: Date.now() - startTime,
             invocationId: context.invocationId,
@@ -248,14 +230,14 @@ export class MonitoringService {
           return result;
         } catch (error) {
           monitor.log(
-            "error",
+            'error',
             `Function failed: ${operationName}`,
             {
               functionName: propertyName,
               duration: Date.now() - startTime,
               invocationId: context.invocationId,
             },
-            error instanceof Error ? error : new Error(String(error))
+            error instanceof Error ? error : new Error(String(error)),
           );
           throw error;
         }

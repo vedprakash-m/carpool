@@ -1,24 +1,24 @@
-import { CosmosClient } from "@azure/cosmos";
+import { CosmosClient } from '@azure/cosmos';
 
-const endpoint = process.env.COSMOS_DB_ENDPOINT || "";
-const key = process.env.COSMOS_DB_KEY || "";
-const databaseId = process.env.COSMOS_DB_DATABASE_ID || "vcarpool";
+const endpoint = process.env.COSMOS_DB_ENDPOINT || '';
+const key = process.env.COSMOS_DB_KEY || '';
+const databaseId = process.env.COSMOS_DB_DATABASE_ID || 'vcarpool';
 
 export const cosmosClient = new CosmosClient({ endpoint, key });
 export const database = cosmosClient.database(databaseId);
 
 // Container names
 const CONTAINER_NAMES = {
-  users: "users",
-  trips: "trips",
-  schedules: "schedules",
-  swapRequests: "swapRequests",
-  emailTemplates: "email-templates",
-  messages: "messages",
-  chats: "chats",
-  chatParticipants: "chatParticipants",
-  notifications: "notifications",
-  weeklyPreferences: "weeklyPreferences",
+  users: 'users',
+  trips: 'trips',
+  schedules: 'schedules',
+  swapRequests: 'swapRequests',
+  emailTemplates: 'email-templates',
+  messages: 'messages',
+  chats: 'chats',
+  chatParticipants: 'chatParticipants',
+  notifications: 'notifications',
+  weeklyPreferences: 'weeklyPreferences',
 };
 
 // Container references
@@ -44,57 +44,57 @@ export async function initializeDatabase() {
     // Create containers if they don't exist
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.users,
-      partitionKey: "/id",
+      partitionKey: '/id',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.trips,
-      partitionKey: "/driverId",
+      partitionKey: '/driverId',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.schedules,
-      partitionKey: "/userId",
+      partitionKey: '/userId',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.swapRequests,
-      partitionKey: "/requesterId",
+      partitionKey: '/requesterId',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.emailTemplates,
-      partitionKey: "/id",
+      partitionKey: '/id',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.messages,
-      partitionKey: "/id",
+      partitionKey: '/id',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.chats,
-      partitionKey: "/id",
+      partitionKey: '/id',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.chatParticipants,
-      partitionKey: "/id",
+      partitionKey: '/id',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.notifications,
-      partitionKey: "/id",
+      partitionKey: '/id',
     });
 
     await database.containers.createIfNotExists({
       id: CONTAINER_NAMES.weeklyPreferences,
-      partitionKey: "/driverParentId",
+      partitionKey: '/driverParentId',
     });
 
-    console.log("Database and containers initialized successfully");
+    console.log('Database and containers initialized successfully');
   } catch (error) {
-    console.error("Error initializing database:", error);
+    console.error('Error initializing database:', error);
     throw error;
   }
 }

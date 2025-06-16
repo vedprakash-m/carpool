@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   TruckIcon as CarIcon,
   ChatBubbleLeftRightIcon,
   CheckCircleIcon,
   StarIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface FirstWeekSimulationProps {
   onNext: () => void;
@@ -19,37 +19,37 @@ export default function FirstWeekSimulation({
   onPrevious,
   onComplete,
 }: FirstWeekSimulationProps) {
-  const [currentTab, setCurrentTab] = useState<"assignments" | "swaps">(
-    "assignments"
+  const [currentTab, setCurrentTab] = useState<'assignments' | 'swaps'>(
+    'assignments'
   );
 
   const sampleAssignment = {
-    date: "Monday, Jan 8th",
-    time: "7:30 AM",
-    type: "Drop-off",
-    route: "Route A",
+    date: 'Monday, Jan 8th',
+    time: '7:30 AM',
+    type: 'Drop-off',
+    route: 'Route A',
     passengers: [
       {
-        name: "Emma Johnson",
-        grade: "3rd",
-        parent: "Sarah Johnson",
-        phone: "(555) 123-4567",
+        name: 'Emma Johnson',
+        grade: '3rd',
+        parent: 'Sarah Johnson',
+        phone: '(555) 123-4567',
       },
       {
-        name: "Alex Chen",
-        grade: "3rd",
-        parent: "Lisa Chen",
-        phone: "(555) 234-5678",
+        name: 'Alex Chen',
+        grade: '3rd',
+        parent: 'Lisa Chen',
+        phone: '(555) 234-5678',
       },
     ],
   };
 
   const sampleSwapRequest = {
-    from: "Lisa Chen",
-    originalDate: "Wednesday, Jan 10th - 3:00 PM",
-    requestedDate: "Monday, Jan 8th - 7:30 AM",
-    reason: "Doctor appointment came up",
-    status: "pending",
+    from: 'Lisa Chen',
+    originalDate: 'Wednesday, Jan 10th - 3:00 PM',
+    requestedDate: 'Monday, Jan 8th - 7:30 AM',
+    reason: 'Doctor appointment came up',
+    status: 'pending',
   };
 
   const handleComplete = () => {
@@ -73,21 +73,21 @@ export default function FirstWeekSimulation({
       {/* Tab Navigation */}
       <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
         <button
-          onClick={() => setCurrentTab("assignments")}
+          onClick={() => setCurrentTab('assignments')}
           className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            currentTab === "assignments"
-              ? "bg-white text-purple-600 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
+            currentTab === 'assignments'
+              ? 'bg-white text-purple-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
           }`}
         >
           📋 Assignment Example
         </button>
         <button
-          onClick={() => setCurrentTab("swaps")}
+          onClick={() => setCurrentTab('swaps')}
           className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            currentTab === "swaps"
-              ? "bg-white text-purple-600 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
+            currentTab === 'swaps'
+              ? 'bg-white text-purple-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
           }`}
         >
           🔄 Swap Request Example
@@ -95,7 +95,7 @@ export default function FirstWeekSimulation({
       </div>
 
       {/* Assignment Example */}
-      {currentTab === "assignments" && (
+      {currentTab === 'assignments' && (
         <div className="space-y-4">
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
@@ -178,7 +178,7 @@ export default function FirstWeekSimulation({
       )}
 
       {/* Swap Request Example */}
-      {currentTab === "swaps" && (
+      {currentTab === 'swaps' && (
         <div className="space-y-4">
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">

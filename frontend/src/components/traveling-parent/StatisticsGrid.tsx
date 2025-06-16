@@ -1,4 +1,4 @@
-import { Users, CheckCircle, Clock, Calendar } from "lucide-react";
+import { Users, CheckCircle, Clock, Calendar } from 'lucide-react';
 
 interface StatisticsGridProps {
   statistics: {
@@ -12,38 +12,38 @@ interface StatisticsGridProps {
 export function StatisticsGrid({ statistics }: StatisticsGridProps) {
   const stats = [
     {
-      name: "Trips Missed",
+      name: 'Trips Missed',
       value: statistics.totalTripsMissed,
       icon: Calendar,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
     },
     {
-      name: "Makeup Trips Completed",
+      name: 'Makeup Trips Completed',
       value: statistics.totalMakeupTripsCompleted,
       icon: CheckCircle,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
     },
     {
-      name: "Pending Makeups",
+      name: 'Pending Makeups',
       value: statistics.pendingMakeupTrips,
       icon: Clock,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50",
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50',
     },
     {
-      name: "Upcoming Makeups",
+      name: 'Upcoming Makeups',
       value: statistics.upcomingMakeupTrips,
       icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
     },
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {stats.map((stat) => (
+      {stats.map(stat => (
         <div
           key={stat.name}
           className="bg-white overflow-hidden shadow rounded-lg"

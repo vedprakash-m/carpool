@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { TruckIcon as CarIcon } from "@heroicons/react/24/outline";
+import Link from 'next/link';
+import { TruckIcon as CarIcon } from '@heroicons/react/24/outline';
 
 export default function HomePage() {
   return (

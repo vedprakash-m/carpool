@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
@@ -13,7 +13,7 @@ import {
   CalendarIcon,
   UserGroupIcon,
   XMarkIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 const advancedSearchSchema = z.object({
   searchQuery: z.string().optional(),
@@ -23,9 +23,9 @@ const advancedSearchSchema = z.object({
   dateTo: z.string().optional(),
   minSeats: z.number().min(1).max(8).optional(),
   sortBy: z
-    .enum(["date", "destination", "availableSeats", "departureTime"])
+    .enum(['date', 'destination', 'availableSeats', 'departureTime'])
     .optional(),
-  sortOrder: z.enum(["asc", "desc"]).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
 });
 
 type AdvancedSearchForm = z.infer<typeof advancedSearchSchema>;
@@ -51,25 +51,25 @@ export default function AdvancedTripSearch({
   } = useForm<AdvancedSearchForm>({
     resolver: zodResolver(advancedSearchSchema),
     defaultValues: {
-      sortBy: "date",
-      sortOrder: "asc",
+      sortBy: 'date',
+      sortOrder: 'asc',
     },
   });
 
   // Watch specific fields instead of all form values to avoid infinite re-renders
-  const destination = watch("destination");
-  const origin = watch("origin");
-  const dateFrom = watch("dateFrom");
-  const dateTo = watch("dateTo");
-  const minSeats = watch("minSeats");
+  const destination = watch('destination');
+  const origin = watch('origin');
+  const dateFrom = watch('dateFrom');
+  const dateTo = watch('dateTo');
+  const minSeats = watch('minSeats');
 
   useEffect(() => {
     // Track active filters for display
     const filters = [];
-    if (destination) filters.push("destination");
-    if (origin) filters.push("origin");
-    if (dateFrom || dateTo) filters.push("date");
-    if (minSeats) filters.push("seats");
+    if (destination) filters.push('destination');
+    if (origin) filters.push('origin');
+    if (dateFrom || dateTo) filters.push('date');
+    if (minSeats) filters.push('seats');
     setActiveFilters(filters);
   }, [destination, origin, dateFrom, dateTo, minSeats]);
 
@@ -77,7 +77,7 @@ export default function AdvancedTripSearch({
     // Remove empty string values
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(
-        ([_, value]) => value !== undefined && value !== "" && value !== null
+        ([_, value]) => value !== undefined && value !== '' && value !== null
       )
     );
     onSearch(cleanData);
@@ -85,14 +85,14 @@ export default function AdvancedTripSearch({
 
   const clearFilters = () => {
     reset({
-      searchQuery: "",
-      destination: "",
-      origin: "",
-      dateFrom: "",
-      dateTo: "",
+      searchQuery: '',
+      destination: '',
+      origin: '',
+      dateFrom: '',
+      dateTo: '',
       minSeats: undefined,
-      sortBy: "date",
-      sortOrder: "asc",
+      sortBy: 'date',
+      sortOrder: 'asc',
     });
     onSearch({});
   };
@@ -107,7 +107,7 @@ export default function AdvancedTripSearch({
               <div className="relative">
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
-                  {...register("searchQuery")}
+                  {...register('searchQuery')}
                   type="text"
                   placeholder="Search destinations, notes, or locations..."
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
@@ -121,8 +121,8 @@ export default function AdvancedTripSearch({
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`flex items-center px-4 py-3 border rounded-lg transition-colors ${
                   isExpanded || activeFilters.length > 0
-                    ? "border-primary-500 text-primary-600 bg-primary-50"
-                    : "border-gray-300 text-gray-700 hover:border-gray-400"
+                    ? 'border-primary-500 text-primary-600 bg-primary-50'
+                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
                 }`}
               >
                 <AdjustmentsHorizontalIcon className="h-5 w-5 mr-2" />
@@ -150,7 +150,7 @@ export default function AdvancedTripSearch({
                     Searching...
                   </div>
                 ) : (
-                  "Search"
+                  'Search'
                 )}
               </button>
             </div>
@@ -168,7 +168,7 @@ export default function AdvancedTripSearch({
                   Destination
                 </label>
                 <input
-                  {...register("destination")}
+                  {...register('destination')}
                   type="text"
                   placeholder="e.g., School, Downtown..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -182,7 +182,7 @@ export default function AdvancedTripSearch({
                   Origin/Pickup Area
                 </label>
                 <input
-                  {...register("origin")}
+                  {...register('origin')}
                   type="text"
                   placeholder="e.g., Neighborhood, Street..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -196,7 +196,7 @@ export default function AdvancedTripSearch({
                   Min Available Seats
                 </label>
                 <select
-                  {...register("minSeats", { valueAsNumber: true })}
+                  {...register('minSeats', { valueAsNumber: true })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="">Any</option>
@@ -214,9 +214,9 @@ export default function AdvancedTripSearch({
                   From Date
                 </label>
                 <input
-                  {...register("dateFrom")}
+                  {...register('dateFrom')}
                   type="date"
-                  min={new Date().toISOString().split("T")[0]}
+                  min={new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
@@ -228,9 +228,9 @@ export default function AdvancedTripSearch({
                   To Date
                 </label>
                 <input
-                  {...register("dateTo")}
+                  {...register('dateTo')}
                   type="date"
-                  min={dateFrom || new Date().toISOString().split("T")[0]}
+                  min={dateFrom || new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
@@ -244,7 +244,7 @@ export default function AdvancedTripSearch({
                     Sort by:
                   </label>
                   <select
-                    {...register("sortBy")}
+                    {...register('sortBy')}
                     className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="date">Date</option>
@@ -259,7 +259,7 @@ export default function AdvancedTripSearch({
                     Order:
                   </label>
                   <select
-                    {...register("sortOrder")}
+                    {...register('sortOrder')}
                     className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="asc">Ascending</option>
@@ -288,7 +288,7 @@ export default function AdvancedTripSearch({
           <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
             <div className="flex items-center flex-wrap gap-2">
               <span className="text-sm text-gray-600">Active filters:</span>
-              {activeFilters.map((filter) => (
+              {activeFilters.map(filter => (
                 <span
                   key={filter}
                   className="inline-flex items-center px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded-full"

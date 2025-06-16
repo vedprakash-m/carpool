@@ -4,7 +4,12 @@ import axios from 'axios';
 export const usePushNotifications = (userId: string | undefined) => {
   useEffect(() => {
     if (!userId) return;
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (
+      typeof window === 'undefined' ||
+      !('serviceWorker' in navigator) ||
+      !('PushManager' in window)
+    )
+      return;
 
     const register = async () => {
       try {
@@ -21,4 +26,4 @@ export const usePushNotifications = (userId: string | undefined) => {
 
     register();
   }, [userId]);
-}; 
+};

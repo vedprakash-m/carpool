@@ -3,20 +3,20 @@
  * Testing the real login page with React Hook Form and Zod validation
  */
 
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import "@testing-library/jest-dom";
-import LoginPage from "../../app/login/page";
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
+import LoginPage from '../../app/login/page';
 
 // Test constants
-const TEST_ADMIN_PASSWORD = "test-admin-pass";
+const TEST_ADMIN_PASSWORD = 'test-admin-pass';
 
 // Mock dependencies for login page
 const mockLogin = jest.fn();
 const mockPush = jest.fn();
 
-jest.mock("../../store/auth.store", () => ({
+jest.mock('../../store/auth.store', () => ({
   useAuthStore: (selector: any) =>
     selector({
       login: mockLogin,
@@ -26,53 +26,53 @@ jest.mock("../../store/auth.store", () => ({
     }),
 }));
 
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
 }));
 
-jest.mock("react-hot-toast", () => ({
+jest.mock('react-hot-toast', () => ({
   success: jest.fn(),
   error: jest.fn(),
 }));
 
-describe("Login Form Component", () => {
+describe('Login Form Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("Form Rendering", () => {
-    it("should render all form elements", () => {
+  describe('Form Rendering', () => {
+    it('should render all form elements', () => {
       render(<LoginPage />);
 
       // Check for form inputs using placeholders (since labels are screen-reader only)
-      expect(screen.getByPlaceholderText("Email address")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Password")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Email address')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /sign in/i })
+        screen.getByRole('button', { name: /sign in/i })
       ).toBeInTheDocument();
     });
 
-    it("should have proper input types and attributes", () => {
+    it('should have proper input types and attributes', () => {
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
 
-      expect(emailInput).toHaveAttribute("type", "email");
-      expect(emailInput).toHaveAttribute("autoComplete", "email");
-      expect(passwordInput).toHaveAttribute("type", "password");
-      expect(passwordInput).toHaveAttribute("autoComplete", "current-password");
+      expect(emailInput).toHaveAttribute('type', 'email');
+      expect(emailInput).toHaveAttribute('autoComplete', 'email');
+      expect(passwordInput).toHaveAttribute('type', 'password');
+      expect(passwordInput).toHaveAttribute('autoComplete', 'current-password');
     });
   });
 
-  describe("Form Validation", () => {
-    it("should show error for empty email", async () => {
+  describe('Form Validation', () => {
+    it('should show error for empty email', async () => {
       const user = userEvent.setup();
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -81,14 +81,14 @@ describe("Login Form Component", () => {
       });
     });
 
-    it("should show error for invalid email format", async () => {
+    it('should show error for invalid email format', async () => {
       const user = userEvent.setup();
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "invalid-email");
+      await user.type(emailInput, 'invalid-email');
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -105,14 +105,14 @@ describe("Login Form Component", () => {
       });
     });
 
-    it("should show error for empty password", async () => {
+    it('should show error for empty password', async () => {
       const user = userEvent.setup();
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "test@example.com");
+      await user.type(emailInput, 'test@example.com');
       await user.clear(emailInput);
       await user.click(submitButton);
 
@@ -121,57 +121,57 @@ describe("Login Form Component", () => {
       });
     });
 
-    it("should show no error for valid input", async () => {
+    it('should show no error for valid input', async () => {
       const user = userEvent.setup();
       mockLogin.mockResolvedValue(undefined);
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "admin@vcarpool.com");
+      await user.type(emailInput, 'admin@vcarpool.com');
       await user.type(passwordInput, TEST_ADMIN_PASSWORD);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
-          email: "admin@vcarpool.com",
+          email: 'admin@vcarpool.com',
           password: TEST_ADMIN_PASSWORD,
         });
       });
     });
   });
 
-  describe("Form Submission", () => {
-    it("should submit with valid data", async () => {
+  describe('Form Submission', () => {
+    it('should submit with valid data', async () => {
       const user = userEvent.setup();
       mockLogin.mockResolvedValue(undefined);
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, "admin@vcarpool.com");
+      await user.type(emailInput, 'admin@vcarpool.com');
       await user.type(passwordInput, TEST_ADMIN_PASSWORD);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
-          email: "admin@vcarpool.com",
+          email: 'admin@vcarpool.com',
           password: TEST_ADMIN_PASSWORD,
         });
       });
     });
 
-    it("should not submit with invalid data", async () => {
+    it('should not submit with invalid data', async () => {
       const user = userEvent.setup();
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
 
       // Should not call login due to validation errors
@@ -179,8 +179,8 @@ describe("Login Form Component", () => {
     });
   });
 
-  describe("Loading States", () => {
-    it.skip("should show loading state when isLoading is true", () => {
+  describe('Loading States', () => {
+    it.skip('should show loading state when isLoading is true', () => {
       // Create a new mock for this specific test
       const loadingAuthStore = {
         login: mockLogin,
@@ -190,34 +190,34 @@ describe("Login Form Component", () => {
       };
 
       // Re-mock the auth store for this test
-      jest.doMock("../../store/auth.store", () => ({
+      jest.doMock('../../store/auth.store', () => ({
         useAuthStore: (selector: any) => selector(loadingAuthStore),
       }));
 
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole("button");
-      expect(submitButton).toHaveTextContent("Signing in...");
+      const submitButton = screen.getByRole('button');
+      expect(submitButton).toHaveTextContent('Signing in...');
       expect(submitButton).toBeDisabled();
     });
 
-    it("should show normal state when not loading", () => {
+    it('should show normal state when not loading', () => {
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole("button");
-      expect(submitButton).toHaveTextContent("Sign in");
+      const submitButton = screen.getByRole('button');
+      expect(submitButton).toHaveTextContent('Sign in');
       expect(submitButton).not.toBeDisabled();
     });
   });
 
-  describe("User Interactions", () => {
-    it("should support keyboard navigation", async () => {
+  describe('User Interactions', () => {
+    it('should support keyboard navigation', async () => {
       const user = userEvent.setup();
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
 
       // First tab might focus on the registration link, so tab to email
       await user.tab();
@@ -232,18 +232,18 @@ describe("Login Form Component", () => {
       expect(submitButton).toHaveFocus();
     });
 
-    it("should submit form on Enter key press", async () => {
+    it('should submit form on Enter key press', async () => {
       const user = userEvent.setup();
       mockLogin.mockResolvedValue(undefined);
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
 
-      await user.type(emailInput, "admin@vcarpool.com");
+      await user.type(emailInput, 'admin@vcarpool.com');
       await user.type(passwordInput, TEST_ADMIN_PASSWORD);
-      await user.keyboard("{Enter}");
+      await user.keyboard('{Enter}');
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalled();
@@ -251,31 +251,31 @@ describe("Login Form Component", () => {
     });
   });
 
-  describe("Accessibility", () => {
-    it("should have proper form structure", () => {
+  describe('Accessibility', () => {
+    it('should have proper form structure', () => {
       render(<LoginPage />);
 
       // The form doesn't have an explicit role="form", but check it exists as a form element
-      const form = document.querySelector("form");
+      const form = document.querySelector('form');
       expect(form).toBeInTheDocument();
     });
 
-    it("should have accessible input elements", () => {
+    it('should have accessible input elements', () => {
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
 
       // Inputs should have proper attributes for accessibility
-      expect(emailInput).toHaveAttribute("type", "email");
-      expect(passwordInput).toHaveAttribute("type", "password");
+      expect(emailInput).toHaveAttribute('type', 'email');
+      expect(passwordInput).toHaveAttribute('type', 'password');
     });
 
-    it("should show validation errors when form is submitted empty", async () => {
+    it('should show validation errors when form is submitted empty', async () => {
       const user = userEvent.setup();
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole("button", { name: /sign in/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
 
       // Check that validation errors appear (React Hook Form + Zod validation)
@@ -288,37 +288,37 @@ describe("Login Form Component", () => {
     });
   });
 
-  describe("Security Considerations", () => {
-    it("should use password input type", () => {
+  describe('Security Considerations', () => {
+    it('should use password input type', () => {
       render(<LoginPage />);
 
-      const passwordInput = screen.getByPlaceholderText("Password");
-      expect(passwordInput).toHaveAttribute("type", "password");
+      const passwordInput = screen.getByPlaceholderText('Password');
+      expect(passwordInput).toHaveAttribute('type', 'password');
     });
 
-    it("should have proper autoComplete attributes", () => {
+    it('should have proper autoComplete attributes', () => {
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText("Email address");
-      const passwordInput = screen.getByPlaceholderText("Password");
+      const emailInput = screen.getByPlaceholderText('Email address');
+      const passwordInput = screen.getByPlaceholderText('Password');
 
-      expect(emailInput).toHaveAttribute("autoComplete", "email");
-      expect(passwordInput).toHaveAttribute("autoComplete", "current-password");
+      expect(emailInput).toHaveAttribute('autoComplete', 'email');
+      expect(passwordInput).toHaveAttribute('autoComplete', 'current-password');
     });
   });
 
-  describe("Navigation and Links", () => {
-    it("should render registration link", () => {
+  describe('Navigation and Links', () => {
+    it('should render registration link', () => {
       render(<LoginPage />);
 
-      const registerLink = screen.getByText("create a new account");
+      const registerLink = screen.getByText('create a new account');
       expect(registerLink).toBeInTheDocument();
     });
 
-    it("should render forgot password link", () => {
+    it('should render forgot password link', () => {
       render(<LoginPage />);
 
-      const forgotPasswordLink = screen.getByText("Forgot your password?");
+      const forgotPasswordLink = screen.getByText('Forgot your password?');
       expect(forgotPasswordLink).toBeInTheDocument();
     });
   });

@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useRBAC } from "../contexts/RBACContext";
-import { useAuthStore } from "../store/auth.store";
-import { UserRole, RolePermissions } from "../types/shared";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useRBAC } from '../contexts/RBACContext';
+import { useAuthStore } from '../store/auth.store';
+import { UserRole, RolePermissions } from '../types/shared';
 
 interface ProtectedRouteOptions {
   requiredRole?: UserRole;
@@ -13,7 +13,7 @@ interface ProtectedRouteOptions {
 export function useProtectedRoute({
   requiredRole,
   requiredPermission,
-  redirectTo = "/unauthorized",
+  redirectTo = '/unauthorized',
 }: ProtectedRouteOptions = {}) {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -21,7 +21,7 @@ export function useProtectedRoute({
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
 

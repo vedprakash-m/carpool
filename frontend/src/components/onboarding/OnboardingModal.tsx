@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useOnboarding } from "@/contexts/OnboardingContext";
+import React from 'react';
+import { useOnboarding } from '@/contexts/OnboardingContext';
 import {
   XMarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CheckCircleIcon,
-} from "@heroicons/react/24/outline";
-import { TruckIcon as CarIcon } from "@heroicons/react/24/solid";
+} from '@heroicons/react/24/outline';
+import { TruckIcon as CarIcon } from '@heroicons/react/24/solid';
 
 // Import onboarding step components
-import WelcomeTour from "./steps/WelcomeTour";
-import ProfileCompletion from "./steps/ProfileCompletion";
-import NotificationSetup from "./steps/NotificationSetup";
-import PreferenceTutorial from "./steps/PreferenceTutorial";
-import FirstWeekSimulation from "./steps/FirstWeekSimulation";
+import WelcomeTour from './steps/WelcomeTour';
+import ProfileCompletion from './steps/ProfileCompletion';
+import NotificationSetup from './steps/NotificationSetup';
+import PreferenceTutorial from './steps/PreferenceTutorial';
+import FirstWeekSimulation from './steps/FirstWeekSimulation';
 
 const stepComponents: Record<string, React.ComponentType<any>> = {
   WelcomeTour,
@@ -44,7 +44,7 @@ export default function OnboardingModal() {
   const isLastStep =
     onboardingState.currentStepIndex === onboardingState.steps.length - 1;
   const completedSteps = onboardingState.steps.filter(
-    (step) => step.isCompleted
+    step => step.isCompleted
   ).length;
   const progressPercentage =
     (completedSteps / onboardingState.steps.length) * 100;
@@ -89,7 +89,7 @@ export default function OnboardingModal() {
                     VCarpool Setup
                   </h2>
                   <p className="text-sm text-gray-500">
-                    Step {onboardingState.currentStepIndex + 1} of{" "}
+                    Step {onboardingState.currentStepIndex + 1} of{' '}
                     {onboardingState.steps.length}
                   </p>
                 </div>
@@ -136,17 +136,17 @@ export default function OnboardingModal() {
                   key={step.id}
                   className={`flex items-center space-x-2 ${
                     index <= onboardingState.currentStepIndex
-                      ? "text-green-600"
-                      : "text-gray-400"
+                      ? 'text-green-600'
+                      : 'text-gray-400'
                   }`}
                 >
                   <div
                     className={`flex items-center justify-center w-6 h-6 rounded-full border-2 ${
                       step.isCompleted
-                        ? "bg-green-600 border-green-600"
+                        ? 'bg-green-600 border-green-600'
                         : index === onboardingState.currentStepIndex
-                        ? "border-green-600 bg-white"
-                        : "border-gray-300 bg-white"
+                          ? 'border-green-600 bg-white'
+                          : 'border-gray-300 bg-white'
                     }`}
                   >
                     {step.isCompleted ? (
@@ -155,8 +155,8 @@ export default function OnboardingModal() {
                       <span
                         className={`text-xs font-medium ${
                           index === onboardingState.currentStepIndex
-                            ? "text-green-600"
-                            : "text-gray-400"
+                            ? 'text-green-600'
+                            : 'text-gray-400'
                         }`}
                       >
                         {index + 1}
@@ -208,8 +208,8 @@ export default function OnboardingModal() {
                 disabled={isFirstStep}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
                   isFirstStep
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                 }`}
               >
                 <ChevronLeftIcon className="w-4 h-4" />
@@ -230,7 +230,7 @@ export default function OnboardingModal() {
                   onClick={handleNext}
                   className="flex items-center space-x-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  <span>{isLastStep ? "Complete Setup" : "Continue"}</span>
+                  <span>{isLastStep ? 'Complete Setup' : 'Continue'}</span>
                   {!isLastStep && <ChevronRightIcon className="w-4 h-4" />}
                 </button>
               </div>

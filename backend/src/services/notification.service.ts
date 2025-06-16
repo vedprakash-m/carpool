@@ -4,24 +4,18 @@ import {
   CreateNotificationRequest,
   User,
   Trip,
-} from "@vcarpool/shared";
-import { v4 as uuidv4 } from "uuid";
-import { Container } from "@azure/cosmos";
-import { ILogger } from "../utils/logger";
-import { Errors } from "../utils/error-handler";
-import { AzureLogger } from "../utils/logger";
-import { ServiceBusClient } from "@azure/service-bus";
-import { PushService } from "./push.service";
+} from '@vcarpool/shared';
+import { v4 as uuidv4 } from 'uuid';
+import { Container } from '@azure/cosmos';
+import { ILogger } from '../utils/logger';
+import { Errors } from '../utils/error-handler';
+import { AzureLogger } from '../utils/logger';
+import { ServiceBusClient } from '@azure/service-bus';
+import { PushService } from './push.service';
 
 export interface IPushNotificationService {
-  sendPushNotification(
-    userId: string,
-    notification: PushNotificationPayload
-  ): Promise<boolean>;
-  sendToMultipleUsers(
-    userIds: string[],
-    notification: PushNotificationPayload
-  ): Promise<void>;
+  sendPushNotification(userId: string, notification: PushNotificationPayload): Promise<boolean>;
+  sendToMultipleUsers(userIds: string[], notification: PushNotificationPayload): Promise<void>;
 }
 
 export interface PushNotificationPayload {
@@ -45,9 +39,7 @@ export interface NotificationPayload {
 export class NotificationRepository {
   constructor(private container: Container) {}
 
-  async create(
-    notification: Omit<Notification, "id" | "createdAt">
-  ): Promise<Notification> {
+  async create(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> {
     const newNotification: Notification = {
       ...notification,
       id: uuidv4(),
@@ -65,26 +57,26 @@ export class NotificationRepository {
       type?: NotificationType;
       limit?: number;
       offset?: number;
-    } = {}
+    } = {},
   ): Promise<{ notifications: Notification[]; total: number }> {
-    let query = "SELECT * FROM c WHERE c.userId = @userId";
-    const parameters = [{ name: "@userId", value: userId }];
+    let query = 'SELECT * FROM c WHERE c.userId = @userId';
+    const parameters = [{ name: '@userId', value: userId }];
 
     if (options.read !== undefined) {
-      query += " AND c.read = @read";
-      parameters.push({ name: "@read", value: options.read.toString() });
+      query += ' AND c.read = @read';
+      parameters.push({ name: '@read', value: options.read.toString() });
     }
 
     if (options.type) {
-      query += " AND c.type = @type";
-      parameters.push({ name: "@type", value: options.type });
+      query += ' AND c.type = @type';
+      parameters.push({ name: '@type', value: options.type });
     }
 
     // Filter out expired notifications
-    query += " AND (c.expiresAt IS NULL OR c.expiresAt > @now)";
-    parameters.push({ name: "@now", value: new Date().toISOString() });
+    query += ' AND (c.expiresAt IS NULL OR c.expiresAt > @now)';
+    parameters.push({ name: '@now', value: new Date().toISOString() });
 
-    query += " ORDER BY c.createdAt DESC";
+    query += ' ORDER BY c.createdAt DESC';
 
     if (options.limit) {
       query += ` OFFSET ${options.offset || 0} LIMIT ${options.limit}`;
@@ -99,9 +91,9 @@ export class NotificationRepository {
 
     // Get total count
     const countQuery = query
-      .replace("SELECT * FROM c", "SELECT VALUE COUNT(1) FROM c")
-      .replace(/ORDER BY .+$/, "")
-      .replace(/OFFSET .+ LIMIT .+$/, "");
+      .replace('SELECT * FROM c', 'SELECT VALUE COUNT(1) FROM c')
+      .replace(/ORDER BY .+$/, '')
+      .replace(/OFFSET .+ LIMIT .+$/, '');
 
     const { resources: countResult } = await this.container.items
       .query({
@@ -129,9 +121,7 @@ export class NotificationRepository {
         read: true,
       };
 
-      await this.container
-        .item(notificationId, notificationId)
-        .replace(updatedNotification);
+      await this.container.item(notificationId, notificationId).replace(updatedNotification);
       return true;
     } catch (error: any) {
       if (error.code === 404) {
@@ -168,9 +158,8 @@ export class NotificationRepository {
   async cleanup(): Promise<number> {
     const now = new Date().toISOString();
     const query = {
-      query:
-        "SELECT * FROM c WHERE c.expiresAt != null AND c.expiresAt <= @now",
-      parameters: [{ name: "@now", value: now }],
+      query: 'SELECT * FROM c WHERE c.expiresAt != null AND c.expiresAt <= @now',
+      parameters: [{ name: '@now', value: now }],
     };
 
     const { resources: expiredNotifications } = await this.container.items
@@ -193,22 +182,20 @@ export class NotificationService {
 
   constructor(
     private notificationRepository: NotificationRepository,
-    private pushService: PushService = new PushService()
+    private pushService: PushService = new PushService(),
   ) {
     const connectionString = process.env.SERVICE_BUS_CONNECTION;
     if (connectionString) {
       this.sbClient = new ServiceBusClient(connectionString);
     } else {
-      this.logger.warn("SERVICE_BUS_CONNECTION not set – notifications disabled");
+      this.logger.warn('SERVICE_BUS_CONNECTION not set – notifications disabled');
     }
   }
 
   /**
    * Create a notification
    */
-  async createNotification(
-    request: CreateNotificationRequest
-  ): Promise<Notification> {
+  async createNotification(request: CreateNotificationRequest): Promise<Notification> {
     try {
       const notification = await this.notificationRepository.create({
         ...request,
@@ -224,22 +211,16 @@ export class NotificationService {
           badge: 1,
         };
 
-        await this.pushService.sendPushNotification(
-          request.userId,
-          pushPayload
-        );
+        await this.pushService.sendPushNotification(request.userId, pushPayload);
       }
 
-      this.logger.info("Notification created", {
+      this.logger.info('Notification created', {
         notificationId: notification.id,
         userId: request.userId,
       });
       return notification;
     } catch (error) {
-      this.logger.error(
-        "Error creating notification",
-        error as Record<string, unknown>
-      );
+      this.logger.error('Error creating notification', error as Record<string, unknown>);
       throw error;
     }
   }
@@ -254,12 +235,12 @@ export class NotificationService {
       type?: NotificationType;
       limit?: number;
       offset?: number;
-    } = {}
+    } = {},
   ): Promise<{ notifications: Notification[]; total: number }> {
     try {
       return await this.notificationRepository.findByUserId(userId, options);
     } catch (error) {
-      this.logger.error("Error fetching user notifications", { userId, error });
+      this.logger.error('Error fetching user notifications', { userId, error });
       throw error;
     }
   }
@@ -272,7 +253,7 @@ export class NotificationService {
       // TODO: Add user ownership check
       return await this.notificationRepository.markAsRead(notificationId);
     } catch (error) {
-      this.logger.error("Error marking notification as read", {
+      this.logger.error('Error marking notification as read', {
         notificationId,
         error,
       });
@@ -286,10 +267,10 @@ export class NotificationService {
   async markAllAsRead(userId: string): Promise<number> {
     try {
       const count = await this.notificationRepository.markAllAsRead(userId);
-      this.logger.info("Marked all notifications as read", { userId, count });
+      this.logger.info('Marked all notifications as read', { userId, count });
       return count;
     } catch (error) {
-      this.logger.error("Error marking all notifications as read", {
+      this.logger.error('Error marking all notifications as read', {
         userId,
         error,
       });
@@ -303,8 +284,8 @@ export class NotificationService {
   async notifyTripJoined(trip: Trip, passengerUser: User): Promise<void> {
     await this.createNotification({
       userId: trip.driverId,
-      type: "trip_joined",
-      title: "New Passenger",
+      type: 'trip_joined',
+      title: 'New Passenger',
       message: `${passengerUser.firstName} ${passengerUser.lastName} joined your trip to ${trip.destination}`,
       data: {
         tripId: trip.id,
@@ -317,8 +298,8 @@ export class NotificationService {
   async notifyTripLeft(trip: Trip, passengerUser: User): Promise<void> {
     await this.createNotification({
       userId: trip.driverId,
-      type: "trip_left",
-      title: "Passenger Left",
+      type: 'trip_left',
+      title: 'Passenger Left',
       message: `${passengerUser.firstName} ${passengerUser.lastName} left your trip to ${trip.destination}`,
       data: {
         tripId: trip.id,
@@ -331,8 +312,8 @@ export class NotificationService {
   async notifyTripUpdated(trip: Trip, userIds: string[]): Promise<void> {
     const notifications = userIds.map((userId) => ({
       userId,
-      type: "trip_updated" as NotificationType,
-      title: "Trip Updated",
+      type: 'trip_updated' as NotificationType,
+      title: 'Trip Updated',
       message: `Trip to ${trip.destination} has been updated. Please check the details.`,
       data: {
         tripId: trip.id,
@@ -340,19 +321,15 @@ export class NotificationService {
       },
     }));
 
-    await Promise.all(
-      notifications.map((notification) => this.createNotification(notification))
-    );
+    await Promise.all(notifications.map((notification) => this.createNotification(notification)));
   }
 
   async notifyTripCancelled(trip: Trip, userIds: string[]): Promise<void> {
     const notifications = userIds.map((userId) => ({
       userId,
-      type: "trip_cancelled" as NotificationType,
-      title: "Trip Cancelled",
-      message: `Trip to ${
-        trip.destination
-      } on ${trip.date.toDateString()} has been cancelled.`,
+      type: 'trip_cancelled' as NotificationType,
+      title: 'Trip Cancelled',
+      message: `Trip to ${trip.destination} on ${trip.date.toDateString()} has been cancelled.`,
       data: {
         tripId: trip.id,
         destination: trip.destination,
@@ -360,20 +337,18 @@ export class NotificationService {
       },
     }));
 
-    await Promise.all(
-      notifications.map((notification) => this.createNotification(notification))
-    );
+    await Promise.all(notifications.map((notification) => this.createNotification(notification)));
   }
 
   async notifyNewMessage(
     chatId: string,
     senderName: string,
     message: string,
-    recipientIds: string[]
+    recipientIds: string[],
   ): Promise<void> {
     const notifications = recipientIds.map((userId) => ({
       userId,
-      type: "message_received" as NotificationType,
+      type: 'message_received' as NotificationType,
       title: `New message from ${senderName}`,
       message: message.length > 50 ? `${message.substring(0, 50)}...` : message,
       data: {
@@ -382,16 +357,14 @@ export class NotificationService {
       },
     }));
 
-    await Promise.all(
-      notifications.map((notification) => this.createNotification(notification))
-    );
+    await Promise.all(notifications.map((notification) => this.createNotification(notification)));
   }
 
   async notifyTripReminder(trip: Trip, userIds: string[]): Promise<void> {
     const notifications = userIds.map((userId) => ({
       userId,
-      type: "trip_reminder" as NotificationType,
-      title: "Trip Reminder",
+      type: 'trip_reminder' as NotificationType,
+      title: 'Trip Reminder',
       message: `Your trip to ${trip.destination} is tomorrow at ${trip.departureTime}`,
       data: {
         tripId: trip.id,
@@ -401,9 +374,7 @@ export class NotificationService {
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Expire in 24 hours
     }));
 
-    await Promise.all(
-      notifications.map((notification) => this.createNotification(notification))
-    );
+    await Promise.all(notifications.map((notification) => this.createNotification(notification)));
   }
 
   /**
@@ -423,13 +394,10 @@ export class NotificationService {
   async cleanupExpiredNotifications(): Promise<number> {
     try {
       const deletedCount = await this.notificationRepository.cleanup();
-      this.logger.info("Cleaned up expired notifications", { deletedCount });
+      this.logger.info('Cleaned up expired notifications', { deletedCount });
       return deletedCount;
     } catch (error) {
-      this.logger.error(
-        "Error cleaning up notifications",
-        error as Record<string, unknown>
-      );
+      this.logger.error('Error cleaning up notifications', error as Record<string, unknown>);
       throw error;
     }
   }
@@ -445,7 +413,7 @@ export class NotificationService {
     const sender = this.sbClient.createSender(`user-${userId}`);
     await sender.sendMessages({ body: payload });
     await sender.close();
-    this.logger.debug("Notification sent", { userId, type: payload.type });
+    this.logger.debug('Notification sent', { userId, type: payload.type });
   }
 
   async broadcastToGroup(groupId: string, payload: NotificationPayload): Promise<void> {
@@ -453,7 +421,7 @@ export class NotificationService {
     const sender = this.sbClient.createSender(`group-${groupId}`);
     await sender.sendMessages({ body: payload });
     await sender.close();
-    this.logger.debug("Group notification", { groupId, type: payload.type });
+    this.logger.debug('Group notification', { groupId, type: payload.type });
   }
 
   /**
@@ -466,11 +434,15 @@ export class NotificationService {
     groupId?: string;
   }): Promise<void> {
     if (!this.sbClient) {
-      this.logger.warn("ServiceBusClient not initialised – enqueueNotification is a no-op in local dev");
+      this.logger.warn(
+        'ServiceBusClient not initialised – enqueueNotification is a no-op in local dev',
+      );
       return;
     }
 
-    const sender = this.sbClient.createSender(process.env.SB_NOTIFICATIONS_TOPIC || "notifications");
+    const sender = this.sbClient.createSender(
+      process.env.SB_NOTIFICATIONS_TOPIC || 'notifications',
+    );
     await sender.sendMessages({ body: raw });
     await sender.close();
 

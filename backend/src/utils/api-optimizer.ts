@@ -3,10 +3,10 @@
  * Utilities for optimizing API performance, response times, and resource usage
  */
 
-import { HttpRequest, HttpResponseInit } from "@azure/functions";
-import { v4 as uuidv4 } from "uuid";
-import { globalCache, CacheKeyGenerator } from "./cache";
-import { logger } from "./logger";
+import { HttpRequest, HttpResponseInit } from '@azure/functions';
+import { v4 as uuidv4 } from 'uuid';
+import { globalCache, CacheKeyGenerator } from './cache';
+import { logger } from './logger';
 
 /**
  * API Response compression utilities
@@ -30,8 +30,8 @@ export class ResponseCompression {
       // For now, we'll implement basic optimizations
       return this.optimizeJsonResponse(data);
     } catch (error) {
-      logger.warn("Response compression failed", {
-        error: error instanceof Error ? error.message : "Unknown error",
+      logger.warn('Response compression failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       return JSON.stringify(data);
     }
@@ -56,7 +56,7 @@ export class ResponseCompression {
         .filter((item) => item !== null && item !== undefined);
     }
 
-    if (obj !== null && typeof obj === "object") {
+    if (obj !== null && typeof obj === 'object') {
       const result: any = {};
       for (const [key, value] of Object.entries(obj)) {
         const cleanValue = this.removeEmptyValues(value);
@@ -65,12 +65,9 @@ export class ResponseCompression {
         if (
           cleanValue !== null &&
           cleanValue !== undefined &&
-          cleanValue !== "" &&
+          cleanValue !== '' &&
           !(Array.isArray(cleanValue) && cleanValue.length === 0) &&
-          !(
-            typeof cleanValue === "object" &&
-            Object.keys(cleanValue).length === 0
-          )
+          !(typeof cleanValue === 'object' && Object.keys(cleanValue).length === 0)
         ) {
           result[key] = cleanValue;
         }
@@ -97,7 +94,7 @@ export class RequestBatcher {
   static addToBatch<T>(
     batchKey: string,
     request: T,
-    processor: (batch: T[]) => Promise<any[]>
+    processor: (batch: T[]) => Promise<any[]>,
   ): Promise<any> {
     return new Promise((resolve, reject) => {
       if (!this.batchQueues.has(batchKey)) {
@@ -128,7 +125,7 @@ export class RequestBatcher {
    */
   private static async processBatch<T>(
     batchKey: string,
-    processor: (batch: T[]) => Promise<any[]>
+    processor: (batch: T[]) => Promise<any[]>,
   ): Promise<void> {
     const queue = this.batchQueues.get(batchKey);
     if (!queue || queue.length === 0) return;
@@ -158,7 +155,7 @@ export class RequestBatcher {
         if (results[index] !== undefined) {
           callback.resolve(results[index]);
         } else {
-          callback.reject(new Error("Batch processing failed for item"));
+          callback.reject(new Error('Batch processing failed for item'));
         }
       });
     } catch (error) {
@@ -207,7 +204,7 @@ export class PaginationOptimizer {
     totalCount: number,
     page: number,
     limit: number,
-    additionalMeta?: any
+    additionalMeta?: any,
   ): {
     data: T[];
     pagination: {
@@ -249,11 +246,11 @@ export class RequestDeduplicator {
   static async deduplicate<T>(
     key: string,
     requestFn: () => Promise<T>,
-    ttl: number = 5000 // 5 seconds
+    ttl: number = 5000, // 5 seconds
   ): Promise<T> {
     // Check if request is already pending
     if (this.pendingRequests.has(key)) {
-      logger.debug("Request deduplicated", { key });
+      logger.debug('Request deduplicated', { key });
       return this.pendingRequests.get(key)!;
     }
 
@@ -279,7 +276,7 @@ export class RequestDeduplicator {
  * Response caching with smart invalidation
  */
 export class ResponseCache {
-  private static readonly CACHE_PREFIX = "response:";
+  private static readonly CACHE_PREFIX = 'response:';
 
   /**
    * Get cached response or execute function
@@ -291,7 +288,7 @@ export class ResponseCache {
     options?: {
       staleWhileRevalidate?: boolean;
       tags?: string[];
-    }
+    },
   ): Promise<T> {
     const cacheKey = `${this.CACHE_PREFIX}${key}`;
 
@@ -308,9 +305,9 @@ export class ResponseCache {
               globalCache.set(cacheKey, fresh, ttl);
               // Note: Tags support removed as not supported by the cache implementation
             } catch (error) {
-              logger.warn("Background cache refresh failed", {
+              logger.warn('Background cache refresh failed', {
                 key,
-                error: error instanceof Error ? error.message : "Unknown error",
+                error: error instanceof Error ? error.message : 'Unknown error',
               });
             }
           });
@@ -326,9 +323,9 @@ export class ResponseCache {
 
       return result;
     } catch (error) {
-      logger.error("Response cache error", {
+      logger.error('Response cache error', {
         key,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       // Fallback to direct execution
       return fn();
@@ -343,7 +340,7 @@ export class ResponseCache {
   static invalidateByTag(tag: string): void {
     // We would need to implement our own tag tracking and invalidation
     // since globalCache doesn't directly support tag-based invalidation
-    logger.debug("Cache invalidation by tag requested (not implemented)", {
+    logger.debug('Cache invalidation by tag requested (not implemented)', {
       tag,
     });
   }
@@ -380,7 +377,7 @@ export class PerformanceMonitor {
     endpoint: string,
     duration: number,
     success: boolean,
-    slowThreshold: number = 1000
+    slowThreshold: number = 1000,
   ): void {
     const key = endpoint;
     const current = this.metrics.get(key) || {
@@ -411,8 +408,7 @@ export class PerformanceMonitor {
     this.metrics.set(key, current);
 
     // Reset metrics daily
-    const hoursSinceReset =
-      (Date.now() - current.lastReset.getTime()) / (1000 * 60 * 60);
+    const hoursSinceReset = (Date.now() - current.lastReset.getTime()) / (1000 * 60 * 60);
     if (hoursSinceReset >= 24) {
       this.resetMetrics(key);
     }
@@ -453,9 +449,7 @@ export function performanceOptimization(options?: {
   enableDeduplication?: boolean;
   enableMetrics?: boolean;
 }) {
-  return function (
-    handler: (request: HttpRequest) => Promise<HttpResponseInit>
-  ) {
+  return function (handler: (request: HttpRequest) => Promise<HttpResponseInit>) {
     return async (request: HttpRequest): Promise<HttpResponseInit> => {
       const startTime = Date.now();
       const requestId = uuidv4();
@@ -464,23 +458,17 @@ export function performanceOptimization(options?: {
       try {
         let response: HttpResponseInit;
 
-        if (options?.enableDeduplication && request.method === "GET") {
+        if (options?.enableDeduplication && request.method === 'GET') {
           // Deduplicate GET requests
-          const dedupeKey = `${request.method}:${request.url}:${JSON.stringify(
-            request.query
-          )}`;
-          response = await RequestDeduplicator.deduplicate(dedupeKey, () =>
-            handler(request)
-          );
+          const dedupeKey = `${request.method}:${request.url}:${JSON.stringify(request.query)}`;
+          response = await RequestDeduplicator.deduplicate(dedupeKey, () => handler(request));
         } else {
           response = await handler(request);
         }
 
         // Apply compression if enabled
         if (options?.enableCompression && response.jsonBody) {
-          const compressed = ResponseCompression.compressResponse(
-            response.jsonBody
-          );
+          const compressed = ResponseCompression.compressResponse(response.jsonBody);
           response.jsonBody = JSON.parse(compressed);
         }
 
@@ -495,8 +483,8 @@ export function performanceOptimization(options?: {
         // Add performance headers directly to the headers object
         if (!response.headers) response.headers = {};
         const headers = response.headers as Record<string, string>;
-        headers["X-Response-Time"] = `${duration}ms`;
-        headers["X-Request-ID"] = requestId;
+        headers['X-Response-Time'] = `${duration}ms`;
+        headers['X-Request-ID'] = requestId;
 
         return response;
       } catch (error) {

@@ -1,5 +1,5 @@
-import { Container } from "@azure/cosmos";
-import { Family } from "@vcarpool/shared";
+import { Container } from '@azure/cosmos';
+import { Family } from '@vcarpool/shared';
 
 export class FamilyRepository {
   constructor(private container: Container) {}
@@ -32,13 +32,11 @@ export class FamilyRepository {
 
   async findByParentId(parentId: string): Promise<Family[]> {
     const query = {
-      query: "SELECT * FROM c WHERE ARRAY_CONTAINS(c.parentIds, @parentId)",
-      parameters: [{ name: "@parentId", value: parentId }],
+      query: 'SELECT * FROM c WHERE ARRAY_CONTAINS(c.parentIds, @parentId)',
+      parameters: [{ name: '@parentId', value: parentId }],
     };
 
-    const { resources } = await this.container.items
-      .query<Family>(query)
-      .fetchAll();
+    const { resources } = await this.container.items.query<Family>(query).fetchAll();
     return resources;
   }
 }

@@ -2,9 +2,9 @@
  * Calendar grid component showing weekly schedule
  */
 
-import { memo } from "react";
-import { CalendarAssignment } from "@/hooks/useCalendarData";
-import { AssignmentCard } from "./AssignmentCard";
+import { memo } from 'react';
+import { CalendarAssignment } from '@/hooks/useCalendarData';
+import { AssignmentCard } from './AssignmentCard';
 
 interface CalendarGridProps {
   weekDates: Date[];
@@ -14,13 +14,13 @@ interface CalendarGridProps {
 }
 
 const DAYS_OF_WEEK = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ];
 
 export const CalendarGrid = memo(function CalendarGrid({
@@ -37,7 +37,7 @@ export const CalendarGrid = memo(function CalendarGrid({
           <div className="text-sm font-medium text-gray-900">{day}</div>
           <div
             className={`text-lg font-semibold mt-1 ${
-              isToday(weekDates[index]) ? "text-blue-600" : "text-gray-700"
+              isToday(weekDates[index]) ? 'text-blue-600' : 'text-gray-700'
             }`}
           >
             {weekDates[index].getDate()}
@@ -54,10 +54,10 @@ export const CalendarGrid = memo(function CalendarGrid({
             key={index}
             className={`min-h-[120px] border rounded-lg p-2 cursor-pointer transition-colors ${
               isToday(date)
-                ? "border-blue-300 bg-blue-50"
-                : "border-gray-200 hover:border-gray-300"
+                ? 'border-blue-300 bg-blue-50'
+                : 'border-gray-200 hover:border-gray-300'
             }`}
-            onClick={() => onDateClick?.(date.toISOString().split("T")[0])}
+            onClick={() => onDateClick?.(date.toISOString().split('T')[0])}
           >
             <div className="space-y-1">
               {dayAssignments.length === 0 ? (
@@ -65,7 +65,7 @@ export const CalendarGrid = memo(function CalendarGrid({
                   No trips
                 </div>
               ) : (
-                dayAssignments.map((assignment) => (
+                dayAssignments.map(assignment => (
                   <AssignmentCard key={assignment.id} assignment={assignment} />
                 ))
               )}

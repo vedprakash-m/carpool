@@ -1,68 +1,68 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import toast from "react-hot-toast";
-import { RegisterRequest } from "@/types/shared";
-import { useAuthStore } from "@/store/auth.store";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import toast from 'react-hot-toast';
+import { RegisterRequest } from '@/types/shared';
+import { useAuthStore } from '@/store/auth.store';
 import {
   SchoolSelect,
   GradeSelect,
-} from "@/components/shared/SchoolGradeSelects";
-import AddressValidation from "@/components/AddressValidation";
-import { TESLA_STEM_HIGH_SCHOOL } from "@/config/schools";
+} from '@/components/shared/SchoolGradeSelects';
+import AddressValidation from '@/components/AddressValidation';
+import { TESLA_STEM_HIGH_SCHOOL } from '@/config/schools';
 import {
   UserIcon,
   UsersIcon,
   PlusIcon,
   TrashIcon,
   MapPinIcon,
-} from "@heroicons/react/24/outline";
-import { useMemo } from "react";
+} from '@heroicons/react/24/outline';
+import { useMemo } from 'react';
 
 // Local schema definition to avoid import issues
 const registerSchema = z.object({
-  familyName: z.string().min(1, "Family name is required"),
+  familyName: z.string().min(1, 'Family name is required'),
   parent: z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
   }),
   homeAddress: z.object({
-    street: z.string().min(1, "Street address is required"),
-    city: z.string().min(1, "City is required"),
-    state: z.string().min(1, "State is required"),
-    zipCode: z.string().min(5, "Valid ZIP code is required"),
+    street: z.string().min(1, 'Street address is required'),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(1, 'State is required'),
+    zipCode: z.string().min(5, 'Valid ZIP code is required'),
   }),
   secondParent: z
     .object({
-      firstName: z.string().min(1, "First name is required"),
-      lastName: z.string().min(1, "Last name is required"),
-      email: z.string().email("Invalid email address"),
-      password: z.string().min(8, "Password must be at least 8 characters"),
+      firstName: z.string().min(1, 'First name is required'),
+      lastName: z.string().min(1, 'Last name is required'),
+      email: z.string().email('Invalid email address'),
+      password: z.string().min(8, 'Password must be at least 8 characters'),
     })
     .optional(),
   children: z
     .array(
       z.object({
-        firstName: z.string().min(1, "First name is required"),
-        lastName: z.string().min(1, "Last name is required"),
-        grade: z.string().min(1, "Grade is required"),
-        school: z.string().min(1, "School is required"),
+        firstName: z.string().min(1, 'First name is required'),
+        lastName: z.string().min(1, 'Last name is required'),
+        grade: z.string().min(1, 'Grade is required'),
+        school: z.string().min(1, 'School is required'),
       })
     )
-    .min(1, "At least one child is required"),
+    .min(1, 'At least one child is required'),
 });
 
 export default function RegisterPage() {
   const router = useRouter();
-  const register = useAuthStore((state) => state.register);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const register = useAuthStore(state => state.register);
+  const isLoading = useAuthStore(state => state.isLoading);
   const [currentStep, setCurrentStep] = useState(1);
   const [addressValidated, setAddressValidated] = useState(false);
 
@@ -74,19 +74,19 @@ export default function RegisterPage() {
     watch,
   } = useForm<RegisterRequest>({
     resolver: zodResolver(registerSchema),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
       homeAddress: {
-        street: "",
-        city: "",
-        state: "",
-        zipCode: "",
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
       },
       children: [
         {
-          firstName: "",
-          lastName: "",
-          grade: "",
+          firstName: '',
+          lastName: '',
+          grade: '',
           school: TESLA_STEM_HIGH_SCHOOL.name,
         },
       ],
@@ -95,25 +95,25 @@ export default function RegisterPage() {
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "children",
+    name: 'children',
   });
 
   // Debug logging for fields array
-  console.log("Current fields array:", fields);
-  console.log("Fields length:", fields?.length);
-  console.log("Fields type:", typeof fields);
+  console.log('Current fields array:', fields);
+  console.log('Fields length:', fields?.length);
+  console.log('Fields type:', typeof fields);
 
   // Ensure fields array is never empty with comprehensive safety checks
   const safeFields = useMemo(() => {
     // If fields is undefined or empty, return a default child to prevent crashes
     if (!fields || !Array.isArray(fields) || fields.length === 0) {
-      console.warn("Fields array is empty or undefined, using default child");
+      console.warn('Fields array is empty or undefined, using default child');
       return [
         {
-          id: "default-child",
-          firstName: "",
-          lastName: "",
-          grade: "",
+          id: 'default-child',
+          firstName: '',
+          lastName: '',
+          grade: '',
           school: TESLA_STEM_HIGH_SCHOOL.name,
         },
       ];
@@ -122,13 +122,13 @@ export default function RegisterPage() {
     // Return fields with safety checks for each individual field
     return fields.map((field, index) => {
       // Handle null, undefined, or invalid field objects
-      if (!field || typeof field !== "object") {
+      if (!field || typeof field !== 'object') {
         console.warn(`Invalid field at index ${index}:`, field);
         return {
           id: `fallback-child-${index}`,
-          firstName: "",
-          lastName: "",
-          grade: "",
+          firstName: '',
+          lastName: '',
+          grade: '',
           school: TESLA_STEM_HIGH_SCHOOL.name,
         };
       }
@@ -137,9 +137,9 @@ export default function RegisterPage() {
         ...field,
         // Ensure each field has required properties with fallbacks
         id: field.id || `child-${index}`,
-        firstName: field.firstName || "",
-        lastName: field.lastName || "",
-        grade: field.grade || "",
+        firstName: field.firstName || '',
+        lastName: field.lastName || '',
+        grade: field.grade || '',
         school: field.school || TESLA_STEM_HIGH_SCHOOL.name,
       };
     });
@@ -149,18 +149,18 @@ export default function RegisterPage() {
     try {
       // Add validation to ensure children array is properly populated
       if (!data.children || data.children.length === 0) {
-        toast.error("Please add at least one child");
+        toast.error('Please add at least one child');
         return;
       }
 
       // Validate each child has required fields
       const invalidChild = data.children.find(
-        (child) =>
+        child =>
           !child.firstName || !child.lastName || !child.grade || !child.school
       );
 
       if (invalidChild) {
-        toast.error("Please fill in all required fields for each child");
+        toast.error('Please fill in all required fields for each child');
         return;
       }
 
@@ -172,25 +172,25 @@ export default function RegisterPage() {
         !data.homeAddress.state ||
         !data.homeAddress.zipCode
       ) {
-        toast.error("Please provide a complete home address");
+        toast.error('Please provide a complete home address');
         return;
       }
 
       // Note: Address validation is handled by the AddressValidation component
       // The actual geographic validation happens during the address validation step
 
-      console.log("Submitting registration data:", data);
+      console.log('Submitting registration data:', data);
       await register(data);
-      toast.success("Account created successfully!");
-      router.push("/dashboard");
+      toast.success('Account created successfully!');
+      router.push('/dashboard');
     } catch (error: any) {
-      console.error("Registration error:", error);
-      toast.error(error.message || "Registration failed. Please try again.");
+      console.error('Registration error:', error);
+      toast.error(error.message || 'Registration failed. Please try again.');
     }
   };
 
-  const nextStep = () => setCurrentStep((prev) => prev + 1);
-  const prevStep = () => setCurrentStep((prev) => prev - 1);
+  const nextStep = () => setCurrentStep(prev => prev + 1);
+  const prevStep = () => setCurrentStep(prev => prev - 1);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -203,7 +203,7 @@ export default function RegisterPage() {
             Join VCarpool as a Family
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Already have an account?{" "}
+            Already have an account?{' '}
             <Link
               href="/login"
               className="font-medium text-primary-600 hover:text-primary-500"
@@ -228,7 +228,7 @@ export default function RegisterPage() {
                     Family Name
                   </label>
                   <input
-                    {...registerField("familyName")}
+                    {...registerField('familyName')}
                     type="text"
                     className="mt-1 input"
                     placeholder="e.g., The Johnson Family"
@@ -249,7 +249,7 @@ export default function RegisterPage() {
                       First Name
                     </label>
                     <input
-                      {...registerField("parent.firstName")}
+                      {...registerField('parent.firstName')}
                       type="text"
                       className="mt-1 input"
                       placeholder="Parent's First Name"
@@ -268,7 +268,7 @@ export default function RegisterPage() {
                       Last Name
                     </label>
                     <input
-                      {...registerField("parent.lastName")}
+                      {...registerField('parent.lastName')}
                       type="text"
                       className="mt-1 input"
                       placeholder="Parent's Last Name"
@@ -289,7 +289,7 @@ export default function RegisterPage() {
                     Email Address
                   </label>
                   <input
-                    {...registerField("parent.email")}
+                    {...registerField('parent.email')}
                     type="email"
                     className="mt-1 input"
                     placeholder="Parent's Email Address"
@@ -310,7 +310,7 @@ export default function RegisterPage() {
                     Password
                   </label>
                   <input
-                    {...registerField("parent.password")}
+                    {...registerField('parent.password')}
                     type="password"
                     className="mt-1 input"
                     placeholder="Minimum 8 characters"
@@ -403,7 +403,7 @@ export default function RegisterPage() {
                       safeFields.length === 0
                     ) {
                       console.error(
-                        "SafeFields is not a valid array:",
+                        'SafeFields is not a valid array:',
                         safeFields
                       );
                       return (
@@ -415,7 +415,7 @@ export default function RegisterPage() {
 
                     return safeFields.map((field, index) => {
                       // Safety check for each field
-                      if (!field || typeof field !== "object") {
+                      if (!field || typeof field !== 'object') {
                         console.error(
                           `Invalid field at index ${index}:`,
                           field
@@ -457,11 +457,11 @@ export default function RegisterPage() {
                                     }
                                   } catch (error) {
                                     console.error(
-                                      "Error removing child:",
+                                      'Error removing child:',
                                       error
                                     );
                                     toast.error(
-                                      "Failed to remove child. Please try again."
+                                      'Failed to remove child. Please try again.'
                                     );
                                   }
                                 }}
@@ -543,7 +543,7 @@ export default function RegisterPage() {
                       );
                     });
                   } catch (error) {
-                    console.error("Error rendering children form:", error);
+                    console.error('Error rendering children form:', error);
                     return (
                       <div className="text-red-600 p-4 border border-red-200 rounded">
                         Error rendering form. Please refresh the page.
@@ -555,16 +555,16 @@ export default function RegisterPage() {
                   type="button"
                   onClick={() => {
                     try {
-                      console.log("Adding new child to form");
+                      console.log('Adding new child to form');
                       append({
-                        firstName: "",
-                        lastName: "",
-                        grade: "",
+                        firstName: '',
+                        lastName: '',
+                        grade: '',
                         school: TESLA_STEM_HIGH_SCHOOL.name,
                       });
                     } catch (error) {
-                      console.error("Error adding child:", error);
-                      toast.error("Failed to add child. Please try again.");
+                      console.error('Error adding child:', error);
+                      toast.error('Failed to add child. Please try again.');
                     }
                   }}
                   className="btn-secondary"
@@ -586,7 +586,7 @@ export default function RegisterPage() {
                   className="btn-primary"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Creating Account..." : "Create Account"}
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
                 </button>
               </div>
             </section>

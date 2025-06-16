@@ -3,12 +3,12 @@
  * Handles service worker registration and PWA setup
  */
 
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { usePWA } from "@/services/pwa.service";
-import { useAccessibility } from "@/services/accessibility.service";
-import { PWAInstallPrompt, PWAStatus } from "@/components/ui/PWAInstallPrompt";
+import { useEffect } from 'react';
+import { usePWA } from '@/services/pwa.service';
+import { useAccessibility } from '@/services/accessibility.service';
+import { PWAInstallPrompt, PWAStatus } from '@/components/ui/PWAInstallPrompt';
 
 export function PWAInitializer() {
   const { capabilities, registration } = usePWA();
@@ -18,30 +18,30 @@ export function PWAInitializer() {
     // Initialize accessibility features on app load
     try {
       if (config.screenReader) {
-        console.log("Screen reader detected, accessibility features enabled");
+        console.log('Screen reader detected, accessibility features enabled');
       }
 
       if (config.keyboardNavigation) {
-        console.log("Keyboard navigation preference detected");
+        console.log('Keyboard navigation preference detected');
       }
 
       if (config.reducedMotion) {
-        console.log("Reduced motion preference detected");
+        console.log('Reduced motion preference detected');
       }
 
       if (config.highContrast) {
-        console.log("High contrast preference detected");
+        console.log('High contrast preference detected');
       }
     } catch (error) {
-      console.warn("Accessibility initialization error:", error);
+      console.warn('Accessibility initialization error:', error);
     }
   }, [config]);
 
   useEffect(() => {
     // Log PWA capabilities for debugging
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === 'development') {
       try {
-        console.log("PWA Capabilities:", {
+        console.log('PWA Capabilities:', {
           isInstallable: capabilities.isInstallable,
           isInstalled: capabilities.isInstalled,
           isOnline: capabilities.isOnline,
@@ -50,7 +50,7 @@ export function PWAInitializer() {
           registration: !!registration,
         });
       } catch (error) {
-        console.warn("PWA capabilities logging error:", error);
+        console.warn('PWA capabilities logging error:', error);
       }
     }
   }, [capabilities, registration]);
@@ -66,7 +66,7 @@ export function PWAInitializer() {
       )}
 
       {/* PWA Status Indicator - for debugging/info */}
-      {process.env.NODE_ENV === "development" && (
+      {process.env.NODE_ENV === 'development' && (
         <PWAStatus className="fixed top-4 right-4 z-50" />
       )}
     </>

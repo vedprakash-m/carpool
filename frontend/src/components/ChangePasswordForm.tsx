@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useAuthStore } from "../store/auth.store";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useAuthStore } from '../store/auth.store';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Current password is required"),
+    currentPassword: z.string().min(1, 'Current password is required'),
     newPassword: z
       .string()
-      .min(8, "New password must be at least 8 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+      .min(8, 'New password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
-  .refine((data) => data.newPassword === data.confirmPassword, {
+  .refine(data => data.newPassword === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ["confirmPassword"],
+    path: ['confirmPassword'],
   });
 
 type ChangePasswordForm = z.infer<typeof changePasswordSchema>;
@@ -36,7 +36,7 @@ export default function ChangePasswordForm({
     new: false,
     confirm: false,
   });
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState('');
 
   const {
     register,
@@ -50,7 +50,7 @@ export default function ChangePasswordForm({
 
   const onSubmit = async (data: ChangePasswordForm) => {
     setIsSubmitting(true);
-    setSuccessMessage("");
+    setSuccessMessage('');
 
     try {
       const success = await changePassword(
@@ -59,29 +59,29 @@ export default function ChangePasswordForm({
       );
 
       if (success) {
-        setSuccessMessage("Password changed successfully!");
+        setSuccessMessage('Password changed successfully!');
         reset();
         setTimeout(() => {
           onClose();
         }, 1500);
       } else {
-        setError("currentPassword", {
-          type: "manual",
-          message: "Current password is incorrect",
+        setError('currentPassword', {
+          type: 'manual',
+          message: 'Current password is incorrect',
         });
       }
     } catch (error) {
-      setError("root", {
-        type: "manual",
-        message: "Failed to change password. Please try again.",
+      setError('root', {
+        type: 'manual',
+        message: 'Failed to change password. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const togglePasswordVisibility = (field: "current" | "new" | "confirm") => {
-    setShowPasswords((prev) => ({
+  const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
+    setShowPasswords(prev => ({
       ...prev,
       [field]: !prev[field],
     }));
@@ -111,16 +111,16 @@ export default function ChangePasswordForm({
         </label>
         <div className="mt-1 relative">
           <input
-            type={showPasswords.current ? "text" : "password"}
+            type={showPasswords.current ? 'text' : 'password'}
             id="currentPassword"
-            {...register("currentPassword")}
+            {...register('currentPassword')}
             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             placeholder="Enter current password"
           />
           <button
             type="button"
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            onClick={() => togglePasswordVisibility("current")}
+            onClick={() => togglePasswordVisibility('current')}
           >
             {showPasswords.current ? (
               <EyeSlashIcon className="h-5 w-5 text-gray-400" />
@@ -146,16 +146,16 @@ export default function ChangePasswordForm({
         </label>
         <div className="mt-1 relative">
           <input
-            type={showPasswords.new ? "text" : "password"}
+            type={showPasswords.new ? 'text' : 'password'}
             id="newPassword"
-            {...register("newPassword")}
+            {...register('newPassword')}
             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             placeholder="Enter new password (min 8 characters)"
           />
           <button
             type="button"
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            onClick={() => togglePasswordVisibility("new")}
+            onClick={() => togglePasswordVisibility('new')}
           >
             {showPasswords.new ? (
               <EyeSlashIcon className="h-5 w-5 text-gray-400" />
@@ -181,16 +181,16 @@ export default function ChangePasswordForm({
         </label>
         <div className="mt-1 relative">
           <input
-            type={showPasswords.confirm ? "text" : "password"}
+            type={showPasswords.confirm ? 'text' : 'password'}
             id="confirmPassword"
-            {...register("confirmPassword")}
+            {...register('confirmPassword')}
             className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             placeholder="Confirm new password"
           />
           <button
             type="button"
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            onClick={() => togglePasswordVisibility("confirm")}
+            onClick={() => togglePasswordVisibility('confirm')}
           >
             {showPasswords.confirm ? (
               <EyeSlashIcon className="h-5 w-5 text-gray-400" />
@@ -227,7 +227,7 @@ export default function ChangePasswordForm({
               Changing...
             </>
           ) : (
-            "Change Password"
+            'Change Password'
           )}
         </button>
       </div>

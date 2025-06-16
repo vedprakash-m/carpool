@@ -3,8 +3,8 @@
  * Standardizes all API responses across VCarpool backend
  */
 
-import { HttpRequest, HttpResponseInit } from "@azure/functions";
-import { CorsMiddleware } from "../middleware/cors.middleware";
+import { HttpRequest, HttpResponseInit } from '@azure/functions';
+import { CorsMiddleware } from '../middleware/cors.middleware';
 
 export interface StandardResponse<T = any> {
   success: boolean;
@@ -47,7 +47,7 @@ export interface SuccessResponse<T = any> {
 }
 
 export class UnifiedResponseHandler {
-  private static readonly VERSION = "1.0.0";
+  private static readonly VERSION = '1.0.0';
 
   /**
    * Create standardized success response
@@ -56,7 +56,7 @@ export class UnifiedResponseHandler {
     data: T,
     status: number = 200,
     requestId?: string,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): HttpResponseInit {
     const response: SuccessResponse<T> = {
       success: true,
@@ -71,7 +71,7 @@ export class UnifiedResponseHandler {
     return {
       status,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...CorsMiddleware.createHeaders(),
         ...headers,
       },
@@ -88,7 +88,7 @@ export class UnifiedResponseHandler {
     status: number = 400,
     details?: any,
     requestId?: string,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ): HttpResponseInit {
     const response: ErrorResponse = {
       success: false,
@@ -107,7 +107,7 @@ export class UnifiedResponseHandler {
     return {
       status,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...CorsMiddleware.createHeaders(),
         ...headers,
       },
@@ -125,7 +125,7 @@ export class UnifiedResponseHandler {
         ...CorsMiddleware.createHeaders(),
         ...headers,
       },
-      body: "",
+      body: '',
     };
   }
 
@@ -133,56 +133,53 @@ export class UnifiedResponseHandler {
    * Validation error response
    */
   static validationError(
-    message: string = "Validation failed",
+    message: string = 'Validation failed',
     details?: any,
-    requestId?: string
+    requestId?: string,
   ): HttpResponseInit {
-    return this.error("VALIDATION_ERROR", message, 400, details, requestId);
+    return this.error('VALIDATION_ERROR', message, 400, details, requestId);
   }
 
   /**
    * Authentication error response
    */
   static authError(
-    message: string = "Authentication required",
-    requestId?: string
+    message: string = 'Authentication required',
+    requestId?: string,
   ): HttpResponseInit {
-    return this.error("UNAUTHORIZED", message, 401, undefined, requestId);
+    return this.error('UNAUTHORIZED', message, 401, undefined, requestId);
   }
 
   /**
    * Authorization error response
    */
   static forbiddenError(
-    message: string = "Insufficient permissions",
-    requestId?: string
+    message: string = 'Insufficient permissions',
+    requestId?: string,
   ): HttpResponseInit {
-    return this.error("FORBIDDEN", message, 403, undefined, requestId);
+    return this.error('FORBIDDEN', message, 403, undefined, requestId);
   }
 
   /**
    * Not found error response
    */
   static notFoundError(
-    message: string = "Resource not found",
-    requestId?: string
+    message: string = 'Resource not found',
+    requestId?: string,
   ): HttpResponseInit {
-    return this.error("NOT_FOUND", message, 404, undefined, requestId);
+    return this.error('NOT_FOUND', message, 404, undefined, requestId);
   }
 
   /**
    * Method not allowed error response
    */
-  static methodNotAllowedError(
-    method: string,
-    requestId?: string
-  ): HttpResponseInit {
+  static methodNotAllowedError(method: string, requestId?: string): HttpResponseInit {
     return this.error(
-      "METHOD_NOT_ALLOWED",
+      'METHOD_NOT_ALLOWED',
       `Method ${method} not allowed`,
       405,
       undefined,
-      requestId
+      requestId,
     );
   }
 
@@ -190,38 +187,35 @@ export class UnifiedResponseHandler {
    * Internal server error response
    */
   static internalError(
-    message: string = "Internal server error",
+    message: string = 'Internal server error',
     details?: any,
-    requestId?: string
+    requestId?: string,
   ): HttpResponseInit {
-    return this.error("INTERNAL_ERROR", message, 500, details, requestId);
+    return this.error('INTERNAL_ERROR', message, 500, details, requestId);
   }
 
   /**
    * Handle exceptions and convert to standardized response
    */
-  static handleException(
-    error: Error | any,
-    requestId?: string
-  ): HttpResponseInit {
-    console.error("Unhandled exception:", error);
+  static handleException(error: Error | any, requestId?: string): HttpResponseInit {
+    console.error('Unhandled exception:', error);
 
     // Check if it's a known error type
     if (error.statusCode) {
       return this.error(
-        error.code || "ERROR",
-        error.message || "An error occurred",
+        error.code || 'ERROR',
+        error.message || 'An error occurred',
         error.statusCode,
         error.details,
-        requestId
+        requestId,
       );
     }
 
     // Default to internal server error
     return this.internalError(
-      error.message || "An unexpected error occurred",
-      process.env.NODE_ENV === "development" ? error.stack : undefined,
-      requestId
+      error.message || 'An unexpected error occurred',
+      process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      requestId,
     );
   }
 
@@ -230,14 +224,14 @@ export class UnifiedResponseHandler {
    */
   static async parseJsonBody(request: HttpRequest): Promise<any> {
     try {
-      if (request.method === "GET" || request.method === "DELETE") {
+      if (request.method === 'GET' || request.method === 'DELETE') {
         return {};
       }
 
       const body = await request.text();
       return body ? JSON.parse(body) : {};
     } catch (error) {
-      throw new Error("Invalid JSON in request body");
+      throw new Error('Invalid JSON in request body');
     }
   }
 
@@ -246,11 +240,10 @@ export class UnifiedResponseHandler {
    */
   static validateRequiredFields(
     data: any,
-    requiredFields: string[]
+    requiredFields: string[],
   ): { isValid: boolean; missingFields?: string[] } {
     const missingFields = requiredFields.filter(
-      (field) =>
-        data[field] === undefined || data[field] === null || data[field] === ""
+      (field) => data[field] === undefined || data[field] === null || data[field] === '',
     );
 
     return {
@@ -268,12 +261,10 @@ export class UnifiedResponseHandler {
     clientIp?: string;
   } {
     return {
-      requestId: request.headers.get("x-request-id") || undefined,
-      userAgent: request.headers.get("user-agent") || undefined,
+      requestId: request.headers.get('x-request-id') || undefined,
+      userAgent: request.headers.get('user-agent') || undefined,
       clientIp:
-        request.headers.get("x-forwarded-for") ||
-        request.headers.get("x-real-ip") ||
-        undefined,
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
     };
   }
 
@@ -285,7 +276,7 @@ export class UnifiedResponseHandler {
     totalCount: number,
     page: number = 1,
     limit: number = 20,
-    requestId?: string
+    requestId?: string,
   ): HttpResponseInit {
     const totalPages = Math.ceil(totalCount / limit);
     const hasNext = page < totalPages;
@@ -313,7 +304,7 @@ export class UnifiedResponseHandler {
     data: T,
     headers: Record<string, string>,
     status: number = 200,
-    requestId?: string
+    requestId?: string,
   ): HttpResponseInit {
     return this.success(data, status, requestId, headers);
   }
@@ -322,53 +313,42 @@ export class UnifiedResponseHandler {
 /**
  * Legacy function exports for backward compatibility
  */
-export function createSuccessResponse<T>(
-  data: T,
-  status: number = 200
-): HttpResponseInit {
+export function createSuccessResponse<T>(data: T, status: number = 200): HttpResponseInit {
   return UnifiedResponseHandler.success(data, status);
 }
 
 export function createErrorResponse(
   code: string,
   message: string,
-  status: number = 400
+  status: number = 400,
 ): HttpResponseInit {
   return UnifiedResponseHandler.error(code, message, status);
 }
 
 export function handlePreflight(request: HttpRequest): HttpResponseInit | null {
-  if (request.method === "OPTIONS") {
+  if (request.method === 'OPTIONS') {
     return UnifiedResponseHandler.preflight();
   }
   return null;
 }
 
 export function validateAuth(request: HttpRequest): HttpResponseInit | null {
-  const authHeader = request.headers.get("authorization");
+  const authHeader = request.headers.get('authorization');
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return UnifiedResponseHandler.authError(
-      "Missing or invalid authorization token"
-    );
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return UnifiedResponseHandler.authError('Missing or invalid authorization token');
   }
 
   return null;
 }
 
-export function validateRequiredFields(
-  data: any,
-  fields: string[]
-): HttpResponseInit | null {
-  const validation = UnifiedResponseHandler.validateRequiredFields(
-    data,
-    fields
-  );
+export function validateRequiredFields(data: any, fields: string[]): HttpResponseInit | null {
+  const validation = UnifiedResponseHandler.validateRequiredFields(data, fields);
 
   if (!validation.isValid) {
     return UnifiedResponseHandler.validationError(
-      `Missing required fields: ${validation.missingFields?.join(", ")}`,
-      { missingFields: validation.missingFields }
+      `Missing required fields: ${validation.missingFields?.join(', ')}`,
+      { missingFields: validation.missingFields },
     );
   }
 
@@ -382,10 +362,9 @@ export async function parseJsonBody(request: HttpRequest): Promise<any> {
 export function handleError(
   error: Error | any,
   context?: any,
-  customMessage?: string
+  customMessage?: string,
 ): HttpResponseInit {
-  const requestId =
-    context?.requestId || context?.request?.requestId || context?.invocationId;
+  const requestId = context?.requestId || context?.request?.requestId || context?.invocationId;
 
   if (customMessage) {
     console.error(`${customMessage}:`, error);
@@ -394,14 +373,10 @@ export function handleError(
   return UnifiedResponseHandler.handleException(error, requestId);
 }
 
-export function logRequest(
-  request: HttpRequest,
-  context?: any,
-  endpoint?: string
-): void {
+export function logRequest(request: HttpRequest, context?: any, endpoint?: string): void {
   const meta = UnifiedResponseHandler.extractRequestMeta(request);
 
-  console.log(`[${endpoint || "API"}] ${request.method} ${request.url}`, {
+  console.log(`[${endpoint || 'API'}] ${request.method} ${request.url}`, {
     ...meta,
     timestamp: new Date().toISOString(),
   });

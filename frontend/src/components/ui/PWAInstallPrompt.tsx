@@ -3,9 +3,9 @@
  * Provides native app-like installation experience
  */
 
-import React, { useState, useEffect } from "react";
-import { usePWA } from "../../services/pwa.service";
-import { useAccessibility } from "../../services/accessibility.service";
+import React, { useState, useEffect } from 'react';
+import { usePWA } from '../../services/pwa.service';
+import { useAccessibility } from '../../services/accessibility.service';
 
 interface PWAInstallPromptProps {
   className?: string;
@@ -14,7 +14,7 @@ interface PWAInstallPromptProps {
 }
 
 export function PWAInstallPrompt({
-  className = "",
+  className = '',
   hideAfterInstall = true,
   customTrigger,
 }: PWAInstallPromptProps) {
@@ -35,27 +35,27 @@ export function PWAInstallPrompt({
 
   const handleInstall = async () => {
     setIsInstalling(true);
-    announceLive("Installing VCarpool app...");
+    announceLive('Installing VCarpool app...');
 
     try {
       const result = await promptInstall();
 
-      if (result.outcome === "accepted") {
-        announceLive("VCarpool app installed successfully!");
+      if (result.outcome === 'accepted') {
+        announceLive('VCarpool app installed successfully!');
         setShowPrompt(false);
 
         // Request notification permission after install
         setTimeout(async () => {
           await requestNotifications();
         }, 1000);
-      } else if (result.outcome === "dismissed") {
-        announceLive("App installation cancelled");
+      } else if (result.outcome === 'dismissed') {
+        announceLive('App installation cancelled');
         setDismissed(true);
         setShowPrompt(false);
       }
     } catch (error) {
-      console.error("Installation failed:", error);
-      announceLive("Installation failed. Please try again.");
+      console.error('Installation failed:', error);
+      announceLive('Installation failed. Please try again.');
     } finally {
       setIsInstalling(false);
     }
@@ -64,7 +64,7 @@ export function PWAInstallPrompt({
   const handleDismiss = () => {
     setDismissed(true);
     setShowPrompt(false);
-    announceLive("Install prompt dismissed");
+    announceLive('Install prompt dismissed');
   };
 
   if (!showPrompt || capabilities.isInstalled) {
@@ -78,8 +78,8 @@ export function PWAInstallPrompt({
         onClick={handleInstall}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             handleInstall();
           }
@@ -158,7 +158,7 @@ export function PWAInstallPrompt({
                     </span>
                   </>
                 ) : (
-                  "Install App"
+                  'Install App'
                 )}
               </button>
 
@@ -213,7 +213,7 @@ export function PWAInstallPrompt({
 
 // Compact install button for navigation bars
 export function PWAInstallButton({
-  className = "",
+  className = '',
   showText = true,
 }: {
   className?: string;
@@ -229,19 +229,19 @@ export function PWAInstallButton({
 
   const handleInstall = async () => {
     setIsInstalling(true);
-    announceLive("Installing VCarpool app...");
+    announceLive('Installing VCarpool app...');
 
     try {
       const result = await promptInstall();
 
-      if (result.outcome === "accepted") {
-        announceLive("VCarpool app installed successfully!");
-      } else if (result.outcome === "dismissed") {
-        announceLive("App installation cancelled");
+      if (result.outcome === 'accepted') {
+        announceLive('VCarpool app installed successfully!');
+      } else if (result.outcome === 'dismissed') {
+        announceLive('App installation cancelled');
       }
     } catch (error) {
-      console.error("Installation failed:", error);
-      announceLive("Installation failed. Please try again.");
+      console.error('Installation failed:', error);
+      announceLive('Installation failed. Please try again.');
     } finally {
       setIsInstalling(false);
     }
@@ -252,7 +252,7 @@ export function PWAInstallButton({
       onClick={handleInstall}
       disabled={isInstalling}
       className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`}
-      aria-label={showText ? undefined : "Install VCarpool app"}
+      aria-label={showText ? undefined : 'Install VCarpool app'}
     >
       {isInstalling ? (
         <svg
@@ -293,8 +293,8 @@ export function PWAInstallButton({
         </svg>
       )}
       {showText && (
-        <span className={isInstalling ? "ml-2" : "ml-2"}>
-          {isInstalling ? "Installing..." : "Install App"}
+        <span className={isInstalling ? 'ml-2' : 'ml-2'}>
+          {isInstalling ? 'Installing...' : 'Install App'}
         </span>
       )}
     </button>
@@ -302,7 +302,7 @@ export function PWAInstallButton({
 }
 
 // PWA status indicator
-export function PWAStatus({ className = "" }: { className?: string }) {
+export function PWAStatus({ className = '' }: { className?: string }) {
   const { capabilities } = usePWA();
 
   if (capabilities.isInstalled) {

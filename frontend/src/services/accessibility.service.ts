@@ -3,7 +3,7 @@
  * Provides WCAG 2.1 AA compliance features and accessibility helpers
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 export interface AccessibilityConfig {
   reducedMotion: boolean;
@@ -15,7 +15,7 @@ export interface AccessibilityConfig {
 
 export interface FocusManagement {
   trapFocus: (container: HTMLElement) => () => void;
-  announceLive: (message: string, priority?: "polite" | "assertive") => void;
+  announceLive: (message: string, priority?: 'polite' | 'assertive') => void;
   manageFocus: (element: HTMLElement | null) => void;
 }
 
@@ -24,7 +24,7 @@ class AccessibilityService {
   private announceTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       this.createLiveRegion();
       this.detectPreferences();
     }
@@ -32,10 +32,10 @@ class AccessibilityService {
 
   private createLiveRegion(): void {
     if (!this.liveRegion) {
-      this.liveRegion = document.createElement("div");
-      this.liveRegion.setAttribute("aria-live", "polite");
-      this.liveRegion.setAttribute("aria-atomic", "true");
-      this.liveRegion.className = "sr-only";
+      this.liveRegion = document.createElement('div');
+      this.liveRegion.setAttribute('aria-live', 'polite');
+      this.liveRegion.setAttribute('aria-atomic', 'true');
+      this.liveRegion.className = 'sr-only';
       this.liveRegion.style.cssText = `
         position: absolute !important;
         left: -10000px !important;
@@ -50,7 +50,7 @@ class AccessibilityService {
   }
 
   getAccessibilityConfig(): AccessibilityConfig {
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       return {
         reducedMotion: false,
         highContrast: false,
@@ -61,10 +61,10 @@ class AccessibilityService {
     }
 
     return {
-      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
+      reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)')
         .matches,
-      highContrast: window.matchMedia("(prefers-contrast: high)").matches,
-      largeText: window.matchMedia("(prefers-reduced-data: reduce)").matches,
+      highContrast: window.matchMedia('(prefers-contrast: high)').matches,
+      largeText: window.matchMedia('(prefers-reduced-data: reduce)').matches,
       screenReader: this.detectScreenReader(),
       keyboardNavigation: this.detectKeyboardNavigation(),
     };
@@ -74,9 +74,9 @@ class AccessibilityService {
     // Common screen reader detection methods
     return !!(
       (window as any).speechSynthesis ||
-      (navigator as any).userAgent?.includes("NVDA") ||
-      (navigator as any).userAgent?.includes("JAWS") ||
-      (navigator as any).userAgent?.includes("VoiceOver")
+      (navigator as any).userAgent?.includes('NVDA') ||
+      (navigator as any).userAgent?.includes('JAWS') ||
+      (navigator as any).userAgent?.includes('VoiceOver')
     );
   }
 
@@ -85,20 +85,20 @@ class AccessibilityService {
     let keyboardUser = false;
 
     const handleFirstTab = (e: KeyboardEvent) => {
-      if (e.key === "Tab") {
+      if (e.key === 'Tab') {
         keyboardUser = true;
-        document.body.classList.add("keyboard-navigation");
-        window.removeEventListener("keydown", handleFirstTab);
+        document.body.classList.add('keyboard-navigation');
+        window.removeEventListener('keydown', handleFirstTab);
       }
     };
 
     const handleMouseDown = () => {
       keyboardUser = false;
-      document.body.classList.remove("keyboard-navigation");
+      document.body.classList.remove('keyboard-navigation');
     };
 
-    window.addEventListener("keydown", handleFirstTab);
-    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener('keydown', handleFirstTab);
+    window.addEventListener('mousedown', handleMouseDown);
 
     return keyboardUser;
   }
@@ -108,17 +108,17 @@ class AccessibilityService {
     const config = this.getAccessibilityConfig();
 
     if (config.reducedMotion) {
-      document.documentElement.classList.add("reduce-motion");
+      document.documentElement.classList.add('reduce-motion');
     }
 
     if (config.highContrast) {
-      document.documentElement.classList.add("high-contrast");
+      document.documentElement.classList.add('high-contrast');
     }
   }
 
   announceLive(
     message: string,
-    priority: "polite" | "assertive" = "polite"
+    priority: 'polite' | 'assertive' = 'polite'
   ): void {
     if (!this.liveRegion) return;
 
@@ -127,8 +127,8 @@ class AccessibilityService {
       clearTimeout(this.announceTimeout);
     }
 
-    this.liveRegion.setAttribute("aria-live", priority);
-    this.liveRegion.textContent = "";
+    this.liveRegion.setAttribute('aria-live', priority);
+    this.liveRegion.textContent = '';
 
     // Small delay to ensure screen readers pick up the change
     this.announceTimeout = setTimeout(() => {
@@ -145,7 +145,7 @@ class AccessibilityService {
 
     // Safety check for empty focusable elements
     if (focusableElements.length === 0) {
-      console.warn("No focusable elements found in container");
+      console.warn('No focusable elements found in container');
       return () => {}; // Return empty cleanup function
     }
 
@@ -153,7 +153,7 @@ class AccessibilityService {
     const lastFocusable = focusableElements[focusableElements.length - 1];
 
     const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key !== "Tab") return;
+      if (e.key !== 'Tab') return;
 
       if (e.shiftKey) {
         if (document.activeElement === firstFocusable) {
@@ -169,15 +169,15 @@ class AccessibilityService {
     };
 
     const handleEscapeKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         e.preventDefault();
         // Allow custom escape handling
-        container.dispatchEvent(new CustomEvent("escape-pressed"));
+        container.dispatchEvent(new CustomEvent('escape-pressed'));
       }
     };
 
-    container.addEventListener("keydown", handleTabKey);
-    container.addEventListener("keydown", handleEscapeKey);
+    container.addEventListener('keydown', handleTabKey);
+    container.addEventListener('keydown', handleEscapeKey);
 
     // Focus first element
     if (firstFocusable) {
@@ -186,19 +186,19 @@ class AccessibilityService {
 
     // Return cleanup function
     return () => {
-      container.removeEventListener("keydown", handleTabKey);
-      container.removeEventListener("keydown", handleEscapeKey);
+      container.removeEventListener('keydown', handleTabKey);
+      container.removeEventListener('keydown', handleEscapeKey);
     };
   }
 
   createSkipLink(
     targetId: string,
-    text: string = "Skip to main content"
+    text: string = 'Skip to main content'
   ): HTMLElement {
-    const skipLink = document.createElement("a");
+    const skipLink = document.createElement('a');
     skipLink.href = `#${targetId}`;
     skipLink.textContent = text;
-    skipLink.className = "skip-link";
+    skipLink.className = 'skip-link';
     skipLink.style.cssText = `
       position: absolute;
       top: -40px;
@@ -212,12 +212,12 @@ class AccessibilityService {
       transition: top 0.2s ease-in-out;
     `;
 
-    skipLink.addEventListener("focus", () => {
-      skipLink.style.top = "6px";
+    skipLink.addEventListener('focus', () => {
+      skipLink.style.top = '6px';
     });
 
-    skipLink.addEventListener("blur", () => {
-      skipLink.style.top = "-40px";
+    skipLink.addEventListener('blur', () => {
+      skipLink.style.top = '-40px';
     });
 
     return skipLink;
@@ -233,7 +233,7 @@ class AccessibilityService {
   } {
     const getLuminance = (color: string): number => {
       // Convert hex to RGB
-      const hex = color.replace("#", "");
+      const hex = color.replace('#', '');
       const r = parseInt(hex.substr(0, 2), 16) / 255;
       const g = parseInt(hex.substr(2, 2), 16) / 255;
       const b = parseInt(hex.substr(4, 2), 16) / 255;
@@ -264,42 +264,42 @@ class AccessibilityService {
       expanded?: boolean;
       controls?: string;
       hasPopup?: boolean | string;
-      live?: "polite" | "assertive" | "off";
+      live?: 'polite' | 'assertive' | 'off';
       atomic?: boolean;
     }
   ): void {
     if (options.label) {
-      element.setAttribute("aria-label", options.label);
+      element.setAttribute('aria-label', options.label);
     }
 
     if (options.description) {
       const descId = `desc-${Math.random().toString(36).substr(2, 9)}`;
-      const descElement = document.createElement("div");
+      const descElement = document.createElement('div');
       descElement.id = descId;
       descElement.textContent = options.description;
-      descElement.className = "sr-only";
+      descElement.className = 'sr-only';
       element.parentNode?.appendChild(descElement);
-      element.setAttribute("aria-describedby", descId);
+      element.setAttribute('aria-describedby', descId);
     }
 
-    if (typeof options.expanded === "boolean") {
-      element.setAttribute("aria-expanded", options.expanded.toString());
+    if (typeof options.expanded === 'boolean') {
+      element.setAttribute('aria-expanded', options.expanded.toString());
     }
 
     if (options.controls) {
-      element.setAttribute("aria-controls", options.controls);
+      element.setAttribute('aria-controls', options.controls);
     }
 
     if (options.hasPopup) {
-      element.setAttribute("aria-haspopup", options.hasPopup.toString());
+      element.setAttribute('aria-haspopup', options.hasPopup.toString());
     }
 
     if (options.live) {
-      element.setAttribute("aria-live", options.live);
+      element.setAttribute('aria-live', options.live);
     }
 
-    if (typeof options.atomic === "boolean") {
-      element.setAttribute("aria-atomic", options.atomic.toString());
+    if (typeof options.atomic === 'boolean') {
+      element.setAttribute('aria-atomic', options.atomic.toString());
     }
   }
 }
@@ -328,22 +328,20 @@ export function useAccessibility() {
     };
 
     const mediaQueries = [
-      window.matchMedia("(prefers-reduced-motion: reduce)"),
-      window.matchMedia("(prefers-contrast: high)"),
+      window.matchMedia('(prefers-reduced-motion: reduce)'),
+      window.matchMedia('(prefers-contrast: high)'),
     ];
 
-    mediaQueries.forEach((mq) =>
-      mq.addEventListener("change", handlePrefChange)
-    );
+    mediaQueries.forEach(mq => mq.addEventListener('change', handlePrefChange));
 
     return () => {
-      mediaQueries.forEach((mq) =>
-        mq.removeEventListener("change", handlePrefChange)
+      mediaQueries.forEach(mq =>
+        mq.removeEventListener('change', handlePrefChange)
       );
     };
   }, []);
 
-  const announceLive = (message: string, priority?: "polite" | "assertive") => {
+  const announceLive = (message: string, priority?: 'polite' | 'assertive') => {
     serviceRef.current?.announceLive(message, priority);
   };
 
@@ -381,7 +379,7 @@ export function useFocusManagement() {
   const restoreFocus = () => {
     if (
       previousFocus.current &&
-      typeof previousFocus.current.focus === "function"
+      typeof previousFocus.current.focus === 'function'
     ) {
       previousFocus.current.focus();
     }
@@ -390,13 +388,13 @@ export function useFocusManagement() {
   const focusElement = (selector: string | HTMLElement) => {
     let element: HTMLElement | null = null;
 
-    if (typeof selector === "string") {
+    if (typeof selector === 'string') {
       element = document.querySelector(selector);
     } else {
       element = selector;
     }
 
-    if (element && typeof element.focus === "function") {
+    if (element && typeof element.focus === 'function') {
       element.focus();
     }
   };

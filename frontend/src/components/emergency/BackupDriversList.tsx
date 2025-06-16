@@ -3,7 +3,7 @@
  * Displays available backup drivers with availability and location info
  */
 
-import React from "react";
+import React from 'react';
 import {
   UserGroupIcon,
   PhoneIcon,
@@ -11,8 +11,8 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
-} from "@heroicons/react/24/outline";
-import { BackupDriver } from "@/hooks/useEmergencyData";
+} from '@heroicons/react/24/outline';
+import { BackupDriver } from '@/hooks/useEmergencyData';
 
 interface BackupDriversListProps {
   drivers: BackupDriver[];
@@ -26,7 +26,7 @@ export function BackupDriversList({ drivers }: BackupDriversListProps) {
         Available Backup Drivers
       </h4>
       <div className="space-y-3">
-        {drivers.map((driver) => (
+        {drivers.map(driver => (
           <div
             key={driver.id}
             className="flex items-center justify-between p-3 bg-white border border-red-200 rounded-lg"
@@ -37,8 +37,8 @@ export function BackupDriversList({ drivers }: BackupDriversListProps) {
                 <div
                   className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
                     driver.available
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-600"
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-600'
                   }`}
                 >
                   {driver.available ? (
@@ -46,7 +46,7 @@ export function BackupDriversList({ drivers }: BackupDriversListProps) {
                   ) : (
                     <XCircleIcon className="w-3 h-3" />
                   )}
-                  <span>{driver.available ? "Available" : "Busy"}</span>
+                  <span>{driver.available ? 'Available' : 'Busy'}</span>
                 </div>
               </div>
               <div className="text-sm text-gray-600 mt-1 flex items-center space-x-4">

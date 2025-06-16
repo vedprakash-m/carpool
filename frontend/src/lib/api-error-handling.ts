@@ -5,7 +5,7 @@ import {
   AuthorizationError,
   ValidationError,
   errorHandler,
-} from "./error-handling";
+} from './error-handling';
 
 /**
  * HTTP-specific error types
@@ -18,8 +18,8 @@ export class ApiError extends AppError {
     code?: string,
     details?: Record<string, unknown>
   ) {
-    super(message, code || `HTTP_${status}`, "medium", true, details);
-    this.name = "ApiError";
+    super(message, code || `HTTP_${status}`, 'medium', true, details);
+    this.name = 'ApiError';
   }
 }
 
@@ -29,7 +29,7 @@ export class TimeoutError extends NetworkError {
       endpoint,
       timeoutMs,
     });
-    this.name = "TimeoutError";
+    this.name = 'TimeoutError';
   }
 }
 
@@ -65,14 +65,14 @@ export class ApiErrorHandler {
         case 403:
           throw new AuthorizationError(message);
         case 404:
-          throw new ApiError(message, 404, endpoint, "NOT_FOUND");
+          throw new ApiError(message, 404, endpoint, 'NOT_FOUND');
         case 409:
-          throw new ApiError(message, 409, endpoint, "CONFLICT");
+          throw new ApiError(message, 409, endpoint, 'CONFLICT');
         case 422:
           throw new ValidationError(message, errorData.field);
         case 429:
-          throw new ApiError(message, 429, endpoint, "RATE_LIMIT", {
-            retryAfter: response.headers.get("Retry-After"),
+          throw new ApiError(message, 429, endpoint, 'RATE_LIMIT', {
+            retryAfter: response.headers.get('Retry-After'),
           });
         case 500:
         case 502:
@@ -82,7 +82,7 @@ export class ApiErrorHandler {
             message,
             response.status,
             endpoint,
-            "SERVER_ERROR"
+            'SERVER_ERROR'
           );
         default:
           throw new ApiError(message, response.status, endpoint);
@@ -94,16 +94,16 @@ export class ApiErrorHandler {
    * Handle network errors from fetch
    */
   static handleNetworkError(error: unknown, endpoint: string): never {
-    if (error instanceof TypeError && error.message.includes("fetch")) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new NetworkError(`Failed to connect to ${endpoint}`, { endpoint });
     }
 
-    if (error instanceof Error && error.name === "AbortError") {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new ApiError(
-        "Request was cancelled",
+        'Request was cancelled',
         0,
         endpoint,
-        "REQUEST_CANCELLED"
+        'REQUEST_CANCELLED'
       );
     }
 
@@ -133,7 +133,7 @@ export class ApiErrorHandler {
     } catch (error) {
       clearTimeout(timeoutId);
 
-      if (error instanceof Error && error.name === "AbortError") {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new TimeoutError(url, timeoutMs);
       }
 
@@ -166,13 +166,13 @@ export class ApiClient {
   private interceptors: ApiInterceptors;
 
   constructor(
-    baseUrl: string = "",
+    baseUrl: string = '',
     defaultHeaders: Record<string, string> = {},
     interceptors: ApiInterceptors = {}
   ) {
     this.baseUrl = baseUrl;
     this.defaultHeaders = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...defaultHeaders,
     };
     this.interceptors = interceptors;
@@ -182,14 +182,14 @@ export class ApiClient {
    * Set authentication token
    */
   setAuthToken(token: string): void {
-    this.defaultHeaders["Authorization"] = `Bearer ${token}`;
+    this.defaultHeaders['Authorization'] = `Bearer ${token}`;
   }
 
   /**
    * Remove authentication token
    */
   removeAuthToken(): void {
-    delete this.defaultHeaders["Authorization"];
+    delete this.defaultHeaders['Authorization'];
   }
 
   /**
@@ -237,8 +237,8 @@ export class ApiClient {
 
       // Report error to centralized handler
       await errorHandler.handleError(error, {
-        errorBoundary: "ApiClient",
-        componentStack: `${options.method || "GET"} ${endpoint}`,
+        errorBoundary: 'ApiClient',
+        componentStack: `${options.method || 'GET'} ${endpoint}`,
       });
 
       throw error;
@@ -249,7 +249,7 @@ export class ApiClient {
    * GET request
    */
   async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
   /**
@@ -262,7 +262,7 @@ export class ApiClient {
   ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
-      method: "POST",
+      method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
@@ -277,7 +277,7 @@ export class ApiClient {
   ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
-      method: "PUT",
+      method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
@@ -286,7 +286,7 @@ export class ApiClient {
    * DELETE request
    */
   async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "DELETE" });
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 
   /**
@@ -299,7 +299,7 @@ export class ApiClient {
   ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
-      method: "PATCH",
+      method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
@@ -309,18 +309,18 @@ export class ApiClient {
  * Default API client instance with error interceptors
  */
 export const apiClient = new ApiClient(
-  process.env.NEXT_PUBLIC_API_BASE_URL || "/api",
+  process.env.NEXT_PUBLIC_API_BASE_URL || '/api',
   {},
   {
     error: async (error: unknown) => {
       // Handle common authentication errors
       if (error instanceof AuthenticationError) {
         // Redirect to login or trigger auth refresh
-        if (typeof window !== "undefined") {
-          const { useAuthStore } = await import("@/store/auth.store");
+        if (typeof window !== 'undefined') {
+          const { useAuthStore } = await import('@/store/auth.store');
           const logout = useAuthStore.getState().logout;
           logout();
-          window.location.href = "/login";
+          window.location.href = '/login';
         }
       }
 
@@ -338,31 +338,31 @@ export function handleFormError(error: unknown): string {
   }
 
   if (error instanceof AuthenticationError) {
-    return "Please log in to continue.";
+    return 'Please log in to continue.';
   }
 
   if (error instanceof AuthorizationError) {
-    return "You do not have permission to perform this action.";
+    return 'You do not have permission to perform this action.';
   }
 
   if (error instanceof NetworkError) {
-    return "Unable to connect to the server. Please check your connection and try again.";
+    return 'Unable to connect to the server. Please check your connection and try again.';
   }
 
   if (error instanceof ApiError) {
     switch (error.status) {
       case 409:
-        return "This action conflicts with existing data. Please refresh and try again.";
+        return 'This action conflicts with existing data. Please refresh and try again.';
       case 429:
-        return "Too many requests. Please wait a moment and try again.";
+        return 'Too many requests. Please wait a moment and try again.';
       case 500:
-        return "Server error. Please try again later.";
+        return 'Server error. Please try again later.';
       default:
         return error.message;
     }
   }
 
-  return "An unexpected error occurred. Please try again.";
+  return 'An unexpected error occurred. Please try again.';
 }
 
 /**
@@ -389,17 +389,17 @@ export function createTimeoutController(timeoutMs: number = 10000) {
  */
 export function handleApiError(
   error: any,
-  context: string = "API request"
+  context: string = 'API request'
 ): Error {
   // Handle AbortError (timeout)
-  if (error.name === "AbortError" || error.code === "ECONNABORTED") {
+  if (error.name === 'AbortError' || error.code === 'ECONNABORTED') {
     return new TimeoutError(context, 10000);
   }
 
   // Handle network errors
   if (
     !error.response &&
-    (error.code === "NETWORK_ERROR" || error.message?.includes("Network"))
+    (error.code === 'NETWORK_ERROR' || error.message?.includes('Network'))
   ) {
     return new NetworkError(`Network error during ${context}`, {
       originalError: error,
@@ -442,8 +442,8 @@ export function handleApiError(
   // Fallback for unknown errors
   return new AppError(
     `Unknown error during ${context}`,
-    "UNKNOWN_ERROR",
-    "medium",
+    'UNKNOWN_ERROR',
+    'medium',
     true,
     { originalError: error }
   );

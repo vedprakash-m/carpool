@@ -3,18 +3,13 @@
  * Consolidates all authentication logic across VCarpool backend
  */
 
-import { HttpRequest } from "@azure/functions";
-import { AuthService } from "../services/auth.service";
-import { container } from "../container";
-import { ILogger } from "../utils/logger";
-import {
-  User,
-  UserRole,
-  UserPreferences,
-  RolePermissions,
-} from "@vcarpool/shared";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
+import { HttpRequest } from '@azure/functions';
+import { AuthService } from '../services/auth.service';
+import { container } from '../container';
+import { ILogger } from '../utils/logger';
+import { User, UserRole, UserPreferences, RolePermissions } from '@vcarpool/shared';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 export interface AuthResult {
   success: boolean;
@@ -50,10 +45,9 @@ export interface MockUser {
 }
 
 export class UnifiedAuthService {
-  private static readonly JWT_SECRET =
-    process.env.JWT_SECRET || "temp-jwt-secret-vcarpool";
+  private static readonly JWT_SECRET = process.env.JWT_SECRET || 'temp-jwt-secret-vcarpool';
   private static readonly JWT_REFRESH_SECRET =
-    process.env.JWT_REFRESH_SECRET || "temp-refresh-secret-vcarpool";
+    process.env.JWT_REFRESH_SECRET || 'temp-refresh-secret-vcarpool';
 
   /**
    * Mock users for development/testing
@@ -61,17 +55,16 @@ export class UnifiedAuthService {
    */
   private static readonly mockUsers: MockUser[] = [
     {
-      id: "admin-id",
-      email: "admin@vcarpool.com",
-      firstName: "Admin",
-      lastName: "User",
-      role: "admin" as UserRole,
-      passwordHash:
-        "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy", // "test-admin-password"
+      id: 'admin-id',
+      email: 'admin@vcarpool.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      role: 'admin' as UserRole,
+      passwordHash: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy', // "test-admin-password"
       preferences: {
-        pickupLocation: "",
-        dropoffLocation: "",
-        preferredTime: "08:00",
+        pickupLocation: '',
+        dropoffLocation: '',
+        preferredTime: '08:00',
         isDriver: false,
         smokingAllowed: false,
         notifications: {
@@ -86,17 +79,16 @@ export class UnifiedAuthService {
       updatedAt: new Date(),
     },
     {
-      id: "ved-admin-id",
-      email: "mi.vedprakash@gmail.com",
-      firstName: "Ved",
-      lastName: "Mishra",
-      role: "admin" as UserRole,
-      passwordHash:
-        "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy", // "test-admin-password"
+      id: 'ved-admin-id',
+      email: 'mi.vedprakash@gmail.com',
+      firstName: 'Ved',
+      lastName: 'Mishra',
+      role: 'admin' as UserRole,
+      passwordHash: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy', // "test-admin-password"
       preferences: {
-        pickupLocation: "",
-        dropoffLocation: "",
-        preferredTime: "08:00",
+        pickupLocation: '',
+        dropoffLocation: '',
+        preferredTime: '08:00',
         isDriver: false,
         smokingAllowed: false,
         notifications: {
@@ -111,17 +103,16 @@ export class UnifiedAuthService {
       updatedAt: new Date(),
     },
     {
-      id: "test-admin-id",
-      email: "admin@example.com",
-      firstName: "Test",
-      lastName: "Admin",
-      role: "admin" as UserRole,
-      passwordHash:
-        "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy", // "Admin123!"
+      id: 'test-admin-id',
+      email: 'admin@example.com',
+      firstName: 'Test',
+      lastName: 'Admin',
+      role: 'admin' as UserRole,
+      passwordHash: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy', // "Admin123!"
       preferences: {
-        pickupLocation: "",
-        dropoffLocation: "",
-        preferredTime: "08:00",
+        pickupLocation: '',
+        dropoffLocation: '',
+        preferredTime: '08:00',
         isDriver: false,
         smokingAllowed: false,
         notifications: {
@@ -142,7 +133,7 @@ export class UnifiedAuthService {
    */
   private static async validateCredentials(
     email: string,
-    password: string
+    password: string,
   ): Promise<MockUser | null> {
     const user = this.mockUsers.find((u) => u.email === email);
     if (!user) return null;
@@ -166,7 +157,7 @@ export class UnifiedAuthService {
       userId: user.id,
       email: user.email,
       role: user.role,
-      type: "access",
+      type: 'access',
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours
     };
@@ -182,7 +173,7 @@ export class UnifiedAuthService {
       userId: user.id,
       email: user.email,
       role: user.role,
-      type: "refresh",
+      type: 'refresh',
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
     };
@@ -193,18 +184,15 @@ export class UnifiedAuthService {
   /**
    * Main authentication method
    */
-  static async authenticate(
-    email: string,
-    password: string
-  ): Promise<AuthResult> {
+  static async authenticate(email: string, password: string): Promise<AuthResult> {
     try {
       // Validate input
       if (!email || !password) {
         return {
           success: false,
           error: {
-            code: "VALIDATION_ERROR",
-            message: "Email and password are required",
+            code: 'VALIDATION_ERROR',
+            message: 'Email and password are required',
             statusCode: 400,
           },
         };
@@ -217,8 +205,8 @@ export class UnifiedAuthService {
         return {
           success: false,
           error: {
-            code: "INVALID_CREDENTIALS",
-            message: "Invalid email or password",
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid email or password',
             statusCode: 401,
           },
         };
@@ -238,15 +226,15 @@ export class UnifiedAuthService {
         refreshToken,
       };
     } catch (error) {
-      container.resolve<ILogger>("ILogger").error("Authentication error", {
-        error: error instanceof Error ? error.message : "Unknown error",
+      container.resolve<ILogger>('ILogger').error('Authentication error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
 
       return {
         success: false,
         error: {
-          code: "INTERNAL_ERROR",
-          message: "Authentication failed",
+          code: 'INTERNAL_ERROR',
+          message: 'Authentication failed',
           statusCode: 500,
         },
       };
@@ -260,7 +248,7 @@ export class UnifiedAuthService {
     try {
       return jwt.verify(token, secret || this.JWT_SECRET);
     } catch (error) {
-      throw new Error("Invalid or expired token");
+      throw new Error('Invalid or expired token');
     }
   }
 
@@ -268,7 +256,7 @@ export class UnifiedAuthService {
    * Extract token from Authorization header
    */
   static extractToken(authHeader?: string): string | null {
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
     return authHeader.substring(7);
@@ -297,7 +285,7 @@ export class UnifiedAuthService {
    * Check if user has required role
    */
   static hasRole(user: User, requiredRole: UserRole): boolean {
-    if (user.role === "admin") return true; // Admin has all permissions
+    if (user.role === 'admin') return true; // Admin has all permissions
     return user.role === requiredRole;
   }
 
@@ -310,13 +298,13 @@ export class UnifiedAuthService {
     return {
       id: parentId,
       email: email,
-      firstName: "New",
-      lastName: "Parent",
-      role: "parent" as UserRole,
+      firstName: 'New',
+      lastName: 'Parent',
+      role: 'parent' as UserRole,
       preferences: {
-        pickupLocation: "Home",
-        dropoffLocation: "School",
-        preferredTime: "08:00",
+        pickupLocation: 'Home',
+        dropoffLocation: 'School',
+        preferredTime: '08:00',
         isDriver: false,
         smokingAllowed: false,
         notifications: {
@@ -335,10 +323,7 @@ export class UnifiedAuthService {
   /**
    * Handle new parent registration flow
    */
-  static async registerNewParent(
-    email: string,
-    password: string
-  ): Promise<AuthResult> {
+  static async registerNewParent(email: string, password: string): Promise<AuthResult> {
     try {
       // Check if user already exists
       const existingUser = this.mockUsers.find((u) => u.email === email);
@@ -363,8 +348,8 @@ export class UnifiedAuthService {
       return {
         success: false,
         error: {
-          code: "REGISTRATION_ERROR",
-          message: "Failed to register new parent",
+          code: 'REGISTRATION_ERROR',
+          message: 'Failed to register new parent',
           statusCode: 500,
         },
       };
@@ -377,9 +362,9 @@ export class UnifiedAuthService {
   static async legacyAuthenticate(
     email: string,
     password: string,
-    context?: any
+    context?: any,
   ): Promise<AuthResult> {
-    context?.log?.("Legacy authentication for:", email);
+    context?.log?.('Legacy authentication for:', email);
     return await this.authenticate(email, password);
   }
 
@@ -389,11 +374,11 @@ export class UnifiedAuthService {
   static async databaseAuthenticate(
     email: string,
     password: string,
-    context?: any
+    context?: any,
   ): Promise<AuthResult> {
     // For now, fallback to mock authentication
     // TODO: Implement actual database authentication
-    context?.log?.("Database authentication fallback for:", email);
+    context?.log?.('Database authentication fallback for:', email);
     return await this.authenticate(email, password);
   }
 
@@ -401,7 +386,7 @@ export class UnifiedAuthService {
    * Simple token validation for API endpoints
    */
   static async simpleTokenValidation(
-    token: string
+    token: string,
   ): Promise<{ valid: boolean; user?: User; role?: UserRole }> {
     try {
       const user = await this.validateToken(token);
@@ -415,17 +400,17 @@ export class UnifiedAuthService {
       }
 
       // Fallback: Check for test tokens
-      if (token.includes("admin")) {
+      if (token.includes('admin')) {
         return {
           valid: true,
-          role: "admin" as UserRole,
+          role: 'admin' as UserRole,
         };
       }
 
-      if (token.includes("parent")) {
+      if (token.includes('parent')) {
         return {
           valid: true,
-          role: "parent" as UserRole,
+          role: 'parent' as UserRole,
         };
       }
 
@@ -441,7 +426,7 @@ export class UnifiedAuthService {
   static async changePassword(
     userId: string,
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<AuthResult> {
     try {
       // Find user by ID
@@ -450,8 +435,8 @@ export class UnifiedAuthService {
         return {
           success: false,
           error: {
-            code: "USER_NOT_FOUND",
-            message: "User not found",
+            code: 'USER_NOT_FOUND',
+            message: 'User not found',
             statusCode: 404,
           },
         };
@@ -463,24 +448,21 @@ export class UnifiedAuthService {
         return {
           success: false,
           error: {
-            code: "INVALID_USER_DATA",
-            message: "User password data is invalid",
+            code: 'INVALID_USER_DATA',
+            message: 'User password data is invalid',
             statusCode: 500,
           },
         };
       }
 
-      const isCurrentPasswordValid = await bcrypt.compare(
-        currentPassword,
-        passwordHash
-      );
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, passwordHash);
 
       if (!isCurrentPasswordValid) {
         return {
           success: false,
           error: {
-            code: "INVALID_CURRENT_PASSWORD",
-            message: "Current password is incorrect",
+            code: 'INVALID_CURRENT_PASSWORD',
+            message: 'Current password is incorrect',
             statusCode: 400,
           },
         };
@@ -510,15 +492,12 @@ export class UnifiedAuthService {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
-          createdAt:
-            typeof user.createdAt === "string"
-              ? new Date(user.createdAt)
-              : user.createdAt,
+          createdAt: typeof user.createdAt === 'string' ? new Date(user.createdAt) : user.createdAt,
           updatedAt: new Date(),
           preferences: {
-            pickupLocation: "",
-            dropoffLocation: "",
-            preferredTime: "08:00",
+            pickupLocation: '',
+            dropoffLocation: '',
+            preferredTime: '08:00',
             isDriver: false,
             smokingAllowed: false,
             notifications: {
@@ -535,8 +514,8 @@ export class UnifiedAuthService {
       return {
         success: false,
         error: {
-          code: "PASSWORD_CHANGE_ERROR",
-          message: "Failed to change password",
+          code: 'PASSWORD_CHANGE_ERROR',
+          message: 'Failed to change password',
           statusCode: 500,
         },
       };
@@ -558,8 +537,8 @@ export class UnifiedAuthService {
         return {
           success: false,
           error: {
-            code: "USER_NOT_FOUND",
-            message: "User not found",
+            code: 'USER_NOT_FOUND',
+            message: 'User not found',
             statusCode: 404,
           },
         };
@@ -583,8 +562,8 @@ export class UnifiedAuthService {
       return {
         success: false,
         error: {
-          code: "INVALID_REFRESH_TOKEN",
-          message: "Invalid or expired refresh token",
+          code: 'INVALID_REFRESH_TOKEN',
+          message: 'Invalid or expired refresh token',
           statusCode: 401,
         },
       };
@@ -598,7 +577,7 @@ export class UnifiedAuthService {
 export async function authenticateUser(
   email: string,
   password: string,
-  context?: any
+  context?: any,
 ): Promise<AuthResult> {
   return await UnifiedAuthService.authenticate(email, password);
 }
@@ -634,7 +613,7 @@ export function createAuthResponse(authResult: AuthResult): any {
     status: authResult.error?.statusCode || 401,
     body: {
       success: false,
-      error: authResult.error?.message || "Authentication failed",
+      error: authResult.error?.message || 'Authentication failed',
     },
   };
 }

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, memo, useCallback, useMemo } from "react";
+import React, { useState, memo, useCallback, useMemo } from 'react';
 import {
   ExclamationTriangleIcon,
   PhoneIcon,
@@ -11,7 +11,7 @@ import {
   BellAlertIcon,
   CheckCircleIcon,
   XCircleIcon,
-} from "@heroicons/react/24/outline";
+} from '@heroicons/react/24/outline';
 
 interface EmergencyContact {
   id: string;
@@ -45,29 +45,29 @@ interface EmergencyPanelProps {
 
 const EMERGENCY_CONTACTS: EmergencyContact[] = [
   {
-    id: "admin-primary",
-    name: "School Admin",
-    role: "Primary Contact",
-    phoneNumber: "(555) 123-4567",
-    email: "admin@school.edu",
+    id: 'admin-primary',
+    name: 'School Admin',
+    role: 'Primary Contact',
+    phoneNumber: '(555) 123-4567',
+    email: 'admin@school.edu',
     available: true,
     priority: 1,
   },
   {
-    id: "transport-coordinator",
-    name: "Transport Coordinator",
-    role: "Logistics Manager",
-    phoneNumber: "(555) 234-5678",
-    email: "transport@school.edu",
+    id: 'transport-coordinator',
+    name: 'Transport Coordinator',
+    role: 'Logistics Manager',
+    phoneNumber: '(555) 234-5678',
+    email: 'transport@school.edu',
     available: true,
     priority: 2,
   },
   {
-    id: "emergency-hotline",
-    name: "Emergency Hotline",
-    role: "24/7 Support",
-    phoneNumber: "(555) 911-HELP",
-    email: "emergency@school.edu",
+    id: 'emergency-hotline',
+    name: 'Emergency Hotline',
+    role: '24/7 Support',
+    phoneNumber: '(555) 911-HELP',
+    email: 'emergency@school.edu',
     available: true,
     priority: 1,
   },
@@ -75,62 +75,62 @@ const EMERGENCY_CONTACTS: EmergencyContact[] = [
 
 const BACKUP_DRIVERS: BackupDriver[] = [
   {
-    id: "backup-1",
-    name: "Sarah Johnson",
-    phoneNumber: "(555) 345-6789",
-    email: "sarah.j@email.com",
+    id: 'backup-1',
+    name: 'Sarah Johnson',
+    phoneNumber: '(555) 345-6789',
+    email: 'sarah.j@email.com',
     available: true,
-    proximity: "0.8 miles",
-    estimatedArrival: "7 minutes",
+    proximity: '0.8 miles',
+    estimatedArrival: '7 minutes',
   },
   {
-    id: "backup-2",
-    name: "Mike Chen",
-    phoneNumber: "(555) 456-7890",
-    email: "mike.chen@email.com",
+    id: 'backup-2',
+    name: 'Mike Chen',
+    phoneNumber: '(555) 456-7890',
+    email: 'mike.chen@email.com',
     available: true,
-    proximity: "1.2 miles",
-    estimatedArrival: "10 minutes",
+    proximity: '1.2 miles',
+    estimatedArrival: '10 minutes',
   },
   {
-    id: "backup-3",
-    name: "Lisa Rodriguez",
-    phoneNumber: "(555) 567-8901",
-    email: "lisa.r@email.com",
+    id: 'backup-3',
+    name: 'Lisa Rodriguez',
+    phoneNumber: '(555) 567-8901',
+    email: 'lisa.r@email.com',
     available: false,
-    proximity: "2.1 miles",
-    estimatedArrival: "15 minutes",
+    proximity: '2.1 miles',
+    estimatedArrival: '15 minutes',
   },
 ];
 
 const EMERGENCY_TYPES = [
-  { value: "medical", label: "Medical Emergency", icon: "🚑", urgency: "high" },
+  { value: 'medical', label: 'Medical Emergency', icon: '🚑', urgency: 'high' },
   {
-    value: "breakdown",
-    label: "Vehicle Breakdown",
-    icon: "🔧",
-    urgency: "medium",
+    value: 'breakdown',
+    label: 'Vehicle Breakdown',
+    icon: '🔧',
+    urgency: 'medium',
   },
-  { value: "accident", label: "Traffic Accident", icon: "🚗", urgency: "high" },
+  { value: 'accident', label: 'Traffic Accident', icon: '🚗', urgency: 'high' },
   {
-    value: "weather",
-    label: "Weather Emergency",
-    icon: "⛈️",
-    urgency: "medium",
-  },
-  {
-    value: "route_blocked",
-    label: "Route Blocked",
-    icon: "🚧",
-    urgency: "medium",
+    value: 'weather',
+    label: 'Weather Emergency',
+    icon: '⛈️',
+    urgency: 'medium',
   },
   {
-    value: "late_emergency",
-    label: "Emergency Delay",
-    icon: "⏰",
-    urgency: "low",
+    value: 'route_blocked',
+    label: 'Route Blocked',
+    icon: '🚧',
+    urgency: 'medium',
   },
-  { value: "other", label: "Other Emergency", icon: "🚨", urgency: "medium" },
+  {
+    value: 'late_emergency',
+    label: 'Emergency Delay',
+    icon: '⏰',
+    urgency: 'low',
+  },
+  { value: 'other', label: 'Other Emergency', icon: '🚨', urgency: 'medium' },
 ];
 
 export default memo(function EmergencyPanel({
@@ -141,41 +141,41 @@ export default memo(function EmergencyPanel({
   const [isExpanded, setIsExpanded] = useState(false);
   const [showEmergencyForm, setShowEmergencyForm] = useState(false);
   const [showBackupRequest, setShowBackupRequest] = useState(false);
-  const [selectedEmergencyType, setSelectedEmergencyType] = useState("");
-  const [emergencyDescription, setEmergencyDescription] = useState("");
-  const [urgencyLevel, setUrgencyLevel] = useState("medium");
-  const [backupReason, setBackupReason] = useState("");
+  const [selectedEmergencyType, setSelectedEmergencyType] = useState('');
+  const [emergencyDescription, setEmergencyDescription] = useState('');
+  const [urgencyLevel, setUrgencyLevel] = useState('medium');
+  const [backupReason, setBackupReason] = useState('');
 
   const handleEmergencySubmit = () => {
     if (selectedEmergencyType && emergencyDescription.trim()) {
       const urgency =
-        EMERGENCY_TYPES.find((t) => t.value === selectedEmergencyType)
-          ?.urgency || "medium";
+        EMERGENCY_TYPES.find(t => t.value === selectedEmergencyType)?.urgency ||
+        'medium';
       onEmergencyReport(selectedEmergencyType, emergencyDescription, urgency);
       setShowEmergencyForm(false);
-      setSelectedEmergencyType("");
-      setEmergencyDescription("");
+      setSelectedEmergencyType('');
+      setEmergencyDescription('');
     }
   };
 
   const handleBackupRequest = () => {
     if (backupReason.trim()) {
-      onRequestBackup("current-assignment", backupReason);
+      onRequestBackup('current-assignment', backupReason);
       setShowBackupRequest(false);
-      setBackupReason("");
+      setBackupReason('');
     }
   };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case "high":
-        return "text-red-600 bg-red-50 border-red-200";
-      case "medium":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "low":
-        return "text-blue-600 bg-blue-50 border-blue-200";
+      case 'high':
+        return 'text-red-600 bg-red-50 border-red-200';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'low':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
       default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
@@ -193,7 +193,7 @@ export default memo(function EmergencyPanel({
               24/7 Support
             </span>
           </div>
-          <div className="text-red-600">{isExpanded ? "−" : "+"}</div>
+          <div className="text-red-600">{isExpanded ? '−' : '+'}</div>
         </button>
         <p className="text-sm text-red-700 mt-1">
           Quick access to emergency contacts and backup coordination
@@ -236,7 +236,7 @@ export default memo(function EmergencyPanel({
               Emergency Contacts
             </h4>
             <div className="space-y-3">
-              {EMERGENCY_CONTACTS.map((contact) => (
+              {EMERGENCY_CONTACTS.map(contact => (
                 <div
                   key={contact.id}
                   className="flex items-center justify-between p-3 bg-white border border-red-200 rounded-lg"
@@ -262,14 +262,14 @@ export default memo(function EmergencyPanel({
                   <div className="flex space-x-2">
                     <a
                       href={`tel:${contact.phoneNumber}`}
-                      onClick={() => onContactEmergency(contact.id, "phone")}
+                      onClick={() => onContactEmergency(contact.id, 'phone')}
                       className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
                     >
                       <PhoneIcon className="w-4 h-4" />
                     </a>
                     <a
                       href={`mailto:${contact.email}`}
-                      onClick={() => onContactEmergency(contact.id, "email")}
+                      onClick={() => onContactEmergency(contact.id, 'email')}
                       className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                     >
                       <EnvelopeIcon className="w-4 h-4" />
@@ -287,13 +287,13 @@ export default memo(function EmergencyPanel({
               Available Backup Drivers
             </h4>
             <div className="space-y-3">
-              {BACKUP_DRIVERS.map((driver) => (
+              {BACKUP_DRIVERS.map(driver => (
                 <div
                   key={driver.id}
                   className={`flex items-center justify-between p-3 border rounded-lg ${
                     driver.available
-                      ? "bg-green-50 border-green-200"
-                      : "bg-gray-50 border-gray-200 opacity-75"
+                      ? 'bg-green-50 border-green-200'
+                      : 'bg-gray-50 border-gray-200 opacity-75'
                   }`}
                 >
                   <div className="flex-1">
@@ -304,8 +304,8 @@ export default memo(function EmergencyPanel({
                       <div
                         className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
                           driver.available
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-100 text-gray-600"
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-600'
                         }`}
                       >
                         {driver.available ? (
@@ -313,7 +313,7 @@ export default memo(function EmergencyPanel({
                         ) : (
                           <XCircleIcon className="w-3 h-3" />
                         )}
-                        <span>{driver.available ? "Available" : "Busy"}</span>
+                        <span>{driver.available ? 'Available' : 'Busy'}</span>
                       </div>
                     </div>
                     <div className="text-sm text-gray-600 mt-1 flex items-center space-x-4">
@@ -388,11 +388,11 @@ export default memo(function EmergencyPanel({
               </label>
               <select
                 value={selectedEmergencyType}
-                onChange={(e) => setSelectedEmergencyType(e.target.value)}
+                onChange={e => setSelectedEmergencyType(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
                 <option value="">Select emergency type...</option>
-                {EMERGENCY_TYPES.map((type) => (
+                {EMERGENCY_TYPES.map(type => (
                   <option key={type.value} value={type.value}>
                     {type.icon} {type.label}
                   </option>
@@ -406,7 +406,7 @@ export default memo(function EmergencyPanel({
               </label>
               <textarea
                 value={emergencyDescription}
-                onChange={(e) => setEmergencyDescription(e.target.value)}
+                onChange={e => setEmergencyDescription(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 rows={4}
                 placeholder="Describe the emergency situation, your current location, and immediate needs..."
@@ -421,12 +421,12 @@ export default memo(function EmergencyPanel({
                   <span
                     className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getUrgencyColor(
                       EMERGENCY_TYPES.find(
-                        (t) => t.value === selectedEmergencyType
-                      )?.urgency || "medium"
+                        t => t.value === selectedEmergencyType
+                      )?.urgency || 'medium'
                     )}`}
                   >
                     {EMERGENCY_TYPES.find(
-                      (t) => t.value === selectedEmergencyType
+                      t => t.value === selectedEmergencyType
                     )?.urgency?.toUpperCase()}
                   </span>
                 </div>
@@ -469,7 +469,7 @@ export default memo(function EmergencyPanel({
               </label>
               <textarea
                 value={backupReason}
-                onChange={(e) => setBackupReason(e.target.value)}
+                onChange={e => setBackupReason(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 rows={3}
                 placeholder="Explain why you need backup assistance (e.g., vehicle issue, family emergency, running late)..."

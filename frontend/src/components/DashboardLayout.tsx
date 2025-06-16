@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { useAuthStore } from "@/store/auth.store";
-import Navigation from "./Navigation";
+import { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
+import Navigation from './Navigation';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const publicPaths = ["/", "/login", "/register"];
+const publicPaths = ['/', '/login', '/register'];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push('/login');
     }
   }, [isAuthenticated, isAuthLoading, pathname, router]);
 
@@ -47,10 +47,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // For development: Allow access to trips page even when not authenticated
   // This bypasses the authentication redirect for testing purposes
-  if (!isAuthenticated && pathname === "/trips") {
+  if (!isAuthenticated && pathname === '/trips') {
     // Show the layout but mark user as not authenticated
     console.log(
-      "Development mode: Allowing access to trips page without authentication"
+      'Development mode: Allowing access to trips page without authentication'
     );
   }
 

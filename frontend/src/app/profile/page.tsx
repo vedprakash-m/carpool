@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { updateUserSchema, UpdateUserRequest } from "../../types/shared";
-import { useAuthStore } from "../../store/auth.store";
-import DashboardLayout from "../../components/DashboardLayout";
-import { SectionErrorBoundary } from "../../components/SectionErrorBoundary";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { updateUserSchema, UpdateUserRequest } from '../../types/shared';
+import { useAuthStore } from '../../store/auth.store';
+import DashboardLayout from '../../components/DashboardLayout';
+import { SectionErrorBoundary } from '../../components/SectionErrorBoundary';
 import {
   UserIcon,
   EnvelopeIcon,
   PhoneIcon,
   AcademicCapIcon,
   KeyIcon,
-} from "@heroicons/react/24/outline";
-import ChangePasswordForm from "../../components/ChangePasswordForm";
+} from '@heroicons/react/24/outline';
+import ChangePasswordForm from '../../components/ChangePasswordForm';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -35,9 +35,9 @@ export default function ProfilePage() {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          phone: user.phone || "",
-          grade: user.grade || "",
-          emergencyContact: user.emergencyContact || "",
+          phone: user.phone || '',
+          grade: user.grade || '',
+          emergencyContact: user.emergencyContact || '',
         }
       : {},
   });
@@ -49,7 +49,7 @@ export default function ProfilePage() {
       if (success) {
         // Show success message or redirect
         // For now, just show an alert
-        alert("Profile updated successfully!");
+        alert('Profile updated successfully!');
       }
     } finally {
       setIsSubmitting(false);
@@ -113,7 +113,7 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         id="firstName"
-                        {...register("firstName")}
+                        {...register('firstName')}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       />
                       {errors.firstName && (
@@ -133,7 +133,7 @@ export default function ProfilePage() {
                       <input
                         type="text"
                         id="lastName"
-                        {...register("lastName")}
+                        {...register('lastName')}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       />
                       {errors.lastName && (
@@ -155,7 +155,7 @@ export default function ProfilePage() {
                     <input
                       type="email"
                       id="email"
-                      {...register("email")}
+                      {...register('email')}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     />
                     {errors.email && (
@@ -177,7 +177,7 @@ export default function ProfilePage() {
                       <input
                         type="tel"
                         id="phone"
-                        {...register("phone")}
+                        {...register('phone')}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       />
                       {errors.phone && (
@@ -196,7 +196,7 @@ export default function ProfilePage() {
                       </label>
                       <select
                         id="grade"
-                        {...register("grade")}
+                        {...register('grade')}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
                         <option value="">Select Grade</option>
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                       type="text"
                       id="emergencyContact"
                       placeholder="Name and phone number"
-                      {...register("emergencyContact")}
+                      {...register('emergencyContact')}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     />
                     {errors.emergencyContact && (
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                           Updating...
                         </>
                       ) : (
-                        "Update Profile"
+                        'Update Profile'
                       )}
                     </button>
                   </div>

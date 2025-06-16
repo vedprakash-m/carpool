@@ -1,32 +1,21 @@
-import {
-  app,
-  HttpRequest,
-  HttpResponseInit,
-  InvocationContext,
-} from "@azure/functions";
-import { containers } from "../config/database";
-import { MessagingService } from "../services/messaging.service";
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { containers } from '../config/database';
+import { MessagingService } from '../services/messaging.service';
 import {
   MessageRepository,
   ChatRepository,
   ChatParticipantRepository,
-} from "../repositories/message.repository";
-import { UserRepository } from "../repositories/user.repository";
-import { TripRepository } from "../repositories/trip.repository";
-import { handleRequest } from "../utils/request-handler";
-import { handleValidation } from "../utils/validation-handler";
-import { sendMessageSchema, SendMessageRequest } from "@vcarpool/shared";
-import {
-  compose,
-  authenticate,
-  requestId,
-  requestLogging,
-  validateBody,
-} from "../middleware";
+} from '../repositories/message.repository';
+import { UserRepository } from '../repositories/user.repository';
+import { TripRepository } from '../repositories/trip.repository';
+import { handleRequest } from '../utils/request-handler';
+import { handleValidation } from '../utils/validation-handler';
+import { sendMessageSchema, SendMessageRequest } from '@vcarpool/shared';
+import { compose, authenticate, requestId, requestLogging, validateBody } from '../middleware';
 
 export async function messagesSend(
   request: HttpRequest,
-  context: InvocationContext
+  context: InvocationContext,
 ): Promise<HttpResponseInit> {
   const logger = context; // Use context for logging if needed
   // Use dependency injection for MessagingService if available
@@ -35,7 +24,7 @@ export async function messagesSend(
   if (!userId) {
     return {
       status: 401,
-      jsonBody: { success: false, error: "User not authenticated." },
+      jsonBody: { success: false, error: 'User not authenticated.' },
     };
   }
   // Use validated body from middleware
@@ -49,7 +38,7 @@ export async function messagesSend(
         status: 400,
         jsonBody: {
           success: false,
-          error: "Chat ID is required",
+          error: 'Chat ID is required',
         },
       };
     }
@@ -57,9 +46,7 @@ export async function messagesSend(
     // Initialize repositories and service
     const messageRepository = new MessageRepository(containers.messages);
     const chatRepository = new ChatRepository(containers.chats);
-    const participantRepository = new ChatParticipantRepository(
-      containers.chatParticipants
-    );
+    const participantRepository = new ChatParticipantRepository(containers.chatParticipants);
     const userRepository = new UserRepository(containers.users);
     const tripRepository = new TripRepository(containers.trips);
 
@@ -68,44 +55,40 @@ export async function messagesSend(
       chatRepository,
       participantRepository,
       userRepository,
-      tripRepository
+      tripRepository,
     );
 
     // Send message
-    const message = await messagingService.sendMessage(
-      chatId,
-      userId,
-      messageData
-    );
+    const message = await messagingService.sendMessage(chatId, userId, messageData);
 
     return {
       status: 201,
       jsonBody: {
         success: true,
         data: message,
-        message: "Message sent successfully",
+        message: 'Message sent successfully',
       },
     };
   } catch (error: any) {
-    context.error("Error sending message:", error);
+    context.error('Error sending message:', error);
     return {
       status: error.statusCode || 500,
       jsonBody: {
         success: false,
-        error: error.message || "Failed to send message",
+        error: error.message || 'Failed to send message',
       },
     };
   }
 }
 
-app.http("messages-send", {
-  methods: ["POST"],
-  authLevel: "anonymous",
-  route: "chats/{chatId}/messages",
+app.http('messages-send', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'chats/{chatId}/messages',
   handler: compose(
     requestId,
     requestLogging,
     authenticate,
-    validateBody(sendMessageSchema)
+    validateBody(sendMessageSchema),
   )(messagesSend),
 });

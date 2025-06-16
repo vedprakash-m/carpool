@@ -3,11 +3,11 @@
  * Handles app installation prompts and PWA capabilities
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 export interface PWAInstallPrompt {
   prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
 interface PWACapabilities {
@@ -24,60 +24,60 @@ class PWAService {
   private onlineListeners: Set<(isOnline: boolean) => void> = new Set();
 
   constructor() {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       this.initializeListeners();
     }
   }
 
   private initializeListeners(): void {
     // Listen for install prompt
-    window.addEventListener("beforeinstallprompt", (e) => {
+    window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       this.installPrompt = e as any;
       this.notifyInstallListeners(true);
     });
 
     // Listen for app installed
-    window.addEventListener("appinstalled", () => {
+    window.addEventListener('appinstalled', () => {
       this.installPrompt = null;
       this.notifyInstallListeners(false);
     });
 
     // Listen for online/offline status
-    window.addEventListener("online", () => {
+    window.addEventListener('online', () => {
       this.notifyOnlineListeners(true);
     });
 
-    window.addEventListener("offline", () => {
+    window.addEventListener('offline', () => {
       this.notifyOnlineListeners(false);
     });
   }
 
   async promptInstall(): Promise<{
-    outcome: "accepted" | "dismissed" | "unavailable";
+    outcome: 'accepted' | 'dismissed' | 'unavailable';
   }> {
     if (!this.installPrompt) {
-      return { outcome: "unavailable" };
+      return { outcome: 'unavailable' };
     }
 
     try {
       await this.installPrompt.prompt();
       const choice = await this.installPrompt.userChoice;
 
-      if (choice.outcome === "accepted") {
+      if (choice.outcome === 'accepted') {
         this.installPrompt = null;
         this.notifyInstallListeners(false);
       }
 
       return choice;
     } catch (error) {
-      console.error("Error showing install prompt:", error);
-      return { outcome: "unavailable" };
+      console.error('Error showing install prompt:', error);
+      return { outcome: 'unavailable' };
     }
   }
 
   getCapabilities(): PWACapabilities {
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       return {
         isInstallable: false,
         isInstalled: false,
@@ -88,50 +88,50 @@ class PWAService {
     }
 
     const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia('(display-mode: standalone)').matches ||
       (window as any).navigator?.standalone === true;
 
     return {
       isInstallable: !!this.installPrompt,
       isInstalled: isStandalone,
       isOnline: navigator.onLine,
-      isServiceWorkerSupported: "serviceWorker" in navigator,
+      isServiceWorkerSupported: 'serviceWorker' in navigator,
       isStandalone,
     };
   }
 
   async registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
-    if (!("serviceWorker" in navigator)) {
-      console.warn("Service workers not supported");
+    if (!('serviceWorker' in navigator)) {
+      console.warn('Service workers not supported');
       return null;
     }
 
     try {
       // Try to register service worker with fallback for static exports
-      let swPath = "/sw.js";
+      let swPath = '/sw.js';
 
       // For production static export deployments, check if SW exists
       try {
-        const swResponse = await fetch(swPath, { method: "HEAD" });
+        const swResponse = await fetch(swPath, { method: 'HEAD' });
         if (!swResponse.ok) {
-          console.warn("Service worker not found, PWA features disabled");
+          console.warn('Service worker not found, PWA features disabled');
           return null;
         }
       } catch (fetchError) {
-        console.warn("Service worker not found, PWA features disabled");
+        console.warn('Service worker not found, PWA features disabled');
         return null;
       }
 
       const registration = await navigator.serviceWorker.register(swPath);
-      console.log("Service worker registered:", registration);
+      console.log('Service worker registered:', registration);
 
       // Listen for updates
-      registration.addEventListener("updatefound", () => {
+      registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         if (newWorker) {
-          newWorker.addEventListener("statechange", () => {
+          newWorker.addEventListener('statechange', () => {
             if (
-              newWorker.state === "installed" &&
+              newWorker.state === 'installed' &&
               navigator.serviceWorker.controller
             ) {
               // New version available
@@ -143,18 +143,18 @@ class PWAService {
 
       return registration;
     } catch (error) {
-      console.error("Service worker registration failed:", error);
+      console.error('Service worker registration failed:', error);
       return null;
     }
   }
 
-  async requestPushPermission(): Promise<"granted" | "denied" | "default"> {
-    if (!("Notification" in window)) {
-      return "denied";
+  async requestPushPermission(): Promise<'granted' | 'denied' | 'default'> {
+    if (!('Notification' in window)) {
+      return 'denied';
     }
 
-    if (Notification.permission === "granted") {
-      return "granted";
+    if (Notification.permission === 'granted') {
+      return 'granted';
     }
 
     const permission = await Notification.requestPermission();
@@ -167,7 +167,7 @@ class PWAService {
     try {
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidPublicKey) {
-        console.warn("VAPID public key not configured");
+        console.warn('VAPID public key not configured');
         return null;
       }
 
@@ -178,16 +178,16 @@ class PWAService {
 
       return subscription;
     } catch (error) {
-      console.error("Push subscription failed:", error);
+      console.error('Push subscription failed:', error);
       return null;
     }
   }
 
   private urlBase64ToUint8Array(base64String: string): Uint8Array {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
 
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
@@ -199,16 +199,16 @@ class PWAService {
   }
 
   private notifyInstallListeners(canInstall: boolean): void {
-    this.installListeners.forEach((listener) => listener(canInstall));
+    this.installListeners.forEach(listener => listener(canInstall));
   }
 
   private notifyOnlineListeners(isOnline: boolean): void {
-    this.onlineListeners.forEach((listener) => listener(isOnline));
+    this.onlineListeners.forEach(listener => listener(isOnline));
   }
 
   private notifyUpdateAvailable(): void {
     // Could dispatch custom event or call registered callbacks
-    window.dispatchEvent(new CustomEvent("pwa-update-available"));
+    window.dispatchEvent(new CustomEvent('pwa-update-available'));
   }
 
   onInstallAvailable(listener: (canInstall: boolean) => void): void {
@@ -255,7 +255,7 @@ export function usePWA() {
 
     // Listen for updates
     const handleUpdate = () => setUpdateAvailable(true);
-    window.addEventListener("pwa-update-available", handleUpdate);
+    window.addEventListener('pwa-update-available', handleUpdate);
 
     // Register service worker
     pwaService.registerServiceWorker().then(setRegistration);
@@ -266,7 +266,7 @@ export function usePWA() {
     return () => {
       pwaService.removeInstallListener(updateCapabilities);
       pwaService.removeOnlineListener(updateCapabilities);
-      window.removeEventListener("pwa-update-available", handleUpdate);
+      window.removeEventListener('pwa-update-available', handleUpdate);
     };
   }, []);
 
@@ -279,7 +279,7 @@ export function usePWA() {
     const pwaService = new PWAService();
     const permission = await pwaService.requestPushPermission();
 
-    if (permission === "granted" && registration) {
+    if (permission === 'granted' && registration) {
       const subscription = await pwaService.subscribeToPush(registration);
       return { permission, subscription };
     }
@@ -289,7 +289,7 @@ export function usePWA() {
 
   const reloadApp = () => {
     if (registration?.waiting) {
-      registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       window.location.reload();
     }
   };

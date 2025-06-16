@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useRouter } from 'next/navigation';
 import {
   UserPlusIcon,
   ChevronUpIcon,
@@ -12,8 +12,8 @@ import {
   ExclamationTriangleIcon,
   ArrowUpOnSquareIcon,
   TrashIcon,
-} from "@heroicons/react/24/outline";
-import { UserRole } from "@/types/shared";
+} from '@heroicons/react/24/outline';
+import { UserRole } from '@/types/shared';
 
 interface User {
   id: string;
@@ -43,19 +43,19 @@ export default function RoleManagementPage() {
   const [loading, setLoading] = useState(true);
   const [promoting, setPromoting] = useState<string | null>(null);
   const [message, setMessage] = useState<{
-    type: "success" | "error";
+    type: 'success' | 'error';
     text: string;
   } | null>(null);
 
   // Redirect if not super admin
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "admin")) {
-      router.push("/dashboard");
+    if (!isLoading && (!user || user.role !== 'admin')) {
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
   useEffect(() => {
-    if (user?.role === "admin") {
+    if (user?.role === 'admin') {
       fetchUsers();
       fetchEligibleParents();
     }
@@ -63,8 +63,8 @@ export default function RoleManagementPage() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem("vcarpool_token");
-      const response = await fetch("/api/admin/roles", {
+      const token = localStorage.getItem('vcarpool_token');
+      const response = await fetch('/api/admin/roles', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -75,14 +75,14 @@ export default function RoleManagementPage() {
         setUsers(data.data.users);
       } else {
         setMessage({
-          type: "error",
-          text: "Failed to fetch users",
+          type: 'error',
+          text: 'Failed to fetch users',
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error fetching users",
+        type: 'error',
+        text: 'Error fetching users',
       });
     } finally {
       setLoading(false);
@@ -91,9 +91,9 @@ export default function RoleManagementPage() {
 
   const fetchEligibleParents = async () => {
     try {
-      const token = localStorage.getItem("vcarpool_token");
+      const token = localStorage.getItem('vcarpool_token');
       const response = await fetch(
-        "/api/admin/roles?action=eligible-group-admins",
+        '/api/admin/roles?action=eligible-group-admins',
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -106,7 +106,7 @@ export default function RoleManagementPage() {
         setEligibleParents(data.data.eligibleParents);
       }
     } catch (error) {
-      console.error("Error fetching eligible parents:", error);
+      console.error('Error fetching eligible parents:', error);
     }
   };
 
@@ -115,11 +115,11 @@ export default function RoleManagementPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem("vcarpool_token");
-      const response = await fetch("/api/admin/roles?action=promote", {
-        method: "PUT",
+      const token = localStorage.getItem('vcarpool_token');
+      const response = await fetch('/api/admin/roles?action=promote', {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -131,7 +131,7 @@ export default function RoleManagementPage() {
       if (response.ok) {
         const data = await response.json();
         setMessage({
-          type: "success",
+          type: 'success',
           text: data.data.message,
         });
 
@@ -141,14 +141,14 @@ export default function RoleManagementPage() {
       } else {
         const errorData = await response.json();
         setMessage({
-          type: "error",
+          type: 'error',
           text: errorData.error.message,
         });
       }
     } catch (error) {
       setMessage({
-        type: "error",
-        text: "Error updating user role",
+        type: 'error',
+        text: 'Error updating user role',
       });
     } finally {
       setPromoting(null);
@@ -157,40 +157,40 @@ export default function RoleManagementPage() {
 
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
-      case "admin":
-        return "bg-red-100 text-red-800";
-      case "group_admin":
-        return "bg-purple-100 text-purple-800";
-      case "parent":
-        return "bg-blue-100 text-blue-800";
-      case "child":
-        return "bg-green-100 text-green-800";
+      case 'admin':
+        return 'bg-red-100 text-red-800';
+      case 'group_admin':
+        return 'bg-purple-100 text-purple-800';
+      case 'parent':
+        return 'bg-blue-100 text-blue-800';
+      case 'child':
+        return 'bg-green-100 text-green-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
-      case "admin":
-        return "Super Admin";
-      case "group_admin":
-        return "Group Admin";
-      case "parent":
-        return "Parent";
-      case "child":
-        return "Child";
+      case 'admin':
+        return 'Super Admin';
+      case 'group_admin':
+        return 'Group Admin';
+      case 'parent':
+        return 'Parent';
+      case 'child':
+        return 'Child';
       default:
         return role;
     }
   };
 
   const canPromoteToGroupAdmin = (user: User) => {
-    return user.role === "parent" && user.isActiveDriver;
+    return user.role === 'parent' && user.isActiveDriver;
   };
 
   const canDemoteFromGroupAdmin = (user: User) => {
-    return user.role === "group_admin";
+    return user.role === 'group_admin';
   };
 
   if (isLoading || loading) {
@@ -201,7 +201,7 @@ export default function RoleManagementPage() {
     );
   }
 
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -234,14 +234,14 @@ export default function RoleManagementPage() {
         {message && (
           <div
             className={`mb-6 p-4 rounded-md ${
-              message.type === "success"
-                ? "bg-green-50 border border-green-200"
-                : "bg-red-50 border border-red-200"
+              message.type === 'success'
+                ? 'bg-green-50 border border-green-200'
+                : 'bg-red-50 border border-red-200'
             }`}
           >
             <p
               className={`text-sm ${
-                message.type === "success" ? "text-green-800" : "text-red-800"
+                message.type === 'success' ? 'text-green-800' : 'text-red-800'
               }`}
             >
               {message.text}
@@ -265,7 +265,7 @@ export default function RoleManagementPage() {
               <p className="text-gray-500 italic">No eligible parents found</p>
             ) : (
               <div className="space-y-3">
-                {eligibleParents.map((parent) => (
+                {eligibleParents.map(parent => (
                   <div
                     key={parent.id}
                     className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
@@ -282,7 +282,7 @@ export default function RoleManagementPage() {
                       )}
                     </div>
                     <button
-                      onClick={() => promoteUser(parent.id, "group_admin")}
+                      onClick={() => promoteUser(parent.id, 'group_admin')}
                       disabled={promoting === parent.id}
                       className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center"
                     >
@@ -314,13 +314,13 @@ export default function RoleManagementPage() {
               Users currently in Group Admin role
             </p>
 
-            {users.filter((u) => u.role === "group_admin").length === 0 ? (
+            {users.filter(u => u.role === 'group_admin').length === 0 ? (
               <p className="text-gray-500 italic">No Group Admins found</p>
             ) : (
               <div className="space-y-3">
                 {users
-                  .filter((u) => u.role === "group_admin")
-                  .map((groupAdmin) => (
+                  .filter(u => u.role === 'group_admin')
+                  .map(groupAdmin => (
                     <div
                       key={groupAdmin.id}
                       className="flex items-center justify-between p-3 border border-purple-200 rounded-lg bg-purple-50"
@@ -339,7 +339,7 @@ export default function RoleManagementPage() {
                         )}
                       </div>
                       <button
-                        onClick={() => promoteUser(groupAdmin.id, "parent")}
+                        onClick={() => promoteUser(groupAdmin.id, 'parent')}
                         disabled={promoting === groupAdmin.id}
                         className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center"
                       >
@@ -390,7 +390,7 @@ export default function RoleManagementPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
+                {users.map(user => (
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
@@ -410,15 +410,15 @@ export default function RoleManagementPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {user.role === "parent" || user.role === "group_admin" ? (
+                      {user.role === 'parent' || user.role === 'group_admin' ? (
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             user.isActiveDriver
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
                           }`}
                         >
-                          {user.isActiveDriver ? "Active Driver" : "Non-Driver"}
+                          {user.isActiveDriver ? 'Active Driver' : 'Non-Driver'}
                         </span>
                       ) : (
                         <span className="text-gray-400 text-sm">N/A</span>
@@ -428,27 +428,27 @@ export default function RoleManagementPage() {
                       <div className="flex space-x-2">
                         {canPromoteToGroupAdmin(user) && (
                           <button
-                            onClick={() => promoteUser(user.id, "group_admin")}
+                            onClick={() => promoteUser(user.id, 'group_admin')}
                             disabled={promoting === user.id}
                             className="text-purple-600 hover:text-purple-900 text-sm font-medium disabled:opacity-50"
                           >
                             {promoting === user.id
-                              ? "Promoting..."
-                              : "→ Group Admin"}
+                              ? 'Promoting...'
+                              : '→ Group Admin'}
                           </button>
                         )}
                         {canDemoteFromGroupAdmin(user) && (
                           <button
-                            onClick={() => promoteUser(user.id, "parent")}
+                            onClick={() => promoteUser(user.id, 'parent')}
                             disabled={promoting === user.id}
                             className="text-gray-600 hover:text-gray-900 text-sm font-medium disabled:opacity-50"
                           >
-                            {promoting === user.id ? "Demoting..." : "→ Parent"}
+                            {promoting === user.id ? 'Demoting...' : '→ Parent'}
                           </button>
                         )}
-                        {user.role !== "admin" &&
-                          user.role !== "group_admin" &&
-                          user.role !== "parent" && (
+                        {user.role !== 'admin' &&
+                          user.role !== 'group_admin' &&
+                          user.role !== 'parent' && (
                             <span className="text-gray-400 text-sm">
                               No actions
                             </span>

@@ -1,14 +1,14 @@
 // Local copy of shared types for deployment compatibility
-import { z } from "zod";
+import { z } from 'zod';
 
 // User roles - Updated to match user experience document
 export type UserRole =
-  | "admin" // Super Admin
-  | "group_admin" // Group Admin
-  | "parent" // Parent
-  | "child" // Child
-  | "student" // Student
-  | "trip_admin"; // Trip Admin
+  | 'admin' // Super Admin
+  | 'group_admin' // Group Admin
+  | 'parent' // Parent
+  | 'child' // Child
+  | 'student' // Student
+  | 'trip_admin'; // Trip Admin
 
 // Role permissions interface
 export interface RolePermissions {
@@ -47,7 +47,7 @@ export interface RolePermissions {
 }
 
 // Trip status
-export type TripStatus = "planned" | "active" | "completed" | "cancelled";
+export type TripStatus = 'planned' | 'active' | 'completed' | 'cancelled';
 
 // Notification settings interface
 export interface NotificationSettings {
@@ -127,7 +127,7 @@ export interface TripPassenger {
   phone?: string;
   pickupLocation?: string;
   joinedAt: Date;
-  status: "confirmed" | "pending" | "cancelled";
+  status: 'confirmed' | 'pending' | 'cancelled';
 }
 
 // API Response wrapper
@@ -219,19 +219,19 @@ export const updateUserSchema = z.object({
 });
 
 export const createUserSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   phoneNumber: z.string().optional(),
   department: z.string().optional(),
 });
 
 export const createTripSchema = z.object({
-  date: z.string().min(1, "Date is required"),
-  departureTime: z.string().min(1, "Departure time is required"),
-  arrivalTime: z.string().min(1, "Arrival time is required"),
-  destination: z.string().min(1, "Destination is required"),
+  date: z.string().min(1, 'Date is required'),
+  departureTime: z.string().min(1, 'Departure time is required'),
+  arrivalTime: z.string().min(1, 'Arrival time is required'),
+  destination: z.string().min(1, 'Destination is required'),
   maxPassengers: z.number().min(1).max(8),
   notes: z.string().optional(),
 });
@@ -243,17 +243,17 @@ export const updateTripSchema = z.object({
   destination: z.string().min(1).optional(),
   maxPassengers: z.number().min(1).max(8).optional(),
   notes: z.string().optional(),
-  status: z.enum(["planned", "active", "completed", "cancelled"]).optional(),
+  status: z.enum(['planned', 'active', 'completed', 'cancelled']).optional(),
 });
 
 export const joinTripSchema = z.object({
-  pickupLocation: z.string().min(1, "Pickup location is required"),
+  pickupLocation: z.string().min(1, 'Pickup location is required'),
 });
 
 // Auth validation schemas
 export const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(1, 'Password is required'),
 });
 
 export const childSchema = z.object({
@@ -328,31 +328,31 @@ export interface RegisterRequest {
 // This is just for type inference on the frontend.
 // Note: Importing backend schema may cause build issues, so using local schema
 export const registerSchema = z.object({
-  familyName: z.string().min(1, "Family name is required"),
+  familyName: z.string().min(1, 'Family name is required'),
   parent: z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
   }),
   secondParent: z
     .object({
-      firstName: z.string().min(1, "First name is required"),
-      lastName: z.string().min(1, "Last name is required"),
-      email: z.string().email("Invalid email address"),
-      password: z.string().min(8, "Password must be at least 8 characters"),
+      firstName: z.string().min(1, 'First name is required'),
+      lastName: z.string().min(1, 'Last name is required'),
+      email: z.string().email('Invalid email address'),
+      password: z.string().min(8, 'Password must be at least 8 characters'),
     })
     .optional(),
   children: z
     .array(
       z.object({
-        firstName: z.string().min(1, "First name is required"),
-        lastName: z.string().min(1, "Last name is required"),
-        grade: z.string().min(1, "Grade is required"),
-        school: z.string().min(1, "School is required"),
+        firstName: z.string().min(1, 'First name is required'),
+        lastName: z.string().min(1, 'Last name is required'),
+        grade: z.string().min(1, 'Grade is required'),
+        school: z.string().min(1, 'School is required'),
       })
     )
-    .min(1, "At least one child is required"),
+    .min(1, 'At least one child is required'),
 });
 
 // Utility types

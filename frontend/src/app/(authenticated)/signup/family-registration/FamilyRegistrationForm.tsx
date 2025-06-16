@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import AddressValidation from "@/components/AddressValidation";
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import AddressValidation from '@/components/AddressValidation';
 import {
   Users,
   User,
@@ -17,7 +17,7 @@ import {
   ArrowLeft,
   Plus,
   X,
-} from "lucide-react";
+} from 'lucide-react';
 
 // ... (Keep all the interfaces: Child, FamilyRegistrationData)
 
@@ -42,7 +42,7 @@ interface FamilyRegistrationData {
     phone: string;
     canDrive: boolean;
   } | null;
-  familyStructure: "single" | "dual";
+  familyStructure: 'single' | 'dual';
   children: Child[];
   address: {
     street: string;
@@ -82,33 +82,33 @@ export default function FamilyRegistrationForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const [formData, setFormData] = useState<FamilyRegistrationData>({
     primaryParent: {
-      name: "",
-      email: "",
-      phone: "",
+      name: '',
+      email: '',
+      phone: '',
       canDrive: true,
     },
     secondaryParent: null,
-    familyStructure: "single",
-    children: [{ name: "", age: 0, school: "", grade: "", medicalNotes: "" }],
+    familyStructure: 'single',
+    children: [{ name: '', age: 0, school: '', grade: '', medicalNotes: '' }],
     address: {
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
+      street: '',
+      city: '',
+      state: '',
+      zipCode: '',
     },
     vehicles: [
-      { make: "", model: "", year: 2020, capacity: 4, licensePlate: "" },
+      { make: '', model: '', year: 2020, capacity: 4, licensePlate: '' },
     ],
     preferences: {
       availableDays: [],
       timeSlots: [],
       maxDistance: 10,
-      emergencyContact: "",
-      emergencyPhone: "",
+      emergencyContact: '',
+      emergencyPhone: '',
     },
   });
 
@@ -134,15 +134,15 @@ export default function FamilyRegistrationForm() {
     setIsDetectingSchool(true);
     try {
       // Mock implementation - replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Mock school detection result
       const mockResult: SmartDetectionResult = {
         school: {
-          name: "Lincoln Elementary School",
-          address: "123 Oak Street, Springfield, IL 62701",
-          type: "elementary",
-          grades: ["K", "1", "2", "3", "4", "5"],
+          name: 'Lincoln Elementary School',
+          address: '123 Oak Street, Springfield, IL 62701',
+          type: 'elementary',
+          grades: ['K', '1', '2', '3', '4', '5'],
         },
         distance: 2.3,
         confidence: 0.89,
@@ -151,15 +151,15 @@ export default function FamilyRegistrationForm() {
       setSchoolDetectionResult(mockResult);
 
       // Auto-update children's school if not set
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
-        children: prev.children.map((child) => ({
+        children: prev.children.map(child => ({
           ...child,
           school: child.school || mockResult.school.name,
         })),
       }));
     } catch (error) {
-      console.error("School detection failed:", error);
+      console.error('School detection failed:', error);
     } finally {
       setIsDetectingSchool(false);
     }
@@ -167,25 +167,25 @@ export default function FamilyRegistrationForm() {
 
   // Smart grade inference from age
   const inferGradeFromAge = (age: number): string => {
-    if (!age) return "";
+    if (!age) return '';
 
     const gradeMap: { [key: number]: string } = {
-      5: "K",
-      6: "1st",
-      7: "2nd",
-      8: "3rd",
-      9: "4th",
-      10: "5th",
-      11: "6th",
-      12: "7th",
-      13: "8th",
-      14: "9th",
-      15: "10th",
-      16: "11th",
-      17: "12th",
+      5: 'K',
+      6: '1st',
+      7: '2nd',
+      8: '3rd',
+      9: '4th',
+      10: '5th',
+      11: '6th',
+      12: '7th',
+      13: '8th',
+      14: '9th',
+      15: '10th',
+      16: '11th',
+      17: '12th',
     };
 
-    return gradeMap[age] || "";
+    return gradeMap[age] || '';
   };
 
   const handleInputChange = (
@@ -193,9 +193,9 @@ export default function FamilyRegistrationForm() {
     field: string,
     value: any
   ) => {
-    setFormData((prev) => {
+    setFormData(prev => {
       // Handle nested objects
-      if (typeof prev[section] === "object" && prev[section] !== null) {
+      if (typeof prev[section] === 'object' && prev[section] !== null) {
         return {
           ...prev,
           [section]: {
@@ -213,7 +213,7 @@ export default function FamilyRegistrationForm() {
   };
 
   const handleChildChange = (index: number, field: keyof Child, value: any) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       children: prev.children.map((child, i) =>
         i === index ? { ...child, [field]: value } : child
@@ -231,11 +231,11 @@ export default function FamilyRegistrationForm() {
     newChildren[index] = { ...newChildren[index], [field]: value };
 
     // Auto-infer grade when age changes
-    if (field === "age" && showSmartFeatures && value) {
+    if (field === 'age' && showSmartFeatures && value) {
       newChildren[index].grade = inferGradeFromAge(parseInt(value));
     }
 
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       children: newChildren,
     }));
@@ -243,10 +243,10 @@ export default function FamilyRegistrationForm() {
 
   const handleVehicleChange = (
     index: number,
-    field: keyof FamilyRegistrationData["vehicles"][0],
+    field: keyof FamilyRegistrationData['vehicles'][0],
     value: any
   ) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       vehicles: prev.vehicles.map((vehicle, i) =>
         i === index ? { ...vehicle, [field]: value } : vehicle
@@ -255,44 +255,44 @@ export default function FamilyRegistrationForm() {
   };
 
   const addChild = () => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       children: [
         ...prev.children,
-        { name: "", age: 0, school: "", grade: "", medicalNotes: "" },
+        { name: '', age: 0, school: '', grade: '', medicalNotes: '' },
       ],
     }));
   };
 
   const removeChild = (index: number) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       children: prev.children.filter((_, i) => i !== index),
     }));
   };
 
   const addVehicle = () => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       vehicles: [
         ...prev.vehicles,
-        { make: "", model: "", year: 2020, capacity: 4, licensePlate: "" },
+        { make: '', model: '', year: 2020, capacity: 4, licensePlate: '' },
       ],
     }));
   };
 
   const removeVehicle = (index: number) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       vehicles: prev.vehicles.filter((_, i) => i !== index),
     }));
   };
 
   const handlePreferenceChange = (
-    field: keyof FamilyRegistrationData["preferences"],
+    field: keyof FamilyRegistrationData['preferences'],
     value: any
   ) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       preferences: {
         ...prev.preferences,
@@ -303,26 +303,26 @@ export default function FamilyRegistrationForm() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
-      const response = await fetch("/api/family-registration", {
-        method: "POST",
+      const response = await fetch('/api/family-registration', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        throw new Error("Registration failed");
+        throw new Error('Registration failed');
       }
 
       await response.json();
 
-      router.push("/parents/dashboard?welcome=true");
+      router.push('/parents/dashboard?welcome=true');
     } catch (err) {
-      setError("Registration failed. Please try again.");
+      setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -353,15 +353,15 @@ export default function FamilyRegistrationForm() {
                   <button
                     type="button"
                     onClick={() =>
-                      setFormData((prev) => ({
+                      setFormData(prev => ({
                         ...prev,
-                        familyStructure: "single",
+                        familyStructure: 'single',
                       }))
                     }
                     className={`p-4 border-2 rounded-lg text-center ${
-                      formData.familyStructure === "single"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
+                      formData.familyStructure === 'single'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <User className="h-8 w-8 mx-auto mb-2 text-gray-600" />
@@ -370,15 +370,15 @@ export default function FamilyRegistrationForm() {
                   <button
                     type="button"
                     onClick={() =>
-                      setFormData((prev) => ({
+                      setFormData(prev => ({
                         ...prev,
-                        familyStructure: "dual",
+                        familyStructure: 'dual',
                       }))
                     }
                     className={`p-4 border-2 rounded-lg text-center ${
-                      formData.familyStructure === "dual"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
+                      formData.familyStructure === 'dual'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <Users className="h-8 w-8 mx-auto mb-2 text-gray-600" />
@@ -395,8 +395,8 @@ export default function FamilyRegistrationForm() {
                   <input
                     type="text"
                     value={formData.primaryParent.name}
-                    onChange={(e) =>
-                      handleInputChange("primaryParent", "name", e.target.value)
+                    onChange={e =>
+                      handleInputChange('primaryParent', 'name', e.target.value)
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter your name"
@@ -409,10 +409,10 @@ export default function FamilyRegistrationForm() {
                   <input
                     type="email"
                     value={formData.primaryParent.email}
-                    onChange={(e) =>
+                    onChange={e =>
                       handleInputChange(
-                        "primaryParent",
-                        "email",
+                        'primaryParent',
+                        'email',
                         e.target.value
                       )
                     }
@@ -430,10 +430,10 @@ export default function FamilyRegistrationForm() {
                   <input
                     type="tel"
                     value={formData.primaryParent.phone}
-                    onChange={(e) =>
+                    onChange={e =>
                       handleInputChange(
-                        "primaryParent",
-                        "phone",
+                        'primaryParent',
+                        'phone',
                         e.target.value
                       )
                     }
@@ -446,12 +446,12 @@ export default function FamilyRegistrationForm() {
                     Can Drive?
                   </label>
                   <select
-                    value={formData.primaryParent.canDrive ? "yes" : "no"}
-                    onChange={(e) =>
+                    value={formData.primaryParent.canDrive ? 'yes' : 'no'}
+                    onChange={e =>
                       handleInputChange(
-                        "primaryParent",
-                        "canDrive",
-                        e.target.value === "yes"
+                        'primaryParent',
+                        'canDrive',
+                        e.target.value === 'yes'
                       )
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -462,7 +462,7 @@ export default function FamilyRegistrationForm() {
                 </div>
               </div>
 
-              {formData.familyStructure === "dual" && (
+              {formData.familyStructure === 'dual' && (
                 <div className="border-t pt-4">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     Second Parent (Optional)
@@ -474,15 +474,15 @@ export default function FamilyRegistrationForm() {
                       </label>
                       <input
                         type="text"
-                        value={formData.secondaryParent?.name || ""}
-                        onChange={(e) => {
+                        value={formData.secondaryParent?.name || ''}
+                        onChange={e => {
                           const newSecondary = formData.secondaryParent || {
-                            name: "",
-                            email: "",
-                            phone: "",
+                            name: '',
+                            email: '',
+                            phone: '',
                             canDrive: true,
                           };
-                          setFormData((prev) => ({
+                          setFormData(prev => ({
                             ...prev,
                             secondaryParent: {
                               ...newSecondary,
@@ -500,15 +500,15 @@ export default function FamilyRegistrationForm() {
                       </label>
                       <input
                         type="email"
-                        value={formData.secondaryParent?.email || ""}
-                        onChange={(e) => {
+                        value={formData.secondaryParent?.email || ''}
+                        onChange={e => {
                           const newSecondary = formData.secondaryParent || {
-                            name: "",
-                            email: "",
-                            phone: "",
+                            name: '',
+                            email: '',
+                            phone: '',
                             canDrive: true,
                           };
-                          setFormData((prev) => ({
+                          setFormData(prev => ({
                             ...prev,
                             secondaryParent: {
                               ...newSecondary,
@@ -555,7 +555,7 @@ export default function FamilyRegistrationForm() {
                       </p>
                       {schoolDetectionResult && (
                         <p className="text-blue-700 text-sm mt-1">
-                          School will be auto-filled as:{" "}
+                          School will be auto-filled as:{' '}
                           <strong>{schoolDetectionResult.school.name}</strong>
                         </p>
                       )}
@@ -589,10 +589,10 @@ export default function FamilyRegistrationForm() {
                       <input
                         type="text"
                         value={child.name}
-                        onChange={(e) => {
+                        onChange={e => {
                           const newChildren = [...formData.children];
                           newChildren[index].name = e.target.value;
-                          setFormData((prev) => ({
+                          setFormData(prev => ({
                             ...prev,
                             children: newChildren,
                           }));
@@ -608,17 +608,17 @@ export default function FamilyRegistrationForm() {
                       <input
                         type="number"
                         value={child.age}
-                        onChange={(e) => {
+                        onChange={e => {
                           if (showSmartFeatures) {
                             handleSmartChildChange(
                               index,
-                              "age",
+                              'age',
                               e.target.value
                             );
                           } else {
                             const newChildren = [...formData.children];
                             newChildren[index].age = parseInt(e.target.value);
-                            setFormData((prev) => ({
+                            setFormData(prev => ({
                               ...prev,
                               children: newChildren,
                             }));
@@ -638,21 +638,21 @@ export default function FamilyRegistrationForm() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        School {schoolDetectionResult ? "(Auto-detected)" : ""}
+                        School {schoolDetectionResult ? '(Auto-detected)' : ''}
                       </label>
                       <input
                         type="text"
                         value={child.school}
-                        onChange={(e) => {
+                        onChange={e => {
                           const newChildren = [...formData.children];
                           newChildren[index].school = e.target.value;
-                          setFormData((prev) => ({
+                          setFormData(prev => ({
                             ...prev,
                             children: newChildren,
                           }));
                         }}
                         className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          schoolDetectionResult ? "bg-green-50" : ""
+                          schoolDetectionResult ? 'bg-green-50' : ''
                         }`}
                         placeholder="School name"
                         disabled={showSmartFeatures && !!schoolDetectionResult}
@@ -665,21 +665,21 @@ export default function FamilyRegistrationForm() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Grade {showSmartFeatures ? "(Auto-inferred)" : ""}
+                        Grade {showSmartFeatures ? '(Auto-inferred)' : ''}
                       </label>
                       <input
                         type="text"
                         value={child.grade}
-                        onChange={(e) => {
+                        onChange={e => {
                           const newChildren = [...formData.children];
                           newChildren[index].grade = e.target.value;
-                          setFormData((prev) => ({
+                          setFormData(prev => ({
                             ...prev,
                             children: newChildren,
                           }));
                         }}
                         className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          showSmartFeatures && child.age ? "bg-green-50" : ""
+                          showSmartFeatures && child.age ? 'bg-green-50' : ''
                         }`}
                         placeholder="Grade (e.g., 3rd, K)"
                         disabled={showSmartFeatures && !!child.age}
@@ -699,10 +699,10 @@ export default function FamilyRegistrationForm() {
                     </label>
                     <textarea
                       value={child.medicalNotes}
-                      onChange={(e) => {
+                      onChange={e => {
                         const newChildren = [...formData.children];
                         newChildren[index].medicalNotes = e.target.value;
-                        setFormData((prev) => ({
+                        setFormData(prev => ({
                           ...prev,
                           children: newChildren,
                         }));
@@ -748,8 +748,8 @@ export default function FamilyRegistrationForm() {
                 <input
                   type="text"
                   value={formData.address.street}
-                  onChange={(e) =>
-                    handleInputChange("address", "street", e.target.value)
+                  onChange={e =>
+                    handleInputChange('address', 'street', e.target.value)
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="123 Main Street"
@@ -764,8 +764,8 @@ export default function FamilyRegistrationForm() {
                   <input
                     type="text"
                     value={formData.address.city}
-                    onChange={(e) =>
-                      handleInputChange("address", "city", e.target.value)
+                    onChange={e =>
+                      handleInputChange('address', 'city', e.target.value)
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="City"
@@ -778,8 +778,8 @@ export default function FamilyRegistrationForm() {
                   <input
                     type="text"
                     value={formData.address.state}
-                    onChange={(e) =>
-                      handleInputChange("address", "state", e.target.value)
+                    onChange={e =>
+                      handleInputChange('address', 'state', e.target.value)
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="CA"
@@ -792,8 +792,8 @@ export default function FamilyRegistrationForm() {
                   <input
                     type="text"
                     value={formData.address.zipCode}
-                    onChange={(e) =>
-                      handleInputChange("address", "zipCode", e.target.value)
+                    onChange={e =>
+                      handleInputChange('address', 'zipCode', e.target.value)
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="12345"
@@ -822,14 +822,14 @@ export default function FamilyRegistrationForm() {
                         🎉 School Automatically Detected!
                       </h4>
                       <p className="text-green-800 mt-1">
-                        <strong>{schoolDetectionResult.school.name}</strong> -{" "}
+                        <strong>{schoolDetectionResult.school.name}</strong> -{' '}
                         {schoolDetectionResult.distance} miles away
                       </p>
                       <p className="text-sm text-green-600 mt-1">
                         {schoolDetectionResult.school.address}
                       </p>
                       <p className="text-xs text-green-600 mt-1">
-                        Confidence:{" "}
+                        Confidence:{' '}
                         {Math.round(schoolDetectionResult.confidence * 100)}% |
                         Will auto-fill children's school
                       </p>
@@ -840,7 +840,7 @@ export default function FamilyRegistrationForm() {
 
               {/* Address Validation Component */}
               <AddressValidation
-                onValidationComplete={(isValid) => setAddressValidated(isValid)}
+                onValidationComplete={isValid => setAddressValidated(isValid)}
                 required={true}
               />
 
@@ -875,12 +875,12 @@ export default function FamilyRegistrationForm() {
                     <input
                       type="text"
                       value={`${formData.vehicles[0].make} ${formData.vehicles[0].model}`}
-                      onChange={(e) => {
-                        const [make, ...modelParts] = e.target.value.split(" ");
+                      onChange={e => {
+                        const [make, ...modelParts] = e.target.value.split(' ');
                         const newVehicles = [...formData.vehicles];
-                        newVehicles[0].make = make || "";
-                        newVehicles[0].model = modelParts.join(" ") || "";
-                        setFormData((prev) => ({
+                        newVehicles[0].make = make || '';
+                        newVehicles[0].model = modelParts.join(' ') || '';
+                        setFormData(prev => ({
                           ...prev,
                           vehicles: newVehicles,
                         }));
@@ -896,10 +896,10 @@ export default function FamilyRegistrationForm() {
                     <input
                       type="number"
                       value={formData.vehicles[0].year}
-                      onChange={(e) => {
+                      onChange={e => {
                         const newVehicles = [...formData.vehicles];
                         newVehicles[0].year = parseInt(e.target.value);
-                        setFormData((prev) => ({
+                        setFormData(prev => ({
                           ...prev,
                           vehicles: newVehicles,
                         }));
@@ -914,10 +914,10 @@ export default function FamilyRegistrationForm() {
                     </label>
                     <select
                       value={formData.vehicles[0].capacity}
-                      onChange={(e) => {
+                      onChange={e => {
                         const newVehicles = [...formData.vehicles];
                         newVehicles[0].capacity = parseInt(e.target.value);
-                        setFormData((prev) => ({
+                        setFormData(prev => ({
                           ...prev,
                           vehicles: newVehicles,
                         }));
@@ -937,10 +937,10 @@ export default function FamilyRegistrationForm() {
                     <input
                       type="text"
                       value={formData.vehicles[0].licensePlate}
-                      onChange={(e) => {
+                      onChange={e => {
                         const newVehicles = [...formData.vehicles];
                         newVehicles[0].licensePlate = e.target.value;
-                        setFormData((prev) => ({
+                        setFormData(prev => ({
                           ...prev,
                           vehicles: newVehicles,
                         }));
@@ -972,9 +972,9 @@ export default function FamilyRegistrationForm() {
               <div>
                 <h3 className="font-medium text-gray-900">Family Structure</h3>
                 <p className="text-gray-600">
-                  {formData.familyStructure === "single"
-                    ? "Single Parent"
-                    : "Two Parents"}
+                  {formData.familyStructure === 'single'
+                    ? 'Single Parent'
+                    : 'Two Parents'}
                 </p>
               </div>
 
@@ -1000,7 +1000,7 @@ export default function FamilyRegistrationForm() {
               <div>
                 <h3 className="font-medium text-gray-900">Address</h3>
                 <p className="text-gray-600">
-                  {formData.address.street}, {formData.address.city},{" "}
+                  {formData.address.street}, {formData.address.city},{' '}
                   {formData.address.state} {formData.address.zipCode}
                 </p>
               </div>
@@ -1008,8 +1008,8 @@ export default function FamilyRegistrationForm() {
               <div>
                 <h3 className="font-medium text-gray-900">Vehicle</h3>
                 <p className="text-gray-600">
-                  {formData.vehicles[0].year} {formData.vehicles[0].make}{" "}
-                  {formData.vehicles[0].model}({formData.vehicles[0].capacity}{" "}
+                  {formData.vehicles[0].year} {formData.vehicles[0].make}{' '}
+                  {formData.vehicles[0].model}({formData.vehicles[0].capacity}{' '}
                   seats)
                 </p>
               </div>
@@ -1038,13 +1038,13 @@ export default function FamilyRegistrationForm() {
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              {[1, 2, 3, 4].map((stepNum) => (
+              {[1, 2, 3, 4].map(stepNum => (
                 <div
                   key={stepNum}
                   className={`flex items-center justify-center w-8 h-8 rounded-full ${
                     stepNum <= step
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-500"
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-500'
                   }`}
                 >
                   {stepNum}
@@ -1070,8 +1070,8 @@ export default function FamilyRegistrationForm() {
               disabled={step === 1}
               className={`flex items-center px-4 py-2 rounded-md ${
                 step === 1
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -1094,7 +1094,7 @@ export default function FamilyRegistrationForm() {
                 disabled={loading}
                 className="flex items-center px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
               >
-                {loading ? "Submitting..." : "Complete Registration"}
+                {loading ? 'Submitting...' : 'Complete Registration'}
                 <CheckCircle className="h-4 w-4 ml-2" />
               </button>
             )}

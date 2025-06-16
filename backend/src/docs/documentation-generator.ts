@@ -117,7 +117,10 @@ function generateReDocUI(): string {
 /**
  * Azure Function to serve OpenAPI specification
  */
-export async function docsSpec(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function docsSpec(
+  request: HttpRequest,
+  context: InvocationContext,
+): Promise<HttpResponseInit> {
   try {
     return {
       status: 200,
@@ -126,13 +129,15 @@ export async function docsSpec(request: HttpRequest, context: InvocationContext)
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
       },
-      jsonBody: openApiSpec
+      jsonBody: openApiSpec,
     };
   } catch (error) {
-    context.error('Failed to serve OpenAPI spec', { error: error instanceof Error ? error.message : 'Unknown error' });
-    
+    context.error('Failed to serve OpenAPI spec', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
     return {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -140,9 +145,9 @@ export async function docsSpec(request: HttpRequest, context: InvocationContext)
         success: false,
         error: {
           message: 'Failed to load API specification',
-          code: 'INTERNAL_ERROR'
-        }
-      }
+          code: 'INTERNAL_ERROR',
+        },
+      },
     };
   }
 }
@@ -150,23 +155,28 @@ export async function docsSpec(request: HttpRequest, context: InvocationContext)
 /**
  * Azure Function to serve Swagger UI
  */
-export async function docsSwagger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function docsSwagger(
+  request: HttpRequest,
+  context: InvocationContext,
+): Promise<HttpResponseInit> {
   try {
     return {
       status: 200,
       headers: {
         'Content-Type': 'text/html',
-        'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
       },
-      body: generateSwaggerUI()
+      body: generateSwaggerUI(),
     };
   } catch (error) {
-    context.error('Failed to serve Swagger UI', { error: error instanceof Error ? error.message : 'Unknown error' });
-    
+    context.error('Failed to serve Swagger UI', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
     return {
       status: 500,
       headers: { 'Content-Type': 'text/html' },
-      body: '<h1>Failed to load documentation</h1>'
+      body: '<h1>Failed to load documentation</h1>',
     };
   }
 }
@@ -174,23 +184,28 @@ export async function docsSwagger(request: HttpRequest, context: InvocationConte
 /**
  * Azure Function to serve ReDoc UI
  */
-export async function docsRedoc(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function docsRedoc(
+  request: HttpRequest,
+  context: InvocationContext,
+): Promise<HttpResponseInit> {
   try {
     return {
       status: 200,
       headers: {
         'Content-Type': 'text/html',
-        'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
       },
-      body: generateReDocUI()
+      body: generateReDocUI(),
     };
   } catch (error) {
-    context.error('Failed to serve ReDoc UI', { error: error instanceof Error ? error.message : 'Unknown error' });
-    
+    context.error('Failed to serve ReDoc UI', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
     return {
       status: 500,
       headers: { 'Content-Type': 'text/html' },
-      body: '<h1>Failed to load documentation</h1>'
+      body: '<h1>Failed to load documentation</h1>',
     };
   }
 }
@@ -198,7 +213,10 @@ export async function docsRedoc(request: HttpRequest, context: InvocationContext
 /**
  * Azure Function to serve documentation index
  */
-export async function docsIndex(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function docsIndex(
+  request: HttpRequest,
+  context: InvocationContext,
+): Promise<HttpResponseInit> {
   const indexHTML = `
 <!DOCTYPE html>
 <html>
@@ -346,17 +364,19 @@ export async function docsIndex(request: HttpRequest, context: InvocationContext
       status: 200,
       headers: {
         'Content-Type': 'text/html',
-        'Cache-Control': 'public, max-age=3600'
+        'Cache-Control': 'public, max-age=3600',
       },
-      body: indexHTML
+      body: indexHTML,
     };
   } catch (error) {
-    context.error('Failed to serve docs index', { error: error instanceof Error ? error.message : 'Unknown error' });
-    
+    context.error('Failed to serve docs index', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
     return {
       status: 500,
       headers: { 'Content-Type': 'text/html' },
-      body: '<h1>Failed to load documentation</h1>'
+      body: '<h1>Failed to load documentation</h1>',
     };
   }
 }
@@ -621,6 +641,6 @@ curl -X PUT https://vcarpool-functions.azurewebsites.net/api/users/profile \\
   }'
 
 # 7. Health check (no authentication required)
-curl -X GET https://vcarpool-functions.azurewebsites.net/api/health`
+curl -X GET https://vcarpool-functions.azurewebsites.net/api/health`,
   };
 }

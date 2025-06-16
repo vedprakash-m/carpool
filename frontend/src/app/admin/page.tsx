@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React from "react";
-import { AdminRoute } from "@/components/auth/ProtectedRoute";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useRBAC } from "@/contexts/RBACContext";
-import { RolePermissions } from "@/types/shared";
+import React from 'react';
+import { AdminRoute } from '@/components/auth/ProtectedRoute';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRBAC } from '@/contexts/RBACContext';
+import { RolePermissions } from '@/types/shared';
 
-type AdminPermissions = RolePermissions["admin"];
+type AdminPermissions = RolePermissions['admin'];
 
 export default function AdminDashboard() {
   const { permissions } = useRBAC();

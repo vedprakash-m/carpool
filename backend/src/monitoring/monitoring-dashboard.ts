@@ -125,7 +125,7 @@ class AdvancedMonitoringDashboard {
    */
   getMetricsHistory(hours: number = 24): Array<{ timestamp: Date; metrics: DashboardMetrics }> {
     const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
-    return this.metricsHistory.filter(entry => entry.timestamp > cutoff);
+    return this.metricsHistory.filter((entry) => entry.timestamp > cutoff);
   }
 
   /**
@@ -138,24 +138,24 @@ class AdvancedMonitoringDashboard {
     memoryUsage: Array<{ timestamp: Date; value: number }>;
   } {
     const history = this.getMetricsHistory(hours);
-    
+
     return {
-      responseTime: history.map(entry => ({
+      responseTime: history.map((entry) => ({
         timestamp: entry.timestamp,
-        value: entry.metrics.performance.responseTime.average
+        value: entry.metrics.performance.responseTime.average,
       })),
-      throughput: history.map(entry => ({
+      throughput: history.map((entry) => ({
         timestamp: entry.timestamp,
-        value: entry.metrics.performance.throughput.requestsPerSecond
+        value: entry.metrics.performance.throughput.requestsPerSecond,
       })),
-      errorRate: history.map(entry => ({
+      errorRate: history.map((entry) => ({
         timestamp: entry.timestamp,
-        value: entry.metrics.performance.errorRate
+        value: entry.metrics.performance.errorRate,
       })),
-      memoryUsage: history.map(entry => ({
+      memoryUsage: history.map((entry) => ({
         timestamp: entry.timestamp,
-        value: entry.metrics.system.memoryUsage.percentage
-      }))
+        value: entry.metrics.system.memoryUsage.percentage,
+      })),
     };
   }
 
@@ -230,13 +230,13 @@ class AdvancedMonitoringDashboard {
     const hours = period === 'hourly' ? 1 : period === 'daily' ? 24 : 168;
     const trends = this.getPerformanceTrends(hours);
     const health = this.getSystemHealth();
-    
+
     const incidents = this.alertHistory
-      .filter(alert => {
+      .filter((alert) => {
         const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
         return new Date(alert.timestamp) > cutoff;
       })
-      .filter(alert => alert.severity === 'high' || alert.severity === 'critical');
+      .filter((alert) => alert.severity === 'high' || alert.severity === 'critical');
 
     const summary = this.generateSummary(period, health, incidents.length);
 
@@ -245,7 +245,7 @@ class AdvancedMonitoringDashboard {
       metrics: this.metrics,
       trends,
       incidents,
-      recommendations: health.recommendations
+      recommendations: health.recommendations,
     };
   }
 
@@ -257,14 +257,14 @@ class AdvancedMonitoringDashboard {
         cpuUsage: 0,
         diskUsage: { used: 0, total: 0, percentage: 0 },
         networkStats: { bytesIn: 0, bytesOut: 0, connectionsActive: 0 },
-        functionExecutions: { total: 0, successful: 0, failed: 0, averageExecutionTime: 0 }
+        functionExecutions: { total: 0, successful: 0, failed: 0, averageExecutionTime: 0 },
       },
       performance: {
         responseTime: { average: 0, p50: 0, p95: 0, p99: 0 },
         throughput: { requestsPerSecond: 0, requestsPerMinute: 0 },
         errorRate: 0,
         cacheHitRate: 0,
-        databasePerformance: { averageQueryTime: 0, activeConnections: 0, queryCount: 0 }
+        databasePerformance: { averageQueryTime: 0, activeConnections: 0, queryCount: 0 },
       },
       security: {
         threatsDetected: 0,
@@ -272,20 +272,20 @@ class AdvancedMonitoringDashboard {
         riskScore: 0,
         failedAuthAttempts: 0,
         blockedRequests: 0,
-        suspiciousActivity: 0
+        suspiciousActivity: 0,
       },
       business: {
         activeUsers: 0,
         newRegistrations: 0,
         carpoolsCreated: 0,
         ridesCompleted: 0,
-        userEngagement: { dailyActiveUsers: 0, weeklyActiveUsers: 0, monthlyActiveUsers: 0 }
+        userEngagement: { dailyActiveUsers: 0, weeklyActiveUsers: 0, monthlyActiveUsers: 0 },
       },
       alerts: {
         activeAlerts: 0,
         alertsByPriority: {},
-        recentAlerts: []
-      }
+        recentAlerts: [],
+      },
     };
   }
 
@@ -302,13 +302,12 @@ class AdvancedMonitoringDashboard {
         // Store metrics history
         this.metricsHistory.push({
           timestamp: new Date(),
-          metrics: { ...this.metrics }
+          metrics: { ...this.metrics },
         });
 
         // Keep only last 7 days of history
         const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        this.metricsHistory = this.metricsHistory.filter(entry => entry.timestamp > cutoff);
-
+        this.metricsHistory = this.metricsHistory.filter((entry) => entry.timestamp > cutoff);
       } catch (error) {
         logger.error('Failed to collect metrics', { error });
       }
@@ -320,20 +319,20 @@ class AdvancedMonitoringDashboard {
     setInterval(async () => {
       try {
         const health = this.getSystemHealth();
-        
+
         if (health.status === 'critical') {
           await this.sendAlert({
             title: 'System Health Critical',
             message: `System health score: ${health.score}. Issues: ${health.issues.join(', ')}`,
             severity: 'critical',
-            data: { health }
+            data: { health },
           });
         } else if (health.status === 'warning') {
           await this.sendAlert({
             title: 'System Health Warning',
             message: `System health score: ${health.score}. Issues: ${health.issues.join(', ')}`,
             severity: 'warning',
-            data: { health }
+            data: { health },
           });
         }
       } catch (error) {
@@ -349,7 +348,7 @@ class AdvancedMonitoringDashboard {
     this.metrics.system.memoryUsage = {
       used: memUsage.heapUsed,
       total: memUsage.heapTotal,
-      percentage: (memUsage.heapUsed / memUsage.heapTotal) * 100
+      percentage: (memUsage.heapUsed / memUsage.heapTotal) * 100,
     };
 
     // In a real implementation, you would collect actual CPU, disk, and network stats
@@ -357,7 +356,7 @@ class AdvancedMonitoringDashboard {
     this.metrics.system.diskUsage = {
       used: 1000000000, // Simulated
       total: 10000000000,
-      percentage: 10
+      percentage: 10,
     };
   }
 
@@ -378,7 +377,7 @@ class AdvancedMonitoringDashboard {
       riskScore: securityMetrics.riskTrend[securityMetrics.riskTrend.length - 1]?.riskScore || 0,
       failedAuthAttempts: 0, // Would come from auth service
       blockedRequests: 0, // Would come from rate limiter
-      suspiciousActivity: securityMetrics.totalThreats
+      suspiciousActivity: securityMetrics.totalThreats,
     };
   }
 
@@ -393,29 +392,30 @@ class AdvancedMonitoringDashboard {
       userEngagement: {
         dailyActiveUsers: Math.floor(Math.random() * 500),
         weeklyActiveUsers: Math.floor(Math.random() * 1500),
-        monthlyActiveUsers: Math.floor(Math.random() * 5000)
-      }
+        monthlyActiveUsers: Math.floor(Math.random() * 5000),
+      },
     };
   }
 
   private async collectAlertMetrics(): Promise<void> {
-    const recentAlerts = this.alertHistory
-      .slice(-10)
-      .map(alert => ({
-        id: alert.id,
-        title: alert.title,
-        severity: alert.severity,
-        timestamp: alert.timestamp,
-        acknowledged: alert.acknowledged || false
-      }));
+    const recentAlerts = this.alertHistory.slice(-10).map((alert) => ({
+      id: alert.id,
+      title: alert.title,
+      severity: alert.severity,
+      timestamp: alert.timestamp,
+      acknowledged: alert.acknowledged || false,
+    }));
 
     this.metrics.alerts = {
-      activeAlerts: this.alertHistory.filter(alert => !alert.acknowledged).length,
-      alertsByPriority: this.alertHistory.reduce((acc, alert) => {
-        acc[alert.severity] = (acc[alert.severity] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
-      recentAlerts
+      activeAlerts: this.alertHistory.filter((alert) => !alert.acknowledged).length,
+      alertsByPriority: this.alertHistory.reduce(
+        (acc, alert) => {
+          acc[alert.severity] = (acc[alert.severity] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+      recentAlerts,
     };
   }
 
@@ -429,7 +429,7 @@ class AdvancedMonitoringDashboard {
       ...alert,
       id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
-      acknowledged: false
+      acknowledged: false,
     };
 
     this.alertHistory.push(alertWithId);
@@ -438,8 +438,9 @@ class AdvancedMonitoringDashboard {
   }
 
   private generateSummary(period: string, health: any, incidentCount: number): string {
-    const statusEmoji = health.status === 'healthy' ? '✅' : health.status === 'warning' ? '⚠️' : '🚨';
-    
+    const statusEmoji =
+      health.status === 'healthy' ? '✅' : health.status === 'warning' ? '⚠️' : '🚨';
+
     return `${statusEmoji} ${period.charAt(0).toUpperCase() + period.slice(1)} Report
 Health Score: ${health.score}/100 (${health.status})
 Incidents: ${incidentCount}

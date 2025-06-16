@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useTravelingParentData } from "@/hooks/useTravelingParentData";
-import { ErrorState } from "./traveling-parent/ErrorState";
-import { LoadingState, NoGroupState } from "./traveling-parent/LoadingState";
-import { DashboardHeader } from "./traveling-parent/DashboardHeader";
-import { TravelScheduleCard } from "./traveling-parent/TravelScheduleCard";
-import { StatisticsGrid } from "./traveling-parent/StatisticsGrid";
-import { MakeupProposalForm } from "./traveling-parent/MakeupProposalForm";
-import { MakeupOptionsList } from "./traveling-parent/MakeupOptionsList";
+import { useTravelingParentData } from '@/hooks/useTravelingParentData';
+import { ErrorState } from './traveling-parent/ErrorState';
+import { LoadingState, NoGroupState } from './traveling-parent/LoadingState';
+import { DashboardHeader } from './traveling-parent/DashboardHeader';
+import { TravelScheduleCard } from './traveling-parent/TravelScheduleCard';
+import { StatisticsGrid } from './traveling-parent/StatisticsGrid';
+import { MakeupProposalForm } from './traveling-parent/MakeupProposalForm';
+import { MakeupOptionsList } from './traveling-parent/MakeupOptionsList';
 
 /**
  * TravelingParentMakeupDashboard - Container Component
