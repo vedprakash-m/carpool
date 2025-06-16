@@ -1,25 +1,12 @@
-name: VCarpool Rollback Pipeline
+# Deprecated rollback workflow (disabled)
+name: Deprecated Rollback (Disabled)
 
 on:
   workflow_dispatch:
     inputs:
-      component:
-        description: "Component to rollback"
-        required: true
-        type: choice
-        options:
-          - all
-          - backend
-          - frontend
-          - infrastructure
-      rollback_tag:
-        description: "Git tag/commit to rollback to"
-        required: true
-        type: string
-      confirm_rollback:
-        description: 'Type "CONFIRM" to proceed with rollback'
-        required: true
-        type: string
+      note:
+        description: "Legacy rollback retained for reference"
+        required: false
 
 env:
   AZURE_LOCATION: "East US"

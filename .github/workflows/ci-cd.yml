@@ -1,10 +1,13 @@
-name: Fast VCarpool CI/CD Pipeline
+# Legacy workflow now disabled (replaced by modular pipeline)
+name: Deprecated CI/CD Pipeline (Disabled)
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Legacy workflow retained for reference only"
+        required: false
+        default: ""
 
 env:
   AZURE_LOCATION: "eastus"

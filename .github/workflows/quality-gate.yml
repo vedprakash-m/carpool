@@ -1,10 +1,13 @@
-name: CI Quality Gate
+# Legacy Quality Gate workflow is deprecated and disabled.
+name: Deprecated Quality Gate (Disabled)
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Legacy quality gate retained for reference only"
+        required: false
+        default: ""
 
 jobs:
   backend-ci:

@@ -75,30 +75,10 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// Key Vault
-resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' = {
+// Reference existing Key Vault moved to the database resource group
+resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
   name: keyVaultName
-  location: location
-  tags: tags
-  properties: {
-    enabledForDeployment: false
-    enabledForTemplateDeployment: true
-    enabledForDiskEncryption: false
-    tenantId: tenant().tenantId
-    accessPolicies: [
-      {
-        tenantId: tenant().tenantId
-        objectId: functionApp.identity.principalId
-        permissions: {
-          secrets: ['get', 'list']
-        }
-      }
-    ]
-    sku: {
-      name: 'standard'
-      family: 'A'
-    }
-  }
+  scope: resourceGroup(databaseResourceGroup)
 }
 
 // Reference to existing Cosmos DB in the database resource group
@@ -201,31 +181,6 @@ resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {
       apiLocation: ''
       outputLocation: 'out'
     }
-  }
-}
-
-// Store Cosmos DB connection string in Key Vault
-resource cosmosConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-  name: 'cosmos-connection-string'
-  parent: keyVault
-  properties: {
-    value: existingCosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
-  }
-}
-
-resource cosmosEndpointSecret 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-  name: 'cosmos-endpoint'
-  parent: keyVault
-  properties: {
-    value: existingCosmosAccount.properties.documentEndpoint
-  }
-}
-
-resource cosmosKeySecret 'Microsoft.KeyVault/vaults/secrets@2021-10-01' = {
-  name: 'cosmos-key'
-  parent: keyVault
-  properties: {
-    value: existingCosmosAccount.listKeys().primaryMasterKey
   }
 }
 
