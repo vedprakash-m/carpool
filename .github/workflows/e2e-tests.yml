@@ -1,31 +1,32 @@
 name: vCarpool E2E Tests
 
 on:
-  # Run on pull requests
-  pull_request:
-    branches: [main]
-    paths:
-      - "frontend/**"
-      - "shared/**"
+  # Called by CI pipeline
+  workflow_call:
+    inputs:
+      environment:
+        required: false
+        default: 'staging'
+        type: string
 
   # Allow manual trigger
   workflow_dispatch:
     inputs:
       browser:
-        description: "Browser to test on"
+        description: 'Browser to test on'
         required: true
-        default: "chromium"
+        default: 'chromium'
         type: choice
         options:
-          - "chromium"
-          - "firefox"
-          - "webkit"
-          - "all"
+          - 'chromium'
+          - 'firefox'
+          - 'webkit'
+          - 'all'
 
 env:
-  NODE_VERSION: "22.x"
-  FRONTEND_WORKING_DIR: "./frontend"
-  SHARED_WORKING_DIR: "./shared"
+  NODE_VERSION: '22.x'
+  FRONTEND_WORKING_DIR: './frontend'
+  SHARED_WORKING_DIR: './shared'
 
 jobs:
   # Build and test shared library
@@ -40,7 +41,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
           cache-dependency-path: package-lock.json # Root workspace lock file
       - name: Install dependencies
         run: npm ci
@@ -66,7 +67,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
           cache-dependency-path: package-lock.json
       - name: Download shared artifacts
         uses: actions/download-artifact@v4
