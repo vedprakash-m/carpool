@@ -10,7 +10,7 @@ services:
     container_name: vcarpool-mongodb-test
     restart: no
     ports:
-      - "27018:27017"  # Different port to avoid conflicts with local MongoDB
+      - '27018:27017' # Different port to avoid conflicts with local MongoDB
     environment:
       MONGO_INITDB_ROOT_USERNAME: testuser
       MONGO_INITDB_ROOT_PASSWORD: testpass
@@ -21,7 +21,7 @@ services:
     networks:
       - vcarpool-test-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,7 +35,7 @@ services:
     container_name: vcarpool-backend-test
     restart: no
     ports:
-      - "7072:7071"  # Different port to avoid conflicts
+      - '7072:7071' # Different port to avoid conflicts
     environment:
       - NODE_ENV=test
       - COSMOS_DB_CONNECTION_STRING=mongodb://testuser:testpass@mongodb-test:27017/vcarpool_test?authSource=admin
@@ -53,7 +53,7 @@ services:
       - ./backend:/app
       - /app/node_modules
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7071/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:7071/api/health']
       interval: 15s
       timeout: 10s
       retries: 5
@@ -67,7 +67,7 @@ services:
     container_name: vcarpool-frontend-test
     restart: no
     ports:
-      - "3001:3000"  # Different port to avoid conflicts
+      - '3001:3000' # Different port to avoid conflicts
     environment:
       - NODE_ENV=test
       - NEXT_PUBLIC_API_URL=http://backend-test:7071/api
@@ -84,7 +84,7 @@ services:
       - /app/node_modules
       - /app/.next
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000']
       interval: 15s
       timeout: 10s
       retries: 5
@@ -116,7 +116,7 @@ services:
       - ./e2e/test-results:/app/e2e/test-results
       - ./e2e/playwright-report:/app/e2e/playwright-report
     profiles:
-      - test  # Only start when specifically requested
+      - test # Only start when specifically requested
 
 volumes:
   mongodb_test_data:

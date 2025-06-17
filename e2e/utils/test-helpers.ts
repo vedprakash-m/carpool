@@ -37,7 +37,7 @@ export async function createTestUser(role: 'parent' | 'admin' = 'parent'): Promi
     password: 'testpass123',
     name: `Test User ${timestamp}`,
     phone: `+1555${String(timestamp).slice(-7)}`,
-    role
+    role,
   };
 }
 
@@ -63,9 +63,9 @@ export async function createTestCarpoolGroup(): Promise<TestCarpoolGroup> {
     schedule: {
       days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
       pickupTime: '07:30',
-      dropoffTime: '15:30'
+      dropoffTime: '15:30',
     },
-    maxCapacity: 4
+    maxCapacity: 4,
   };
 }
 
@@ -122,9 +122,9 @@ export async function fillAndBlur(page: Page, selector: string, value: string): 
  * Take a screenshot with descriptive name
  */
 export async function takeScreenshot(page: Page, name: string): Promise<void> {
-  await page.screenshot({ 
+  await page.screenshot({
     path: `test-results/screenshots/${name}-${Date.now()}.png`,
-    fullPage: true 
+    fullPage: true,
   });
 }
 
@@ -190,11 +190,11 @@ export async function setDesktopViewport(page: Page): Promise<void> {
  * Mock API response
  */
 export async function mockAPIResponse(page: Page, url: string, response: any): Promise<void> {
-  await page.route(url, route => {
+  await page.route(url, (route) => {
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(response)
+      body: JSON.stringify(response),
     });
   });
 }
@@ -202,18 +202,22 @@ export async function mockAPIResponse(page: Page, url: string, response: any): P
 /**
  * Intercept and modify API request
  */
-export async function interceptAPIRequest(page: Page, url: string, modifier: (request: any) => any): Promise<void> {
-  await page.route(url, async route => {
+export async function interceptAPIRequest(
+  page: Page,
+  url: string,
+  modifier: (request: any) => any,
+): Promise<void> {
+  await page.route(url, async (route) => {
     const request = route.request();
     const postData = request.postData();
     const modifiedData = modifier(postData ? JSON.parse(postData) : {});
-    
+
     route.continue({
       postData: JSON.stringify(modifiedData),
       headers: {
         ...request.headers(),
-        'content-type': 'application/json'
-      }
+        'content-type': 'application/json',
+      },
     });
   });
 }
@@ -223,13 +227,13 @@ export async function interceptAPIRequest(page: Page, url: string, modifier: (re
  */
 export async function checkNetworkErrors(page: Page): Promise<string[]> {
   const errors: string[] = [];
-  
-  page.on('response', response => {
+
+  page.on('response', (response) => {
     if (response.status() >= 400) {
       errors.push(`${response.status()} ${response.url()}`);
     }
   });
-  
+
   return errors;
 }
 

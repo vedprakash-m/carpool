@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20"
-  COVERAGE_THRESHOLD: 65  # Realistic threshold to start
+  NODE_VERSION: '20'
+  COVERAGE_THRESHOLD: 65 # Realistic threshold to start
 
 jobs:
   dependency-validation:
@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          
+
       - name: Validate package.json versions
         run: |
           echo "🔍 Validating dependency versions..."
@@ -44,10 +44,10 @@ jobs:
             
             console.log('✅ All dependency versions are valid');
           "
-          
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
-        
+
       - name: Check for security vulnerabilities
         run: npm audit --audit-level moderate
         continue-on-error: true
@@ -58,19 +58,19 @@ jobs:
     needs: dependency-validation
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
-        
+
       - name: Lint all workspaces
         run: npm run lint --workspaces --if-present
-        
+
       - name: Type check all workspaces
         run: npm run type-check --workspaces --if-present
 
@@ -82,19 +82,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
-        
+
       - name: Run backend tests with coverage
         run: npm --workspace backend run test -- --coverage --maxWorkers=2
-        
+
       - name: Enforce coverage threshold
         run: |
           COVERAGE=$(node -e "
@@ -111,7 +111,7 @@ jobs:
             exit 1
           fi
           echo "✅ Coverage threshold met"
-          
+
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
         with:
@@ -125,20 +125,20 @@ jobs:
     needs: dependency-validation
     steps:
       - uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
-        
+
       - name: Run frontend tests
         run: npm --workspace frontend run test -- --watchAll=false --coverage
         continue-on-error: true
-        
+
       - name: Upload frontend coverage
         uses: codecov/codecov-action@v3
         with:
@@ -152,32 +152,32 @@ jobs:
     needs: [lint-and-typecheck, test-backend]
     steps:
       - uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
-        
+
       - name: Build shared package
         run: npm run build:shared
-        
+
       - name: Build backend
         run: npm run build:backend
-        
+
       - name: Build frontend
         run: npm run build:frontend
-        
+
       - name: Upload backend artifacts
         uses: actions/upload-artifact@v4
         with:
           name: backend-dist
           path: backend/dist
           retention-days: 7
-          
+
       - name: Upload frontend artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -192,30 +192,30 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
-        
+
       - name: Download backend artifacts
         uses: actions/download-artifact@v4
         with:
           name: backend-dist
           path: backend/dist
-          
+
       - name: Start backend for integration tests
         run: |
           cd backend
           npm run func:start:ci &
           npx wait-port 7071 --timeout 60000
         env:
-          OTEL_ENABLED: "false"
-          
+          OTEL_ENABLED: 'false'
+
       - name: Run integration tests
         run: npm --workspace backend run test:integration
         continue-on-error: true

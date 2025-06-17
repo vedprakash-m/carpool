@@ -4,21 +4,21 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "backend/**"
-      - "frontend/**"
-      - "shared/**"
+      - 'backend/**'
+      - 'frontend/**'
+      - 'shared/**'
   push:
     branches: [main]
     paths:
-      - "backend/**"
-      - "frontend/**" 
-      - "shared/**"
+      - 'backend/**'
+      - 'frontend/**'
+      - 'shared/**'
   schedule:
-    - cron: "0 6 * * 1" # Weekly on Monday at 6 AM UTC (off-peak)
+    - cron: '0 6 * * 1' # Weekly on Monday at 6 AM UTC (off-peak)
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: '20'
 
 jobs:
   # Lightweight performance testing (runs on PR and main)
@@ -44,7 +44,7 @@ jobs:
           npm run func:start:ci &
           npx wait-port 7071 --timeout 60000
         env:
-          OTEL_ENABLED: "false"
+          OTEL_ENABLED: 'false'
 
       - name: Quick performance test (lightweight)
         run: |
@@ -109,7 +109,7 @@ jobs:
           npm run func:start:ci &
           npx wait-port 7071 --timeout 60000
         env:
-          OTEL_ENABLED: "false"
+          OTEL_ENABLED: 'false'
 
       - name: Install k6 (for load testing)
         run: |
@@ -142,11 +142,11 @@ jobs:
         run: |
           cd frontend
           npm run build
-          
+
           # Simple bundle size check
           BUILD_SIZE=$(du -sh .next/static | cut -f1)
           echo "📦 Build size: $BUILD_SIZE"
-          
+
           # Alert if build is too large (basic check)
           if [ "$(du -s .next/static | cut -f1)" -gt 10000 ]; then
             echo "⚠️ Build size is large - consider optimization"
@@ -163,7 +163,7 @@ jobs:
       - name: GDPR compliance check
         run: |
           echo "🔒 Checking basic GDPR compliance..."
-          
+
           # Check for data handling patterns
           if grep -r "personal.*data\|PII\|sensitive" --include="*.ts" --include="*.js" backend/src/ > /dev/null; then
             echo "⚠️ Found potential PII handling - ensure GDPR compliance"
@@ -176,20 +176,20 @@ jobs:
       - name: Basic security patterns check
         run: |
           echo "🛡️ Checking basic security patterns..."
-          
+
           # Check for common security issues
           ISSUES=0
-          
+
           if grep -r "password.*=.*['\"]" --include="*.ts" --include="*.js" . > /dev/null; then
             echo "⚠️ Hardcoded passwords might be present"
             ISSUES=$((ISSUES + 1))
           fi
-          
+
           if grep -r "api.*key.*=.*['\"]" --include="*.ts" --include="*.js" . > /dev/null; then
             echo "⚠️ Hardcoded API keys might be present"
             ISSUES=$((ISSUES + 1))
           fi
-          
+
           if [ $ISSUES -eq 0 ]; then
             echo "✅ No obvious security issues found"
           else
@@ -210,7 +210,7 @@ jobs:
           echo "Date: $(date)"
           echo "Commit: ${{ github.sha }}"
           echo ""
-          
+
           if [[ "${{ needs.quick-performance-check.result }}" == "success" ]]; then
             echo "✅ Performance: PASSED (quick check)"
           elif [[ "${{ needs.quick-performance-check.result }}" == "skipped" ]]; then
@@ -218,13 +218,13 @@ jobs:
           else
             echo "⚠️ Performance: NEEDS ATTENTION"
           fi
-          
+
           if [[ "${{ needs.security-essentials.result }}" == "success" ]]; then
             echo "✅ Security: PASSED (essential checks)"
           else
             echo "⚠️ Security: NEEDS ATTENTION"
           fi
-          
+
           echo ""
           echo "💡 Cost Optimization Notes:"
           echo "- Using lightweight performance tests on PR/push"

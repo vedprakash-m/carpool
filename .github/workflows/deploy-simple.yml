@@ -4,10 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      - "backend/**"
-      - "frontend/**" 
-      - "shared/**"
-      - "infra/**"
+      - 'backend/**'
+      - 'frontend/**'
+      - 'shared/**'
+      - 'infra/**'
   workflow_dispatch:
     inputs:
       skip_tests:
@@ -17,8 +17,8 @@ on:
         type: boolean
 
 env:
-  NODE_VERSION: "20"
-  AZURE_LOCATION: "eastus"
+  NODE_VERSION: '20'
+  AZURE_LOCATION: 'eastus'
 
 permissions:
   contents: read
@@ -36,27 +36,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          
+
       - name: Check for changes
         id: changes
         run: |
           # Check what components need deployment based on changed files
           CHANGED_FILES=$(git diff --name-only HEAD~1 || echo "")
-          
+
           if echo "$CHANGED_FILES" | grep -E "^(backend|shared)/" > /dev/null; then
             echo "backend=true" >> $GITHUB_OUTPUT
             echo "📦 Backend changes detected"
           else
             echo "backend=false" >> $GITHUB_OUTPUT
           fi
-          
+
           if echo "$CHANGED_FILES" | grep -E "^(frontend|shared)/" > /dev/null; then
             echo "frontend=true" >> $GITHUB_OUTPUT
             echo "🌐 Frontend changes detected"
           else
             echo "frontend=false" >> $GITHUB_OUTPUT
           fi
-          
+
           if echo "$CHANGED_FILES" | grep -E "^infra/" > /dev/null; then
             echo "infra=true" >> $GITHUB_OUTPUT
             echo "🏗️ Infrastructure changes detected"
@@ -73,19 +73,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
-        
+
       - name: Quick lint check
         run: npm run lint --workspaces --if-present
-        
+
       - name: Quick tests
         run: |
           # Run only critical tests to save time
@@ -110,14 +110,14 @@ jobs:
       - name: Deploy infrastructure (single region)
         run: |
           echo "🏗️ Deploying minimal infrastructure..."
-          
+
           # Deploy database resources first
           az deployment group create \
             --resource-group vcarpool-db-rg \
             --template-file infra/database.bicep \
             --parameters @infra/database.parameters.json \
             --mode Incremental
-          
+
           # Deploy compute resources
           az deployment group create \
             --resource-group vcarpool-rg \
@@ -158,13 +158,13 @@ jobs:
         run: |
           cd backend
           echo "🚀 Deploying backend to production slot..."
-          
+
           # Install Azure Functions Core Tools if not cached
           npm install -g azure-functions-core-tools@4 --unsafe-perm true
-          
+
           # Simple direct deployment to production
           func azure functionapp publish vcarpool-api --typescript
-          
+
           echo "✅ Backend deployment completed"
 
   deploy-frontend:
@@ -193,9 +193,9 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
-          app_location: "/frontend"
-          output_location: ".next"
+          action: 'upload'
+          app_location: '/frontend'
+          output_location: '.next'
 
   post-deployment-validation:
     name: Basic Health Check
@@ -211,7 +211,7 @@ jobs:
       - name: Basic health check
         run: |
           echo "🏥 Running basic health checks..."
-          
+
           # Simple health check with retries
           check_endpoint() {
             local url=$1
@@ -230,17 +230,17 @@ jobs:
             echo "❌ $name: Failed after $max_attempts attempts"
             return 1
           }
-          
+
           # Check backend health
           if [[ "${{ needs.deploy-backend.result }}" == "success" ]]; then
             check_endpoint "https://vcarpool-api.azurewebsites.net/api/health" "Backend API"
           fi
-          
+
           # Check frontend
           if [[ "${{ needs.deploy-frontend.result }}" == "success" ]]; then
             check_endpoint "https://vcarpool.azurestaticapps.net" "Frontend App"
           fi
-          
+
           echo "🎉 Deployment validation completed!"
 
   notify-deployment:
@@ -257,7 +257,7 @@ jobs:
           echo "Commit: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
           echo ""
-          
+
           if [[ "${{ needs.deploy-backend.result }}" == "success" ]]; then
             echo "✅ Backend: Deployed successfully"
           elif [[ "${{ needs.deploy-backend.result }}" == "skipped" ]]; then
@@ -265,7 +265,7 @@ jobs:
           else
             echo "❌ Backend: Deployment failed"
           fi
-          
+
           if [[ "${{ needs.deploy-frontend.result }}" == "success" ]]; then
             echo "✅ Frontend: Deployed successfully"
           elif [[ "${{ needs.deploy-frontend.result }}" == "skipped" ]]; then
@@ -273,13 +273,13 @@ jobs:
           else
             echo "❌ Frontend: Deployment failed"
           fi
-          
+
           if [{{ "${{ needs.post-deployment-validation.result }}" == "success" ]]; then
             echo "✅ Health Check: Passed"
           else
             echo "⚠️ Health Check: Failed or skipped"
           fi
-          
+
           echo ""
           echo "🔗 Application URLs:"
           echo "- Frontend: https://vcarpool.azurestaticapps.net"

@@ -1,6 +1,7 @@
 # GitHub Secrets Setup for Azure Deployment
 
 ## Issue Resolution
+
 The deployment failed because required Azure secrets are not configured in the GitHub repository.
 
 **Error**: `❌ Required secret AZURE_CLIENT_ID is not set`
@@ -10,13 +11,14 @@ The deployment failed because required Azure secrets are not configured in the G
 Navigate to your GitHub repository: **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
 ### Core Azure Secrets (Required)
+
 Add these secrets with the exact names:
 
-| Secret Name | Description | How to Get |
-|------------|-------------|------------|
-| `AZURE_CLIENT_ID` | Azure App Registration Client ID | From Azure App Registration |
-| `AZURE_TENANT_ID` | Azure AD Tenant ID | From Azure Portal |
-| `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID | From Azure Portal |
+| Secret Name                       | Description                      | How to Get                          |
+| --------------------------------- | -------------------------------- | ----------------------------------- |
+| `AZURE_CLIENT_ID`                 | Azure App Registration Client ID | From Azure App Registration         |
+| `AZURE_TENANT_ID`                 | Azure AD Tenant ID               | From Azure Portal                   |
+| `AZURE_SUBSCRIPTION_ID`           | Azure Subscription ID            | From Azure Portal                   |
 | `AZURE_STATIC_WEB_APPS_API_TOKEN` | Static Web Apps deployment token | From Azure Static Web Apps resource |
 
 ## Quick Setup Instructions
@@ -24,16 +26,19 @@ Add these secrets with the exact names:
 ### Step 1: Get Azure Values
 
 1. **Get Subscription ID**:
+
    ```bash
    az account show --query id -o tsv
    ```
 
 2. **Get Tenant ID**:
+
    ```bash
    az account show --query tenantId -o tsv
    ```
 
 3. **Create App Registration** (if not exists):
+
    ```bash
    # Create app registration
    az ad app create --display-name "vcarpool-deployment" --query appId -o tsv

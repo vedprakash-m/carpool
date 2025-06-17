@@ -4,21 +4,21 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "backend/**"
-      - "frontend/**"
-      - "shared/**"
+      - 'backend/**'
+      - 'frontend/**'
+      - 'shared/**'
   push:
     branches: [main]
     paths:
-      - "backend/**"
-      - "frontend/**"
-      - "shared/**"
+      - 'backend/**'
+      - 'frontend/**'
+      - 'shared/**'
   schedule:
-    - cron: "0 2 * * *" # Daily at 2 AM UTC
+    - cron: '0 2 * * *' # Daily at 2 AM UTC
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: '20'
 
 jobs:
   performance-tests:
@@ -42,7 +42,7 @@ jobs:
           npm run func:start:ci &
           npx wait-port 7071 --timeout 60000
         env:
-          OTEL_ENABLED: "false"
+          OTEL_ENABLED: 'false'
 
       - name: Install k6
         run: |
@@ -68,11 +68,11 @@ jobs:
         run: |
           cd frontend
           npm install -g @lhci/cli@0.12.x
-          
+
           # Start frontend dev server
           npm run dev &
           npx wait-port 3000 --timeout 60000
-          
+
           # Run Lighthouse CI
           lhci autorun --config=.lighthouserc.json || echo "⚠️ Lighthouse CI not configured"
         continue-on-error: true
@@ -81,7 +81,7 @@ jobs:
         run: |
           cd frontend
           npm run build
-          
+
           # Analyze bundle size
           npx next-bundle-analyzer || echo "⚠️ Bundle analyzer not configured"
         continue-on-error: true
@@ -116,7 +116,7 @@ jobs:
         run: |
           # Check for known vulnerabilities
           npm audit --audit-level moderate
-          
+
           # Check for outdated packages
           npm outdated || echo "⚠️ Some packages are outdated"
 
@@ -169,7 +169,7 @@ jobs:
           cd frontend
           # Install axe-core CLI
           npm install -g @axe-core/cli
-          
+
           # Test key pages for accessibility
           axe http://localhost:3000 --exit || echo "⚠️ Accessibility issues found"
           axe http://localhost:3000/login --exit || echo "⚠️ Login page accessibility issues"
@@ -198,7 +198,7 @@ jobs:
           npm run func:start:ci &
           npx wait-port 7071 --timeout 60000
         env:
-          OTEL_ENABLED: "false"
+          OTEL_ENABLED: 'false'
 
       - name: Install k6
         run: |
@@ -213,7 +213,7 @@ jobs:
           cd backend
           # Heavy load test for main branch
           PERF_VUS=100 PERF_DURATION_SEC=300 PERF_LATENCY_MS=100 npm run perf:phase2
-          
+
           # Check if latency requirements are met
           echo "⚡ Load testing completed. Review results for performance regression."
 
@@ -227,12 +227,12 @@ jobs:
       - name: GDPR compliance check
         run: |
           echo "🔒 Checking GDPR compliance..."
-          
+
           # Check for proper data handling
           if grep -r "personal.*data\|PII\|sensitive" --include="*.ts" --include="*.js" backend/src/; then
             echo "⚠️ Found potential PII handling - ensure GDPR compliance"
           fi
-          
+
           # Check for data retention policies
           if ! grep -r "retention\|delete\|purge" --include="*.ts" --include="*.js" backend/src/; then
             echo "⚠️ No data retention policies found - review GDPR requirements"
@@ -241,7 +241,7 @@ jobs:
       - name: Security headers check
         run: |
           echo "🛡️ Checking security headers..."
-          
+
           # Check for security header configurations
           if ! grep -r "helmet\|security.*headers" --include="*.ts" --include="*.js" backend/src/; then
             echo "⚠️ Security headers not configured"
@@ -257,25 +257,25 @@ jobs:
         run: |
           echo "📊 Quality Report Summary:"
           echo "========================="
-          
+
           if [[ "${{ needs.performance-tests.result }}" == "success" ]]; then
             echo "✅ Performance tests: PASSED"
           else
             echo "❌ Performance tests: FAILED"
           fi
-          
+
           if [[ "${{ needs.security-scan.result }}" == "success" ]]; then
             echo "✅ Security scan: PASSED"
           else
             echo "❌ Security scan: FAILED"
           fi
-          
+
           if [[ "${{ needs.accessibility-tests.result }}" == "success" ]]; then
             echo "✅ Accessibility tests: PASSED"
           else
             echo "❌ Accessibility tests: FAILED"
           fi
-          
+
           echo "========================="
           echo "📈 Next steps:"
           echo "- Review failed tests and implement fixes"

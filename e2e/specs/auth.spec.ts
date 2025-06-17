@@ -77,8 +77,10 @@ test.describe('Authentication Flow', () => {
 
     // Should show error message
     await expect(page.locator('[data-testid="error-message"]')).toBeVisible();
-    await expect(page.locator('[data-testid="error-message"]')).toContainText('Invalid credentials');
-    
+    await expect(page.locator('[data-testid="error-message"]')).toContainText(
+      'Invalid credentials',
+    );
+
     // Should stay on login page
     await expect(page).toHaveURL('/login');
   });
@@ -127,7 +129,9 @@ test.describe('Authentication Flow', () => {
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.fill('[data-testid="confirm-password-input"]', 'different123');
     await page.blur('[data-testid="confirm-password-input"]');
-    await expect(page.locator('[data-testid="confirm-password-error"]')).toContainText('Passwords do not match');
+    await expect(page.locator('[data-testid="confirm-password-error"]')).toContainText(
+      'Passwords do not match',
+    );
   });
 });
 
