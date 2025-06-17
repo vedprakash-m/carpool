@@ -19,6 +19,11 @@ on:
       - 'package*.json'
   workflow_dispatch:
     inputs:
+      force_full_pipeline:
+        description: 'Force all pipeline stages to run (ignore change detection)'
+        required: false
+        default: false
+        type: boolean
       skip_tests:
         description: 'Skip test execution (emergency only)'
         required: false
@@ -61,6 +66,15 @@ jobs:
       - name: Detect changes
         id: changes
         run: |
+          # Check if force full pipeline is enabled
+          if [[ "${{ github.event.inputs.force_full_pipeline }}" == "true" ]]; then
+            echo "🚀 Force full pipeline enabled - running all checks"
+            echo "backend=true" >> $GITHUB_OUTPUT
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "shared=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           if [[ "${{ github.event_name }}" == "push" ]]; then
             CHANGED_FILES=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
           else
@@ -69,10 +83,28 @@ jobs:
 
           echo "Changed files: $CHANGED_FILES"
 
+          # Check if CI pipeline itself changed - if so, run all checks for validation
+          if echo "$CHANGED_FILES" | grep -E "^\.github/workflows/ci-pipeline\.yml" > /dev/null; then
+            echo "🔄 CI pipeline changed - running all checks for validation"
+            echo "backend=true" >> $GITHUB_OUTPUT
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "shared=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # Set outputs for changed components
-          echo "backend=$(echo "$CHANGED_FILES" | grep -E "^(backend|shared)" > /dev/null && echo "true" || echo "false")" >> $GITHUB_OUTPUT
-          echo "frontend=$(echo "$CHANGED_FILES" | grep -E "^(frontend|shared)" > /dev/null && echo "true" || echo "false")" >> $GITHUB_OUTPUT
-          echo "shared=$(echo "$CHANGED_FILES" | grep -E "^shared" > /dev/null && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+          BACKEND_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^(backend|shared)" > /dev/null && echo "true" || echo "false")
+          FRONTEND_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^(frontend|shared)" > /dev/null && echo "true" || echo "false")  
+          SHARED_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^shared" > /dev/null && echo "true" || echo "false")
+
+          echo "backend=$BACKEND_CHANGES" >> $GITHUB_OUTPUT
+          echo "frontend=$FRONTEND_CHANGES" >> $GITHUB_OUTPUT
+          echo "shared=$SHARED_CHANGES" >> $GITHUB_OUTPUT
+
+          echo "📊 Change Detection Results:"
+          echo "  Backend changes: $BACKEND_CHANGES"
+          echo "  Frontend changes: $FRONTEND_CHANGES"
+          echo "  Shared changes: $SHARED_CHANGES"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -103,7 +135,7 @@ jobs:
     name: 🔧 Backend CI
     runs-on: ubuntu-latest
     needs: quick-validation
-    if: needs.quick-validation.outputs.has-backend-changes == 'true'
+    if: needs.quick-validation.outputs.has-backend-changes == 'true' || github.event.inputs.force_full_pipeline == 'true'
     timeout-minutes: 15
     outputs:
       coverage: ${{ steps.coverage.outputs.percentage }}
@@ -131,7 +163,7 @@ jobs:
         run: npm run type-check:backend
 
       - name: Build shared package
-        if: needs.quick-validation.outputs.has-shared-changes == 'true'
+        if: needs.quick-validation.outputs.has-shared-changes == 'true' || github.event.inputs.force_full_pipeline == 'true'
         run: npm run build:shared
 
       - name: Build backend
@@ -175,7 +207,7 @@ jobs:
     name: 🎨 Frontend CI
     runs-on: ubuntu-latest
     needs: quick-validation
-    if: needs.quick-validation.outputs.has-frontend-changes == 'true'
+    if: needs.quick-validation.outputs.has-frontend-changes == 'true' || github.event.inputs.force_full_pipeline == 'true'
     timeout-minutes: 15
     outputs:
       build-success: ${{ steps.build.outcome }}
@@ -202,7 +234,7 @@ jobs:
         run: npm run type-check:frontend
 
       - name: Build shared package
-        if: needs.quick-validation.outputs.has-shared-changes == 'true'
+        if: needs.quick-validation.outputs.has-shared-changes == 'true' || github.event.inputs.force_full_pipeline == 'true'
         run: npm run build:shared
 
       - name: Build frontend
@@ -224,7 +256,7 @@ jobs:
     name: 📦 Shared Package CI
     runs-on: ubuntu-latest
     needs: quick-validation
-    if: needs.quick-validation.outputs.has-shared-changes == 'true'
+    if: needs.quick-validation.outputs.has-shared-changes == 'true' || github.event.inputs.force_full_pipeline == 'true'
     timeout-minutes: 10
     steps:
       - name: Checkout code
