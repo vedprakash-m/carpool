@@ -1,6 +1,6 @@
 # VCarpool Project Metadata
 
-_Last Updated: June 13, 2025_
+_Last Updated: June 17, 2025_
 
 ## 🛡️ Recent Security & Functionality Fixes (June 13, 2025)
 
@@ -47,21 +47,21 @@ _Last Updated: June 13, 2025_
 ```typescript
 // Enhanced password validation with comprehensive weak password detection
 const commonPasswords = [
-  "password",
-  "123456",
-  "admin",
-  "qwerty",
-  "password123",
-  "letmein",
-  "welcome",
-  "monkey",
-  "dragon",
-  "sunshine",
-  "iloveyou",
-  "princess",
-  "football",
-  "charlie",
-  "aa123456",
+  'password',
+  '123456',
+  'admin',
+  'qwerty',
+  'password123',
+  'letmein',
+  'welcome',
+  'monkey',
+  'dragon',
+  'sunshine',
+  'iloveyou',
+  'princess',
+  'football',
+  'charlie',
+  'aa123456',
 ];
 
 const weakPatterns = [
@@ -77,7 +77,7 @@ if (
   commonPasswords.includes(password.toLowerCase()) ||
   weakPatterns.some((pattern) => pattern.test(password))
 ) {
-  return "Please choose a stronger, less common password";
+  return 'Please choose a stronger, less common password';
 }
 ```
 
@@ -151,12 +151,49 @@ async function validateAddress(address) {
 
 ## 🎯 Project Overview
 
-**VCarpool** is a comprehensive carpool management application designed specifically for school communities, starting with Tesla Stem High School in Redmond, WA. The platform connects families within a 25-mile radius for organized, safe, and reliable carpooling arrangements.
+**VCarpool** is a comprehensive carpool management application designed specifically for school communities, currently serving Tesla STEM High School in Redmond, WA. The platform connects families within a 25-mile radius for organized, safe, and reliable carpooling arrangements.
 
-### Key Goals
+### Key Features & Capabilities
 
-- **Primary**: Enable safe, organized carpool management for Tesla Stem High School families
-- **Geographic**: Serve families within 25 miles of Tesla Stem High School in Redmond, WA
+#### 🏫 **School Integration**
+
+- **Primary Target**: Tesla STEM High School, Redmond, WA
+- **Geographic Restriction**: 25-mile radius enforcement with real-time validation
+- **Registration-First Access**: Complete verification required before group discovery
+- **Multi-Student Support**: Single family unit model for households with multiple children
+
+#### 👥 **Group Management**
+
+- **Smart Matching**: Geographic proximity with route optimization
+- **Admin Controls**: Comprehensive group lifecycle management via admin dashboard
+- **Role-Based Access**: Admin, Parent, Student roles with appropriate permissions
+- **Group Discovery**: Post-registration group search and join capabilities
+
+#### 📅 **Scheduling & Fairness**
+
+- **Weekly Preferences**: Parents submit availability preferences
+- **Traveling Parent Support**: Flexible 2-6 week makeup trip scheduling
+- **Balance Tracking**: Real-time debt/credit system for trip obligations
+- **Automated Notifications**: SMS/email alerts for scheduling and reminders
+
+#### 🔒 **Security & Verification**
+
+- **Three-Tier Verification**: Phone (SMS), address (geocoding), emergency contacts
+- **JWT Authentication**: Secure token-based authentication system
+- **Rate Limiting**: Configurable limits (Auth: 5/15min, API: 100/15min, Strict: 20/15min)
+- **Input Validation**: XSS prevention, SQL injection protection, comprehensive sanitization
+
+#### 📱 **User Experience**
+
+- **Responsive Design**: Optimized for mobile and desktop
+- **Real-time Updates**: Live notifications and status updates
+- **Progressive Registration**: Multi-step registration with validation gates
+- **Admin Dashboard**: Comprehensive management interface for school administrators
+
+### Technical Goals
+
+- **Primary**: Enable safe, organized carpool management for Tesla STEM High School families
+- **Geographic**: Serve families within 25 miles of Tesla STEM High School in Redmond, WA
 - **Environmental Focus**: Promote sustainability through miles saved and time efficiency
 - **Fairness**: Implement traveling parent support with flexible makeup scheduling
 - **Technical**: Deliver a scalable, secure TypeScript-based application on Azure
@@ -165,18 +202,45 @@ async function validateAddress(address) {
 
 ### Tech Stack
 
-- **Frontend**: Next.js 14+ with TypeScript, Tailwind CSS, Azure Static Web Apps
-- **Backend**: Node.js 22+, Azure Functions v4, TypeScript
+- **Runtime**: Node.js 22+ with TypeScript 5.0
+- **Frontend**: Next.js 14+ with App Router, Tailwind CSS, Zustand state management
+- **Backend**: Azure Functions v4, TypeScript, Express.js patterns
 - **Database**: Azure Cosmos DB (NoSQL, serverless), Redis (caching)
-- **Infrastructure**: Azure Functions, Static Web Apps, Bicep templates
-- **Shared**: npm workspaces, TypeScript types, Zod validation
+- **Infrastructure**: Azure Static Web Apps (frontend), Azure Functions (backend), Bicep IaC
+- **Shared**: npm workspaces, shared TypeScript types, Zod validation schemas
+- **Testing**: Jest (unit/integration), Playwright (E2E), Autocannon (performance)
+- **Development**: ESLint, Prettier, Husky pre-commit hooks, conventional commits
 
-### Core Components
+### Architecture Patterns
 
-1. **Frontend (Next.js)** - User interface, client-side routing, authentication flows
-2. **Backend (Azure Functions)** - REST API, business logic, data validation
-3. **Shared Package** - Common TypeScript types, validation schemas, utilities
-4. **Database Layer** - Cosmos DB for persistence, Redis for sessions/caching
+#### **Workspace Structure**
+
+```
+vcarpool/
+├── frontend/          # Next.js application
+├── backend/           # Azure Functions API
+├── shared/            # Shared TypeScript types and utilities
+├── e2e/              # End-to-end tests
+├── infra/            # Bicep infrastructure templates
+├── scripts/          # Deployment and automation scripts
+└── docs/             # Project documentation
+```
+
+#### **Backend Architecture**
+
+- **Azure Functions**: HTTP triggers with composable middleware
+- **Unified Services**: Consolidated authentication, response handling, CORS management
+- **Service Layer**: Business logic separation with dependency injection
+- **Repository Pattern**: Data access abstraction for Cosmos DB
+- **Shared Types**: TypeScript interfaces shared between frontend and backend
+
+#### **Frontend Architecture**
+
+- **Next.js App Router**: Modern routing with server/client components
+- **Component Structure**: Reusable UI components with TypeScript
+- **State Management**: Zustand for global state, React hooks for local state
+- **API Integration**: Type-safe API calls with shared interfaces
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
 
 ## ✅ Core Features (Implemented)
 
@@ -244,9 +308,9 @@ async function validateAddress(address) {
 
 ## 🚀 Deployment & Infrastructure
 
-### Multi-Resource Group Architecture (NEW - June 2025)
+### Multi-Resource Group Architecture (June 2025)
 
-VCarpool now implements a **cost-optimized multi-resource group architecture** that separates persistent storage from compute resources, enabling significant cost savings during inactive development periods.
+VCarpool implements a **cost-optimized multi-resource group architecture** that separates persistent storage from compute resources, enabling significant cost savings during inactive development periods.
 
 #### 🗄️ Database Resource Group (`vcarpool-db-rg`)
 
@@ -274,20 +338,7 @@ VCarpool now implements a **cost-optimized multi-resource group architecture** t
 **Cost**: ~$50-100/month (depending on usage)
 **Status**: Can be deleted when not actively developing
 
-#### 🗄️ Optional: Dedicated Storage Resource Group (`vcarpool-storage-rg`)
-
-**Purpose**: Isolated storage management with migration capabilities
-**Resources**:
-
-- Dedicated Storage Account - Separated from compute resources for better management
-- Cross-region deployment support
-- Enhanced backup and disaster recovery options
-
-**Cost**: ~$5-15/month (storage usage only)
-**Status**: Optional architecture for advanced storage management
-**Migration Tools**: Complete migration scripts available (`./scripts/migrate-storage-account.sh`)
-
-#### 🛠️ Deployment Scripts
+#### ️ Deployment Scripts
 
 - **`./scripts/deploy-multi-rg.sh`** - Deploy complete infrastructure
 - **`./scripts/deploy-storage.sh`** - Deploy dedicated storage account
@@ -312,11 +363,48 @@ VCarpool now implements a **cost-optimized multi-resource group architecture** t
 - Separation of concerns (data vs. compute)
 - Granular cost control
 
-### Legacy Single Resource Group
+### CI/CD Pipeline Architecture
 
-**Previous Architecture**: All resources in `vcarpool-rg`
-**Status**: Still supported via `infra/main.bicep`
-**Migration**: Automatic via CI/CD pipeline updates
+The CI/CD pipeline has been successfully consolidated from **14 fragmented workflows** to **3 core pipelines** with proper DAG structure and quality gates.
+
+#### **Implementation Results**
+
+| Metric                    | Before          | After                   | Improvement                |
+| ------------------------- | --------------- | ----------------------- | -------------------------- |
+| **Workflow Files**        | 14              | 3 core + 4 supporting   | **-50% complexity**        |
+| **Pipeline Stages**       | Isolated        | 9 connected stages      | **Structured DAG**         |
+| **Quality Gates**         | None            | 3 mandatory gates       | **100% deployment safety** |
+| **Dependency Management** | Manual          | Automated with `needs:` | **100% reliable**          |
+| **Resource Efficiency**   | High redundancy | Optimized sharing       | **~40% reduction**         |
+
+#### **Pipeline Structure**
+
+**1. CI Pipeline** (`ci-pipeline.yml`)
+
+- **Trigger**: Pull requests, pushes to main, manual dispatch
+- **Features**: Fail-fast validation, parallel builds, mandatory quality gates, coverage enforcement (70%)
+
+**2. Deploy Pipeline** (`deploy-pipeline.yml`)
+
+- **Trigger**: Successful CI pipeline, manual dispatch
+- **Features**: Smart change detection, progressive deployment, health checks, automatic rollback
+
+**3. Maintenance Pipeline** (`maintenance-pipeline.yml`)
+
+- **Trigger**: Scheduled (daily security, weekly performance), manual dispatch
+- **Features**: Security scans, performance monitoring, dependency checks, automated issue creation
+
+### Production Hardening Status (Phase 5 Complete)
+
+| Area                          | Outcome                                                          |
+| ----------------------------- | ---------------------------------------------------------------- |
+| **Load Testing**              | Autocannon CI gates: 50 VUs/30s ≤150ms average latency           |
+| **Performance Optimizations** | QuickOptimize wraps high-traffic endpoints; cache hit rate >85%  |
+| **Security Lint**             | `eslint-plugin-security` integrated; CI fails on high-sev issues |
+| **Dependency Audit**          | `npm audit --audit-level=high` gate blocks vulnerable packages   |
+| **Key Rotation**              | Playbook authored using Azure Key Vault + slot swap              |
+| **Privacy Review**            | Address validation flow assessed; recommendations logged         |
+| **Observability**             | OTEL guard + OTLP exporter for prod; ConsoleSpan in dev          |
 
 ### Azure Resources (Current Production)
 
@@ -325,13 +413,6 @@ VCarpool now implements a **cost-optimized multi-resource group architecture** t
 - **Azure Cosmos DB**: Primary database (serverless)
 - **Azure Key Vault**: Secrets and configuration management
 - **Azure Application Insights**: Monitoring and analytics
-
-### CI/CD Pipeline
-
-- **GitHub Actions**: Automated testing and deployment
-- **Environment Management**: Development, staging, production
-- **Security Scanning**: Automated vulnerability assessment
-- **Performance Monitoring**: Real-time application metrics
 
 ## 📋 Current Status & Next Steps
 
@@ -447,70 +528,133 @@ VCarpool now implements a **cost-optimized multi-resource group architecture** t
 - ✅ Added Phase 4 completion status to implementation tracking
 - ✅ Documented progress in metadata.md
 
-### 🎯 **Immediate Priorities**
+## 🧪 Testing & Quality Assurance
 
-1. **Production Deployment** (High Priority)
+### Test Coverage & Strategy
 
-   - Deploy enhanced security features to production
-   - Configure real API keys for Google Maps/Azure Maps
-   - Monitor address validation performance in production
+- **Total Tests**: 212 automated tests ensuring reliability and performance
+- **Coverage Target**: 70% minimum coverage enforced by CI/CD pipeline
+- **Test Types**: Unit, integration, end-to-end, and performance testing
 
-2. **Final Technical Debt Cleanup** (15% remaining)
+#### **Backend Testing**
 
-   - Complete remaining function optimizations
-   - Performance enhancements for high-traffic scenarios
-   - Advanced error handling for edge cases
+- **Unit Tests**: Jest-based testing for individual components and services
+- **Integration Tests**: Full API endpoint testing with mock database
+- **Performance Tests**: Autocannon load testing with CI gates
+  - 50 VUs/30s ≤150ms average latency (standard)
+  - 100 VUs/120s ≤200ms (heavy load testing)
 
-3. **Security Audit & Compliance**
+#### **Frontend Testing**
 
-   - Complete security review of enhanced password validation
-   - Audit address validation privacy compliance
-   - Performance testing under load
+- **Component Tests**: React Testing Library for UI components
+- **E2E Tests**: Playwright for complete user journey validation
+- **Visual Regression**: Automated screenshot comparison
 
-4. **Feature Enhancements**
-   - Mobile app development planning
-   - Real-time notifications system
-   - Advanced analytics dashboard for administrators
+#### **Security Testing**
 
-### 📊 **Updated Key Metrics**
+- **Static Analysis**: ESLint security plugin integrated in CI
+- **Dependency Auditing**: npm audit with high severity blocking
+- **Penetration Testing**: Quarterly security assessment (scheduled August 2025)
 
-- **Geographic Coverage**: 25-mile radius from Tesla Stem High School ✅
-- **Technical Debt Score**: 8.8/10 (Up from 8.5/10) ⬆️
-- **Security Score**: 9.2/10 (Up from 8.0/10) ⬆️
-- **Code Quality**: Significantly improved with unified patterns ✅
-- **Test Coverage**: Enhanced with comprehensive password validation tests ✅
-- **User Experience**: Greatly improved address validation with helpful error messages ✅
-- **Maintainability**: Dramatically improved with eliminated duplication ✅
+### Quality Gates
 
-### 🔮 **Development Roadmap**
+1. **Pre-commit**: Husky hooks for linting, formatting, and basic validation
+2. **CI Pipeline**: Comprehensive testing suite must pass before deployment
+3. **Deployment Gates**: Health checks and smoke tests in production environment
 
-#### **Phase 5: Production Hardening** (Next 2 Weeks)
+## 📊 Current Status & Implementation Progress
 
-- Load testing and performance optimization
-- Real API key configuration and monitoring
-- Security audit completion
-- Documentation finalization
+### ✅ **Completed Phases**
 
-#### **Phase 6: Advanced Features** (Future)
+#### **Phase 1: Unified Services (100% Complete)**
 
-- Mobile application development
-- Real-time push notifications
-- Advanced analytics and reporting
-- Machine learning for route optimization
+- **UnifiedAuthService**: Consolidated authentication logic (598 lines)
+- **UnifiedResponseHandler**: Standardized API responses (411 lines)
+- **CorsMiddleware**: Environment-specific CORS handling (269 lines)
+- **Middleware Infrastructure**: Composable middleware pipeline
 
-#### **Phase 7: Scale & Expansion** (Long-term)
+#### **Phase 2: Functions Refactored (43 of 46 functions)**
+
+- **100+ manual CORS patterns eliminated** across all Azure Functions
+- **Authentication patterns consolidated** across all endpoints
+- **Error response formats standardized** using UnifiedResponseHandler
+- **Azure Functions v4 compatibility** achieved for all modernized functions
+
+#### **Phase 3: Registration Enhancement (100% Complete)**
+
+- **Address Collection**: Integrated home address validation in registration flow
+- **Multi-step Registration**: Family info → Address validation → Children details
+- **Type System Updates**: Consistent RegisterRequest interface across all packages
+- **Real-time Validation**: 25-mile service area enforcement with distance calculation
+
+#### **Phase 4: Security Enhancement (100% Complete)**
+
+- **Password Security**: Enhanced weak password detection with comprehensive blacklists
+- **Address Validation Overhaul**: Multi-provider geocoding (Google Maps, Azure Maps)
+- **Privacy-Compliant Design**: No device location sharing required
+- **Production-Ready APIs**: Configurable API keys with intelligent fallbacks
+
+#### **Phase 5: Production Hardening (100% Complete)**
+
+- **Load Testing**: Automated performance gates in CI/CD pipeline
+- **Security Hardening**: ESLint security plugin, dependency auditing
+- **Observability**: OTEL integration for production monitoring
+- **Key Rotation**: Azure Key Vault integration with automated rotation playbook
+
+### � **Latest Achievements (June 2025)**
+
+#### **Multi-Resource Group Architecture**
+
+- **Cost Optimization**: 70% cost savings during inactive periods
+- **Database Separation**: Persistent storage isolated from compute resources
+- **Quick Restoration**: 5-minute deployment for development resumption
+- **Zero Data Loss**: Safe cost optimization without affecting user data
+
+#### **CI/CD Pipeline Modernization**
+
+- **Complexity Reduction**: 50% reduction in workflow complexity
+- **Quality Gates**: 100% deployment safety with mandatory gates
+- **Resource Efficiency**: 40% reduction in CI/CD resource usage
+- **Structured Dependencies**: Proper DAG structure with automated needs management
+
+### 📈 **Impact Metrics**
+
+- **Code Reduction**: 1,694 lines eliminated (54% reduction in technical debt)
+- **Pattern Consistency**: 100% of modernized functions use unified response handling
+- **Error Reduction**: Zero compilation errors across all optimized functions
+- **Maintainability**: Significantly improved code consistency and readability
+- **Performance**: Sub-150ms API response times under standard load
+- **Security**: Zero high-severity vulnerabilities in current codebase
+
+### 🎯 **Next Steps & Roadmap**
+
+#### **Immediate Priorities**
+
+1. **Production API Keys**: Configure real Google Maps/Azure Maps API keys
+2. **End-to-End Testing**: Validate complete registration flow with new features
+3. **Monitoring Setup**: Implement production alerting for critical failures
+
+#### **Phase 6: Feature Completion** (In Progress)
+
+- Complete remaining 3 Azure Functions modernization
+- Implement comprehensive admin dashboard features
+- Add real-time notification system
+- Enhanced reporting and analytics
+
+#### **Phase 7: Scale & Expansion** (Planned)
 
 - Multi-school support architecture
-- Advanced scheduling algorithms
+- Advanced scheduling algorithms with AI optimization
 - Integration with school management systems
-- Parent mobile app with real-time tracking
+- Mobile app development with offline capabilities
 
 ---
 
 ## 📞 Contact & Support
 
-- **Project Lead**: Development Team
-- **Technical Support**: Azure Functions & Cosmos DB expertise
-- **Community**: Tesla Stem High School carpool coordination
+- **Project Repository**: [GitHub - VCarpool](https://github.com/vedprakash-m/vcarpool)
+- **Technical Stack**: Azure Functions, Next.js, TypeScript, Cosmos DB
+- **Current Deployment**: Tesla STEM High School, Redmond, WA
+- **License**: AGPL v3 (see LICENSE file)
 
-_This metadata file serves as the single source of truth for VCarpool project information, consolidating all previous documentation into a comprehensive reference._
+_This metadata file serves as the single source of truth for VCarpool project information, consolidating all previous documentation into a comprehensive reference. Last comprehensive update: June 17, 2025._

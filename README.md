@@ -4,37 +4,38 @@
 
 ![VCarpool Logo](https://img.shields.io/badge/VCarpool-School%20Carpool%20Management-blue?style=for-the-badge&logo=car&logoColor=white)
 
-**A modern, scalable carpool coordination platform connecting families for safe school transportation.**
+**A modern, enterprise-grade carpool coordination platform connecting families for safe school transportation.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Azure Functions](https://img.shields.io/badge/Azure%20Functions-v4-0062AD?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/en-us/services/functions/)
 [![Test Coverage](https://img.shields.io/badge/Coverage-212%20Tests-green?style=flat-square&logo=jest)](./backend/coverage/)
 [![License](https://img.shields.io/badge/License-AGPL%20v3-blue?style=flat-square)](LICENSE)
+
 [![CI](https://github.com/vedprakash-m/vcarpool/actions/workflows/ci.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/ci.yml)
 [![Deploy](https://github.com/vedprakash-m/vcarpool/actions/workflows/deploy.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/deploy.yml)
-[![Perf](https://github.com/vedprakash-m/vcarpool/actions/workflows/perf.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/perf.yml)
-[![E2E](https://github.com/vedprakash-m/vcarpool/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/e2e-tests.yml)
 [![Security](https://github.com/vedprakash-m/vcarpool/actions/workflows/security-scan.yml/badge.svg)](https://github.com/vedprakash-m/vcarpool/actions/workflows/security-scan.yml)
 
-[🚀 Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [📚 Documentation](docs/) • [🔧 API Reference](#-api-reference)
+[🚀 Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [📚 Documentation](docs/) • [🔧 Developer Guide](#-developer-setup)
 
 </div>
 
 ---
 
-## 🌟 Overview
+## 🌟 What is VCarpool?
 
-VCarpool simplifies school transportation by connecting parents through an intelligent carpool coordination system. Built with modern web technologies and enterprise-grade security, it enables families to organize safe, reliable carpools while ensuring fair distribution of driving responsibilities.
+VCarpool is a comprehensive, cloud-native carpool management platform designed specifically for school communities. Built with modern web technologies and enterprise-grade security, it connects families to organize safe, reliable carpools while ensuring fair distribution of driving responsibilities.
 
-### ✨ Core Features
+**Currently serving**: Tesla STEM High School, Redmond, WA (25-mile service radius)
+
+### ✨ Key Features
 
 **🏫 Multi-School Platform**
 
 - Universal support for any school district nationwide
 - Configurable school profiles with custom grade levels
-- Geographic service radius management
-- Currently serving Tesla STEM High School, Redmond WA
+- Geographic service radius management (currently 25-mile radius enforcement)
+- Real-time address validation with intelligent geocoding
 
 **👥 Smart Group Management**
 
@@ -47,29 +48,30 @@ VCarpool simplifies school transportation by connecting parents through an intel
 
 - Weekly preference submission with conflict resolution
 - Automatic schedule generation and optimization
-- Support for traveling parents with makeup trip options
+- Support for traveling parents with makeup trip options (2-6 week flexible window)
 - Emergency contact verification and backup arrangements
 
 **🔒 Enterprise Security**
 
 - JWT-based authentication with secure token management
-- SMS verification for phone numbers and emergency contacts
-- Address validation with geographic boundary enforcement
-- Comprehensive audit logging and monitoring
+- Three-tier verification: SMS, address geocoding, emergency contacts
+- Rate limiting and comprehensive input validation
+- GDPR/COPPA compliant privacy design
 
 **📱 Modern User Experience**
 
+- Progressive Web App (PWA) with offline capabilities
 - Responsive design optimized for mobile and desktop
-- Progressive Web App (PWA) capabilities
-- Real-time notifications and updates
+- Multi-step registration with validation gates
 - Intuitive admin dashboard for school coordinators
 
 ### 🚀 What Makes VCarpool Different
 
 - **Type-Safe Architecture**: Full TypeScript implementation across frontend and backend
 - **Cloud-Native Design**: Built for Azure with serverless functions and global scalability
-- **Production Ready**: 212 automated tests ensuring reliability and performance
-- **Developer Friendly**: Comprehensive API, clear documentation, and modular architecture
+- **Production Ready**: 212 automated tests with 70% coverage requirement
+- **Cost Optimized**: Multi-resource group architecture enabling 70% cost savings during inactive periods
+- **Developer Friendly**: Comprehensive APIs, clear documentation, and modular architecture
 
 ---
 
@@ -77,9 +79,9 @@ VCarpool simplifies school transportation by connecting parents through an intel
 
 ### Prerequisites
 
-- **Node.js 22+** - Latest LTS recommended
-- **Azure Account** - For cloud deployment
-- **Azure Functions Core Tools v4+** - For local development
+- **Node.js 22+** (LTS recommended)
+- **Azure Account** (for cloud deployment)
+- **Azure Functions Core Tools v4+** (for local development)
 
 ### Local Development
 
@@ -88,7 +90,7 @@ VCarpool simplifies school transportation by connecting parents through an intel
 git clone https://github.com/vedprakash-m/vcarpool.git
 cd vcarpool
 
-# Install dependencies
+# Install all dependencies (uses npm workspaces)
 npm install
 
 # Configure environment variables
@@ -112,15 +114,16 @@ Experience VCarpool in action: [**https://lively-stone-016bfa20f.6.azurestaticap
 
 ---
 
-## 🏗 Architecture & Technology
+## 🏗️ Technology Stack
 
-### Modern Technology Stack
+### Core Technologies
 
 **Frontend**
 
-- **Next.js 14** with App Router for optimal performance
-- **TypeScript** for type safety and developer experience
+- **Next.js 14+** with App Router for optimal performance
+- **TypeScript 5.0** for type safety and developer experience
 - **Tailwind CSS** for responsive, modern UI design
+- **Zustand** for state management
 - **React Hook Form** with Zod validation
 
 **Backend**
@@ -128,48 +131,152 @@ Experience VCarpool in action: [**https://lively-stone-016bfa20f.6.azurestaticap
 - **Azure Functions v4** with Node.js 22 runtime
 - **TypeScript** for consistent development experience
 - **JWT Authentication** with secure token management
-- **RESTful API** design with comprehensive endpoints
+- **RESTful API** design with 30+ endpoints
 
 **Database & Infrastructure**
 
-- **Azure Cosmos DB** with 9 optimized containers
-- **Azure Storage Account** with flexible deployment options (dedicated storage RG support)
+- **Azure Cosmos DB** (NoSQL, serverless) with optimized containers
+- **Azure Storage Account** with flexible deployment options
 - **Azure Key Vault** for secrets management
 - **Azure Application Insights** for monitoring and analytics
-- **Azure Static Web Apps** for global content delivery
+- **Azure Static Web Apps** for global CDN delivery
 
-### Project Architecture
+### Architecture Patterns
 
 ```
 vcarpool/
-├── 🔧 backend/           # Azure Functions API (30+ endpoints)
 ├── 🌐 frontend/          # Next.js React application
-│   ├── src/app/          # Next.js App Router pages
+│   ├── src/app/          # App Router pages and layouts
 │   ├── components/       # Reusable React components
-│   │   ├── admin/        # Admin configuration interfaces
-│   │   └── shared/       # UI component library
-│   └── config/           # School and grade configurations
-├── 🔗 shared/            # Shared TypeScript types & utilities
-├── 📚 docs/              # Technical documentation
+│   └── types/            # Frontend TypeScript types
+├── 🔧 backend/           # Azure Functions API (30+ endpoints)
+│   ├── src/              # Shared services and utilities
+│   ├── auth-*/           # Authentication endpoints
+│   ├── admin-*/          # Administrative functions
+│   └── parent-*/         # Parent workflow functions
+├── 🔗 shared/            # Shared TypeScript types & validation
 ├── ☁️ infra/            # Azure Bicep infrastructure templates
-│   ├── database.bicep    # Database resources (Cosmos DB)
-│   ├── main-compute.bicep # Compute resources (Functions, Web App)
-│   ├── storage.bicep     # Dedicated storage account template
-│   └── main.bicep        # Legacy single-RG template
-└── 🔨 scripts/          # Deployment and utility scripts
-    ├── deploy-multi-rg.sh      # Multi-resource group deployment
-    ├── deploy-storage.sh       # Storage account deployment
-    ├── migrate-storage-account.sh # Storage migration tools
-    └── cost-optimize.sh        # Cost optimization management
+│   ├── database.bicep    # Database tier (persistent)
+│   ├── main-compute.bicep # Compute tier (can be deleted for cost savings)
+│   └── storage.bicep     # Optional dedicated storage
+├── 🧪 e2e/              # End-to-end tests with Playwright
+├── 🔨 scripts/          # Deployment and automation scripts
+└── 📚 docs/             # Comprehensive documentation
 ```
 
-### Enterprise-Grade Features
+### Quality & Testing
 
-- **🔒 Security**: JWT authentication, SMS verification, role-based access control
-- **📊 Monitoring**: Real-time application insights and performance tracking
-- **🧪 Testing**: 212 automated tests with comprehensive coverage
-- **⚡ Performance**: Serverless architecture with global CDN distribution
-- **🔄 CI/CD**: Automated deployment pipeline with GitHub Actions
+- **212 Automated Tests**: Comprehensive unit, integration, and E2E testing
+- **70% Coverage Minimum**: Enforced by CI/CD pipeline
+- **Performance Gates**: Sub-150ms API response times under load
+- **Security Scanning**: ESLint security plugin + npm audit integration
+- **Code Quality**: ESLint, Prettier, Husky pre-commit hooks
+
+---
+
+## 🚀 Deployment & Infrastructure
+
+### Multi-Resource Group Architecture
+
+VCarpool implements a **cost-optimized multi-resource group architecture** that separates persistent storage from compute resources:
+
+#### 🗄️ Database Resource Group (`vcarpool-db-rg`)
+
+- **Purpose**: Persistent data storage (always running)
+- **Resources**: Azure Cosmos DB with all user data
+- **Cost**: ~$24/month
+- **Data Safety**: Never deleted during cost optimization
+
+#### ⚡ Compute Resource Group (`vcarpool-rg`)
+
+- **Purpose**: Application runtime (can be deleted/recreated)
+- **Resources**: Functions, Static Web App, Storage, Key Vault, Monitoring
+- **Cost**: ~$50-100/month
+- **Optimization**: Delete when inactive, restore in 5 minutes
+
+### Deployment Options
+
+**🔄 Automated Deployment (Recommended)**
+
+```bash
+# Deploy via GitHub Actions
+git push origin main
+```
+
+**🛠️ Manual Deployment**
+
+```bash
+# Complete infrastructure deployment
+./scripts/deploy-multi-rg.sh
+
+# Cost optimization management
+./scripts/cost-optimize.sh analyze    # Show current costs
+./scripts/cost-optimize.sh delete     # Save 70% during inactive periods
+./scripts/cost-optimize.sh restore    # Restore in 5 minutes
+```
+
+### CI/CD Pipeline
+
+Modern 3-pipeline architecture with quality gates:
+
+- **CI Pipeline**: Fail-fast validation, parallel builds, security scanning
+- **Deploy Pipeline**: Progressive deployment with health checks and rollback
+- **Maintenance Pipeline**: Scheduled security scans and performance monitoring
+
+---
+
+## 🔧 Developer Setup
+
+### Development Commands
+
+```bash
+# Development
+npm run dev                    # Start all services
+npm run dev:backend           # Backend only
+npm run dev:frontend          # Frontend only
+
+# Building
+npm run build                 # Build all packages
+npm run build:fast           # Parallel build
+
+# Testing
+npm test                      # Run all tests
+npm run test:ci              # CI-friendly test run
+npm run test:e2e             # End-to-end tests
+npm run perf:test            # Performance testing
+
+# Code Quality
+npm run lint                  # Lint all packages
+npm run lint:fix             # Auto-fix linting issues
+npm run type-check           # TypeScript validation
+
+# Security
+npm run security:scan        # Security vulnerability scan
+npm run security:secrets     # Check for exposed secrets
+```
+
+### Project Setup Scripts
+
+```bash
+# Complete local setup
+npm run setup                # Interactive setup wizard
+
+# Validation
+./scripts/validate-local.sh  # Validate local environment
+./scripts/validate-dependencies.js # Check dependencies
+```
+
+### Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+
+**Development Process:**
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Run quality checks: `npm run lint && npm test`
+5. Submit a pull request
 
 ---
 
@@ -177,417 +284,117 @@ vcarpool/
 
 ### Core Endpoints
 
-VCarpool provides a comprehensive REST API with 30+ endpoints for complete carpool management:
-
-| Endpoint                     | Method     | Description              | Authentication |
-| ---------------------------- | ---------- | ------------------------ | -------------- |
-| `/api/health`                | `GET`      | System health and status | None           |
-| `/api/auth-login-simple`     | `POST`     | User authentication      | None           |
-| `/api/auth-register-simple`  | `POST`     | User registration        | None           |
-| `/api/users-me`              | `GET`      | Current user profile     | JWT            |
-| `/api/trips-list`            | `GET`      | List user's trips        | JWT            |
-| `/api/trips-stats`           | `GET`      | Trip statistics          | JWT            |
-| `/api/admin-carpool-groups`  | `GET/POST` | Manage carpool groups    | Admin          |
-| `/api/parent-group-creation` | `POST`     | Create parent groups     | JWT            |
+| Endpoint                     | Method     | Description                         | Auth  |
+| ---------------------------- | ---------- | ----------------------------------- | ----- |
+| `/api/health`                | `GET`      | System health check                 | None  |
+| `/api/auth-login-simple`     | `POST`     | User authentication                 | None  |
+| `/api/auth-register-simple`  | `POST`     | User registration with verification | None  |
+| `/api/users-me`              | `GET`      | Current user profile                | JWT   |
+| `/api/trips-list`            | `GET`      | User's trip history                 | JWT   |
+| `/api/admin-carpool-groups`  | `GET/POST` | Manage carpool groups               | Admin |
+| `/api/parent-group-creation` | `POST`     | Create parent groups                | JWT   |
 
 ### API Categories
 
 **🔐 Authentication & Users**
 
-- User registration with SMS verification
-- JWT-based login and token refresh
+- Multi-step registration with address validation
+- JWT-based login with refresh tokens
 - Profile management and preferences
+- SMS verification and emergency contacts
 
 **👥 Group Management**
 
-- Carpool group creation and administration
-- Parent group search and join requests
-- Role-based access control
+- Smart group matching and creation
+- Role-based access control (Admin, Parent, Student)
+- Group lifecycle management
+- Join request processing
 
-**📅 Trip Coordination**
+**📅 Scheduling & Coordination**
 
-- Weekly schedule management
-- Trip assignment and optimization
-- Swap request handling
+- Weekly preference submission
+- Traveling parent makeup scheduling
+- Automated schedule generation
+- Trip statistics and reporting
 
-**🏫 School Administration**
+**🛡️ Admin Functions**
 
-- Multi-school configuration
-- Grade level management
-- Address validation and service areas
-
-**📱 Communication**
-
-- SMS verification and notifications
-- Emergency contact management
-- Real-time status updates
-
-### Development API
-
-Start the development server to explore all endpoints:
-
-```bash
-npm run dev
-# API available at http://localhost:7071/api
-```
+- School management and configuration
+- User role management
+- System monitoring and health checks
+- Performance analytics
 
 ---
 
-## 🎓 Smart Registration System
+## 🎯 Current Status
 
-### Intelligent User Onboarding
+### ✅ Production Ready Features
 
-**Pre-configured School Support**
+- **Core Functionality**: Complete carpool management system
+- **Security**: Enterprise-grade authentication and validation
+- **Performance**: Sub-150ms API responses, optimized for scale
+- **Testing**: 212 automated tests with comprehensive coverage
+- **Infrastructure**: Multi-resource group architecture with cost optimization
+- **Monitoring**: Real-time application insights and health checks
 
-- Dynamic grade level dropdowns (8th-12th for Tesla STEM)
-- Automatic school address validation
-- Configurable service radius (25 miles default)
-- Real-time address verification
+### 🚀 Recent Achievements (June 2025)
 
-**Admin Configuration Portal** (`/admin/school-config`)
+- **Password Security Enhancement**: Comprehensive weak password detection
+- **Address Validation Overhaul**: Multi-provider geocoding with privacy focus
+- **CI/CD Modernization**: 50% complexity reduction with quality gates
+- **Cost Optimization**: 70% savings during inactive development periods
+- **Technical Debt Reduction**: 85% complete with unified patterns
 
-- Add/edit schools with full address details
-- Configure grade levels per school type
-- Set geographic boundaries and service areas
-- Activate/deactivate schools for registration
+### 🎯 Roadmap
 
-**Technical Implementation**
+**Phase 6: Feature Completion** (In Progress)
 
-- **Type Safety**: Inline Zod validation with TypeScript
-- **Form Management**: React Hook Form with Controller components
-- **Validation**: Real-time form validation with error handling
-- **UI Components**: Reusable dropdown and input components
+- Enhanced admin dashboard features
+- Real-time notification system
+- Advanced reporting and analytics
 
-### Registration Workflow
+**Phase 7: Scale & Expansion** (Planned)
 
-1. **📋 Family Information** - Parent details with phone/email validation
-2. **👶 Children Details** - Names with intelligent grade/school selection
-3. **🏠 Address Verification** - Automatic validation within service radius
-4. **✅ Submission** - Secure registration with school-specific defaults
-
-### Developer Features
-
-**Local Development**
-
-```bash
-npm run dev
-# Access registration at http://localhost:3000/register
-```
-
-**Backend Functions**
-
-- 30+ Azure Functions for complete carpool management
-- Authentication, group management, scheduling, and notifications
-- Comprehensive test coverage with 212 passing tests
+- Multi-school support architecture
+- AI-powered route optimization
+- Mobile app with offline capabilities
+- Integration with school management systems
 
 ---
 
-## 🧪 Testing & Quality Assurance
+## 📞 Support & Community
 
-### Comprehensive Test Suite
+### Getting Help
 
-**Test Coverage: 212 Tests Passing** ✅
+- **📚 Documentation**: Comprehensive guides in [docs/](docs/)
+- **🐛 Issues**: [GitHub Issues](https://github.com/vedprakash-m/vcarpool/issues) for bugs and feature requests
+- **💡 Discussions**: [GitHub Discussions](https://github.com/vedprakash-m/vcarpool/discussions) for questions
+- **🔒 Security**: Report security issues privately via email
 
-- **Backend**: Complete API endpoint testing
-- **Frontend**: Component and integration testing
-- **E2E**: Critical user journey validation
-- **Security**: Authentication and authorization testing
+### Community
 
-```bash
-# Run all tests
-npm test
-
-# Specific test suites
-cd backend && npm test      # Backend API tests
-cd frontend && npm test     # Frontend component tests
-
-# Coverage reports
-npm run test:coverage       # Generate detailed coverage
-```
-
-### Quality Metrics
-
-**✅ Core Functionality**
-
-- Parent group creation and management
-- Carpool schedule coordination and optimization
-- Authentication and authorization systems
-- SMS verification and address validation
-
-**✅ Advanced Features**
-
-- Family-based scheduling algorithms
-- Production API integration testing
-- Role-based access control validation
-- Geographic boundary enforcement
-
-**✅ Performance & Security**
-
-- Load testing for Azure Functions
-- JWT token security validation
-- Database query optimization
-- Error handling and recovery
-
-### Development Standards
-
-- **TypeScript Strict Mode** - Enhanced type safety
-- **Code Coverage** - Minimum 80% coverage requirement
-- **Security First** - Comprehensive input validation
-- **Performance** - Optimized for mobile and desktop
+- **Current Deployment**: Tesla STEM High School, Redmond, WA
+- **Contributors**: Parents, developers, and school administrators
+- **Mission**: Making school transportation safer, more efficient, and equitable
 
 ---
 
-## 🚀 Deployment & Infrastructure
-
-### Cloud-Native Architecture
-
-VCarpool leverages Azure's serverless platform for scalability and reliability:
-
-**🔄 Automated Deployment**
-
-```bash
-# Deploy via GitHub Actions (Recommended)
-git push origin main
-```
-
-**🛠 Manual Deployment**
-
-```bash
-# Complete infrastructure deployment
-./scripts/deploy-multi-rg.sh
-
-# Specific deployment options
-./scripts/deploy-multi-rg.sh deploy    # Full deployment
-./scripts/deploy-multi-rg.sh verify    # Verify deployment
-./scripts/deploy-multi-rg.sh outputs   # Get deployment info
-```
-
-### Multi-Resource Group Strategy
-
-**Database Tier** (`vcarpool-db-rg`)
-
-- Azure Cosmos DB with global distribution
-- Persistent data storage and backup
-- High availability and disaster recovery
-
-**Application Tier** (`vcarpool-rg`)
-
-- Azure Function App (serverless backend)
-- Azure Static Web App (global CDN)
-- Application Insights, Key Vault, Storage
-
-### Production Infrastructure
-
-- **🌐 Frontend**: Azure Static Web Apps with global CDN
-- **⚡ Backend**: Azure Functions with auto-scaling
-- **🗄️ Database**: Azure Cosmos DB with multi-region support
-- **🔒 Security**: Azure Key Vault for secrets management
-- **📊 Monitoring**: Application Insights for real-time analytics
-
-### Infrastructure as Code
-
-All infrastructure is defined using **Azure Bicep** templates for:
-
-- Reproducible deployments
-- Version-controlled infrastructure
-- Automated resource provisioning
-- Environment consistency
-
----
-
-## 💡 Resource Management
-
-For development teams working with Azure resources, VCarpool includes cost-effective resource management:
-
-**📋 Resource Management Scripts**
-
-```bash
-# Resource status and analysis
-./scripts/cost-optimize.sh analyze
-
-# Temporary resource management (development)
-./scripts/cost-optimize.sh delete     # Remove compute resources
-./scripts/cost-optimize.sh restore    # Restore resources quickly
-./scripts/cost-optimize.sh status     # Check resource status
-```
-
-## 🌐 Deployment & Infrastructure
-
-### Multi-Resource Group Architecture
-
-VCarpool uses a sophisticated multi-resource group architecture for optimal cost management and operational flexibility:
-
-#### 🗄️ Database Resource Group (`vcarpool-db-rg`)
-
-**Always Running - Contains Persistent Data**
-
-- **Azure Cosmos DB** (`vcarpool-cosmos-prod`) - Main database
-- **Database**: `vcarpool` with 9 optimized containers
-- **Cost**: ~$24/month (400 RU/s provisioned throughput)
-- **Purpose**: Persistent storage that never gets deleted
-
-#### ⚡ Compute Resource Group (`vcarpool-rg`)
-
-**Can Be Deleted for Cost Savings**
-
-- **Function App** (`vcarpool-api-prod`) - Backend API with 30+ endpoints
-- **Static Web App** (`vcarpool-web-prod`) - Frontend application
-- **Storage Account** (`vcarpoolsaprod`) - Function storage and deployment artifacts
-- **Application Insights** - Performance monitoring and diagnostics
-- **Key Vault** - Secrets and configuration management
-- **Cost**: ~$50-100/month (varies by usage)
-- **Purpose**: Application runtime that can be recreated from templates
-
-#### 🗄️ Optional: Dedicated Storage Resource Group (`vcarpool-storage-rg`)
-
-**For Advanced Storage Management**
-
-- **Dedicated Storage Account** - Separated from compute resources
-- **Purpose**: Isolate storage for better management and potential cost optimization
-- **Migration Tools**: Complete migration scripts provided
-
-### Storage Account Flexibility
-
-VCarpool now supports multiple storage deployment architectures:
-
-1. **Default**: Storage in compute resource group (`vcarpool-rg`)
-2. **Consolidated**: Storage in database resource group (`vcarpool-db-rg`)
-3. **Dedicated**: Storage in separate resource group (`vcarpool-storage-rg`)
-
-**Migration Tools Available:**
-
-```bash
-# Plan storage account migration
-./scripts/migrate-storage-account.sh plan --target-name vcarpoolsanew --target-rg vcarpool-storage-rg --target-location eastus2
-
-# Deploy new storage account
-./scripts/deploy-storage.sh deploy --resource-group vcarpool-storage-rg --location eastus2
-
-# Migrate data and update configuration
-./scripts/migrate-storage-account.sh migrate-data --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
-./scripts/migrate-storage-account.sh update-config --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
-```
-
-### 💰 Cost Optimization Strategy
-
-**Active Development**: ~$75-125/month (all resource groups running)
-**Inactive Period**: ~$24/month (70% savings by deleting compute resources)
-
-```bash
-# Analyze current costs
-./scripts/cost-optimize.sh analyze
-
-# Delete compute resources (save ~$50-100/month)
-./scripts/cost-optimize.sh delete
-
-# Restore when needed (5-minute deployment)
-./scripts/cost-optimize.sh restore
-```
-
-**🔒 Data Safety**: Database resources remain protected during any optimization operations.
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from developers, school administrators, and community members!
-
-### Getting Started
-
-1. **Fork** the repository on GitHub
-2. **Clone** your fork locally: `git clone https://github.com/your-username/vcarpool.git`
-3. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-4. **Make** your changes following our development standards
-5. **Add** comprehensive tests for new functionality
-6. **Commit** with clear messages: `git commit -m 'Add: Amazing new feature'`
-7. **Push** to your branch: `git push origin feature/amazing-feature`
-8. **Submit** a Pull Request with detailed description
-
-### Development Guidelines
-
-**🔧 Technical Standards**
-
-- **TypeScript Strict Mode** - All code must be type-safe
-- **Testing Required** - New features need corresponding tests
-- **Documentation** - Update README and docs for significant changes
-- **Performance First** - Consider impact on mobile users
-
-**🛡 Security Standards**
-
-- **Input Validation** - All user inputs must be validated
-- **Authentication** - Follow JWT best practices
-- **Data Privacy** - Ensure COPPA compliance for school applications
-- **Audit Trail** - Maintain logs for administrative actions
-
-**🎨 Code Style**
-
-- **ESLint Configuration** - Follow project linting rules
-- **Prettier Formatting** - Consistent code formatting
-- **Component Structure** - Follow established patterns
-- **Commit Messages** - Use conventional commit format
-
-### Contribution Areas
-
-**🌟 High-Impact Contributions**
-
-- New school district integrations
-- Mobile app development (React Native)
-- Advanced scheduling algorithms
-- Internationalization (i18n) support
-
-**🔧 Technical Improvements**
-
-- Performance optimizations
-- Test coverage improvements
-- Accessibility enhancements
-- Developer tooling
-
-**📚 Documentation & Community**
-
-- API documentation improvements
-- Tutorial creation
-- Bug reports and feature requests
-- User experience feedback
-
-### Code Review Process
-
-All contributions go through thorough code review:
-
-- **Automated Testing** - All tests must pass
-- **Security Review** - Security-focused code analysis
-- **Performance Check** - Impact assessment on application performance
-- **Documentation Review** - Ensure changes are properly documented
-
----
-
-## 📄 License & Legal
-
-### Open Source License
+## 📄 License
 
 This project is licensed under the **[GNU Affero General Public License v3.0](LICENSE)**.
 
 **Key Points:**
 
-- ✅ **Commercial Use** - Permitted with AGPL compliance
-- ✅ **Modification** - Encouraged with source sharing requirements
-- ✅ **Distribution** - Allowed with license preservation
-- ✅ **Private Use** - No restrictions for personal/internal use
-- ⚠️ **Network Use** - AGPL requires source sharing for network services
+- ✅ Commercial use permitted with AGPL compliance
+- ✅ Modification encouraged with source sharing requirements
+- ✅ Distribution allowed with license preservation
+- ⚠️ Network use requires source sharing (AGPL requirement)
 
 ### Attribution
 
 **Original Development**: [Vedprakash Mishra](https://github.com/vedprakash-m)
 
-**Community**: Built with contributions from parents, developers, and school administrators committed to safe, efficient student transportation.
-
-### Third-Party Libraries
-
-VCarpool builds upon excellent open-source projects:
-
-- **Next.js** - React framework for production
-- **Azure Functions** - Serverless compute platform
-- **TypeScript** - Type-safe JavaScript development
-- **Tailwind CSS** - Utility-first CSS framework
+**Built with**: Next.js, Azure Functions, TypeScript, Tailwind CSS, and the dedication of families committed to safer school transportation.
 
 ---
 
@@ -595,10 +402,10 @@ VCarpool builds upon excellent open-source projects:
 
 ### 🎯 Ready to Transform School Transportation?
 
-**Get Started Today** • **Join the Community** • **Make School Commutes Better**
+**Make carpooling safe, fair, and efficient for your school community**
 
-[⭐ Star this project](https://github.com/vedprakash-m/vcarpool) • [🚀 Try Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [🐛 Report Issues](https://github.com/vedprakash-m/vcarpool/issues) • [💡 Request Features](https://github.com/vedprakash-m/vcarpool/issues/new)
+[⭐ Star this Project](https://github.com/vedprakash-m/vcarpool) • [🚀 Try Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [🐛 Report Issues](https://github.com/vedprakash-m/vcarpool/issues) • [💡 Request Features](https://github.com/vedprakash-m/vcarpool/discussions)
 
-**Built with ❤️ for safer, smarter school transportation**
+**Built with ❤️ for safer, smarter, more sustainable school transportation**
 
 </div>

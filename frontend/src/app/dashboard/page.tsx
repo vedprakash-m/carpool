@@ -48,11 +48,7 @@ export default memo(function DashboardPage() {
     }
   }, [isAuthenticated, user, fetchTripStats]);
 
-  // Don't render if not authenticated or user is missing
-  if (!isAuthenticated || !user) {
-    return null;
-  }
-
+  // Define hooks before any conditional logic
   const handleWeeklyPreferences = useThrottle(
     useCallback(() => {
       router.push('/parents/preferences');
@@ -66,6 +62,11 @@ export default memo(function DashboardPage() {
     }, [router]),
     1000
   );
+
+  // Don't render if not authenticated or user is missing
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
   return (
     <DashboardLayout>

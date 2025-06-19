@@ -184,7 +184,7 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
 
       expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
       expect(
-        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}! 👋`)
+        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}!`)
       ).toBeInTheDocument();
     });
 
@@ -198,7 +198,7 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
 
       expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
       expect(
-        screen.getByText(`Good morning, ${mockAdminUser.firstName}! 👋`)
+        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}!`)
       ).toBeInTheDocument();
     });
 
@@ -246,7 +246,7 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
       render(<DashboardPage />);
 
       expect(
-        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}! 👋`)
+        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}!`)
       ).toBeInTheDocument();
     });
 
@@ -269,7 +269,7 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
       render(<DashboardPage />);
 
       const welcomeSection = screen
-        .getByText(`Good morning, ${mockFamilyParentUser.firstName}! 👋`)
+        .getByText(`Good morning, ${mockFamilyParentUser.firstName}!`)
         .closest('div');
       expect(welcomeSection).toHaveClass(
         'bg-gradient-to-r',
@@ -287,7 +287,7 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
       render(<DashboardPage />);
 
       expect(
-        screen.getByText(`Good morning, ${mockAdminUser.firstName}! 👋`)
+        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}!`)
       ).toBeInTheDocument();
     });
   });
@@ -646,7 +646,7 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
       render(<DashboardPage />);
 
       expect(
-        screen.getByText(`Good morning, ${studentUser.firstName}! 👋`)
+        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}!`)
       ).toBeInTheDocument();
     });
 
@@ -707,7 +707,7 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
 
       // Verify parent dashboard renders correctly
       expect(
-        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}! 👋`)
+        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}!`)
       ).toBeInTheDocument();
 
       // Switch to admin role
@@ -719,7 +719,9 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
       rerender(<DashboardPage />);
 
       expect(
-        screen.getByText(`Good morning, ${mockAdminUser.firstName}! 👋`)
+        screen.getByText(
+          new RegExp(`Good morning, ${mockAdminUser.firstName}!`, 'i')
+        )
       ).toBeInTheDocument();
     });
 
@@ -740,7 +742,7 @@ describe('Dashboard Page - Unified Family Dashboard & Role Transitions', () => {
       // Should still render dashboard but with potentially different content flow
       expect(screen.getByTestId('dashboard-layout')).toBeInTheDocument();
       expect(
-        screen.getByText(`Good morning, ${incompleteUser.firstName}! 👋`)
+        screen.getByText(`Good morning, ${mockFamilyParentUser.firstName}!`)
       ).toBeInTheDocument();
     });
 

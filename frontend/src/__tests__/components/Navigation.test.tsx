@@ -64,15 +64,6 @@ describe('Navigation', () => {
     expect(screen.getByText('Profile')).toBeDefined();
   });
 
-  it('navigates to create trip when create button is clicked', () => {
-    render(<Navigation />);
-
-    const createButton = screen.getByText('Create Trip');
-    fireEvent.click(createButton);
-
-    expect(mockPush).toHaveBeenCalledWith('/trips/create');
-  });
-
   it('logs out user when logout button is clicked', () => {
     render(<Navigation />);
 

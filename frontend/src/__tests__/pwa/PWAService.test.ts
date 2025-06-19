@@ -3,58 +3,25 @@
  * Basic tests for PWA service functionality
  */
 
-import { jest } from '@jest/globals';
-
-// Mock global matchMedia first
-Object.defineProperty(global, 'matchMedia', {
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-  configurable: true,
-});
-
-// Mock browser environment
-Object.defineProperty(global, 'window', {
-  value: {
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    navigator: {
-      onLine: true,
-      serviceWorker: {
-        register: jest.fn().mockResolvedValue({
-          active: { state: 'activated' },
-          installing: null,
-          waiting: null,
-        }),
-        ready: Promise.resolve({
-          active: { state: 'activated' },
-        }),
-      },
-    },
-    matchMedia: jest.fn().mockImplementation(query => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    })),
-  },
-  configurable: true,
-});
-
 describe('PWA Service Basic Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Setup minimal browser environment for this test
+    Object.defineProperty(global, 'window', {
+      value: {
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        navigator: {
+          onLine: true,
+          serviceWorker: {
+            register: jest.fn().mockResolvedValue({}),
+            ready: Promise.resolve({}),
+          },
+        },
+      },
+      configurable: true,
+    });
   });
 
   test('service worker registration is available', () => {
@@ -75,7 +42,7 @@ describe('PWA Service Basic Tests', () => {
   });
 
   test('matchMedia is available for accessibility checks', () => {
-    const mq = global.matchMedia('(prefers-reduced-motion: reduce)');
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     expect(mq).toBeDefined();
     expect(typeof mq.matches).toBe('boolean');
   });

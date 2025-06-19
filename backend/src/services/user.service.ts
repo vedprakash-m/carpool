@@ -142,9 +142,10 @@ export class UserService {
    */
   async getUserByEmail(email: string): Promise<(User & { passwordHash: string }) | null> {
     try {
-      return (await this.userRepository.findByEmail(email)) as
-        | (User & { passwordHash: string })
-        | null;
+      const user = await this.userRepository.findByEmail(email);
+      // Note: Repository returns User with passwordHash from database
+      // Type assertion is needed since the User interface doesn't include passwordHash for security
+      return user as (User & { passwordHash: string }) | null;
     } catch (error) {
       console.error(`Error fetching user by email ${email}:`, error);
       throw Errors.InternalServerError(

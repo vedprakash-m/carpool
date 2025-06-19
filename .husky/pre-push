@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Running pre-push validation..."
+
+# Run full local E2E validation
+echo "🧪 Running comprehensive E2E validation..."
+npm run validate:e2e || {
+    echo "❌ E2E validation failed"
+    exit 1
+}
+
+echo "✅ Pre-push validation passed!"

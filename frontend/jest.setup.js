@@ -1,9 +1,17 @@
-require("@testing-library/jest-dom");
+require('@testing-library/jest-dom');
 
 // Fix TextEncoder/TextDecoder for MSW
-require("text-encoding-polyfill");
-global.TextDecoder = global.TextDecoder || require("util").TextDecoder;
-global.TextEncoder = global.TextEncoder || require("util").TextEncoder;
+require('text-encoding-polyfill');
+global.TextDecoder = global.TextDecoder || require('util').TextDecoder;
+global.TextEncoder = global.TextEncoder || require('util').TextEncoder;
+
+// Mock BroadcastChannel
+global.BroadcastChannel = jest.fn().mockImplementation(() => ({
+  postMessage: jest.fn(),
+  close: jest.fn(),
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+}));
 
 // Mock Response for MSW
 if (!global.Response) {
@@ -11,26 +19,26 @@ if (!global.Response) {
     constructor(body, init) {
       this.body = body;
       this.status = init?.status || 200;
-      this.statusText = init?.statusText || "OK";
+      this.statusText = init?.statusText || 'OK';
       this.headers = new Map(Object.entries(init?.headers || {}));
     }
 
     json() {
       return Promise.resolve(
-        typeof this.body === "string" ? JSON.parse(this.body) : this.body
+        typeof this.body === 'string' ? JSON.parse(this.body) : this.body
       );
     }
 
     text() {
       return Promise.resolve(
-        typeof this.body === "string" ? this.body : JSON.stringify(this.body)
+        typeof this.body === 'string' ? this.body : JSON.stringify(this.body)
       );
     }
   };
 }
 
 // Mock Next.js router
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter() {
     return {
       push: jest.fn(),
@@ -45,14 +53,14 @@ jest.mock("next/navigation", () => ({
     return new URLSearchParams();
   },
   usePathname() {
-    return "";
+    return '';
   },
 }));
 
 // Mock matchMedia for accessibility tests
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation((query) => ({
+  value: jest.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
@@ -68,4 +76,4 @@ Object.defineProperty(window, "matchMedia", {
 Element.prototype.scrollIntoView = jest.fn();
 
 // Mock environment variables
-process.env.NEXT_PUBLIC_API_BASE_URL = "http://localhost:3001";
+process.env.NEXT_PUBLIC_API_BASE_URL = 'http://localhost:3001';

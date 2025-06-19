@@ -21,6 +21,7 @@
     "perf:phase2": "node perf/phase2-perf.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit",
     "clean": "rimraf dist",
     "setup-functions": "node scripts/setup-functions.js",
     "ensure-functions": "node scripts/ensure-functions.js",
