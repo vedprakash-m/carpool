@@ -3,10 +3,11 @@
 
 echo "🔍 Running pre-commit validation..."
 
-# Use our proven local validation approach
-echo "🚀 Running comprehensive validation (CI/CD focused)..."
-npm run validate:local || {
-    echo "❌ Validation failed"
+# Use quick validation for pre-commit (no Docker required)
+echo "🚀 Running quick validation (no Docker required)..."
+./scripts/quick-validate.sh || {
+    echo "❌ Quick validation failed"
+    echo "💡 For full validation with E2E tests, run: ./scripts/validate-local.sh"
     exit 1
 }
 
