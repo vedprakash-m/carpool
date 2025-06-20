@@ -3,30 +3,10 @@
 
 echo "🔍 Running pre-commit validation..."
 
-# Run lint for both frontend and backend
-echo "📝 Linting frontend..."
-cd frontend && npm run lint:check || {
-    echo "❌ Frontend linting failed"
-    exit 1
-}
-
-echo "📝 Linting backend..."
-cd ../backend && npm run lint || {
-    echo "❌ Backend linting failed"
-    exit 1
-}
-
-# Run type checking
-echo "🔍 Type checking..."
-cd .. && npm run type-check || {
-    echo "❌ Type checking failed"
-    exit 1
-}
-
-# Run tests
-echo "🧪 Running tests..."
-npm run test || {
-    echo "❌ Tests failed"
+# Use our proven local validation approach
+echo "🚀 Running comprehensive validation (CI/CD focused)..."
+npm run validate:local || {
+    echo "❌ Validation failed"
     exit 1
 }
 

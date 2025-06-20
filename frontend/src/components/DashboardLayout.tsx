@@ -64,7 +64,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div
+      className="min-h-screen bg-gray-50 flex"
+      data-testid="dashboard-layout"
+    >
       <div className="w-64 flex-shrink-0">
         <Navigation />
       </div>
