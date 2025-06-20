@@ -3,11 +3,20 @@
 
 echo "🚀 Running pre-push validation..."
 
-# Run full local E2E validation
-echo "🧪 Running comprehensive E2E validation..."
-npm run validate:e2e || {
-    echo "❌ E2E validation failed"
-    exit 1
-}
+# Check if Docker is available
+if docker info >/dev/null 2>&1; then
+    echo "🐳 Docker available - running full E2E validation..."
+    npm run validate:e2e || {
+        echo "❌ E2E validation failed"
+        exit 1
+    }
+else
+    echo "⚠️  Docker not available - running comprehensive local validation instead..."
+    echo "📝 Note: E2E tests will run in CI pipeline"
+    npm run validate:local || {
+        echo "❌ Local validation failed"
+        exit 1
+    }
+fi
 
 echo "✅ Pre-push validation passed!"
