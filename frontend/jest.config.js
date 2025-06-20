@@ -49,14 +49,15 @@ const config = {
     '<rootDir>/src/__tests__/pwa/PWAIntegration.test.tsx',
     '<rootDir>/src/__tests__/stores/auth.store.test.ts',
     '<rootDir>/src/__tests__/pages/HomePage.test.tsx',
+    '<rootDir>/src/__tests__/pages/TripsPage.test.tsx',
     '<rootDir>/src/__tests__/components/LoadingSpinner.realistic.test.tsx',
     '<rootDir>/src/__tests__/components/DashboardComponents.test.tsx',
     '<rootDir>/src/__tests__/components/calendar/CalendarLoading.realistic.test.tsx',
     '<rootDir>/src/__tests__/stores/trip.store.test.ts',
-    '<rootDir>/src/__tests__/components/ui/Card.realistic.test.tsx',
-    '<rootDir>/src/__tests__/components/Navigation.realistic.test.tsx',
     '<rootDir>/src/__tests__/pages/TripsPage.realistic.test.tsx',
     '<rootDir>/src/__tests__/components/ErrorBoundary.test.tsx',
+    '<rootDir>/src/__tests__/components/ui/Card.realistic.test.tsx',
+    '<rootDir>/src/__tests__/components/Navigation.realistic.test.tsx',
   ],
 
   // Transform ignore patterns

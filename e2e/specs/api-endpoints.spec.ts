@@ -519,7 +519,7 @@ test.describe('Backend API Endpoints', () => {
       userToken = loginData.token;
     });
 
-    test('trips-list - get user trips', async ({ request }) => {
+    test('trips-list - comprehensive user trips (parent)', async ({ request }) => {
       const response = await makeApiRequest(request, 'GET', '/api/trips-list', null, {
         Authorization: `Bearer ${userToken}`,
       });
@@ -529,7 +529,7 @@ test.describe('Backend API Endpoints', () => {
       expect(Array.isArray(data.trips)).toBe(true);
     });
 
-    test('trips-stats - get trip statistics', async ({ request }) => {
+    test('trips-stats - comprehensive trip statistics (parent)', async ({ request }) => {
       const response = await makeApiRequest(request, 'GET', '/api/trips-stats', null, {
         Authorization: `Bearer ${userToken}`,
       });
