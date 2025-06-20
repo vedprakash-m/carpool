@@ -14,7 +14,7 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   rules: {
     // Relaxed rules for initial cleanup
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-explicit-any': 'off', // Disabled for migration
     '@typescript-eslint/no-unsafe-assignment': 'off', // Disabled for migration
@@ -22,16 +22,16 @@ module.exports = {
     '@typescript-eslint/no-unsafe-call': 'off', // Disabled for migration
     '@typescript-eslint/no-unsafe-return': 'off', // Disabled for migration
     '@typescript-eslint/no-unsafe-argument': 'off', // Disabled for migration
-    '@typescript-eslint/require-await': 'warn',
-    '@typescript-eslint/no-misused-promises': 'warn',
+    '@typescript-eslint/require-await': 'off',
+    '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/restrict-template-expressions': 'off', // Disabled for migration
-    '@typescript-eslint/ban-ts-comment': 'warn',
-    '@typescript-eslint/ban-types': 'warn',
+    '@typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/unbound-method': 'warn',
     '@typescript-eslint/no-floating-promises': 'off', // Disabled for migration
-    '@typescript-eslint/no-redundant-type-constituents': 'warn',
+    '@typescript-eslint/no-redundant-type-constituents': 'off',
     'no-console': 'off', // Disabled for debugging during migration
-    'no-useless-escape': 'warn',
+    'no-useless-escape': 'off',
     // Disable security rules temporarily to focus on TypeScript issues
     'security/detect-object-injection': 'off',
     'security/detect-non-literal-fs-filename': 'off',

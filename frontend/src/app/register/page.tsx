@@ -213,7 +213,11 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          className="mt-8 space-y-6"
+          onSubmit={handleSubmit(onSubmit)}
+          data-testid="registration-form"
+        >
           {currentStep === 1 && (
             <section>
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
@@ -232,6 +236,7 @@ export default function RegisterPage() {
                     type="text"
                     className="mt-1 input"
                     placeholder="e.g., The Johnson Family"
+                    data-testid="family-name-input"
                   />
                   {errors.familyName && (
                     <p className="mt-1 text-sm text-red-600">
@@ -253,6 +258,7 @@ export default function RegisterPage() {
                       type="text"
                       className="mt-1 input"
                       placeholder="Parent's First Name"
+                      data-testid="parent-first-name-input"
                     />
                     {errors.parent?.firstName && (
                       <p className="mt-1 text-sm text-red-600">
@@ -272,6 +278,7 @@ export default function RegisterPage() {
                       type="text"
                       className="mt-1 input"
                       placeholder="Parent's Last Name"
+                      data-testid="parent-last-name-input"
                     />
                     {errors.parent?.lastName && (
                       <p className="mt-1 text-sm text-red-600">
@@ -294,6 +301,7 @@ export default function RegisterPage() {
                     className="mt-1 input"
                     placeholder="Parent's Email Address"
                     autoComplete="email"
+                    data-testid="parent-email-input"
                   />
                   {errors.parent?.email && (
                     <p className="mt-1 text-sm text-red-600">
@@ -315,6 +323,7 @@ export default function RegisterPage() {
                     className="mt-1 input"
                     placeholder="Minimum 8 characters"
                     autoComplete="new-password"
+                    data-testid="parent-password-input"
                   />
                   {errors.parent?.password && (
                     <p className="mt-1 text-sm text-red-600">
@@ -328,6 +337,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={nextStep}
                   className="btn-primary"
+                  data-testid="next-step-button"
                 >
                   Next: Home Address
                 </button>
@@ -585,6 +595,7 @@ export default function RegisterPage() {
                   type="submit"
                   className="btn-primary"
                   disabled={isLoading}
+                  data-testid="submit-registration-button"
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </button>

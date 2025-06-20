@@ -108,7 +108,7 @@ class PWAService {
 
     try {
       // Try to register service worker with fallback for static exports
-      let swPath = '/sw.js';
+      const swPath = '/sw.js';
 
       // For production static export deployments, check if SW exists
       try {

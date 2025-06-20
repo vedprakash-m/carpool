@@ -1,21 +1,16 @@
-import {
-  app,
-  HttpRequest,
-  HttpResponseInit,
-  InvocationContext,
-} from "@azure/functions";
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 
 async function pingHandler(
   request: HttpRequest,
-  context: InvocationContext
+  context: InvocationContext,
 ): Promise<HttpResponseInit> {
   return {
     status: 200,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      message: "pong",
+      message: 'pong',
       timestamp: new Date().toISOString(),
       method: request.method,
       url: request.url,
@@ -23,9 +18,9 @@ async function pingHandler(
   };
 }
 
-app.http("ping", {
-  methods: ["GET", "POST"],
-  authLevel: "anonymous",
-  route: "ping",
+app.http('ping', {
+  methods: ['GET', 'POST'],
+  authLevel: 'anonymous',
+  route: 'ping',
   handler: pingHandler,
 });

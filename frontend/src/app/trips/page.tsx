@@ -152,6 +152,7 @@ const FamilyGroupCard = ({
             <button
               onClick={() => onLeave?.(trip.id)}
               className="px-3 py-1 text-sm border border-red-300 text-red-700 rounded-md hover:bg-red-50"
+              data-testid="leave-group-button"
             >
               Leave Group
             </button>
@@ -159,6 +160,7 @@ const FamilyGroupCard = ({
             <button
               onClick={() => onJoin?.(trip.id)}
               className="px-3 py-1 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700"
+              data-testid="join-group-button"
             >
               Request to Join Group
             </button>
@@ -278,6 +280,7 @@ const TripCard = ({
             <button
               onClick={handleJoinClick}
               className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              data-testid="join-trip-button"
             >
               Join Trip
             </button>
@@ -287,6 +290,7 @@ const TripCard = ({
             <button
               onClick={() => onLeaveTrip?.(trip.id)}
               className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              data-testid="leave-trip-button"
             >
               Leave Trip
             </button>
@@ -592,7 +596,10 @@ function TripsPage() {
                 {/* Emergency Contacts Summary */}
                 {familyContext?.emergencyContacts &&
                   familyContext.emergencyContacts.length > 0 && (
-                    <div className="mt-3 text-sm text-gray-600">
+                    <div
+                      className="mt-3 text-sm text-gray-600"
+                      aria-label="Emergency contacts for family safety"
+                    >
                       <span className="font-medium">
                         Emergency Contacts (
                         {familyContext.emergencyContacts.length})
@@ -609,6 +616,7 @@ function TripsPage() {
               <button
                 onClick={() => router.push('/groups/create')}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                data-testid="create-carpool-group-button"
               >
                 <PlusOutlineIcon className="h-4 w-4 mr-2" />
                 Create Carpool Group
@@ -729,7 +737,16 @@ function TripsPage() {
             <LoadingSpinner />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div
+            className="space-y-4"
+            aria-label={
+              activeTab === 'discover'
+                ? 'Available groups for Emma and Lucas'
+                : activeTab === 'my-groups'
+                  ? 'Your current carpool groups'
+                  : `${activeTab.replace('-', ' ')} section`
+            }
+          >
             {activeTab === 'my-groups' && <MyGroupsContent />}
             {activeTab === 'discover' && <DiscoverGroupsContent />}
             {activeTab === 'join-requests' && <JoinRequestsContent />}
