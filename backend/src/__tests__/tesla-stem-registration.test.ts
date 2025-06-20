@@ -409,11 +409,11 @@ describe('Tesla Stem High School Registration Requirements', () => {
   });
 
   describe('Decision 3: Tesla Stem High School Geographic Focus', () => {
-    it('should use Tesla Stem High School as center point', () => {
-      const {
-        TESLA_STEM_HIGH_SCHOOL,
-        SERVICE_AREA_RADIUS_MILES,
-      } = require('../../../shared/src/types');
+    it('should use Tesla Stem High School as center point', async () => {
+      // Import using dynamic import instead of require
+      const { TESLA_STEM_HIGH_SCHOOL, SERVICE_AREA_RADIUS_MILES } = await import(
+        '../../../shared/src/types'
+      );
 
       expect(TESLA_STEM_HIGH_SCHOOL.name).toBe('Tesla STEM High School');
       expect(TESLA_STEM_HIGH_SCHOOL.location.city).toBe('Redmond');

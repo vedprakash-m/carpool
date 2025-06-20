@@ -198,8 +198,8 @@ describe('Universal School Support System', () => {
   });
 
   describe('Legacy Compatibility', () => {
-    it('should maintain Tesla STEM support for existing code', () => {
-      const { TESLA_STEM_HIGH_SCHOOL } = require('@shared/types');
+    it('should maintain Tesla STEM support for existing code', async () => {
+      const { TESLA_STEM_HIGH_SCHOOL } = await import('@vcarpool/shared');
 
       expect(TESLA_STEM_HIGH_SCHOOL).toBeDefined();
       expect(TESLA_STEM_HIGH_SCHOOL.name).toContain('Tesla');
