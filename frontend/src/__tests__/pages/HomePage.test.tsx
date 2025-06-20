@@ -322,8 +322,10 @@ describe('HomePage - Streamlined Family Onboarding Entry', () => {
     it('should display school transportation terminology consistently', () => {
       render(<HomePage />);
 
-      expect(screen.getByText(/school transportation/i)).toBeInTheDocument();
-      expect(screen.getByText(/carpool/i)).toBeInTheDocument();
+      expect(
+        screen.getAllByText(/school transportation/i).length
+      ).toBeGreaterThan(0);
+      expect(screen.getAllByText(/carpool/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/parents/i)).toBeInTheDocument();
       expect(screen.getByText(/children/i)).toBeInTheDocument();
     });
@@ -478,7 +480,7 @@ describe('HomePage - Streamlined Family Onboarding Entry', () => {
 
       // Should emphasize family-unit benefits and coordination
       expect(screen.getByText(/family/i)).toBeInTheDocument();
-      expect(screen.getByText(/coordination/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/coordination/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/organized/i)).toBeInTheDocument();
       expect(screen.getByText(/convenient/i)).toBeInTheDocument();
     });

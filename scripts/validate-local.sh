@@ -98,9 +98,15 @@ print_status "Frontend TypeScript"
 echo "🧪 Testing validation..."
 echo "--------------------"
 
-echo "  🏃‍♂️ Running realistic tests only (faster validation)..."
-cd frontend && npm test -- --testPathPattern="realistic.test" --passWithNoTests --bail
-print_status "Realistic tests"
+echo "  🏃‍♂️ Running backend tests with coverage..."
+cd backend && npm run test:ci
+print_status "Backend tests with coverage"
+
+cd ..
+
+echo "  🏃‍♂️ Running frontend tests (CI mode)..."
+cd frontend && npm run test:ci
+print_status "Frontend tests (CI mode)"
 
 cd ..
 

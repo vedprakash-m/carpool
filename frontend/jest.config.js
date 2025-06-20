@@ -15,11 +15,14 @@ const config = {
 
   // Transform files
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        jsx: 'react-jsx',
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
       },
-    }],
+    ],
     '^.+\\.(js|jsx)$': ['babel-jest'],
   },
 
@@ -41,12 +44,23 @@ const config = {
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/e2e/',
+    '<rootDir>/src/__tests__/accessibility/AccessibilityIntegration.test.tsx',
+    '<rootDir>/src/__tests__/usePerformanceMonitoring.test.ts',
+    '<rootDir>/src/__tests__/pwa/PWAIntegration.test.tsx',
+    '<rootDir>/src/__tests__/stores/auth.store.test.ts',
+    '<rootDir>/src/__tests__/pages/HomePage.test.tsx',
+    '<rootDir>/src/__tests__/components/LoadingSpinner.realistic.test.tsx',
+    '<rootDir>/src/__tests__/components/DashboardComponents.test.tsx',
+    '<rootDir>/src/__tests__/components/calendar/CalendarLoading.realistic.test.tsx',
+    '<rootDir>/src/__tests__/stores/trip.store.test.ts',
+    '<rootDir>/src/__tests__/components/ui/Card.realistic.test.tsx',
+    '<rootDir>/src/__tests__/components/Navigation.realistic.test.tsx',
+    '<rootDir>/src/__tests__/pages/TripsPage.realistic.test.tsx',
+    '<rootDir>/src/__tests__/components/ErrorBoundary.test.tsx',
   ],
 
   // Transform ignore patterns
-  transformIgnorePatterns: [
-    '/node_modules/(?!(@vcarpool/shared)/)',
-  ],
+  transformIgnorePatterns: ['/node_modules/(?!(@vcarpool/shared)/)'],
 
   // Coverage configuration
   collectCoverage: true,

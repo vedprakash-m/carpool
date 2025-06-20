@@ -72,6 +72,39 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Mock performance API for performance monitoring tests with sequential timing
+let mockTime = 1000;
+Object.defineProperty(global, 'performance', {
+  writable: true,
+  value: {
+    now: jest.fn(() => {
+      const current = mockTime;
+      mockTime += 25; // Always increment to ensure positive timing
+      return current;
+    }),
+    mark: jest.fn(),
+    measure: jest.fn(),
+    getEntriesByName: jest.fn(() => []),
+    getEntriesByType: jest.fn(() => []),
+    navigation: {
+      type: 0,
+      redirectCount: 0,
+    },
+    memory: {
+      usedJSHeapSize: 1000000,
+      totalJSHeapSize: 2000000,
+      jsHeapSizeLimit: 4000000,
+    },
+  },
+});
+
+// Mock PerformanceObserver for performance monitoring
+global.PerformanceObserver = jest.fn().mockImplementation(callback => ({
+  observe: jest.fn(),
+  disconnect: jest.fn(),
+  takeRecords: jest.fn(() => []),
+}));
+
 // Mock scrollIntoView for accessibility tests
 Element.prototype.scrollIntoView = jest.fn();
 
