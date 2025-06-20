@@ -45,20 +45,25 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
+    '!src/**/*.test.ts',
     '!src/types/**',
     '!src/index.ts',
+    // Focus on implementation files that should have coverage
+    '!src/**/mock*/**',
+    '!src/**/fixtures/**',
+    '!src/**/test-*/**',
   ],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html', 'json'],
-  // Temporarily remove coverage thresholds
-  // coverageThreshold: {
-  //   global: {
-  //     branches: 80,
-  //     functions: 80,
-  //     lines: 80,
-  //     statements: 80
-  //   }
-  // },
+  coverageReporters: ['text', 'lcov', 'html', 'json', 'json-summary'],
+  // Add coverage thresholds to encourage better testing
+  coverageThreshold: {
+    global: {
+      branches: 15,
+      functions: 15,
+      lines: 15,
+      statements: 15,
+    },
+  },
 
   // Test environment variables
   globalSetup: '<rootDir>/tests/global-setup.ts',
