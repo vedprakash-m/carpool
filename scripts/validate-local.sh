@@ -29,23 +29,39 @@ print_warning() {
 echo "🔬 CI Dependency Simulation..."
 echo "--------------------"
 
-echo "  📝 Testing type-check:frontend without shared build (simulates CI bug)..."
+echo "  📝 Testing backend type-check without shared build (simulates CI bug)..."
+# Temporarily backup shared dist
+if [ -d "shared/dist" ]; then
+    mv shared/dist shared/dist.backup
+fi
+
+# Test backend type checking without shared (should fail like CI)
+cd backend
+if npx tsc --noEmit 2>/dev/null; then
+    echo "⚠️  Backend type check unexpectedly passed without shared"
+    cd ..
+    mv shared/dist.backup shared/dist
+else
+    echo "⚠️  Backend type check failed without shared build (expected - CI dependency issue)"
+    cd ..
+    mv shared/dist.backup shared/dist
+fi
+
+echo "  📝 Testing frontend type-check without shared build (simulates CI bug)..."
 # Clean shared build temporarily to simulate CI issue
 if [ -d "shared/dist" ]; then
     mv shared/dist shared/dist.backup
 fi
 
-# Test if type-check would fail without shared package
+# Test frontend type checking without shared (should fail like CI)
 cd frontend
-if npx tsc --noEmit; then
-    print_warning "Type check passed without shared build - check if this is expected"
+if npx tsc --noEmit 2>/dev/null; then
+    echo "⚠️  Frontend type check unexpectedly passed without shared"
+    cd ..
+    mv shared/dist.backup shared/dist
 else
-    echo -e "${YELLOW}⚠️  Type check failed without shared build (expected - CI dependency issue)${NC}"
-fi
-cd ..
-
-# Restore shared build
-if [ -d "shared/dist.backup" ]; then
+    echo "⚠️  Frontend type check failed without shared build (expected - CI dependency issue)"
+    cd ..
     mv shared/dist.backup shared/dist
 fi
 
@@ -93,6 +109,16 @@ echo "--------------------"
 
 echo "  🛡️  Checking for security vulnerabilities..."
 npm audit --audit-level moderate || print_warning "Security audit found issues (not blocking)"
+
+echo "🏗️ Build validation..."
+echo "--------------------"
+
+echo "  🔧 Testing frontend production build (catches Jest leaks, import issues)..."
+echo "  Building frontend to catch production issues..."
+cd frontend
+npm run build >/dev/null 2>&1
+cd ..
+print_status "Frontend production build"
 
 echo ""
 echo "🎉 Local validation completed successfully!"

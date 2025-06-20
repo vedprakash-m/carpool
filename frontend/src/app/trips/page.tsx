@@ -398,13 +398,13 @@ function TripsPage() {
 
   // Store method fallbacks for testing
   const submitJoinRequest =
-    (useTripStore as any).submitJoinRequest || jest.fn();
+    (useTripStore as any).submitJoinRequest || (() => Promise.resolve());
   const manageJoinRequest =
-    (useTripStore as any).manageJoinRequest || jest.fn();
+    (useTripStore as any).manageJoinRequest || (() => Promise.resolve());
   const updateWeeklyPreferences =
-    (useTripStore as any).updateWeeklyPreferences || jest.fn();
+    (useTripStore as any).updateWeeklyPreferences || (() => Promise.resolve());
   const fetchGroupMemberships =
-    (useTripStore as any).fetchGroupMemberships || jest.fn();
+    (useTripStore as any).fetchGroupMemberships || (() => Promise.resolve());
 
   // Get data from store with proper fallbacks - avoid duplicates by prioritizing specific arrays
   const myTrips =
