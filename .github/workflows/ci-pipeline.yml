@@ -227,13 +227,16 @@ jobs:
           npm ci --ignore-scripts --prefer-offline
           npm run install:frontend
 
+      - name: Build shared package (required for type checking)
+        run: npm run build:shared
+
       - name: Lint frontend code
         run: npm run lint:frontend
 
       - name: Type check frontend
         run: npm run type-check:frontend
 
-      - name: Build shared package
+      - name: Ensure shared package is up-to-date for deployment
         if: needs.quick-validation.outputs.has-shared-changes == 'true' || github.event.inputs.force_full_pipeline == 'true'
         run: npm run build:shared
 

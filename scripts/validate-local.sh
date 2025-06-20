@@ -26,6 +26,29 @@ print_warning() {
     echo -e "${YELLOW}⚠️  $1${NC}"
 }
 
+echo "🔬 CI Dependency Simulation..."
+echo "--------------------"
+
+echo "  📝 Testing type-check:frontend without shared build (simulates CI bug)..."
+# Clean shared build temporarily to simulate CI issue
+if [ -d "shared/dist" ]; then
+    mv shared/dist shared/dist.backup
+fi
+
+# Test if type-check would fail without shared package
+cd frontend
+if npx tsc --noEmit; then
+    print_warning "Type check passed without shared build - check if this is expected"
+else
+    echo -e "${YELLOW}⚠️  Type check failed without shared build (expected - CI dependency issue)${NC}"
+fi
+cd ..
+
+# Restore shared build
+if [ -d "shared/dist.backup" ]; then
+    mv shared/dist.backup shared/dist
+fi
+
 echo "📦 Building shared package..."
 cd shared && npm run build
 print_status "Shared package build"
