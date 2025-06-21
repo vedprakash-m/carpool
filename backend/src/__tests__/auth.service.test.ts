@@ -161,7 +161,7 @@ const mockGroupAdminUser: TestFamilyUser = {
   email: 'sarah.wilson@lincoln.edu',
   firstName: 'Sarah',
   lastName: 'Wilson',
-  role: 'parent',
+  role: 'group_admin',
   phoneNumber: '555-0456',
   homeAddress: '789 Maple Street',
   isActiveDriver: true,
@@ -272,7 +272,7 @@ describe('AuthService', () => {
 
       const decoded = authService.verifyAccessToken(token);
       expect(decoded.userId).toBe(mockGroupAdminUser.id);
-      expect(decoded.role).toBe('parent');
+      expect(decoded.role).toBe('group_admin');
       expect(decoded.permissions).toContain('submit_preferences');
       expect(decoded.permissions).toContain('manage_family');
       expect(decoded.permissions).toContain('manage_group');

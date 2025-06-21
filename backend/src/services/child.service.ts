@@ -9,6 +9,7 @@ export class ChildService {
   private static children: Child[] = [
     // Mock data
   ];
+  private static idCounter = 0;
 
   public static async createChild(
     childData: Omit<Child, 'id' | 'familyId' | 'parentId' | 'createdAt' | 'updatedAt'>,
@@ -16,7 +17,7 @@ export class ChildService {
     parentId: string,
   ): Promise<Child> {
     const newChild: Child = {
-      id: `child-${Date.now()}`,
+      id: `child-${Date.now()}-${++this.idCounter}`,
       familyId,
       parentId,
       createdAt: new Date(),

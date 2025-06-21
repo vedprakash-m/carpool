@@ -9,13 +9,13 @@ describe('ChildService', () => {
     id: 'school-123',
     name: 'Elementary School',
     address: '123 Main St',
-    location: { 
+    location: {
       address: '123 Main St',
-      latitude: 0, 
+      latitude: 0,
       longitude: 0,
       city: 'Test City',
       state: 'Test State',
-      zipCode: '12345'
+      zipCode: '12345',
     },
     type: 'elementary',
     grades: ['K', '1st', '2nd', '3rd', '4th', '5th'],
@@ -57,7 +57,7 @@ describe('ChildService', () => {
         familyId: 'family-123',
         parentId: 'parent-456',
       });
-      expect(child.id).toMatch(/^child-\d+$/);
+      expect(child.id).toMatch(/^child-\d+-\d+$/);
       expect(child.createdAt).toBeInstanceOf(Date);
       expect(child.updatedAt).toBeInstanceOf(Date);
     });
@@ -98,12 +98,12 @@ describe('ChildService', () => {
 
       const child1 = await ChildService.createChild(childData1, 'family-1', 'parent-1');
       // Add small delay to ensure different timestamps
-      await new Promise(resolve => setTimeout(resolve, 1));
+      await new Promise((resolve) => setTimeout(resolve, 1));
       const child2 = await ChildService.createChild(childData2, 'family-2', 'parent-2');
 
       expect(child1.id).not.toBe(child2.id);
-      expect(child1.id).toMatch(/^child-\d+$/);
-      expect(child2.id).toMatch(/^child-\d+$/);
+      expect(child1.id).toMatch(/^child-\d+-\d+$/);
+      expect(child2.id).toMatch(/^child-\d+-\d+$/);
     });
   });
 
@@ -175,15 +175,27 @@ describe('ChildService', () => {
   describe('both methods working together', () => {
     it('should maintain the same children array for both static and instance methods', async () => {
       const staticChild = await ChildService.createChild(
-        { firstName: 'Static', lastName: 'Child', fullName: 'Static Child', grade: '2nd', school: mockSchool },
+        {
+          firstName: 'Static',
+          lastName: 'Child',
+          fullName: 'Static Child',
+          grade: '2nd',
+          school: mockSchool,
+        },
         'family-1',
-        'parent-1'
+        'parent-1',
       );
 
       const instanceChild = await childService.createChild(
-        { firstName: 'Instance', lastName: 'Child', fullName: 'Instance Child', grade: '3rd', school: mockSchool },
+        {
+          firstName: 'Instance',
+          lastName: 'Child',
+          fullName: 'Instance Child',
+          grade: '3rd',
+          school: mockSchool,
+        },
         'family-2',
-        'parent-2'
+        'parent-2',
       );
 
       const children = (ChildService as any).children;

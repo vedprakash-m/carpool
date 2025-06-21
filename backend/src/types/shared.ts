@@ -4,6 +4,8 @@ export enum UserRole {
   GROUP_ADMIN = 'group_admin',
   PARENT = 'parent',
   CHILD = 'child',
+  STUDENT = 'student',
+  TRIP_ADMIN = 'trip_admin',
 }
 
 export interface RolePermissions {
@@ -27,6 +29,17 @@ export interface RolePermissions {
     schedule_viewing: boolean;
     safety_reporting: boolean;
     profile_management: boolean;
+  };
+  student: {
+    schedule_viewing: boolean;
+    safety_reporting: boolean;
+    profile_management: boolean;
+  };
+  trip_admin: {
+    group_management: boolean;
+    member_management: boolean;
+    trip_scheduling: boolean;
+    emergency_coordination: boolean;
   };
 }
 

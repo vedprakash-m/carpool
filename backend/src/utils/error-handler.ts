@@ -122,6 +122,17 @@ export function handleError(
       code: 'INTERNAL_SERVER_ERROR',
       message: 'An unexpected internal error occurred.',
     } as any;
+  } else if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof (error as any).message === 'string'
+  ) {
+    // Handle plain error objects with message property
+    (response.jsonBody as ApiResponse<any>).error = {
+      code: 'INTERNAL_SERVER_ERROR',
+      message: (error as any).message,
+    } as any;
   }
 
   // Add stack in development
@@ -129,16 +140,26 @@ export function handleError(
     response.jsonBody.stack = error.stack;
   }
 
-  // Log the error
-  const errorObj = (response.jsonBody as ApiResponse<unknown>).error;
+  // Log the error - extract message directly from original error if possible
   let logMsg = 'Unknown error';
 
-  if (errorObj !== null && errorObj !== undefined && typeof errorObj === 'object') {
-    const typedErrorObj = errorObj as Record<string, unknown>;
-    if ('message' in typedErrorObj && typeof typedErrorObj.message === 'string') {
-      logMsg = typedErrorObj.message;
-    }
+  // First try to extract from the original error object
+  if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof (error as any).message === 'string'
+  ) {
+    logMsg = (error as any).message;
+  } else if (error instanceof Error) {
+    logMsg = error.message;
+  } else if (error instanceof AppError) {
+    logMsg = error.message;
+  } else {
+    // For null, undefined, or objects without messages, use "Unknown error"
+    logMsg = 'Unknown error';
   }
+
   logger.error(logMsg, {
     error,
     requestId: request?.requestId,
