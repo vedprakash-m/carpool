@@ -155,7 +155,7 @@ jobs:
 
           if [ -f "scripts/check-secrets.sh" ]; then
             chmod +x scripts/check-secrets.sh
-            ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.yml" | head -50)
+            ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.yml" | grep -v node_modules | grep -v ".next" | grep -v "dist" | head -50)
           else
             echo "⚠️ Secret detection script not found"
             

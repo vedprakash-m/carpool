@@ -323,7 +323,7 @@ jobs:
           echo "🔍 Running secret detection..."
           if [ -f "scripts/check-secrets.sh" ]; then
             chmod +x scripts/check-secrets.sh
-            ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" | head -20)
+            ./scripts/check-secrets.sh $(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" | grep -v node_modules | grep -v ".next" | grep -v "dist" | head -20)
           else
             echo "⚠️ Secret detection script not found"
           fi

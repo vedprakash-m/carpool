@@ -1,4 +1,10 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosError,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import { ApiResponse, PaginatedResponse, AuthResponse } from '@vcarpool/shared';
 import {
   ApiErrorHandler,
@@ -80,21 +86,24 @@ export class ApiClient {
 
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
-      config => {
+      (config: InternalAxiosRequestConfig) => {
         if (this.token) {
+          if (!config.headers) {
+            config.headers = {} as any;
+          }
           config.headers.Authorization = `Bearer ${this.token}`;
         }
         return config;
       },
-      error => {
+      (error: any) => {
         return Promise.reject(error);
       }
     );
 
     // Response interceptor to handle token refresh and errors
     this.client.interceptors.response.use(
-      response => response,
-      async error => {
+      (response: AxiosResponse) => response,
+      async (error: any) => {
         const originalRequest = error.config;
 
         // Handle 401 errors with token refresh
@@ -103,6 +112,7 @@ export class ApiClient {
 
           try {
             const newToken = await this.refreshAccessToken();
+            originalRequest.headers = originalRequest.headers || {};
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return this.client(originalRequest);
           } catch (refreshError) {

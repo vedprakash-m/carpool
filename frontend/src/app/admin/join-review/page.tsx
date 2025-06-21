@@ -18,6 +18,11 @@ interface JoinRequest {
   matchScore?: number;
 }
 
+interface JoinRequestsResponse {
+  data: JoinRequest[];
+  success: boolean;
+}
+
 const JoinReviewPage: React.FC = () => {
   const [requests, setRequests] = useState<JoinRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,8 +31,10 @@ const JoinReviewPage: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const { data } = await axios.get('/api/admin/join-requests');
-        setRequests(data?.data ?? []);
+        const response = await axios.get<JoinRequestsResponse>(
+          '/api/admin/join-requests'
+        );
+        setRequests(response.data?.data ?? []);
       } catch (err) {
         console.error(err);
       } finally {

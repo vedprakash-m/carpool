@@ -23,6 +23,32 @@ export interface ValidationConfig {
   enableAzureMaps: boolean;
 }
 
+// Add interfaces for API responses
+interface GoogleMapsResponse {
+  status: string;
+  results: Array<{
+    formatted_address: string;
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      };
+    };
+  }>;
+}
+
+interface AzureMapsResponse {
+  results?: Array<{
+    address: {
+      freeformAddress: string;
+    };
+    position: {
+      lat: number;
+      lon: number;
+    };
+  }>;
+}
+
 /**
  * Address Validation Service
  * Integrates with multiple geocoding providers for production-ready address validation
@@ -95,7 +121,7 @@ export class AddressValidationService {
         return { isValid: false, errorMessage: 'Google Maps API request failed' };
       }
 
-      const data = await response.json();
+      const data: GoogleMapsResponse = await response.json();
 
       if (data.status === 'OK' && data.results.length > 0) {
         const result = data.results[0];
@@ -112,7 +138,7 @@ export class AddressValidationService {
       return {
         isValid: false,
         errorMessage: 'Unable to validate address with Google Maps',
-        suggestions: data.results.slice(0, 3).map((r: any) => r.formatted_address),
+        suggestions: data.results.slice(0, 3).map((r) => r.formatted_address),
       };
     } catch (error) {
       return {
@@ -141,7 +167,7 @@ export class AddressValidationService {
         return { isValid: false, errorMessage: 'Azure Maps API request failed' };
       }
 
-      const data = await response.json();
+      const data: AzureMapsResponse = await response.json();
 
       if (data.results && data.results.length > 0) {
         const result = data.results[0];

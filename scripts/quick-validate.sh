@@ -31,12 +31,24 @@ npm ci --ignore-scripts --prefer-offline >/dev/null 2>&1
 print_status "INFO" "Building shared package..."
 npm run build:shared >/dev/null 2>&1
 
-# 3. Type checking (most common CI failure)
+# 3. Type checking (most common CI failure) - ENHANCED FOR CI PARITY
 print_status "INFO" "Type checking backend..."
-npm run type-check:backend
+cd backend
+if ! npx tsc --noEmit --strict; then
+    print_status "ERROR" "Backend TypeScript compilation failed"
+    cd ..
+    exit 1
+fi
+cd ..
 
 print_status "INFO" "Type checking frontend..."
-npm run type-check:frontend
+cd frontend
+if ! npx tsc --noEmit --strict; then
+    print_status "ERROR" "Frontend TypeScript compilation failed"
+    cd ..
+    exit 1
+fi
+cd ..
 
 # 4. Linting (catches many issues)
 print_status "INFO" "Linting backend..."
@@ -45,7 +57,19 @@ npm run lint:backend
 print_status "INFO" "Linting frontend..."
 npm run lint:frontend
 
-# 5. Backend coverage test (CI blocker)
+# 5. Security scan (CI failure point)
+print_status "INFO" "Running security checks..."
+if [ -f "scripts/check-secrets.sh" ]; then
+    chmod +x scripts/check-secrets.sh
+    FILES=$(find . -type f -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" | grep -v node_modules | grep -v ".next" | grep -v "dist" | head -20)
+    if [ ! -z "$FILES" ]; then
+        ./scripts/check-secrets.sh $FILES
+    fi
+else
+    print_status "WARNING" "Security scan script not found"
+fi
+
+# 6. Backend coverage test (CI blocker)
 print_status "INFO" "Running backend tests with coverage..."
 cd backend
 if npm run test:ci >/dev/null 2>&1; then
@@ -72,7 +96,7 @@ else
     print_status "SUCCESS" "Backend coverage: $COVERAGE%"
 fi
 
-# 6. Build validation
+# 7. Build validation
 print_status "INFO" "Testing builds..."
 npm run build:backend >/dev/null 2>&1
 npm run build:frontend >/dev/null 2>&1
