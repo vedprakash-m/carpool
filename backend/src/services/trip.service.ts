@@ -492,4 +492,47 @@ export class TripService {
   async deleteTrip(tripId: string): Promise<Trip | null> {
     return this.cancelTrip(tripId);
   }
+
+  /**
+   * Update trip status
+   */
+  async updateTripStatus(tripId: string, status: TripStatus): Promise<Trip | null> {
+    try {
+      const trip = await this.getTripById(tripId);
+      if (!trip) {
+        throw new Error('Trip not found');
+      }
+
+      const updates = {
+        status,
+        updatedAt: new Date(),
+      };
+
+      return await this.updateTrip(tripId, updates);
+    } catch (error: any) {
+      console.error(`Error updating trip status for ${tripId}:`, error);
+      throw Errors.InternalServerError(`Error updating trip status: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get trips by group ID
+   */
+  async getTripsByGroup(groupId: string): Promise<Trip[]> {
+    try {
+      const query =
+        'SELECT * FROM c WHERE c.groupId = @groupId ORDER BY c.date ASC, c.departureTime ASC';
+      const parameters = [{ name: '@groupId', value: groupId }];
+
+      const trips = await this.tripRepository.query({
+        query,
+        parameters,
+      });
+
+      return trips;
+    } catch (error: any) {
+      console.error(`Error fetching trips for group ${groupId}:`, error);
+      throw Errors.InternalServerError(`Error fetching group trips: ${error.message}`);
+    }
+  }
 }

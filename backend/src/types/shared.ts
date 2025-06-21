@@ -1,5 +1,10 @@
 // Shared types for backend
-export type UserRole = 'admin' | 'group_admin' | 'parent' | 'child';
+export enum UserRole {
+  ADMIN = 'admin',
+  GROUP_ADMIN = 'group_admin',
+  PARENT = 'parent',
+  CHILD = 'child',
+}
 
 export interface RolePermissions {
   admin: {
@@ -47,6 +52,7 @@ export interface UserPreferences {
 export interface User {
   id: string;
   email: string;
+  passwordHash: string;
   firstName: string;
   lastName: string;
   phoneNumber?: string;
@@ -59,6 +65,16 @@ export interface User {
   preferences: UserPreferences;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface CreateUserRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  department?: string;
+  role?: UserRole;
 }
 
 export interface ApiResponse<T = any> {
@@ -105,4 +121,83 @@ export interface AuthResponse {
   user: User;
   token: string;
   refreshToken: string;
+}
+
+// Trip and transportation related types
+export enum TripStatus {
+  SCHEDULED = 'scheduled',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  DELAYED = 'delayed',
+}
+
+export interface Trip {
+  id: string;
+  driverId: string;
+  groupId: string;
+  status: TripStatus;
+  scheduledStartTime: Date;
+  scheduledEndTime: Date;
+  actualStartTime?: Date;
+  actualEndTime?: Date;
+  pickupLocation: string;
+  destination: string;
+  maxPassengers: number;
+  currentPassengers: string[]; // Array of user IDs
+  route?: string;
+  estimatedDuration?: number; // in minutes
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateTripRequest {
+  groupId: string;
+  scheduledStartTime: Date;
+  scheduledEndTime: Date;
+  pickupLocation: string;
+  destination: string;
+  maxPassengers: number;
+  notes?: string;
+}
+
+// Group and carpool related types
+export interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  adminId: string;
+  school: string;
+  maxMembers: number;
+  currentMembers: string[]; // Array of user IDs
+  serviceAreaMiles: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Schedule and preference types
+export interface WeeklyPreference {
+  userId: string;
+  groupId: string;
+  weekStartDate: Date;
+  dailyPreferences: {
+    [day: string]: {
+      available: boolean;
+      canDrive: boolean;
+      maxPassengers?: number;
+      preferredRole: 'driver' | 'passenger' | 'either';
+      timeConstraints?: string;
+    };
+  };
+  submittedAt: Date;
+}
+
+// Emergency and safety types
+export interface EmergencyContact {
+  name: string;
+  relationship: string;
+  phoneNumber: string;
+  email?: string;
+  isPrimary: boolean;
 }
