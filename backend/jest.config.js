@@ -15,7 +15,8 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'json-summary'],
   coveragePathIgnorePatterns: ['/node_modules/', '/dist/', '/__tests__/', '/coverage/'],
-  setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
+  setupFiles: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
   // Set coverage thresholds to current baseline while we improve
   coverageThreshold: {
     global: {
@@ -28,8 +29,8 @@ module.exports = {
   // Timeout for async tests
   testTimeout: 30000,
   // Mock configuration
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@shared/(.*)$': '<rootDir>/src/types/$1',
+    '^@shared/(.*)$': '<rootDir>/../shared/$1',
   },
 };

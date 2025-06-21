@@ -18,6 +18,8 @@
     "test:integration": "jest --config jest.integration.config.js",
     "test:ci": "jest --ci --coverage --watchAll=false",
     "test:health-check": "node -e \"console.log('Health check passed')\"",
+    "validate:local": "../scripts/local-ci-validation.sh",
+    "validate:backend": "npm run type-check && npm run lint && npm run test:ci",
     "perf:phase2": "node perf/phase2-perf.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
