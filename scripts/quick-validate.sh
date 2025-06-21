@@ -31,24 +31,22 @@ npm ci --ignore-scripts --prefer-offline >/dev/null 2>&1
 print_status "INFO" "Building shared package..."
 npm run build:shared >/dev/null 2>&1
 
-# 3. Type checking (most common CI failure) - ENHANCED FOR CI PARITY
-print_status "INFO" "Type checking backend..."
-cd backend
-if ! npx tsc --noEmit --strict; then
+# 3. Type checking (most common CI failure) - EXACT CI COMMANDS
+print_status "INFO" "Type checking backend (CI-exact command)..."
+if ! npm run type-check:backend >/dev/null 2>&1; then
     print_status "ERROR" "Backend TypeScript compilation failed"
-    cd ..
+    echo "Running backend type check for details:"
+    npm run type-check:backend
     exit 1
 fi
-cd ..
 
-print_status "INFO" "Type checking frontend..."
-cd frontend
-if ! npx tsc --noEmit --strict; then
+print_status "INFO" "Type checking frontend (CI-exact command)..."
+if ! npm run type-check:frontend >/dev/null 2>&1; then
     print_status "ERROR" "Frontend TypeScript compilation failed"
-    cd ..
+    echo "Running frontend type check for details:"
+    npm run type-check:frontend
     exit 1
 fi
-cd ..
 
 # 4. Linting (catches many issues)
 print_status "INFO" "Linting backend..."

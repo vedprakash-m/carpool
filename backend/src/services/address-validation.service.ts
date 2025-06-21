@@ -121,7 +121,7 @@ export class AddressValidationService {
         return { isValid: false, errorMessage: 'Google Maps API request failed' };
       }
 
-      const data: GoogleMapsResponse = await response.json();
+      const data = (await response.json()) as GoogleMapsResponse;
 
       if (data.status === 'OK' && data.results.length > 0) {
         const result = data.results[0];
@@ -167,7 +167,7 @@ export class AddressValidationService {
         return { isValid: false, errorMessage: 'Azure Maps API request failed' };
       }
 
-      const data: AzureMapsResponse = await response.json();
+      const data = (await response.json()) as AzureMapsResponse;
 
       if (data.results && data.results.length > 0) {
         const result = data.results[0];
