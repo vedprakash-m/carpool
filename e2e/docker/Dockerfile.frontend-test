@@ -8,7 +8,7 @@ RUN apk add --no-cache curl
 
 # Copy package files
 COPY package*.json ./
-COPY next.config.mjs ./
+COPY next.config.js ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY tsconfig.json ./
