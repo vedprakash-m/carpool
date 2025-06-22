@@ -11,9 +11,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
-import LoginPage from '../../app/login/page';
 
-// Mock toast as a function with success and error methods - declare early for hoisting
+// Mock toast as a function with success and error methods - declare FIRST for hoisting
 const mockToast = Object.assign(jest.fn(), {
   success: jest.fn(),
   error: jest.fn(),
@@ -62,6 +61,8 @@ jest.mock('react-hot-toast', () => ({
   __esModule: true,
   default: mockToast,
 }));
+
+import LoginPage from '../../app/login/page';
 
 // Mock react-hook-form since the actual component uses it
 jest.mock('react-hook-form', () => ({

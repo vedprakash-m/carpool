@@ -315,30 +315,43 @@ export function useAccessibility() {
   });
 
   const serviceRef = useRef<AccessibilityService | null>(null);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    serviceRef.current = new AccessibilityService();
-    setConfig(serviceRef.current.getAccessibilityConfig());
+    try {
+      serviceRef.current = new AccessibilityService();
+      setConfig(serviceRef.current.getAccessibilityConfig());
+      setHasError(false);
 
-    // Listen for preference changes
-    const handlePrefChange = () => {
-      if (serviceRef.current) {
-        setConfig(serviceRef.current.getAccessibilityConfig());
-      }
-    };
+      // Listen for preference changes
+      const handlePrefChange = () => {
+        if (serviceRef.current) {
+          try {
+            setConfig(serviceRef.current.getAccessibilityConfig());
+          } catch (error) {
+            console.warn('Accessibility service configuration error:', error);
+          }
+        }
+      };
 
-    const mediaQueries = [
-      window.matchMedia('(prefers-reduced-motion: reduce)'),
-      window.matchMedia('(prefers-contrast: high)'),
-    ];
+      const mediaQueries = [
+        window.matchMedia('(prefers-reduced-motion: reduce)'),
+        window.matchMedia('(prefers-contrast: high)'),
+      ];
 
-    mediaQueries.forEach(mq => mq.addEventListener('change', handlePrefChange));
+      mediaQueries.forEach(mq => mq.addEventListener('change', handlePrefChange));
 
-    return () => {
-      mediaQueries.forEach(mq =>
-        mq.removeEventListener('change', handlePrefChange)
-      );
-    };
+      return () => {
+        mediaQueries.forEach(mq =>
+          mq.removeEventListener('change', handlePrefChange)
+        );
+      };
+    } catch (error) {
+      console.warn('Accessibility service initialization error:', error);
+      setHasError(true);
+      // Return cleanup function even on error
+      return () => {};
+    }
   }, []);
 
   const announceLive = (message: string, priority?: 'polite' | 'assertive') => {
