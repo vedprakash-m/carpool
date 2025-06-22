@@ -1,6 +1,6 @@
 /**
  * Config Service Tests
- * 
+ *
  * Comprehensive test suite for ConfigService to improve backend test coverage.
  * Tests configuration loading, validation, environment handling, and service methods.
  */
@@ -19,7 +19,7 @@ describe('ConfigService', () => {
   beforeEach(() => {
     // Reset the singleton instance for each test
     (ConfigService as any).instance = undefined;
-    
+
     // Reset environment variables to defaults
     process.env = {
       ...originalEnv,
@@ -37,7 +37,7 @@ describe('ConfigService', () => {
       FALLBACK_TO_MOCK: 'true',
       CORS_ORIGINS: 'http://localhost:3000',
       MAX_DISTANCE_KM: '50',
-      DEFAULT_SERVICE_RADIUS: '25'
+      DEFAULT_SERVICE_RADIUS: '25',
     };
   });
 
@@ -50,18 +50,18 @@ describe('ConfigService', () => {
     it('should return the same instance on multiple calls', () => {
       const instance1 = ConfigService.getInstance();
       const instance2 = ConfigService.getInstance();
-      
+
       expect(instance1).toBe(instance2);
     });
 
     it('should create new instance after reset', () => {
       const instance1 = ConfigService.getInstance();
-      
+
       // Reset singleton
       (ConfigService as any).instance = undefined;
-      
+
       const instance2 = ConfigService.getInstance();
-      
+
       expect(instance1).not.toBe(instance2);
     });
   });
@@ -97,6 +97,7 @@ describe('ConfigService', () => {
       process.env.MAX_LOGIN_ATTEMPTS = '3';
       process.env.LOCKOUT_DURATION = '30';
       process.env.GOOGLE_MAPS_API_KEY = 'google-key';
+      process.env.AZURE_MAPS_KEY = 'azure-key';
       process.env.GEOCODING_PROVIDER = 'google';
       process.env.FALLBACK_TO_MOCK = 'false';
       process.env.NODE_ENV = 'production';
@@ -128,7 +129,7 @@ describe('ConfigService', () => {
 
     it('should handle missing CORS_ORIGINS environment variable', () => {
       delete process.env.CORS_ORIGINS;
-      
+
       configInstance = ConfigService.getInstance();
       const config = configInstance.getConfig();
 
@@ -156,7 +157,7 @@ describe('ConfigService', () => {
   describe('Configuration Validation', () => {
     it('should pass validation in development environment', () => {
       process.env.NODE_ENV = 'development';
-      
+
       expect(() => {
         configInstance = ConfigService.getInstance();
       }).not.toThrow();
@@ -182,7 +183,9 @@ describe('ConfigService', () => {
 
       expect(() => {
         configInstance = ConfigService.getInstance();
-      }).toThrow('Configuration validation failed: Cosmos DB configuration is required in production');
+      }).toThrow(
+        'Configuration validation failed: Cosmos DB configuration is required in production',
+      );
     });
 
     it('should fail validation in production with default JWT secret', () => {
@@ -204,12 +207,14 @@ describe('ConfigService', () => {
 
       expect(() => {
         configInstance = ConfigService.getInstance();
-      }).toThrow('Configuration validation failed: Cosmos DB configuration is required in production, Custom JWT secret is required in production');
+      }).toThrow(
+        'Configuration validation failed: Cosmos DB configuration is required in production, Custom JWT secret is required in production',
+      );
     });
 
     it('should warn about missing geocoding keys in production but not fail', () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-      
+
       process.env.NODE_ENV = 'production';
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
@@ -220,8 +225,10 @@ describe('ConfigService', () => {
         configInstance = ConfigService.getInstance();
       }).not.toThrow();
 
-      expect(consoleSpy).toHaveBeenCalledWith('Warning: No real geocoding API keys configured in production');
-      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Warning: No real geocoding API keys configured in production',
+      );
+
       consoleSpy.mockRestore();
     });
   });
@@ -241,7 +248,7 @@ describe('ConfigService', () => {
       // Mutating top-level properties should not affect service
       config1.cosmosDb = { ...config1.cosmosDb, databaseName: 'modified' };
       expect(configInstance.getConfig().cosmosDb.databaseName).toBe('vcarpooldb');
-      
+
       // Note: Nested objects are shallow copied, so mutations would affect the original
       // This is a limitation of the current implementation
     });
@@ -261,7 +268,7 @@ describe('ConfigService', () => {
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
       process.env.JWT_SECRET = 'custom-production-secret';
-      
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.isDevelopment()).toBe(false);
@@ -282,7 +289,7 @@ describe('ConfigService', () => {
       // Reset singleton and set env before creating instance
       (ConfigService as any).instance = undefined;
       process.env.GOOGLE_MAPS_API_KEY = 'google-key';
-      
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.hasRealGeocoding()).toBe(true);
@@ -292,7 +299,8 @@ describe('ConfigService', () => {
       // Reset singleton and set env before creating instance
       (ConfigService as any).instance = undefined;
       delete process.env.GOOGLE_MAPS_API_KEY;
-      
+      process.env.AZURE_MAPS_KEY = 'azure-key';
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.hasRealGeocoding()).toBe(true);
@@ -302,7 +310,7 @@ describe('ConfigService', () => {
       // Reset singleton and set env before creating instance
       (ConfigService as any).instance = undefined;
       process.env.GOOGLE_MAPS_API_KEY = 'google-key';
-      
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.hasRealGeocoding()).toBe(true);
@@ -310,7 +318,7 @@ describe('ConfigService', () => {
 
     it('should detect no real geocoding when no keys provided', () => {
       delete process.env.GOOGLE_MAPS_API_KEY;
-      
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.hasRealGeocoding()).toBe(false);
@@ -321,7 +329,7 @@ describe('ConfigService', () => {
       (ConfigService as any).instance = undefined;
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
-      
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.shouldUseRealDatabase()).toBe(true);
@@ -330,7 +338,7 @@ describe('ConfigService', () => {
     it('should detect no real database when endpoint missing', () => {
       process.env.COSMOS_DB_ENDPOINT = '';
       process.env.COSMOS_DB_KEY = 'test-key';
-      
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.shouldUseRealDatabase()).toBe(false);
@@ -339,7 +347,7 @@ describe('ConfigService', () => {
     it('should detect no real database when key missing', () => {
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = '';
-      
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.shouldUseRealDatabase()).toBe(false);
@@ -348,7 +356,7 @@ describe('ConfigService', () => {
     it('should detect no real database when both missing', () => {
       process.env.COSMOS_DB_ENDPOINT = '';
       process.env.COSMOS_DB_KEY = '';
-      
+
       configInstance = ConfigService.getInstance();
 
       expect(configInstance.shouldUseRealDatabase()).toBe(false);
@@ -358,7 +366,7 @@ describe('ConfigService', () => {
   describe('Edge Cases', () => {
     it('should handle empty CORS_ORIGINS string', () => {
       process.env.CORS_ORIGINS = '';
-      
+
       configInstance = ConfigService.getInstance();
       const config = configInstance.getConfig();
 
@@ -367,7 +375,7 @@ describe('ConfigService', () => {
 
     it('should handle single CORS origin', () => {
       process.env.CORS_ORIGINS = 'https://example.com';
-      
+
       configInstance = ConfigService.getInstance();
       const config = configInstance.getConfig();
 
@@ -376,11 +384,15 @@ describe('ConfigService', () => {
 
     it('should handle multiple CORS origins with spaces', () => {
       process.env.CORS_ORIGINS = 'http://localhost:3000, https://example.com ,https://test.com';
-      
+
       configInstance = ConfigService.getInstance();
       const config = configInstance.getConfig();
 
-      expect(config.app.corsOrigins).toEqual(['http://localhost:3000', ' https://example.com ', 'https://test.com']);
+      expect(config.app.corsOrigins).toEqual([
+        'http://localhost:3000',
+        ' https://example.com ',
+        'https://test.com',
+      ]);
     });
 
     it('should handle FALLBACK_TO_MOCK variations', () => {

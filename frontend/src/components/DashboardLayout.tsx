@@ -11,6 +11,10 @@ interface DashboardLayoutProps {
 
 const publicPaths = ['/', '/login', '/register'];
 
+function isPublicPath(path: string): boolean {
+  return path === '/' || path === '/login' || path === '/register';
+}
+
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -21,7 +25,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   useEffect(() => {
     // Don't redirect if we're still loading or on a public path
-    if (isAuthLoading || publicPaths.includes(pathname)) {
+    if (isAuthLoading || isPublicPath(pathname)) {
+      return;
+    }
+
+    // Don't redirect in development mode for trips page
+    if (!isAuthenticated && pathname === '/trips' && process.env.NODE_ENV === 'development') {
       return;
     }
 
@@ -35,30 +44,49 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"
+          role="status"
+          aria-label="Loading"
+        ></div>
       </div>
     );
   }
 
   // Don't show navigation on public pages
-  if (publicPaths.includes(pathname)) {
+  if (isPublicPath(pathname)) {
     return <>{children}</>;
   }
 
   // For development: Allow access to trips page even when not authenticated
   // This bypasses the authentication redirect for testing purposes
-  if (!isAuthenticated && pathname === '/trips') {
-    // Show the layout but mark user as not authenticated
+  if (
+    !isAuthenticated &&
+    pathname === '/trips' &&
+    process.env.NODE_ENV === 'development'
+  ) {
     console.log(
       'Development mode: Allowing access to trips page without authentication'
+    );
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          {children}
+        </main>
+      </div>
     );
   }
 
   // Redirect to login if not authenticated (after loading is complete)
-  else if (!isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"
+          role="status"
+          aria-label="Loading"
+        ></div>
       </div>
     );
   }

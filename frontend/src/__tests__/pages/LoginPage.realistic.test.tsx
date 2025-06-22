@@ -13,6 +13,12 @@ import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import LoginPage from '../../app/login/page';
 
+// Mock toast as a function with success and error methods - declare early for hoisting
+const mockToast = Object.assign(jest.fn(), {
+  success: jest.fn(),
+  error: jest.fn(),
+});
+
 // Mock the auth store
 const mockAuthStore = {
   login: jest.fn(),
@@ -50,12 +56,6 @@ jest.mock('next/link', () => {
       </a>
     );
   };
-});
-
-// Mock toast as a function with success and error methods
-const mockToast = Object.assign(jest.fn(), {
-  success: jest.fn(),
-  error: jest.fn(),
 });
 
 jest.mock('react-hot-toast', () => ({

@@ -180,7 +180,7 @@ describe('PWAInitializer', () => {
     expect(() => render(<PWAInitializer />)).not.toThrow();
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Accessibility initialization error:',
+      'Accessibility service initialization error:',
       expect.any(Error)
     );
   });

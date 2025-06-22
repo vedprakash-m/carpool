@@ -12,30 +12,44 @@ import { PWAInstallPrompt, PWAStatus } from '@/components/ui/PWAInstallPrompt';
 
 export function PWAInitializer() {
   const { capabilities, registration } = usePWA();
-  const { config } = useAccessibility();
+
+  // Safely get accessibility config with error handling
+  let accessibilityConfig;
+  try {
+    const { config } = useAccessibility();
+    accessibilityConfig = config;
+  } catch (error) {
+    console.warn('Accessibility service initialization error:', error);
+    accessibilityConfig = {
+      screenReader: false,
+      keyboardNavigation: false,
+      reducedMotion: false,
+      highContrast: false,
+    };
+  }
 
   useEffect(() => {
     // Initialize accessibility features on app load
     try {
-      if (config.screenReader) {
+      if (accessibilityConfig.screenReader) {
         console.log('Screen reader detected, accessibility features enabled');
       }
 
-      if (config.keyboardNavigation) {
+      if (accessibilityConfig.keyboardNavigation) {
         console.log('Keyboard navigation preference detected');
       }
 
-      if (config.reducedMotion) {
+      if (accessibilityConfig.reducedMotion) {
         console.log('Reduced motion preference detected');
       }
 
-      if (config.highContrast) {
+      if (accessibilityConfig.highContrast) {
         console.log('High contrast preference detected');
       }
     } catch (error) {
       console.warn('Accessibility initialization error:', error);
     }
-  }, [config]);
+  }, [accessibilityConfig]);
 
   useEffect(() => {
     // Log PWA capabilities for debugging

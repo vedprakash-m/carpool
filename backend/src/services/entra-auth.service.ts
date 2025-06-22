@@ -34,7 +34,7 @@ export class EntraAuthService {
         clientId: process.env.ENTRA_CLIENT_ID!,
         clientSecret: process.env.ENTRA_CLIENT_SECRET!,
         authority: process.env.ENTRA_AUTHORITY!,
-      }
+      },
     });
     this.databaseService = DatabaseService.getInstance();
   }
@@ -52,12 +52,12 @@ export class EntraAuthService {
       }
 
       const claims = decoded.payload as any;
-      
+
       // Check if this is an Entra token by looking for specific claims
       if (!claims.sub || !claims.email) {
         return null;
       }
-      
+
       return {
         objectId: claims.sub,
         email: claims.email,
@@ -67,7 +67,7 @@ export class EntraAuthService {
         schoolId: claims['extension_SchoolId'],
         phoneVerified: claims['extension_PhoneVerified'] === 'true',
         addressVerified: claims['extension_AddressVerified'] === 'true',
-        emergencyContact: claims['extension_EmergencyContact']
+        emergencyContact: claims['extension_EmergencyContact'],
       };
     } catch (error) {
       console.error('Entra token validation failed:', error);
@@ -96,8 +96,10 @@ export class EntraAuthService {
    */
   async syncUserWithDatabase(entraUser: EntraUserProfile): Promise<VCarpoolUser> {
     try {
-      const existingUser = await this.databaseService.getUserByEmail(entraUser.email) as VCarpoolUser;
-      
+      const existingUser = (await this.databaseService.getUserByEmail(
+        entraUser.email,
+      )) as VCarpoolUser;
+
       if (existingUser) {
         // Update existing user with Entra information
         const updatedUser: VCarpoolUser = {
@@ -112,7 +114,8 @@ export class EntraAuthService {
           schoolId: entraUser.schoolId,
           authProvider: 'entra',
           updatedAt: new Date().toISOString(),
-          migrationDate: existingUser.authProvider === 'legacy' ? new Date() : existingUser.migrationDate
+          migrationDate:
+            existingUser.authProvider === 'legacy' ? new Date() : existingUser.migrationDate,
         };
 
         await this.databaseService.updateUser(existingUser.id, updatedUser);
@@ -134,7 +137,7 @@ export class EntraAuthService {
           authProvider: 'entra',
           isActive: true,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
 
         const createdUser = await this.databaseService.createUser(newUser);
@@ -159,7 +162,7 @@ export class EntraAuthService {
       addressVerified: user.addressVerified,
       authProvider: user.authProvider,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+      exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours
     };
 
     return jwt.sign(payload, process.env.JWT_SECRET!, { algorithm: 'HS256' });
@@ -176,7 +179,7 @@ export class EntraAuthService {
     return {
       needsPhoneVerification: !user.phoneVerified,
       needsAddressVerification: !user.addressVerified,
-      needsEmergencyContact: !user.emergencyContact
+      needsEmergencyContact: !user.emergencyContact,
     };
   }
 }

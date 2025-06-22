@@ -4,17 +4,17 @@ import { AuthService } from '../src/services/auth.service';
 
 export async function authEntraUnified(
   request: HttpRequest,
-  context: InvocationContext
+  context: InvocationContext,
 ): Promise<HttpResponseInit> {
   const entraAuthService = new EntraAuthService();
 
   try {
     // Handle different authentication flows
     const method = request.method;
-    
+
     if (method === 'POST') {
-      const body = await request.json() as any;
-      
+      const body = (await request.json()) as any;
+
       // Entra External ID login
       if (body.authProvider === 'entra' && body.accessToken) {
         try {
@@ -22,12 +22,13 @@ export async function authEntraUnified(
           if (entraUser) {
             const user = await entraAuthService.syncUserWithDatabase(entraUser);
             const sessionToken = await entraAuthService.generateSessionToken(user);
-            const additionalVerification = await entraAuthService.requiresAdditionalVerification(user);
-            
+            const additionalVerification =
+              await entraAuthService.requiresAdditionalVerification(user);
+
             return {
               status: 200,
               headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
               },
               body: JSON.stringify({
                 success: true,
@@ -37,12 +38,12 @@ export async function authEntraUnified(
                   firstName: user.firstName,
                   lastName: user.lastName,
                   role: user.role,
-                  authProvider: 'entra'
+                  authProvider: 'entra',
                 },
                 sessionToken,
                 additionalVerification,
-                migrated: user.authProvider === 'entra' && user.migrationDate
-              })
+                migrated: user.authProvider === 'entra' && user.migrationDate,
+              }),
             };
           }
         } catch (error) {
@@ -51,30 +52,30 @@ export async function authEntraUnified(
           return {
             status: 401,
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               success: false,
               error: 'Entra authentication failed',
-              fallbackToLegacy: true
-            })
+              fallbackToLegacy: true,
+            }),
           };
         }
       }
-      
+
       // For legacy authentication, redirect to existing auth endpoints
       return {
         status: 400,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           success: false,
-          error: 'Use /api/auth-login-secure for email/password authentication'
-        })
+          error: 'Use /api/auth-login-secure for email/password authentication',
+        }),
       };
     }
-    
+
     // Token validation for protected routes
     if (method === 'GET') {
       const authHeader = request.headers.get('authorization');
@@ -82,27 +83,27 @@ export async function authEntraUnified(
         return {
           status: 401,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             success: false,
-            error: 'Missing or invalid authorization header'
-          })
+            error: 'Missing or invalid authorization header',
+          }),
         };
       }
 
       const token = authHeader.substring(7);
-      
+
       // Try Entra External ID validation first
       try {
         const entraUser = await entraAuthService.validateEntraToken(token);
         if (entraUser) {
           const user = await entraAuthService.syncUserWithDatabase(entraUser);
-          
+
           return {
             status: 200,
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               success: true,
@@ -112,9 +113,9 @@ export async function authEntraUnified(
                 firstName: user.firstName,
                 lastName: user.lastName,
                 role: user.role,
-                authProvider: 'entra'
-              }
-            })
+                authProvider: 'entra',
+              },
+            }),
           };
         }
       } catch (error) {
@@ -126,37 +127,36 @@ export async function authEntraUnified(
       return {
         status: 401,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           success: false,
-          error: 'Invalid token - use existing auth endpoints for legacy tokens'
-        })
+          error: 'Invalid token - use existing auth endpoints for legacy tokens',
+        }),
       };
     }
 
     return {
       status: 405,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         success: false,
-        error: 'Method not allowed'
-      })
+        error: 'Method not allowed',
+      }),
     };
-
   } catch (error) {
     context.error('Authentication service error:', error);
     return {
       status: 500,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         success: false,
-        error: 'Authentication service error'
-      })
+        error: 'Authentication service error',
+      }),
     };
   }
 }

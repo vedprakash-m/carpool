@@ -29,7 +29,8 @@ const config = {
   // Module name mapping
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@vcarpool/shared$': '<rootDir>/../shared/src',
+    '^@vcarpool/shared$': '<rootDir>/../shared/dist',
+    '^@vcarpool/shared/(.*)$': '<rootDir>/../shared/dist/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
 
