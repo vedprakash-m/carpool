@@ -16,6 +16,9 @@
     },
     "storageAccountName": {
       "value": "vcarpoolsaprod"
+    },
+    "keyVaultName": {
+      "value": "vcarpool-keyvault"
     }
   }
 }

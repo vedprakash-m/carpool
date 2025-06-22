@@ -7,9 +7,10 @@ set -e
 
 # Configuration
 RESOURCE_GROUP="vcarpool-rg"
+DB_RESOURCE_GROUP="vcarpool-db-rg"
 APP_NAME="vcarpool"
 ENVIRONMENT="prod"
-KEY_VAULT_NAME="${APP_NAME}-kv-${ENVIRONMENT}"
+KEY_VAULT_NAME="vcarpool-keyvault"
 FUNCTION_APP_NAME="${APP_NAME}-api-${ENVIRONMENT}"
 
 echo "🔐 Configuring Azure Key Vault for VCarpool Production..."
@@ -34,7 +35,7 @@ echo "✅ Function App Principal ID: $PRINCIPAL_ID"
 echo "🔑 Setting Key Vault access policy for Function App..."
 az keyvault set-policy \
   --name "$KEY_VAULT_NAME" \
-  --resource-group "$RESOURCE_GROUP" \
+  --resource-group "$DB_RESOURCE_GROUP" \
   --object-id "$PRINCIPAL_ID" \
   --secret-permissions get list
 
@@ -43,7 +44,7 @@ echo "🗄️  Getting Cosmos DB key..."
 COSMOS_DB_NAME="${APP_NAME}-cosmos-${ENVIRONMENT}"
 COSMOS_DB_KEY=$(az cosmosdb keys list \
   --name "$COSMOS_DB_NAME" \
-  --resource-group "$RESOURCE_GROUP" \
+  --resource-group "$DB_RESOURCE_GROUP" \
   --query primaryMasterKey \
   --output tsv)
 

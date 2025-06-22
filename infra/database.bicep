@@ -18,6 +18,9 @@ param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
 @description('Azure Storage Account name')
 param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
 
+@description('Azure Key Vault name (existing)')
+param keyVaultName string = 'vcarpool-keyvault'
+
 // Tags for all resources
 var tags = {
   application: appName
@@ -64,24 +67,9 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
   }
 }
 
-// Key Vault for secrets (persistent resource)
-resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
-  name: '${appName}-kv-${environmentName}'
-  location: location
-  tags: tags
-  properties: {
-    sku: {
-      family: 'A'
-      name: 'standard'
-    }
-    tenantId: subscription().tenantId
-    accessPolicies: [] // Access policies will be added by Function App
-    enabledForTemplateDeployment: true
-    enableRbacAuthorization: false
-    enableSoftDelete: true
-    softDeleteRetentionInDays: 7
-    enablePurgeProtection: false // Allow for easier development
-  }
+// Key Vault for secrets (reference existing resource)
+resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' existing = {
+  name: keyVaultName
 }
 
 // Cosmos DB Database

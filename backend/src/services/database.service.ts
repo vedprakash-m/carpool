@@ -30,7 +30,7 @@ export interface LoginAttempt {
   lastAttempt: Date;
 }
 
-class DatabaseService {
+export class DatabaseService {
   private static instance: DatabaseService;
   private cosmosClient?: CosmosClient;
   private database?: Database;

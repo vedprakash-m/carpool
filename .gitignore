@@ -1,3 +1,37 @@
+# ============================================================================
+# CONFIDENTIAL FOLDER - CRITICAL SECURITY REQUIREMENT
+# ============================================================================
+# This folder contains sensitive secrets, API keys, and credentials
+# MUST NEVER be committed to version control or shared in any way
+# Contains local .env files and secret management scripts
+# DO NOT remove these entries - they protect against accidental commits
+Confidential/
+confidential/
+**/Confidential/
+**/confidential/
+Confidential/.env
+Confidential/.env.*
+**/Confidential/.env
+**/Confidential/.env.*
+
+# Root environment files (bridged from Confidential)
+.env
+.env.backup
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.test
+.env.*
+
+# Secret management system backups and temp files
+.env.backup.*
+.env.temp.*
+.env.sync.*
+secrets.backup
+secrets.temp
+cloud-secrets.*
+
 # Dependencies
 node_modules/
 */node_modules/
@@ -98,11 +132,28 @@ ehthumbs.db
 Thumbs.db
 
 # ============================================================================
+# SECURITY: CONFIDENTIAL FOLDER - CRITICAL SECURITY REQUIREMENT
+# ============================================================================
+# This folder contains sensitive secrets, API keys, and Azure credentials
+# MUST NEVER be committed to version control or shared in any way
+# Contains local .env files and Azure Key Vault integration scripts
+# DO NOT remove these entries - they protect against accidental commits
+Confidential/
+confidential/
+**/Confidential/
+**/confidential/
+Confidential/.env
+Confidential/.env.*
+**/Confidential/.env
+**/Confidential/.env.*
+
+# ============================================================================
 # SECURITY: Environment Files & Secrets
 # ============================================================================
 
-# Environment files
+# Root environment files (bridged from Confidential)
 .env
+.env.backup
 .env.local
 .env.development
 .env.test
@@ -117,7 +168,7 @@ appsettings.Development.json
 appsettings.Local.json
 appsettings.*.local.json
 
-# Azure Functions settings
+# Azure-specific files
 .azure/
 .azurefunctions/
 

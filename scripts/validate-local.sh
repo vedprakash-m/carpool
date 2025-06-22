@@ -184,16 +184,31 @@ print_status "INFO" "Running backend tests with coverage..."
 cd backend
 
 # Run tests with Jest's built-in coverage threshold enforcement
+echo "Running: npm run test:ci"
 if npm run test:ci; then
     BACKEND_COVERAGE=$(node -e "
         try {
             const r=require('./coverage/coverage-summary.json');
-            console.log(Math.round(r.total.lines.pct));
+            const branches = r.total.branches.pct;
+            const statements = r.total.statements.pct;
+            const functions = r.total.functions.pct;
+            const lines = r.total.lines.pct;
+            console.log('statements:' + Math.round(statements) + ',branches:' + Math.round(branches) + ',functions:' + Math.round(functions) + ',lines:' + Math.round(lines));
         } catch(e) {
-            console.log('0');
+            console.log('statements:0,branches:0,functions:0,lines:0');
         }
     ")
-    print_status "SUCCESS" "Backend coverage: $BACKEND_COVERAGE%"
+    print_status "SUCCESS" "Backend coverage: $BACKEND_COVERAGE"
+    
+    # Extract and validate coverage thresholds (like CI does)
+    BRANCH_COVERAGE=$(echo $BACKEND_COVERAGE | sed 's/.*branches:\([0-9]*\).*/\1/')
+    STMT_COVERAGE=$(echo $BACKEND_COVERAGE | sed 's/.*statements:\([0-9]*\).*/\1/')
+    
+    if [[ $BRANCH_COVERAGE -lt 80 ]] || [[ $STMT_COVERAGE -lt 80 ]]; then
+        print_status "ERROR" "Coverage thresholds not met. Branches: $BRANCH_COVERAGE%, Statements: $STMT_COVERAGE% (need 80%)"
+        cd ..
+        exit 1
+    fi
 else
     # Test run failed - could be due to coverage threshold or test failures
     BACKEND_COVERAGE=$(node -e "

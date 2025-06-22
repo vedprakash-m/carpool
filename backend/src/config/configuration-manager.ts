@@ -40,8 +40,7 @@ const EmailConfigSchema = z.object({
 });
 
 const CacheConfigSchema = z.object({
-  provider: z.enum(['memory', 'redis']).default('memory'),
-  redisUrl: z.string().optional(),
+  provider: z.enum(['memory']).default('memory'),
   defaultTtl: z.number().min(1000).default(300000), // 5 minutes
   maxSize: z.number().min(100).default(1000),
   checkPeriod: z.number().min(1000).default(60000), // 1 minute
@@ -384,7 +383,6 @@ class ConfigurationManager {
       },
       cache: {
         provider: (env.CACHE_PROVIDER as any) || 'memory',
-        redisUrl: env.REDIS_URL,
         defaultTtl: env.CACHE_TTL ? parseInt(env.CACHE_TTL) : 3600,
         maxSize: env.CACHE_MAX_SIZE ? parseInt(env.CACHE_MAX_SIZE) : 1000,
         checkPeriod: env.CACHE_CHECK_PERIOD ? parseInt(env.CACHE_CHECK_PERIOD) : 600,

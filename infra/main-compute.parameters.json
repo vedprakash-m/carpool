@@ -24,7 +24,7 @@
       "value": "vcarpoolsaprod"
     },
     "keyVaultName": {
-      "value": "vcarpool-kv-prod"
+      "value": "vcarpool-keyvault"
     },
     "databaseResourceGroup": {
       "value": "vcarpool-db-rg"
