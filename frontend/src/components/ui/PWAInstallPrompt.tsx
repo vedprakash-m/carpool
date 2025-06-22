@@ -92,7 +92,10 @@ export function PWAInstallPrompt({
   }
 
   return (
-    <div className={`pwa-install-prompt ${className}`}>
+    <div
+      className={`pwa-install-prompt ${className}`}
+      data-testid="pwa-install-prompt"
+    >
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 max-w-sm mx-auto">
         <div className="flex items-start">
           <div className="flex-shrink-0">
@@ -307,7 +310,10 @@ export function PWAStatus({ className = '' }: { className?: string }) {
 
   if (capabilities.isInstalled) {
     return (
-      <div className={`flex items-center text-green-600 text-sm ${className}`}>
+      <div
+        className={`flex items-center text-green-600 text-sm ${className}`}
+        data-testid="pwa-status"
+      >
         <svg
           className="w-4 h-4 mr-1"
           fill="currentColor"
@@ -327,7 +333,10 @@ export function PWAStatus({ className = '' }: { className?: string }) {
 
   if (!capabilities.isOnline) {
     return (
-      <div className={`flex items-center text-orange-600 text-sm ${className}`}>
+      <div
+        className={`flex items-center text-orange-600 text-sm ${className}`}
+        data-testid="pwa-status"
+      >
         <svg
           className="w-4 h-4 mr-1"
           fill="none"

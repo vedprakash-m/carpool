@@ -165,4 +165,6 @@ export const getTokens = () => secureStorage.getTokens();
 
 export const hasValidTokens = () => secureStorage.hasValidTokens();
 
+export const isTokenExpired = () => !secureStorage.hasValidTokens();
+
 export const clearTokens = () => secureStorage.clearTokens();

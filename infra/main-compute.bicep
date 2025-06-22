@@ -118,7 +118,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~18'
+          value: '~20'
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
@@ -147,6 +147,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         {
           name: 'ENVIRONMENT'
           value: environmentName
+        }
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
         }
       ]
       ftpsState: 'FtpsOnly'

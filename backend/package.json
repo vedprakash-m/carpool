@@ -32,6 +32,8 @@
   "dependencies": {
     "@azure/cosmos": "^4.4.1",
     "@azure/functions": "^4.7.3",
+    "@azure/identity": "^4.10.1",
+    "@azure/msal-node": "^3.6.1",
     "@azure/service-bus": "^7.9.5",
     "@azure/web-pubsub": "^1.2.0",
     "@opentelemetry/auto-instrumentations-node": "^0.60.1",
