@@ -23,10 +23,10 @@ print_status() {
 
 # 1. Type checking only (fastest validation)
 print_status "INFO" "Type checking backend..."
-cd backend && npx tsc --noEmit >/dev/null 2>&1 && cd ..
+(cd backend && npx tsc --noEmit >/dev/null 2>&1)
 
 print_status "INFO" "Type checking frontend..."
-cd frontend && npx tsc --noEmit >/dev/null 2>&1 && cd ..
+(cd frontend && npx tsc --noEmit >/dev/null 2>&1)
 
 # 2. Quick lint check (only changed files would be ideal, but keeping simple)
 print_status "INFO" "Quick lint check..."

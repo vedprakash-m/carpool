@@ -26,7 +26,8 @@
       "@/lib/*": ["./src/lib/*"],
       "@/store/*": ["./src/store/*"],
       "@/types/*": ["./src/types/*"],
-      "@shared/*": ["../shared/src/*"]
+      "@shared/*": ["../shared/src/*"],
+      "@vcarpool/shared": ["../shared/src"]
     }
   },
   "include": [
@@ -34,7 +35,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "out/types/**/*.ts"
+    "out/types/**/*.ts",
+    "../shared/src/**/*.ts"
   ],
   "exclude": [
     "node_modules",

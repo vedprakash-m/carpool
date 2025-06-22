@@ -13,20 +13,8 @@ import { PWAInstallPrompt, PWAStatus } from '@/components/ui/PWAInstallPrompt';
 export function PWAInitializer() {
   const { capabilities, registration } = usePWA();
 
-  // Safely get accessibility config with error handling
-  let accessibilityConfig;
-  try {
-    const { config } = useAccessibility();
-    accessibilityConfig = config;
-  } catch (error) {
-    console.warn('Accessibility service initialization error:', error);
-    accessibilityConfig = {
-      screenReader: false,
-      keyboardNavigation: false,
-      reducedMotion: false,
-      highContrast: false,
-    };
-  }
+  // Always call hooks at the top level - error handling happens in the hook itself
+  const { config: accessibilityConfig } = useAccessibility();
 
   useEffect(() => {
     // Initialize accessibility features on app load

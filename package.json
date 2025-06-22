@@ -1,11 +1,26 @@
 {
-  "name": "simple-test-functions",
+  "name": "vcarpool-monorepo",
   "version": "1.0.0",
-  "description": "Simple test Azure Functions",
+  "description": "VCarpool - Comprehensive carpool management application",
   "main": "index.js",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared",
+    "e2e"
+  ],
   "scripts": {
     "start": "func start",
-    "deploy": "func azure functionapp publish vcarpool-api-prod"
+    "deploy": "func azure functionapp publish vcarpool-api-prod",
+    "build:shared": "cd shared && npm run build",
+    "type-check:backend": "cd backend && npm run type-check",
+    "type-check:frontend": "cd frontend && npm run type-check",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "test:backend:ci": "cd backend && npm run test:ci",
+    "test:frontend:ci": "cd frontend && npm run test:ci",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build"
   },
   "dependencies": {},
   "devDependencies": {}

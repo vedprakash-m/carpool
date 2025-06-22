@@ -30,7 +30,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
 
     // Don't redirect in development mode for trips page
-    if (!isAuthenticated && pathname === '/trips' && process.env.NODE_ENV === 'development') {
+    if (
+      !isAuthenticated &&
+      pathname === '/trips' &&
+      process.env.NODE_ENV === 'development'
+    ) {
       return;
     }
 
