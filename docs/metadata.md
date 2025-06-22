@@ -100,7 +100,7 @@ VCarpool uses a cost-optimized architecture that separates persistent storage fr
 
 - `ADMIN_PASSWORD`: Admin authentication credential
 - `COSMOS_DB_CONNECTION_STRING`: Database connection
-- API keys for external services (Google Maps, Azure Maps, SMS)
+- API keys for external services (Google Maps, SMS)
 
 ---
 
@@ -299,7 +299,7 @@ npm run validate:local    # Complete local validation
 ### **Immediate (Next 1-2 Sprints)**
 
 1. **Frontend Test Coverage**: Achieve 80% coverage with comprehensive component testing
-2. **Production API Keys**: Configure Google Maps, Azure Maps, and SMS provider APIs
+2. **Production API Keys**: Configure Google Maps and SMS provider APIs
 3. **Performance Optimization**: Bundle size reduction and load time improvement
 4. **CI/CD Pipeline**: Full integration of E2E tests in GitHub Actions
 
@@ -325,10 +325,9 @@ npm run validate:local    # Complete local validation
 
 - [ ] **API Keys Configuration**
 
-  - [ ] Obtain Google Maps Geocoding API key
-  - [ ] Obtain Azure Maps API key
-  - [ ] Configure SMS provider (Twilio/Azure Communication)
-  - [ ] Store all keys in Azure Key Vault
+- [ ] Obtain Google Maps Geocoding API key
+- [ ] Configure SMS provider (Twilio/Azure Communication)
+- [ ] Store all keys in Azure Key Vault
 
 - [ ] **Frontend Test Coverage**
   - [ ] Achieve 80% test coverage

@@ -97,7 +97,6 @@ describe('ConfigService', () => {
       process.env.MAX_LOGIN_ATTEMPTS = '3';
       process.env.LOCKOUT_DURATION = '30';
       process.env.GOOGLE_MAPS_API_KEY = 'google-key';
-      process.env.AZURE_MAPS_KEY = 'azure-key';
       process.env.GEOCODING_PROVIDER = 'google';
       process.env.FALLBACK_TO_MOCK = 'false';
       process.env.NODE_ENV = 'production';
@@ -216,7 +215,6 @@ describe('ConfigService', () => {
       process.env.COSMOS_DB_KEY = 'test-key';
       process.env.JWT_SECRET = 'custom-production-secret';
       delete process.env.GOOGLE_MAPS_API_KEY;
-      delete process.env.AZURE_MAPS_KEY;
 
       expect(() => {
         configInstance = ConfigService.getInstance();
@@ -284,7 +282,6 @@ describe('ConfigService', () => {
       // Reset singleton and set env before creating instance
       (ConfigService as any).instance = undefined;
       process.env.GOOGLE_MAPS_API_KEY = 'google-key';
-      delete process.env.AZURE_MAPS_KEY;
       
       configInstance = ConfigService.getInstance();
 
@@ -295,7 +292,6 @@ describe('ConfigService', () => {
       // Reset singleton and set env before creating instance
       (ConfigService as any).instance = undefined;
       delete process.env.GOOGLE_MAPS_API_KEY;
-      process.env.AZURE_MAPS_KEY = 'azure-key';
       
       configInstance = ConfigService.getInstance();
 
@@ -306,7 +302,6 @@ describe('ConfigService', () => {
       // Reset singleton and set env before creating instance
       (ConfigService as any).instance = undefined;
       process.env.GOOGLE_MAPS_API_KEY = 'google-key';
-      process.env.AZURE_MAPS_KEY = 'azure-key';
       
       configInstance = ConfigService.getInstance();
 
@@ -315,7 +310,6 @@ describe('ConfigService', () => {
 
     it('should detect no real geocoding when no keys provided', () => {
       delete process.env.GOOGLE_MAPS_API_KEY;
-      delete process.env.AZURE_MAPS_KEY;
       
       configInstance = ConfigService.getInstance();
 

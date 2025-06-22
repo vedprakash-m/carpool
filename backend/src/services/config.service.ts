@@ -24,8 +24,7 @@ export interface AppConfig {
   // Geocoding API Configuration
   geocoding: {
     googleMapsApiKey?: string;
-    azureMapsKey?: string;
-    preferredProvider: 'google' | 'azure' | 'mock';
+    preferredProvider: 'google' | 'mock';
     fallbackToMock: boolean;
   };
 
@@ -71,9 +70,7 @@ class ConfigService {
       },
       geocoding: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
-        azureMapsKey: process.env.AZURE_MAPS_KEY,
-        preferredProvider:
-          (process.env.GEOCODING_PROVIDER as 'google' | 'azure' | 'mock') || 'mock',
+        preferredProvider: (process.env.GEOCODING_PROVIDER as 'google' | 'mock') || 'mock',
         fallbackToMock: process.env.FALLBACK_TO_MOCK === 'true',
       },
       app: {
@@ -99,7 +96,7 @@ class ConfigService {
         errors.push('Custom JWT secret is required in production');
       }
 
-      if (!this.config.geocoding.googleMapsApiKey && !this.config.geocoding.azureMapsKey) {
+      if (!this.config.geocoding.googleMapsApiKey) {
         console.warn('Warning: No real geocoding API keys configured in production');
       }
     }
@@ -122,7 +119,7 @@ class ConfigService {
   }
 
   public hasRealGeocoding(): boolean {
-    return !!(this.config.geocoding.googleMapsApiKey || this.config.geocoding.azureMapsKey);
+    return !!this.config.geocoding.googleMapsApiKey;
   }
 
   public shouldUseRealDatabase(): boolean {

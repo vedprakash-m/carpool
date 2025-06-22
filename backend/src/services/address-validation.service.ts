@@ -20,7 +20,6 @@ export interface ValidationConfig {
   };
   serviceAreaRadiusMiles: number;
   enableGoogleMaps: boolean;
-  enableAzureMaps: boolean;
 }
 
 // Add interfaces for API responses
@@ -37,22 +36,10 @@ interface GoogleMapsResponse {
   }>;
 }
 
-interface AzureMapsResponse {
-  results?: Array<{
-    address: {
-      freeformAddress: string;
-    };
-    position: {
-      lat: number;
-      lon: number;
-    };
-  }>;
-}
-
 /**
  * Address Validation Service
- * Integrates with multiple geocoding providers for production-ready address validation
- * Supports Google Maps API, Azure Maps API, and enhanced mock geocoding
+ * Integrates with Google Maps geocoding for production-ready address validation
+ * Supports Google Maps API and enhanced mock geocoding for development
  */
 export class AddressValidationService {
   private configService: typeof configService;
@@ -67,7 +54,6 @@ export class AddressValidationService {
       },
       serviceAreaRadiusMiles: 25,
       enableGoogleMaps: true,
-      enableAzureMaps: true,
     };
   }
 
@@ -82,19 +68,11 @@ export class AddressValidationService {
       };
     }
 
-    // Try Google Maps first if enabled
+    // Try Google Maps geocoding
     if (this.validationConfig.enableGoogleMaps) {
       const googleResult = await this.tryGoogleMapsGeocoding(address);
       if (googleResult.isValid) {
         return this.enrichResultWithSchoolDistance(googleResult);
-      }
-    }
-
-    // Try Azure Maps as fallback if enabled
-    if (this.validationConfig.enableAzureMaps) {
-      const azureResult = await this.tryAzureMapsGeocoding(address);
-      if (azureResult.isValid) {
-        return this.enrichResultWithSchoolDistance(azureResult);
       }
     }
 
@@ -151,48 +129,6 @@ export class AddressValidationService {
   /**
    * Geocode address with Azure Maps API
    */
-  private async tryAzureMapsGeocoding(address: string): Promise<AddressValidationResult> {
-    try {
-      const config = this.configService.getConfig();
-      const subscriptionKey = config.geocoding.azureMapsKey;
-      if (!subscriptionKey) {
-        return { isValid: false, errorMessage: 'Azure Maps subscription key not configured' };
-      }
-
-      const response = await fetch(
-        `https://atlas.microsoft.com/search/address/json?subscription-key=${subscriptionKey}&api-version=1.0&query=${encodeURIComponent(address)}`,
-      );
-
-      if (!response.ok) {
-        return { isValid: false, errorMessage: 'Azure Maps API request failed' };
-      }
-
-      const data = (await response.json()) as AzureMapsResponse;
-
-      if (data.results && data.results.length > 0) {
-        const result = data.results[0];
-        return {
-          isValid: true,
-          formattedAddress: result.address.freeformAddress,
-          coordinates: {
-            latitude: result.position.lat,
-            longitude: result.position.lon,
-          },
-        };
-      }
-
-      return {
-        isValid: false,
-        errorMessage: 'Unable to validate address with Azure Maps',
-      };
-    } catch (error) {
-      return {
-        isValid: false,
-        errorMessage: 'Error calling Azure Maps API',
-      };
-    }
-  }
-
   /**
    * Enhanced mock geocoding for testing and fallback
    */

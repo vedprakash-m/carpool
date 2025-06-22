@@ -55,7 +55,7 @@ VCarpool is a comprehensive, cloud-native platform that revolutionizes how schoo
 
 - **Multi-school support** for any district nationwide
 - **Smart geography** with configurable service radius (25-mile default)
-- **Real-time address validation** using Google Maps & Azure Maps APIs
+- **Real-time address validation** using Google Maps API
 - **Flexible grade management** supporting K-12 and custom structures
 
 ### 👥 **Intelligent Group Management**

@@ -3,11 +3,10 @@
 
 echo "🔍 Running pre-commit validation..."
 
-# Use quick validation for pre-commit (no Docker required)
-echo "🚀 Running quick validation (no Docker required)..."
-./scripts/quick-validate.sh || {
-    echo "❌ Quick validation failed"
-    echo "💡 For full validation with E2E tests, run: ./scripts/validate-local.sh"
+# Quick lint and type check only for pre-commit
+echo "🚀 Running fast pre-commit checks..."
+./scripts/pre-commit-fast.sh || {
+    echo "❌ Pre-commit validation failed"
     exit 1
 }
 
