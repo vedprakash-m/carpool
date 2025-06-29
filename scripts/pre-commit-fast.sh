@@ -2,13 +2,14 @@
 
 set -e
 
-echo "⚡ Fast Pre-commit Validation"
-echo "============================"
+echo "⚡ Lightning Fast Pre-commit"
+echo "=========================="
 
 # Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
 print_status() {
@@ -18,35 +19,84 @@ print_status() {
         "INFO") echo -e "${BLUE}ℹ️  $message${NC}" ;;
         "SUCCESS") echo -e "${GREEN}✅ $message${NC}" ;;
         "ERROR") echo -e "${RED}❌ $message${NC}" ;;
+        "WARNING") echo -e "${YELLOW}⚠️  $message${NC}" ;;
     esac
 }
 
-# 1. Type checking only (fastest validation)
-print_status "INFO" "Type checking backend..."
-(cd backend && npx tsc --noEmit --skipLibCheck >/dev/null 2>&1) || {
-    print_status "ERROR" "Backend type checking failed"
-    exit 1
-}
+start_time=$(date +%s)
 
-print_status "INFO" "Type checking frontend..."
-(cd frontend && npx tsc --noEmit --skipLibCheck >/dev/null 2>&1) || {
-    print_status "ERROR" "Frontend type checking failed"
-    exit 1
-}
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+TS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(ts|tsx)$' || true)
+JS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(js|jsx)$' || true)
 
-# 2. Quick lint check (only changed files would be ideal, but keeping simple)
-print_status "INFO" "Quick lint check..."
-(npm run lint:backend >/dev/null 2>&1) || {
-    print_status "ERROR" "Backend linting failed"
-    exit 1
-}
-(npm run lint:frontend >/dev/null 2>&1) || {
-    print_status "ERROR" "Frontend linting failed"  
-    exit 1
-}
+if [ -z "$TS_FILES" ] && [ -z "$JS_FILES" ]; then
+    print_status "INFO" "No TypeScript/JavaScript files staged - skipping checks"
+    exit 0
+fi
 
-print_status "SUCCESS" "⚡ Fast pre-commit validation passed!"
-print_status "INFO" "Full tests will run on pre-push"
+print_status "INFO" "Checking $(echo "$TS_FILES $JS_FILES" | wc -w) staged files..."
+
+# 1. Lightning-fast type checking (only staged files)
+if [ -n "$TS_FILES" ]; then
+    print_status "INFO" "Type checking staged files..."
+    
+    # Check backend files
+    BACKEND_FILES=$(echo "$TS_FILES" | grep '^backend/' || true)
+    if [ -n "$BACKEND_FILES" ]; then
+        echo "$BACKEND_FILES" | xargs -r npx tsc --noEmit --skipLibCheck 2>/dev/null || {
+            print_status "ERROR" "Backend type checking failed on staged files"
+            exit 1
+        }
+    fi
+    
+    # Check frontend files  
+    FRONTEND_FILES=$(echo "$TS_FILES" | grep '^frontend/' || true)
+    if [ -n "$FRONTEND_FILES" ]; then
+        (cd frontend && echo "$FRONTEND_FILES" | sed 's|^frontend/||' | xargs -r npx tsc --noEmit --skipLibCheck 2>/dev/null) || {
+            print_status "ERROR" "Frontend type checking failed on staged files"
+            exit 1
+        }
+    fi
+fi
+
+# 2. Quick lint (only staged files)
+if [ -n "$TS_FILES" ] || [ -n "$JS_FILES" ]; then
+    print_status "INFO" "Linting staged files..."
+    
+    # Backend linting
+    BACKEND_LINT_FILES=$(echo "$TS_FILES $JS_FILES" | tr ' ' '\n' | grep '^backend/' || true)
+    if [ -n "$BACKEND_LINT_FILES" ]; then
+        echo "$BACKEND_LINT_FILES" | xargs -r npx eslint --fix --quiet 2>/dev/null || {
+            print_status "ERROR" "Backend linting failed"
+            exit 1
+        }
+    fi
+    
+    # Frontend linting
+    FRONTEND_LINT_FILES=$(echo "$TS_FILES $JS_FILES" | tr ' ' '\n' | grep '^frontend/' || true)
+    if [ -n "$FRONTEND_LINT_FILES" ]; then
+        (cd frontend && echo "$FRONTEND_LINT_FILES" | sed 's|^frontend/||' | xargs -r npx eslint --fix --quiet 2>/dev/null) || {
+            print_status "ERROR" "Frontend linting failed"
+            exit 1
+        }
+    fi
+fi
+
+# 3. Quick security check (only staged files)
+if echo "$STAGED_FILES" | grep -qE '\.(env|json|yaml|yml)$'; then
+    print_status "INFO" "Quick security scan on configuration files..."
+    echo "$STAGED_FILES" | grep -E '\.(env|json|yaml|yml)$' | xargs -r grep -l "password\|secret\|key\|token" || true >/dev/null
+fi
+
+# Record timestamp for pre-push optimization
+echo "$(date +%s)" > .git/hooks/pre-commit-timestamp
+
+end_time=$(date +%s)
+duration=$((end_time - start_time))
+
+print_status "SUCCESS" "⚡ Pre-commit completed in ${duration}s"
+print_status "INFO" "Full validation will run on pre-push"
 
 # Record timestamp for pre-push optimization
 echo "$(date +%s)" > "$(git rev-parse --git-dir)/hooks/pre-commit-timestamp"

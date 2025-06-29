@@ -3,18 +3,19 @@
 
 echo "🚀 Running optimized pre-push validation..."
 
-# Run optimized validation that skips redundant checks
-echo "🔍 Running optimized validation..."
-./scripts/pre-push-optimized.sh || {
-    echo "❌ Optimized validation failed"
-    exit 1
-}
-
-# Check if Docker is available for additional E2E tests
-if docker info >/dev/null 2>&1; then
-    echo "🐳 Docker available - E2E tests included in validation"
+# Check if FAST_PUSH environment variable is set for ultra-fast mode
+if [ "$FAST_PUSH" = "1" ]; then
+    echo "⚡ Using ultra-fast mode (set by FAST_PUSH=1)"
+    ./scripts/pre-push-ultra-fast.sh || {
+        echo "❌ Ultra-fast validation failed"
+        exit 1
+    }
 else
-    echo "⚠️  Docker not available - E2E tests will run in CI pipeline"
+    echo "🔍 Running standard optimized validation..."
+    ./scripts/pre-push-optimized.sh || {
+        echo "❌ Optimized validation failed"
+        exit 1
+    }
 fi
 
 echo "✅ Pre-push validation passed!"

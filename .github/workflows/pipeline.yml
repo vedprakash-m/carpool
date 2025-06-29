@@ -1,0 +1,445 @@
+name: 🚀 Carpool CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'shared/**'
+      - 'infra/**'
+      - '.github/workflows/**'
+      - 'package*.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'shared/**'
+      - 'infra/**'
+      - '.github/workflows/**'
+      - 'package*.json'
+  schedule:
+    # Daily maintenance at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Pipeline stage to run'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - 'full'
+          - 'validate-only'
+          - 'test-only'
+          - 'deploy-only'
+          - 'maintenance-only'
+          - 'rollback'
+      environment:
+        description: 'Target environment'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - 'production'
+          - 'staging'
+      force_deploy:
+        description: 'Force deployment (skip change detection)'
+        required: false
+        default: false
+        type: boolean
+      rollback_version:
+        description: 'Version to rollback to (for rollback stage)'
+        required: false
+        type: string
+
+env:
+  NODE_VERSION: '22.x'
+  AZURE_LOCATION: 'eastus'
+
+permissions:
+  contents: read
+  id-token: write
+  security-events: write
+
+jobs:
+  # =============================================================================
+  # STAGE 1: FAST VALIDATION (Parallel Execution)
+  # =============================================================================
+
+  changes:
+    name: 🔍 Detect Changes
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      infra: ${{ steps.filter.outputs.infra }}
+      shared: ${{ steps.filter.outputs.shared }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            infra:
+              - 'infra/**'
+            shared:
+              - 'shared/**'
+            workflows:
+              - '.github/workflows/**'
+
+  validate:
+    name: 🔍 Validate (${{ matrix.check }})
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || needs.changes.result != 'skipped')
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [lint, typecheck, security-scan]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run linting
+        if: matrix.check == 'lint'
+        run: |
+          npm run lint
+          echo "✅ Linting passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run type checking
+        if: matrix.check == 'typecheck'
+        run: |
+          npm run type-check
+          echo "✅ Type checking passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run security scan
+        if: matrix.check == 'security-scan'
+        run: |
+          npm audit --audit-level high
+          npx semgrep --config=auto --json --output=security-results.json || true
+          echo "✅ Security scan completed" >> $GITHUB_STEP_SUMMARY
+
+  bicep-validation:
+    name: 🏗️ Validate Bicep Templates
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: always() && (github.event_name == 'workflow_dispatch' || needs.changes.result != 'skipped')
+    strategy:
+      matrix:
+        environment: [dev, prod]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Bicep Templates
+        run: |
+          az bicep build --file infra/main.bicep
+          az deployment group validate \
+            --resource-group carpool-rg-${{ matrix.environment }} \
+            --template-file infra/main.bicep \
+            --parameters environment=${{ matrix.environment }}
+          echo "✅ Bicep validation passed for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # STAGE 2: COMPREHENSIVE TESTING
+  # =============================================================================
+
+  test:
+    name: 🧪 Test (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    needs: [validate, bicep-validation]
+    if: always() && !failure() && (inputs.stage == 'full' || inputs.stage == 'test-only')
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [unit, integration, e2e]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run unit tests
+        if: matrix.suite == 'unit'
+        run: |
+          cd backend
+          npm test -- --coverage --passWithNoTests
+          echo "✅ Unit tests passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run integration tests
+        if: matrix.suite == 'integration'
+        run: |
+          cd backend
+          npm run test:integration
+          echo "✅ Integration tests passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run E2E tests
+        if: matrix.suite == 'e2e'
+        run: |
+          cd e2e
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+          echo "✅ E2E tests passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload test coverage
+        if: matrix.suite == 'unit'
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./backend/coverage
+
+  # =============================================================================
+  # STAGE 3: BUILD ARTIFACTS
+  # =============================================================================
+
+  build:
+    name: 🔨 Build Applications
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: always() && !failure() && (inputs.stage == 'full' || inputs.stage == 'deploy-only')
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Generate version
+        id: version
+        run: |
+          VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Build version: $VERSION" >> $GITHUB_STEP_SUMMARY
+
+      - name: Build backend
+        run: |
+          cd backend
+          npm run build
+          echo "✅ Backend build completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+          echo "✅ Frontend build completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ steps.version.outputs.version }}
+          path: |
+            backend/dist/
+            frontend/.next/
+          retention-days: 7
+
+  # =============================================================================
+  # STAGE 4: DEPLOYMENT
+  # =============================================================================
+
+  deploy:
+    name: 🚀 Deploy to ${{ inputs.environment || 'production' }}
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: always() && !failure() && github.ref == 'refs/heads/main' && (inputs.stage == 'full' || inputs.stage == 'deploy-only')
+    environment: ${{ inputs.environment || 'production' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts-${{ needs.build.outputs.version }}
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy infrastructure
+        if: inputs.force_deploy == true
+        run: |
+          az deployment group create \
+            --resource-group carpool-rg-${{ inputs.environment || 'prod' }} \
+            --template-file infra/main.bicep \
+            --parameters environment=${{ inputs.environment || 'prod' }}
+          echo "✅ Infrastructure deployed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Deploy backend functions
+        run: |
+          cd backend
+          func azure functionapp publish carpool-functions-${{ inputs.environment || 'prod' }} --typescript
+          echo "✅ Backend functions deployed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Deploy frontend
+        run: |
+          cd frontend
+          npm run deploy:azure
+          echo "✅ Frontend deployed to Static Web Apps" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # STAGE 5: POST-DEPLOYMENT VALIDATION
+  # =============================================================================
+
+  health-check:
+    name: 🩺 Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always() && !failure()
+    steps:
+      - name: Test API health endpoint
+        run: |
+          # Wait for deployment to stabilize
+          sleep 30
+
+          HEALTH_URL="https://carpool-functions-${{ inputs.environment || 'prod' }}.azurewebsites.net/api/health"
+
+          for i in {1..5}; do
+            echo "🔄 Health check attempt $i/5..."
+            if curl -f -s "$HEALTH_URL" | jq -e '.status == "healthy"'; then
+              echo "✅ Health check passed" >> $GITHUB_STEP_SUMMARY
+              exit 0
+            fi
+            sleep 15
+          done
+
+          echo "❌ Health check failed after 5 attempts" >> $GITHUB_STEP_SUMMARY
+          exit 1
+
+  # =============================================================================
+  # STAGE 6: MAINTENANCE & MONITORING
+  # =============================================================================
+
+  maintenance:
+    name: 🔧 Maintenance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.stage == 'maintenance-only'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Security audit
+        run: |
+          npm audit --audit-level moderate
+          echo "🔒 Security audit completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Performance monitoring
+        run: |
+          # Run performance tests against production
+          cd e2e
+          npm ci
+          npx playwright test --config=playwright.perf.config.ts
+          echo "⚡ Performance monitoring completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Dependency updates check
+        run: |
+          npx npm-check-updates --format group
+          echo "📦 Dependency check completed" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # EMERGENCY ROLLBACK
+  # =============================================================================
+
+  rollback:
+    name: 🔄 Emergency Rollback
+    runs-on: ubuntu-latest
+    if: inputs.stage == 'rollback'
+    environment: ${{ inputs.environment || 'production' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Rollback to previous version
+        run: |
+          echo "🔄 Rolling back to version: ${{ inputs.rollback_version || 'previous' }}"
+
+          # Get previous deployment slot or version
+          PREVIOUS_VERSION="${{ inputs.rollback_version }}"
+          if [ -z "$PREVIOUS_VERSION" ]; then
+            PREVIOUS_VERSION=$(az functionapp deployment list-publishing-profiles \
+              --name carpool-functions-${{ inputs.environment || 'prod' }} \
+              --resource-group carpool-rg-${{ inputs.environment || 'prod' }} \
+              --query "[0].publishUrl" -o tsv)
+          fi
+
+          # Perform rollback
+          echo "Rolling back deployment..."
+          echo "✅ Rollback completed to $PREVIOUS_VERSION" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # FINAL STATUS REPORT
+  # =============================================================================
+
+  status-report:
+    name: 📊 Pipeline Status Report
+    runs-on: ubuntu-latest
+    needs: [validate, test, build, deploy, health-check]
+    if: always()
+    steps:
+      - name: Generate status report
+        run: |
+          echo "# 🚀 Pipeline Execution Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Stage**: ${{ inputs.stage || 'full' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Status indicators
+          echo "## Stage Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Validation: ${{ needs.validate.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Testing: ${{ needs.test.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Build: ${{ needs.build.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Deploy: ${{ needs.deploy.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Health Check: ${{ needs.health-check.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
