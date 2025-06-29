@@ -18,7 +18,11 @@ describe('ConfigService', () => {
 
   beforeEach(() => {
     // Reset the singleton instance for each test
-    (ConfigService as any).instance = undefined;
+    if (ConfigService.resetInstance) {
+      ConfigService.resetInstance();
+    } else {
+      (ConfigService as any).instance = undefined;
+    }
 
     // Reset environment variables to defaults
     process.env = {
@@ -26,9 +30,9 @@ describe('ConfigService', () => {
       NODE_ENV: 'development',
       COSMOS_DB_ENDPOINT: '',
       COSMOS_DB_KEY: '',
-      COSMOS_DB_DATABASE: 'vcarpooldb',
+      COSMOS_DB_DATABASE: 'carpooldb',
       COSMOS_DB_CONTAINER: 'users',
-      JWT_SECRET: 'vcarpool-dev-secret-key',
+      JWT_SECRET: 'carpool-dev-secret-key',
       JWT_EXPIRES_IN: '24h',
       BCRYPT_ROUNDS: '12',
       MAX_LOGIN_ATTEMPTS: '5',
@@ -42,6 +46,13 @@ describe('ConfigService', () => {
   });
 
   afterEach(() => {
+    // Reset the singleton instance after each test
+    if (ConfigService.resetInstance) {
+      ConfigService.resetInstance();
+    } else {
+      (ConfigService as any).instance = undefined;
+    }
+
     // Restore original environment
     process.env = originalEnv;
   });
@@ -71,9 +82,9 @@ describe('ConfigService', () => {
       configInstance = ConfigService.getInstance();
       const config = configInstance.getConfig();
 
-      expect(config.cosmosDb.databaseName).toBe('vcarpooldb');
+      expect(config.cosmosDb.databaseName).toBe('carpooldb');
       expect(config.cosmosDb.containerName).toBe('users');
-      expect(config.auth.jwtSecret).toBe('vcarpool-dev-secret-key');
+      expect(config.auth.jwtSecret).toBe('carpool-dev-secret-key');
       expect(config.auth.jwtExpiresIn).toBe('24h');
       expect(config.auth.bcryptRounds).toBe(12);
       expect(config.auth.maxLoginAttempts).toBe(5);
@@ -192,7 +203,7 @@ describe('ConfigService', () => {
       process.env.NODE_ENV = 'production';
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
-      process.env.JWT_SECRET = 'vcarpool-dev-secret-key';
+      process.env.JWT_SECRET = 'carpool-dev-secret-key';
 
       expect(() => {
         configInstance = ConfigService.getInstance();
@@ -203,7 +214,7 @@ describe('ConfigService', () => {
       process.env.NODE_ENV = 'production';
       process.env.COSMOS_DB_ENDPOINT = '';
       process.env.COSMOS_DB_KEY = '';
-      process.env.JWT_SECRET = 'vcarpool-dev-secret-key';
+      process.env.JWT_SECRET = 'carpool-dev-secret-key';
 
       expect(() => {
         configInstance = ConfigService.getInstance();
@@ -247,7 +258,7 @@ describe('ConfigService', () => {
 
       // Mutating top-level properties should not affect service
       config1.cosmosDb = { ...config1.cosmosDb, databaseName: 'modified' };
-      expect(configInstance.getConfig().cosmosDb.databaseName).toBe('vcarpooldb');
+      expect(configInstance.getConfig().cosmosDb.databaseName).toBe('carpooldb');
 
       // Note: Nested objects are shallow copied, so mutations would affect the original
       // This is a limitation of the current implementation

@@ -3,20 +3,23 @@
 
 echo "🚀 Running pre-push validation..."
 
-# Check if Docker is available
+# Always run comprehensive validation first
+echo "🔍 Running comprehensive validation..."
+./scripts/comprehensive-validation.sh || {
+    echo "❌ Comprehensive validation failed"
+    exit 1
+}
+
+# Check if Docker is available for additional E2E tests
 if docker info >/dev/null 2>&1; then
-    echo "🐳 Docker available - running full validation with E2E tests..."
+    echo "🐳 Docker available - running additional E2E tests..."
     ./scripts/validate-local.sh || {
-        echo "❌ Full validation failed"
+        echo "❌ Docker-based validation failed"
         exit 1
     }
 else
-    echo "⚠️  Docker not available - running quick validation instead..."
-    echo "📝 Note: Full E2E tests will run in CI pipeline"
-    ./scripts/quick-validate.sh || {
-        echo "❌ Quick validation failed"
-        exit 1
-    }
+    echo "⚠️  Docker not available - skipping Docker-based E2E tests"
+    echo "📝 Note: Docker-based E2E tests will run in CI pipeline"
 fi
 
 echo "✅ Pre-push validation passed!"

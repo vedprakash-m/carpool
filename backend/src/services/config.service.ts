@@ -54,6 +54,11 @@ class ConfigService {
     return ConfigService.instance;
   }
 
+  // For testing purposes only - reset the singleton instance
+  public static resetInstance(): void {
+    ConfigService.instance = null as any;
+  }
+
   private loadConfiguration(): AppConfig {
     return {
       cosmosDb: {
