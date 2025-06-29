@@ -39,7 +39,7 @@ describe('PushService', () => {
       pushService = new PushService();
       
       expect(webpush.setVapidDetails).toHaveBeenCalledWith(
-        'mailto:support@vcarpool.com',
+        'mailto:support@carpool.com',
         'test-public-key',
         'test-private-key'
       );

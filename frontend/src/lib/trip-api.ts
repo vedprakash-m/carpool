@@ -5,7 +5,7 @@ import {
   JoinTripRequest,
   ApiResponse,
   PaginatedResponse,
-} from '@vcarpool/shared';
+} from '@carpool/shared';
 import { apiClient } from './api-client';
 
 export interface TripFilters {
@@ -151,7 +151,7 @@ class TripApiService {
       // TEMPORARY CORS WORKAROUND: Use simple fetch without custom headers
       // to bypass CORS preflight issues
       const response = await fetch(
-        'https://vcarpool-api-prod.azurewebsites.net/api/v1/trips/stats'
+        'https://carpool-api-prod.azurewebsites.net/api/v1/trips/stats'
       );
 
       if (!response.ok) {

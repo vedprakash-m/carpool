@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
-import { User, UserRole } from '@vcarpool/shared';
+import { User, UserRole } from '@carpool/shared';
 import { UserRepository } from '../repositories/user.repository';
 import { Errors } from '../utils/error-handler';
 import { ILogger } from '../utils/logger';

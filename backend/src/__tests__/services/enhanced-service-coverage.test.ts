@@ -305,7 +305,7 @@ const mockFamilyNotificationService = {
 // Mock family users for testing
 const mockFamilyParentUser: TestFamilyUser = {
   id: "family-parent-1",
-  email: "sarah.johnson@vcarpool.com",
+  email: "sarah.johnson@carpool.com",
   role: "parent",
   firstName: "Sarah",
   lastName: "Johnson",
@@ -357,7 +357,7 @@ const mockFamilyParentUser: TestFamilyUser = {
 
 const mockGroupAdminUser: TestFamilyUser = {
   id: "group-admin-1",
-  email: "admin.coordinator@vcarpool.com",
+  email: "admin.coordinator@carpool.com",
   role: "admin",
   firstName: "Lisa",
   lastName: "Martinez",
@@ -603,14 +603,14 @@ describe("Family-Oriented Email Service Coverage", () => {
         familyAssignments: [
           {
             familyId: "johnson-family-001",
-            parentEmail: "sarah.johnson@vcarpool.com",
+            parentEmail: "sarah.johnson@carpool.com",
             drivingDays: ["Monday", "Wednesday", "Friday"],
             passengerDays: ["Tuesday", "Thursday"],
             children: ["Emma Johnson", "Liam Johnson"],
           },
           {
             familyId: "davis-family-003",
-            parentEmail: "jennifer.davis@vcarpool.com",
+            parentEmail: "jennifer.davis@carpool.com",
             drivingDays: ["Tuesday", "Thursday"],
             passengerDays: ["Monday", "Wednesday", "Friday"],
             children: ["Sophie Davis"],
@@ -650,7 +650,7 @@ describe("Family-Oriented User Service Coverage", () => {
   describe("Family User Creation and Management", () => {
     it("should create family user with complete onboarding context", async () => {
       const familyCreationData = {
-        email: "newfamily@vcarpool.com",
+        email: "newfamily@carpool.com",
         password: "test-secure-password",
         firstName: "Jennifer",
         lastName: "Davis",
@@ -717,7 +717,7 @@ describe("Family-Oriented User Service Coverage", () => {
             firstName: "Sarah",
             lastName: "Johnson",
             role: "parent",
-            email: "sarah.johnson@vcarpool.com",
+            email: "sarah.johnson@carpool.com",
             isPrimary: true,
             onboardingComplete: true,
           },
@@ -1165,7 +1165,7 @@ describe("Family-Oriented Service Integration Tests", () => {
     it("should handle end-to-end family registration and onboarding", async () => {
       // Step 1: Create family user
       const familyCreationData = {
-        email: "integration@vcarpool.com",
+        email: "integration@carpool.com",
         password: "Integration123!",
         firstName: "Integration",
         lastName: "Test",

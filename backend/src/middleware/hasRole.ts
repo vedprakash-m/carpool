@@ -1,5 +1,5 @@
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { UserRole } from '@vcarpool/shared';
+import { UserRole } from '@carpool/shared';
 import { Middleware } from './index';
 
 export const hasRole = (allowedRoles: UserRole[]): Middleware => {

@@ -1,5 +1,5 @@
 import { HttpRequest, HttpResponseInit } from '@azure/functions';
-import { ApiResponse } from '@vcarpool/shared';
+import { ApiResponse } from '@carpool/shared';
 import { AzureLogger } from './logger';
 import { ILogger } from './logger';
 

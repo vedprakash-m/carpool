@@ -1,5 +1,5 @@
 /**
- * Configuration Service for VCarpool Application
+ * Configuration Service for Carpool Application
  * Manages environment variables and service configurations securely
  */
 
@@ -59,11 +59,11 @@ class ConfigService {
       cosmosDb: {
         endpoint: process.env.COSMOS_DB_ENDPOINT || '',
         key: process.env.COSMOS_DB_KEY || '',
-        databaseName: process.env.COSMOS_DB_DATABASE || 'vcarpooldb',
+        databaseName: process.env.COSMOS_DB_DATABASE || 'carpooldb',
         containerName: process.env.COSMOS_DB_CONTAINER || 'users',
       },
       auth: {
-        jwtSecret: process.env.JWT_SECRET || 'vcarpool-dev-secret-key',
+        jwtSecret: process.env.JWT_SECRET || 'carpool-dev-secret-key',
         jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
         bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '12'),
         maxLoginAttempts: parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5'),
@@ -95,7 +95,7 @@ class ConfigService {
         errors.push('Cosmos DB configuration is required in production');
       }
 
-      if (this.config.auth.jwtSecret === 'vcarpool-dev-secret-key') {
+      if (this.config.auth.jwtSecret === 'carpool-dev-secret-key') {
         errors.push('Custom JWT secret is required in production');
       }
 

@@ -7,7 +7,7 @@ import {
 import { container } from "../../container";
 import { TripService } from "../../services/trip.service";
 import { ILogger } from "../../utils/logger";
-import { ApiResponse } from "@vcarpool/shared";
+import { ApiResponse } from "@carpool/shared";
 import { handleError, Errors } from "../../utils/error-handler";
 
 interface HttpRequestUser {

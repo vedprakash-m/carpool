@@ -36,7 +36,7 @@ const EmailConfigSchema = z.object({
   smtpUser: z.string().optional(),
   smtpPassword: z.string().optional(),
   fromEmail: z.string().email(),
-  fromName: z.string().default('vCarpool'),
+  fromName: z.string().default('Carpool'),
 });
 
 const CacheConfigSchema = z.object({
@@ -272,7 +272,7 @@ class ConfigurationManager {
       timezone: 'UTC',
       database: {
         connectionString: '',
-        databaseName: 'vcarpool',
+        databaseName: 'carpool',
         maxRetries: 3,
         retryDelay: 1000,
         connectionPoolSize: 10,
@@ -288,7 +288,7 @@ class ConfigurationManager {
       },
       email: {
         provider: 'sendgrid',
-        fromEmail: 'noreply@vcarpool.com',
+        fromEmail: 'noreply@carpool.com',
         fromName: 'vCarpool',
       },
       cache: {
@@ -378,7 +378,7 @@ class ConfigurationManager {
         smtpPort: env.SMTP_PORT ? parseInt(env.SMTP_PORT) : undefined,
         smtpUser: env.SMTP_USER,
         smtpPassword: env.SMTP_PASSWORD,
-        fromEmail: env.FROM_EMAIL || 'noreply@vcarpool.com',
+        fromEmail: env.FROM_EMAIL || 'noreply@carpool.com',
         fromName: env.FROM_NAME || 'vCarpool',
       },
       cache: {

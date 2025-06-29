@@ -352,7 +352,7 @@ export async function docsIndex(
 
     <div class="api-info">
       <h3>Support</h3>
-      <p>For support and questions, contact: <a href="mailto:support@vcarpool.com">support@vcarpool.com</a></p>
+      <p>For support and questions, contact: <a href="mailto:support@carpool.com">support@carpool.com</a></p>
       <p>For technical issues, please include your request ID from error responses.</p>
     </div>
   </div>

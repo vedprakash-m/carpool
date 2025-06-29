@@ -4,7 +4,7 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import { ApiResponse, Trip, tripIdParamSchema } from "@vcarpool/shared";
+import { ApiResponse, Trip, tripIdParamSchema } from "@carpool/shared";
 import { container } from "../../container";
 import { compose, authenticate, validateParams } from "../../middleware";
 import { trackExecutionTime } from "../../utils/monitoring";

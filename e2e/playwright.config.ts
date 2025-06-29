@@ -1,9 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Comprehensive Playwright Configuration for VCarpool E2E Testing
+ * Comprehensive Playwright Configuration for Carpool E2E Testing
  * This configuration sets up multi-browser testing with proper error handling,
- * retries, and detailed reporting for the VCarpool application.
+ * retries, and detailed reporting for the Carpool application.
  */
 
 export default defineConfig({
@@ -75,7 +75,7 @@ export default defineConfig({
       // Reduce motion for stable testing
       reducedMotion: 'reduce',
       // Set user agent
-      userAgent: 'VCarpool-E2E-Tests/1.0',
+      userAgent: 'Carpool-E2E-Tests/1.0',
     },
   },
 

@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 
 const MONGODB_URL =
   process.env.MONGODB_URL ||
-  'mongodb://testuser:testpass@localhost:27018/vcarpool_test?authSource=admin';
+  'mongodb://testuser:testpass@localhost:27018/carpool_test?authSource=admin';
 
 async function seedDatabase() {
   console.log('🌱 Starting database seeding...');
@@ -17,7 +17,7 @@ async function seedDatabase() {
 
   try {
     await client.connect();
-    const db = client.db('vcarpool_test');
+    const db = client.db('carpool_test');
 
     // Clear existing test data
     await clearCollections(db);

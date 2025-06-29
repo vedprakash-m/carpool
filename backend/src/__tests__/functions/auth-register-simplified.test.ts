@@ -351,8 +351,8 @@ describe("Auth Register - Simplified Family-Oriented Validation", () => {
   });
 });
 
-describe("VCarpool Role Validation", () => {
-  it("should validate VCarpool user roles", () => {
+describe("Carpool Role Validation", () => {
+  it("should validate Carpool user roles", () => {
     const validRoles = ["admin", "parent", "student"];
     const invalidRoles = ["teacher", "staff", "visitor", "guest"];
 
@@ -366,7 +366,7 @@ describe("VCarpool Role Validation", () => {
   });
 
   it("should assign default role for new users", () => {
-    const defaultRole = "parent"; // VCarpool defaults to parent for school carpools
+    const defaultRole = "parent"; // Carpool defaults to parent for school carpools
     const assignedRole = defaultRole || "parent";
 
     expect(assignedRole).toBe("parent");

@@ -8,7 +8,7 @@ describe("Azure Functions - VCarpool Integration Tests", () => {
   const AZURE_BASE_URL =
     process.env.AZURE_FUNCTIONS_URL ||
     "https://vcarpool-api-test.azurewebsites.net";
-  const TEST_EMAIL = "test@vcarpool.com";
+  const TEST_EMAIL = "test@carpool.com";
   const TEST_PASSWORD = "TestPass123!";
 
   describe("Authentication Functions", () => {

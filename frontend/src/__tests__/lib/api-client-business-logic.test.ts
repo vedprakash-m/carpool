@@ -1,13 +1,13 @@
 /**
  * API Client Business Logic Tests
  *
- * Simplified testing approach focusing on VCarpool business logic validation
+ * Simplified testing approach focusing on Carpool business logic validation
  * without complex axios interceptor mocking that causes infrastructure failures.
  *
  * This approach follows the established pattern from api-client-simple.test.ts
  */
 
-describe('API Client - VCarpool Business Logic', () => {
+describe('API Client - Carpool Business Logic', () => {
   describe('Authentication Request Formatting', () => {
     it('should format login requests correctly', () => {
       const loginData = {
@@ -37,7 +37,7 @@ describe('API Client - VCarpool Business Logic', () => {
     });
   });
 
-  describe('VCarpool API Response Format', () => {
+  describe('Carpool API Response Format', () => {
     it('should handle consistent ApiResponse format', () => {
       const mockAuthResponse = {
         success: true,

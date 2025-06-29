@@ -75,7 +75,7 @@ export default function WelcomeTour({
           <AcademicCapIcon className="w-8 h-8 text-green-600" />
         </div>
         <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome to VCarpool! 🚗
+          Welcome to Carpool! 🚗
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Your school's smart carpool coordination system. Let's explore the key
@@ -158,7 +158,7 @@ export default function WelcomeTour({
       {/* How It Works Flow */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">
-          📅 How VCarpool Works
+          📅 How Carpool Works
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -214,7 +214,7 @@ export default function WelcomeTour({
             Building Our School Community 🏫
           </h3>
           <p className="text-gray-700 mb-4">
-            VCarpool brings families together while reducing traffic, saving
+            Carpool brings families together while reducing traffic, saving
             time, and helping the environment.
           </p>
           <div className="grid grid-cols-3 gap-4 text-center">

@@ -3,7 +3,7 @@
 // This is a placeholder service to unblock development.
 // In a real implementation, this would interact with a database.
 
-import { Child } from '@vcarpool/shared';
+import { Child } from '@carpool/shared';
 
 export class ChildService {
   private static children: Child[] = [

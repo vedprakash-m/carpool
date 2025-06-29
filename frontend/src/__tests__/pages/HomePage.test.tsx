@@ -50,11 +50,11 @@ describe('HomePage - Streamlined Family Onboarding Entry', () => {
     jest.clearAllMocks();
   });
 
-  describe('Family-Oriented VCarpool Branding', () => {
-    it('should display VCarpool brand with family-focused messaging', () => {
+  describe('Family-Oriented Carpool Branding', () => {
+    it('should display Carpool brand with family-focused messaging', () => {
       render(<HomePage />);
 
-      expect(screen.getByText('VCarpool')).toBeInTheDocument();
+      expect(screen.getByText('Carpool')).toBeInTheDocument();
       expect(
         screen.getByRole('link', { name: /sign in/i })
       ).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe('HomePage - Streamlined Family Onboarding Entry', () => {
       expect(joinTodayLink).toHaveAttribute('href', '/register');
     });
 
-    it('should display car icon for VCarpool branding', () => {
+    it('should display car icon for Carpool branding', () => {
       render(<HomePage />);
 
       // Check for SVG elements that represent the car icon
@@ -217,7 +217,7 @@ describe('HomePage - Streamlined Family Onboarding Entry', () => {
       ).toBeInTheDocument();
       expect(
         screen.getByText(
-          /VCarpool makes school transportation coordination simple and organized for busy families/i
+          /Carpool makes school transportation coordination simple and organized for busy families/i
         )
       ).toBeInTheDocument();
     });
@@ -308,7 +308,7 @@ describe('HomePage - Streamlined Family Onboarding Entry', () => {
     });
   });
 
-  describe('VCarpool Brand Consistency', () => {
+  describe('Carpool Brand Consistency', () => {
     it('should use consistent primary color theming', () => {
       render(<HomePage />);
 

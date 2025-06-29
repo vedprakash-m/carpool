@@ -10,7 +10,7 @@ const { resetDatabase } = require('./reset-database.js');
 const execAsync = promisify(exec);
 
 export default async function globalTeardown() {
-  console.log('🧹 Starting VCarpool E2E Global Teardown...');
+  console.log('🧹 Starting Carpool E2E Global Teardown...');
 
   try {
     // Step 1: Clean up test data
@@ -39,7 +39,6 @@ export default async function globalTeardown() {
     }
 
     console.log('✅ E2E environment teardown completed successfully');
-
   } catch (error) {
     console.error('❌ E2E teardown failed:', error);
     // Don't throw here as teardown failures shouldn't fail the test run

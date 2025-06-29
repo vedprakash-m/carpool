@@ -27,7 +27,7 @@
       "@/store/*": ["./src/store/*"],
       "@/types/*": ["./src/types/*"],
       "@shared/*": ["../shared/src/*"],
-      "@vcarpool/shared": ["../shared/src"]
+      "@carpool/shared": ["../shared/src"]
     }
   },
   "include": [

@@ -1,7 +1,7 @@
 {
-  "name": "@vcarpool/e2e-tests",
+  "name": "@carpool/e2e-tests",
   "version": "1.0.0",
-  "description": "Comprehensive E2E testing suite for VCarpool application",
+  "description": "Comprehensive E2E testing suite for Carpool application",
   "private": true,
   "scripts": {
     "test:e2e": "playwright test",

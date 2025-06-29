@@ -7,7 +7,7 @@ import {
 import { container } from "../../container";
 import { TripService } from "../../services/trip.service";
 import { ILogger } from "../../utils/logger";
-import { ApiResponse, TripStats, tripStatsQuerySchema } from "@vcarpool/shared";
+import { ApiResponse, TripStats, tripStatsQuerySchema } from "@carpool/shared";
 import {
   authenticate,
   validateQuery,

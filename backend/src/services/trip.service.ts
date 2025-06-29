@@ -6,7 +6,7 @@ import {
   UpdateTripRequest,
   ApiResponse,
   User,
-} from '@vcarpool/shared';
+} from '@carpool/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { EmailService } from './email.service';
 import { TripRepository } from '../repositories/trip.repository';

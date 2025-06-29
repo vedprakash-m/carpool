@@ -6,7 +6,7 @@ import {
 } from "@azure/functions";
 import "reflect-metadata";
 import { container } from "../../container";
-import { resetPasswordSchema } from "@vcarpool/shared";
+import { resetPasswordSchema } from "@carpool/shared";
 import {
   compose,
   validateBody,

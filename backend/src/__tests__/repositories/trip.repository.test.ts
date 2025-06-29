@@ -6,7 +6,7 @@
  */
 
 import { TripRepository } from '../../repositories/trip.repository';
-import { Trip, TripStatus } from '@vcarpool/shared';
+import { Trip, TripStatus } from '@carpool/shared';
 
 // Mock the CosmosDB container
 const mockContainer = {

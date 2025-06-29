@@ -1,4 +1,4 @@
-# Test Credentials for VCarpool
+# Test Credentials for Carpool
 
 ## Mock Authentication (Development/Testing Only)
 

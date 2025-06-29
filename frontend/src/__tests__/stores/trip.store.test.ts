@@ -6,7 +6,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { useTripStore } from '../../store/trip.store';
 import { tripApi } from '../../lib/trip-api';
-import { Trip, TripStatus } from '@vcarpool/shared';
+import { Trip, TripStatus } from '@carpool/shared';
 
 // Mock the API
 jest.mock('../../lib/trip-api', () => ({

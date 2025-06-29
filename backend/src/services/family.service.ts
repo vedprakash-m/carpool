@@ -1,13 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Family } from '@vcarpool/shared';
+import { Family } from '@carpool/shared';
 import { FamilyRepository } from '../repositories/family.repository';
 import { ILogger } from '../utils/logger';
 
 export class FamilyService {
-  constructor(
-    private familyRepository: FamilyRepository,
-    private logger: ILogger,
-  ) {}
+  constructor(private familyRepository: FamilyRepository, private logger: ILogger) {}
 
   private static families: Family[] = [
     // Mock data

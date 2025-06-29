@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Starting vCarpool frontend deployment..."
+echo "🚀 Starting Carpool frontend deployment..."
 
 # Get the current working directory
 echo "📍 Current directory: $(pwd)"
@@ -28,15 +28,15 @@ if [ -d "../shared" ]; then
   cd ../frontend
   
   # Create the node_modules directory structure
-  mkdir -p node_modules/@vcarpool/shared
+  mkdir -p node_modules/@carpool/shared
   
   # Copy the built shared package
   if [ -d "../shared/dist" ]; then
-    cp -r ../shared/dist/* node_modules/@vcarpool/shared/ 2>/dev/null || echo "⚠️  No dist files to copy"
+    cp -r ../shared/dist/* node_modules/@carpool/shared/ 2>/dev/null || echo "⚠️  No dist files to copy"
   fi
   
   if [ -f "../shared/package.json" ]; then
-    cp ../shared/package.json node_modules/@vcarpool/shared/package.json 2>/dev/null || echo "⚠️  No package.json to copy"
+    cp ../shared/package.json node_modules/@carpool/shared/package.json 2>/dev/null || echo "⚠️  No package.json to copy"
   fi
   
   echo "✅ Shared package copied successfully"
@@ -48,9 +48,9 @@ echo "🏗️  Installing frontend dependencies..."
 npm ci --prefer-offline --no-audit --no-fund
 
 echo "🔍 Verifying shared package..."
-if [ -d "node_modules/@vcarpool/shared" ]; then
+if [ -d "node_modules/@carpool/shared" ]; then
   echo "✅ Shared package found in node_modules"
-  ls -la node_modules/@vcarpool/shared/
+  ls -la node_modules/@carpool/shared/
 else
   echo "❌ Shared package not found in node_modules"
 fi

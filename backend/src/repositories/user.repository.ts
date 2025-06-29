@@ -1,5 +1,5 @@
 import { Container } from '@azure/cosmos';
-import { User } from '@vcarpool/shared';
+import { User } from '@carpool/shared';
 import { UserRepositoryPort } from '../core/user/ports/UserRepositoryPort';
 
 export class UserRepository implements UserRepositoryPort {

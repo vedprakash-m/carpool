@@ -1,7 +1,7 @@
 {
-  "name": "@vcarpool/backend",
+  "name": "@carpool/backend",
   "version": "1.0.0",
-  "description": "Azure Functions backend for vcarpool application",
+  "description": "Azure Functions backend for carpool application",
   "main": "dist/index.js",
   "engines": {
     "node": ">=18.0.0",
@@ -11,7 +11,7 @@
     "build": "npm run clean && tsc && npm run setup-functions && npm run ensure-functions",
     "dev": "tsc --watch",
     "start": "func start",
-    "deploy": "npm run build && func azure functionapp publish vcarpool-functions",
+    "deploy": "npm run build && func azure functionapp publish carpool-functions",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -27,7 +27,7 @@
     "clean": "rimraf dist",
     "setup-functions": "node scripts/setup-functions.js",
     "ensure-functions": "node scripts/ensure-functions.js",
-    "deploy:azure": "func azure functionapp publish vcarpool-api-manual --typescript"
+    "deploy:azure": "func azure functionapp publish carpool-api-manual --typescript"
   },
   "dependencies": {
     "@azure/cosmos": "^4.4.1",
@@ -43,7 +43,7 @@
     "@opentelemetry/sdk-trace-base": "^2.0.1",
     "@opentelemetry/semantic-conventions": "^1.34.0",
     "@types/lru-cache": "^7.10.9",
-    "@vcarpool/shared": "file:../shared",
+    "@carpool/shared": "file:../shared",
     "applicationinsights": "^3.7.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",

@@ -1,5 +1,5 @@
 /**
- * Performance optimization hooks for VCarpool application
+ * Performance optimization hooks for Carpool application
  * Provides utilities for render tracking, debouncing, throttling, and memory management
  */
 

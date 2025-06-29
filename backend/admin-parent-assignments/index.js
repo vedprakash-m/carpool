@@ -1,9 +1,9 @@
-const { CosmosClient } = require("@azure/cosmos");
-const { MockDataFactory } = require("../src/utils/mock-data-wrapper");
-const UnifiedResponseHandler = require("../src/utils/unified-response.service");
+const { CosmosClient } = require('@azure/cosmos');
+const { MockDataFactory } = require('../src/utils/mock-data-wrapper');
+const UnifiedResponseHandler = require('../src/utils/unified-response.service');
 
 module.exports = async function (context, req) {
-  context.log("Parent Assignments API called");
+  context.log('Parent Assignments API called');
 
   // Handle preflight requests
   const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
@@ -24,7 +24,7 @@ module.exports = async function (context, req) {
     }
 
     // TODO: Verify parent role from JWT token
-    const token = req.headers.authorization.split(" ")[1];
+    const token = req.headers.authorization.split(' ')[1];
 
     // Initialize Cosmos DB (use environment variables or fallback to mock)
     let assignmentsContainer = null;
@@ -35,49 +35,42 @@ module.exports = async function (context, req) {
         endpoint: process.env.COSMOS_DB_ENDPOINT,
         key: process.env.COSMOS_DB_KEY,
       });
-      const database = cosmosClient.database("vcarpool");
-      assignmentsContainer = database.container("rideAssignments");
-      usersContainer = database.container("users");
+      const database = cosmosClient.database('carpool');
+      assignmentsContainer = database.container('rideAssignments');
+      usersContainer = database.container('users');
     }
 
     // Set current week as default if no week specified
     const targetWeek = weekStartDate || getCurrentMondayDate();
 
     switch (method) {
-      case "GET":
+      case 'GET':
         const result = await getParentAssignments(
           assignmentsContainer,
           usersContainer,
           targetWeek,
-          context
+          context,
         );
         context.res = result;
         return;
       default:
-        context.res = UnifiedResponseHandler.methodNotAllowedError(
-          `Method ${method} not allowed`
-        );
+        context.res = UnifiedResponseHandler.methodNotAllowedError(`Method ${method} not allowed`);
         return;
     }
   } catch (error) {
     context.res = UnifiedResponseHandler.internalError(
-      "Failed to process parent assignments",
-      error.message
+      'Failed to process parent assignments',
+      error.message,
     );
   }
 };
 
-async function getParentAssignments(
-  assignmentsContainer,
-  usersContainer,
-  weekStartDate,
-  context
-) {
+async function getParentAssignments(assignmentsContainer, usersContainer, weekStartDate, context) {
   try {
     // Validate week start date format
     if (!weekStartDate || !UnifiedResponseHandler.isValidDate(weekStartDate)) {
       return UnifiedResponseHandler.validationError(
-        "Invalid week start date format. Expected YYYY-MM-DD."
+        'Invalid week start date format. Expected YYYY-MM-DD.',
       );
     }
 
@@ -85,15 +78,15 @@ async function getParentAssignments(
       // Get assignments from Cosmos DB
       const { resources: assignments } = await assignmentsContainer.items
         .query({
-          query: "SELECT * FROM c WHERE c.weekStartDate = @weekStartDate",
-          parameters: [{ name: "@weekStartDate", value: weekStartDate }],
+          query: 'SELECT * FROM c WHERE c.weekStartDate = @weekStartDate',
+          parameters: [{ name: '@weekStartDate', value: weekStartDate }],
         })
         .fetchAll();
 
       // Get user details for contact information
       const { resources: users } = await usersContainer.items
         .query(
-          "SELECT c.id, c.firstName, c.lastName, c.email, c.phoneNumber FROM c WHERE c.role = 'parent'"
+          "SELECT c.id, c.firstName, c.lastName, c.email, c.phoneNumber FROM c WHERE c.role = 'parent'",
         )
         .fetchAll();
 
@@ -116,9 +109,7 @@ async function getParentAssignments(
 
         return {
           ...assignment,
-          driverName: driver
-            ? `${driver.firstName} ${driver.lastName}`
-            : "Unknown Driver",
+          driverName: driver ? `${driver.firstName} ${driver.lastName}` : 'Unknown Driver',
           driverContact: {
             email: driver?.email,
             phoneNumber: driver?.phoneNumber,
@@ -139,7 +130,7 @@ async function getParentAssignments(
       return UnifiedResponseHandler.success(mockAssignments);
     }
   } catch (error) {
-    context.log.error("Get parent assignments error:", error);
+    context.log.error('Get parent assignments error:', error);
     throw error;
   }
 }
@@ -151,7 +142,7 @@ function getCurrentMondayDate() {
   const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
   const monday = new Date(today);
   monday.setDate(today.getDate() + daysUntilMonday);
-  return monday.toISOString().split("T")[0];
+  return monday.toISOString().split('T')[0];
 }
 
 // Helper function to validate date format
@@ -173,14 +164,9 @@ function getMockParentAssignments(weekStartDate) {
     totalAssignments: assignments.length,
     weekSummary: {
       totalTrips: assignments.length,
-      totalPassengers: assignments.reduce(
-        (sum, assignment) => sum + assignment.passengerCount,
-        0
-      ),
-      dropoffTrips: assignments.filter((a) => a.routeType === "school_dropoff")
-        .length,
-      pickupTrips: assignments.filter((a) => a.routeType === "school_pickup")
-        .length,
+      totalPassengers: assignments.reduce((sum, assignment) => sum + assignment.passengerCount, 0),
+      dropoffTrips: assignments.filter((a) => a.routeType === 'school_dropoff').length,
+      pickupTrips: assignments.filter((a) => a.routeType === 'school_pickup').length,
       estimatedDrivingTime: `${assignments.length} hours`,
     },
   };

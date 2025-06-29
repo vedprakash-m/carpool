@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Parent Dashboard - VCarpool',
+  title: 'Parent Dashboard - Carpool',
   description:
     "Manage your family's carpool activities, assignments, and preferences",
 };

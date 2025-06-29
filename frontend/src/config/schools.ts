@@ -1,4 +1,4 @@
-// School and Grade Configuration for VCarpool
+// School and Grade Configuration for Carpool
 export interface School {
   id: string;
   name: string;

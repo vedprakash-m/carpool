@@ -12,9 +12,9 @@ interface TokenData {
 }
 
 class SecureStorage {
-  private readonly TOKEN_KEY = 'vcarpool_token';
-  private readonly REFRESH_TOKEN_KEY = 'vcarpool_refresh_token';
-  private readonly EXPIRES_KEY = 'vcarpool_token_expires';
+  private readonly TOKEN_KEY = 'carpool_token';
+  private readonly REFRESH_TOKEN_KEY = 'carpool_refresh_token';
+  private readonly EXPIRES_KEY = 'carpool_token_expires';
 
   /**
    * Store tokens securely

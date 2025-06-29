@@ -1,4 +1,4 @@
-# VCarpool Project Metadata & Technical Reference
+# Carpool Project Metadata & Technical Reference
 
 _Last Updated: June 21, 2025_
 
@@ -70,7 +70,7 @@ vcarpool/
 
 ### **Multi-Resource Group Architecture**
 
-VCarpool uses a cost-optimized architecture that separates persistent storage from compute:
+Carpool uses a cost-optimized architecture that separates persistent storage from compute:
 
 **Database Tier** (`vcarpool-db-rg`):
 
@@ -506,7 +506,7 @@ npm run validate:local    # Complete local validation
 
 ---
 
-_This metadata serves as the authoritative technical reference for the VCarpool project. All metrics and status information are based on the actual codebase as of June 21, 2025._
+_This metadata serves as the authoritative technical reference for the Carpool project. All metrics and status information are based on the actual codebase as of June 21, 2025._
 
 ### **Implementation Progress Summary** (June 28, 2025)
 

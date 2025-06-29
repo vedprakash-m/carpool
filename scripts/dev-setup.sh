@@ -51,19 +51,19 @@ for env_file in "${ENV_FILES[@]}"; do
     echo "Creating $env_file..."
     if [ "$env_file" = ".env" ]; then
       cat > "$env_file" << EOF
-# Root .env file for vCarpool
+# Root .env file for Carpool
 NODE_ENV=development
 EOF
     elif [ "$env_file" = "backend/.env" ]; then
       cat > "$env_file" << EOF
-# Backend .env file for vCarpool
+# Backend .env file for Carpool
 NODE_ENV=development
 JWT_SECRET=local-dev-jwt-secret
 JWT_REFRESH_SECRET=local-dev-refresh-secret
 EOF
     elif [ "$env_file" = "frontend/.env" ]; then
       cat > "$env_file" << EOF
-# Frontend .env file for vCarpool
+# Frontend .env file for Carpool
 NEXT_PUBLIC_API_URL=http://localhost:7071/api
 EOF
     fi

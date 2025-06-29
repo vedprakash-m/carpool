@@ -86,7 +86,7 @@ export default function OnboardingModal() {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">
-                    VCarpool Setup
+                    Carpool Setup
                   </h2>
                   <p className="text-sm text-gray-500">
                     Step {onboardingState.currentStepIndex + 1} of{' '}

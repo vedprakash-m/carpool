@@ -5,7 +5,7 @@ import {
   app,
 } from "@azure/functions";
 import { container } from "../../container";
-import { tripIdParamSchema, Trip } from "@vcarpool/shared";
+import { tripIdParamSchema, Trip } from "@carpool/shared";
 import {
   compose,
   requestId,

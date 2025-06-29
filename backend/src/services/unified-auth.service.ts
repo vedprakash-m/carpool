@@ -1,13 +1,13 @@
 /**
  * Unified Authentication Service
- * Consolidates all authentication logic across VCarpool backend
+ * Consolidates all authentication logic across Carpool backend
  */
 
 import { HttpRequest } from '@azure/functions';
 import { AuthService } from '../services/auth.service';
 import { container } from '../container';
 import { ILogger } from '../utils/logger';
-import { User, UserRole, UserPreferences, RolePermissions } from '@vcarpool/shared';
+import { User, UserRole, UserPreferences, RolePermissions } from '@carpool/shared';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -45,9 +45,9 @@ export interface MockUser {
 }
 
 export class UnifiedAuthService {
-  private static readonly JWT_SECRET = process.env.JWT_SECRET || 'temp-jwt-secret-vcarpool';
+  private static readonly JWT_SECRET = process.env.JWT_SECRET || 'temp-jwt-secret-carpool';
   private static readonly JWT_REFRESH_SECRET =
-    process.env.JWT_REFRESH_SECRET || 'temp-refresh-secret-vcarpool';
+    process.env.JWT_REFRESH_SECRET || 'temp-refresh-secret-carpool';
 
   /**
    * Mock users for development/testing
@@ -56,7 +56,7 @@ export class UnifiedAuthService {
   private static readonly mockUsers: MockUser[] = [
     {
       id: 'admin-id',
-      email: 'admin@vcarpool.com',
+      email: 'admin@carpool.com',
       firstName: 'Admin',
       lastName: 'User',
       role: 'admin' as UserRole,

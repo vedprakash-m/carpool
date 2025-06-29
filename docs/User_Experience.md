@@ -1,4 +1,4 @@
-# VCarpool User Experience Documentation
+# Carpool User Experience Documentation
 
 **Version**: 3.0  
 **Last Updated**: January 2024  
@@ -179,9 +179,9 @@
 ```
 WIREFRAME: Registration-First Landing
 ┌─────────────────────────────────────────────────────────────┐
-│ 🚗 VCarpool                         [Help] [Sign in with Microsoft] │
+│ 🚗 Carpool                         [Help] [Sign in with Microsoft] │
 ├─────────────────────────────────────────────────────────────┤
-│                Welcome to VCarpool                          │
+│                Welcome to Carpool                          │
 │                                                             │
 │     "Safe, reliable carpooling for school families"        │
 │                                                             │
@@ -209,7 +209,7 @@ WIREFRAME: Registration-First Landing
 
 WIREFRAME: Complete Registration Required
 ┌─────────────────────────────────────────────────────────────┐
-│ Create Your VCarpool Account                                │
+│ Create Your Carpool Account                                │
 ├─────────────────────────────────────────────────────────────┤
 │ Complete your profile to search and join carpool groups    │
 │                                                             │
@@ -298,9 +298,9 @@ WIREFRAME: Registration Validation Steps
 │                              [← Back] [Create Account →]   │
 └─────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────┐
-│ 🚗 VCarpool                         [Help] [Sign in with Microsoft] │
+│ 🚗 Carpool                         [Help] [Sign in with Microsoft] │
 ├─────────────────────────────────────────────────────────────┤
-│                Welcome to VCarpool                          │
+│                Welcome to Carpool                          │
 │                                                             │
 │        "Find your perfect carpool community"               │
 │                                                             │
@@ -424,7 +424,7 @@ WIREFRAME: Initial Preferences
 ```
 WIREFRAME: Mobile Registration Flow
 ┌─────────────────────────┐ ┌─────────────────────────┐ ┌─────────────────────────┐
-│ ☰ VCarpool         [?] │ │ ☰ Children Info    [?] │ │ ☰ Preferences      [?] │
+│ ☰ Carpool         [?] │ │ ☰ Children Info    [?] │ │ ☰ Preferences      [?] │
 ├─────────────────────────┤ ├─────────────────────────┤ ├─────────────────────────┤
 │ Join the Carpool       │ │ Add Your Children      │ │ Your Availability      │
 │ Community              │ │                        │ │                        │
@@ -453,7 +453,7 @@ WIREFRAME: Mobile Registration Flow
 ```
 WIREFRAME: Group Discovery Dashboard
 ┌─────────────────────────────────────────────────────────────┐
-│ VCarpool    [Dashboard] [My Groups] [Preferences] [Profile] │
+│ Carpool    [Dashboard] [My Groups] [Preferences] [Profile] │
 ├─────────────────────────────────────────────────────────────┤
 │ 🔍 Discover Carpool Groups                                  │
 │                                                             │
@@ -1006,7 +1006,7 @@ WIREFRAME: Cross-Group Coordination Alert
 ```
 WIREFRAME: Mobile Navigation Pattern
 ┌─────────────────────────┐
-│ ☰ VCarpool         🔔3 │ ← Header: Hamburger + App Name + Notifications
+│ ☰ Carpool         🔔3 │ ← Header: Hamburger + App Name + Notifications
 ├─────────────────────────┤
 │                         │ ← Content Area: Role-specific dashboard
 │    Quick Actions        │
@@ -1854,7 +1854,7 @@ WIREFRAME: Super Admin Reactivation Review
 
 ```
 ┌─────────────────────────┐
-│ ☰ VCarpool        🔔 3 │
+│ ☰ Carpool        🔔 3 │
 ├─────────────────────────┤
 │ Good morning, Mike! ☀️  │
 │                         │
@@ -2697,7 +2697,7 @@ Status Card:
 
 ## Conclusion
 
-This User Experience documentation serves as the definitive guide for VCarpool's design philosophy, user workflows, and future development priorities. The system has been designed with safety, simplicity, and community building as core principles, resulting in a 90% complete platform that successfully addresses the complex coordination challenges of school carpooling.
+This User Experience documentation serves as the definitive guide for Carpool's design philosophy, user workflows, and future development priorities. The system has been designed with safety, simplicity, and community building as core principles, resulting in a 90% complete platform that successfully addresses the complex coordination challenges of school carpooling.
 
 The identified gaps and future roadmap provide clear direction for continued development, with mobile app creation and real-time features identified as the highest priorities for Phase 4 implementation.
 
@@ -2707,7 +2707,7 @@ The identified gaps and future roadmap provide clear direction for continued dev
 
 **Document Control**:
 
-- Owner: VCarpool Product Team
+- Owner: Carpool Product Team
 - Review Cycle: After each major phase completion
 - Stakeholders: Design, Engineering, Product Management
 - Last Review: Phase 3 Completion - January 2024

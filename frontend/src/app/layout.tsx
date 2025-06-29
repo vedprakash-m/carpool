@@ -20,13 +20,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'VCarpool - Smart Carpool Management',
+  title: 'Carpool - Smart Carpool Management',
   description:
     'Efficient carpool management for schools and families with real-time coordination',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'VCarpool',
+    title: 'Carpool',
   },
   other: {
     'mobile-web-app-capable': 'yes',

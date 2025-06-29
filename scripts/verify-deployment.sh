@@ -7,7 +7,7 @@ echo "==========================================="
 API_BASE="https://vcarpool-api-prod.azurewebsites.net/api"
 
 # Test credentials
-TEST_EMAIL="admin@vcarpool.com"
+TEST_EMAIL="admin@carpool.com"
 TEST_PASSWORD="${TEST_PASSWORD:-test-admin-password}"
 
 echo ""

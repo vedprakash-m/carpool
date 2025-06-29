@@ -27,7 +27,7 @@ jest.mock('next/navigation', () => ({
 const mockAuthStore = {
   user: {
     id: 'test-user-123',
-    email: 'admin@vcarpool.com',
+    email: 'admin@carpool.com',
     firstName: 'Admin',
     lastName: 'User',
     role: 'admin',
@@ -154,7 +154,7 @@ describe('Page Components', () => {
   describe('Admin Dashboard Page', () => {
     it('should validate admin dashboard layout structure', () => {
       const adminDashboardLayout = {
-        header: 'Admin Dashboard - VCarpool',
+        header: 'Admin Dashboard - Carpool',
         navigationSections: [
           'User Management',
           'Schedule Generation',

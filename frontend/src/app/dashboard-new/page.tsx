@@ -145,7 +145,7 @@ export default function DashboardPage() {
             <div className="flex items-center">
               <CarIcon className="h-8 w-8 text-primary-600" />
               <span className="ml-2 text-2xl font-bold text-gray-900">
-                VCarpool
+                Carpool
               </span>
             </div>
             <div className="flex items-center space-x-4">

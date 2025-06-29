@@ -2,7 +2,7 @@
 param location string = resourceGroup().location
 
 @description('App name that will be used as prefix for all resources')
-param appName string = 'vcarpool'
+param appName string = 'carpool'
 
 @description('Environment name (dev, test, prod)')
 @allowed([

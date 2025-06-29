@@ -1,4 +1,4 @@
-# VCarpool Testing Strategy - Quality-First Approach
+# Carpool Testing Strategy - Quality-First Approach
 
 ## 🎯 **Phase 1: Critical Path Coverage (Week 1)**
 

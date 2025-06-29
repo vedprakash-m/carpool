@@ -2,7 +2,7 @@
 
 /**
  * Accessible UI Components
- * WCAG 2.1 AA compliant components for VCarpool
+ * WCAG 2.1 AA compliant components for Carpool
  */
 
 import React, { forwardRef, useEffect, useRef, useState } from 'react';

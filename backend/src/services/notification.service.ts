@@ -4,7 +4,7 @@ import {
   CreateNotificationRequest,
   User,
   Trip,
-} from '@vcarpool/shared';
+} from '@carpool/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { Container } from '@azure/cosmos';
 import { ILogger } from '../utils/logger';

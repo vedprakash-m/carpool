@@ -31,7 +31,7 @@ export default function DebugPage() {
     try {
       console.log('Testing simple fetch without custom headers...');
       const response = await fetch(
-        'https://vcarpool-api-prod.azurewebsites.net/api/trips/stats'
+        'https://carpool-api-prod.azurewebsites.net/api/trips/stats'
       );
       const data = await response.json();
       console.log('Simple fetch response:', data);
@@ -196,7 +196,7 @@ export default function DebugPage() {
           <div className="space-y-2">
             <div>
               <a
-                href="https://vcarpool-api-prod.azurewebsites.net/api/trips/stats"
+                href="https://carpool-api-prod.azurewebsites.net/api/trips/stats"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline"
@@ -206,7 +206,7 @@ export default function DebugPage() {
             </div>
             <div>
               <a
-                href="https://vcarpool-api-prod.azurewebsites.net/api/users/me"
+                href="https://carpool-api-prod.azurewebsites.net/api/users/me"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline"

@@ -21,7 +21,7 @@ export class PreferenceRepository {
     // NOTE: In-memory fallback until Cosmos connection wired in DatabaseService
     if (process.env.COSMOSDB_CONNECTION_STRING) {
       const client = new CosmosClient(process.env.COSMOSDB_CONNECTION_STRING);
-      const database = client.database(process.env.COSMOSDB_DATABASE || 'vcarpool');
+      const database = client.database(process.env.COSMOSDB_DATABASE || 'carpool');
       this.container = database.container(
         process.env.COSMOSDB_PREFERENCES_CONTAINER || 'preferences',
       );

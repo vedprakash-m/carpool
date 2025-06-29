@@ -1,5 +1,5 @@
 import { Container } from '@azure/cosmos';
-import { Trip } from '@vcarpool/shared';
+import { Trip } from '@carpool/shared';
 import { TripRepositoryPort } from '../core/trips/ports/TripRepositoryPort';
 
 export class TripRepository implements TripRepositoryPort {

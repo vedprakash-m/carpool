@@ -298,7 +298,7 @@ class ConfigurationManager {
       },
       email: {
         provider: 'sendgrid',
-        fromEmail: 'noreply@vcarpool.com',
+        fromEmail: 'noreply@carpool.com',
         fromName: 'vCarpool',
       },
       cache: {
@@ -383,7 +383,7 @@ class ConfigurationManager {
         smtpPort: env.SMTP_PORT ? parseInt(env.SMTP_PORT) : undefined,
         smtpUser: env.SMTP_USER,
         smtpPassword: env.SMTP_PASSWORD,
-        fromEmail: env.FROM_EMAIL || 'noreply@vcarpool.com',
+        fromEmail: env.FROM_EMAIL || 'noreply@carpool.com',
         fromName: env.FROM_NAME || 'vCarpool',
       },
       cache: {

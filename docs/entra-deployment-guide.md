@@ -14,7 +14,7 @@ This guide provides step-by-step instructions for deploying the Microsoft Entra 
 
    ```bash
    # Create production Azure AD App Registration
-   az ad app create --display-name "VCarpool Production" \
+   az ad app create --display-name "Carpool Production" \
      --sign-in-audience AzureADMyOrg \
      --web-redirect-uris "https://vcarpool.com/" \
      --spa-redirect-uris "https://vcarpool.com/auth/callback"
@@ -187,9 +187,9 @@ az network dns record-set cname set-record \
    ```
    Subject: New Login Option Available - Microsoft Account Integration
 
-   Dear VCarpool Users,
+   Dear Carpool Users,
 
-   We're excited to announce that you can now sign in to VCarpool using your Microsoft account!
+   We're excited to announce that you can now sign in to Carpool using your Microsoft account!
    This provides enhanced security and convenience.
 
    What's New:
@@ -205,7 +205,7 @@ az network dns record-set cname set-record \
    Questions? Contact support@vcarpool.com
 
    Best regards,
-   The VCarpool Team
+   The Carpool Team
    ```
 
 2. **Monitor Metrics**

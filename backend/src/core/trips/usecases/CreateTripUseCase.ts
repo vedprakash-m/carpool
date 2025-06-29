@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { Trip, TripStatus, CreateTripRequest, User } from "@vcarpool/shared";
+import { Trip, TripStatus, CreateTripRequest, User } from "@carpool/shared";
 import { TripRepositoryPort } from "../ports/TripRepositoryPort";
 
 export class CreateTripUseCase {

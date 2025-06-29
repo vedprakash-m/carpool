@@ -25,7 +25,7 @@ export const openApiSpec = {
     `,
     contact: {
       name: 'vCarpool Support',
-      email: 'support@vcarpool.com',
+      email: 'support@carpool.com',
     },
     license: {
       name: 'MIT',

@@ -79,7 +79,7 @@ test.describe('End-to-End User Journeys', () => {
 
       // Step 11: Verify successful onboarding
       await expect(page).toHaveURL(/\/dashboard/);
-      await expect(page.locator('text=Welcome to VCarpool, John!')).toBeVisible();
+      await expect(page.locator('text=Welcome to Carpool, John!')).toBeVisible();
       await expect(page.locator('[data-testid="onboarding-complete"]')).toBeVisible();
 
       // Cleanup

@@ -7,7 +7,7 @@ const { MongoClient } = require('mongodb');
 
 const MONGODB_URL =
   process.env.MONGODB_URL ||
-  'mongodb://testuser:testpass@localhost:27018/vcarpool_test?authSource=admin';
+  'mongodb://testuser:testpass@localhost:27018/carpool_test?authSource=admin';
 
 async function resetDatabase() {
   console.log('🔄 Starting database reset...');
@@ -16,7 +16,7 @@ async function resetDatabase() {
 
   try {
     await client.connect();
-    const db = client.db('vcarpool_test');
+    const db = client.db('carpool_test');
 
     // Get all collections
     const collections = await db.listCollections().toArray();

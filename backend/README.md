@@ -1,6 +1,6 @@
-# VCarpool Backend
+# Carpool Backend
 
-Azure Functions backend for the VCarpool application.
+Azure Functions backend for the Carpool application.
 
 ## Health Endpoint
 

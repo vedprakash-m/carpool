@@ -1,6 +1,6 @@
 import { HttpRequest, HttpResponseInit } from '@azure/functions';
 import { ZodSchema } from 'zod';
-import { ApiResponse } from '@vcarpool/shared';
+import { ApiResponse } from '@carpool/shared';
 
 /**
  * Middleware to validate URL query parameters against a schema

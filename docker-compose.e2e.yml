@@ -1,5 +1,5 @@
-# VCarpool E2E Testing Environment
-# This docker-compose file sets up an isolated testing environment for the vcarpool application
+# Carpool E2E Testing Environment
+# This docker-compose file sets up an isolated testing environment for the carpool application
 
 version: '3.8'
 
@@ -7,19 +7,19 @@ services:
   # MongoDB instance dedicated for E2E testing
   mongodb-test:
     image: mongo:7-jammy
-    container_name: vcarpool-mongodb-test
+    container_name: carpool-mongodb-test
     restart: no
     ports:
       - '27018:27017' # Different port to avoid conflicts with local MongoDB
     environment:
       MONGO_INITDB_ROOT_USERNAME: testuser
       MONGO_INITDB_ROOT_PASSWORD: testpass
-      MONGO_INITDB_DATABASE: vcarpool_test
+      MONGO_INITDB_DATABASE: carpool_test
     volumes:
       - mongodb_test_data:/data/db
       - ./e2e/test-data/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
-      - vcarpool-test-network
+      - carpool-test-network
     healthcheck:
       test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 10s
@@ -32,13 +32,13 @@ services:
     build:
       context: ./backend
       dockerfile: ../e2e/docker/Dockerfile.backend-test
-    container_name: vcarpool-backend-test
+    container_name: carpool-backend-test
     restart: no
     ports:
       - '7072:7071' # Different port to avoid conflicts
     environment:
       - NODE_ENV=test
-      - COSMOS_DB_CONNECTION_STRING=mongodb://testuser:testpass@mongodb-test:27017/vcarpool_test?authSource=admin
+      - COSMOS_DB_CONNECTION_STRING=mongodb://testuser:testpass@mongodb-test:27017/carpool_test?authSource=admin
       - STORAGE_ACCOUNT_CONNECTION_STRING=UseDevelopmentStorage=true
       - JWT_SECRET=test-jwt-secret-for-e2e-only
       - CORS_ORIGIN=http://frontend-test:3000
@@ -48,7 +48,7 @@ services:
       mongodb-test:
         condition: service_healthy
     networks:
-      - vcarpool-test-network
+      - carpool-test-network
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -64,7 +64,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ../e2e/docker/Dockerfile.frontend-test
-    container_name: vcarpool-frontend-test
+    container_name: carpool-frontend-test
     restart: no
     ports:
       - '3001:3000' # Different port to avoid conflicts
@@ -78,7 +78,7 @@ services:
       backend-test:
         condition: service_healthy
     networks:
-      - vcarpool-test-network
+      - carpool-test-network
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -95,13 +95,13 @@ services:
     build:
       context: .
       dockerfile: e2e/docker/Dockerfile.playwright
-    container_name: vcarpool-playwright-tests
+    container_name: carpool-playwright-tests
     restart: no
     environment:
       - NODE_ENV=test
       - FRONTEND_URL=http://frontend-test:3000
       - BACKEND_URL=http://backend-test:7071
-      - MONGODB_URL=mongodb://testuser:testpass@mongodb-test:27017/vcarpool_test?authSource=admin
+      - MONGODB_URL=mongodb://testuser:testpass@mongodb-test:27017/carpool_test?authSource=admin
       - HEADLESS=true
       - CI=true
     depends_on:
@@ -110,7 +110,7 @@ services:
       backend-test:
         condition: service_healthy
     networks:
-      - vcarpool-test-network
+      - carpool-test-network
     volumes:
       - ./e2e:/app/e2e
       - ./e2e/test-results:/app/e2e/test-results
@@ -123,6 +123,6 @@ volumes:
     driver: local
 
 networks:
-  vcarpool-test-network:
+  carpool-test-network:
     driver: bridge
-    name: vcarpool-test-network
+    name: carpool-test-network

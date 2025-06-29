@@ -70,7 +70,7 @@ describe('Navigation - Realistic Implementation Tests', () => {
       render(<Navigation />);
 
       // Logo and branding
-      expect(screen.getByText('VCarpool')).toBeInTheDocument();
+      expect(screen.getByText('Carpool')).toBeInTheDocument();
       expect(screen.getByTestId('truck-icon')).toBeInTheDocument();
 
       // Navigation items
@@ -359,11 +359,11 @@ describe('Navigation - Realistic Implementation Tests', () => {
     it('handles multiple renders correctly', () => {
       const { rerender } = render(<Navigation />);
 
-      expect(screen.getByText('VCarpool')).toBeInTheDocument();
+      expect(screen.getByText('Carpool')).toBeInTheDocument();
 
       rerender(<Navigation />);
 
-      expect(screen.getByText('VCarpool')).toBeInTheDocument();
+      expect(screen.getByText('Carpool')).toBeInTheDocument();
     });
 
     it('maintains consistent behavior across re-renders', () => {
@@ -439,7 +439,7 @@ describe('Navigation - Realistic Implementation Tests', () => {
         rerender(<Navigation />);
       }
 
-      expect(screen.getByText('VCarpool')).toBeInTheDocument();
+      expect(screen.getByText('Carpool')).toBeInTheDocument();
     });
   });
 });

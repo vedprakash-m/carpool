@@ -11,7 +11,7 @@ export default function HomePage() {
             <div className="flex items-center">
               <CarIcon className="h-8 w-8 text-primary-600" />
               <span className="ml-2 text-2xl font-bold text-secondary-900">
-                VCarpool
+                Carpool
               </span>
             </div>
             <div className="flex space-x-4">
@@ -140,7 +140,7 @@ export default function HomePage() {
               Built for School Communities
             </h2>
             <p className="text-lg text-secondary-600 mb-8">
-              VCarpool makes school transportation coordination simple and
+              Carpool makes school transportation coordination simple and
               organized for busy families
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -12,7 +12,7 @@ import {
   PaginatedResponse,
   Trip,
   TripStatus,
-} from "@vcarpool/shared";
+} from "@carpool/shared";
 import { handleError } from "../../utils/error-handler";
 import { quickOptimize } from "../../middleware/phase2-optimization.middleware";
 

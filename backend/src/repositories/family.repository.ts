@@ -1,5 +1,5 @@
 import { Container } from '@azure/cosmos';
-import { Family } from '@vcarpool/shared';
+import { Family } from '@carpool/shared';
 
 export class FamilyRepository {
   constructor(private container: Container) {}

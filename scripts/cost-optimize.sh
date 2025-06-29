@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Cost Optimization Script for VCarpool
+# Cost Optimization Script for Carpool
 # Delete compute resources while preserving database to save costs
 
 set -e
 
 # Configuration
-APP_NAME="vcarpool"
+APP_NAME="carpool"
 ENVIRONMENT="${ENVIRONMENT:-prod}"
 DB_RESOURCE_GROUP="${APP_NAME}-db-rg"
 COMPUTE_RESOURCE_GROUP="${APP_NAME}-rg"

@@ -6,7 +6,7 @@ import {
 } from "@azure/functions";
 import "reflect-metadata";
 import { container } from "../../container";
-import { loginSchema } from "@vcarpool/shared";
+import { loginSchema } from "@carpool/shared";
 import {
   compose,
   validateBody,

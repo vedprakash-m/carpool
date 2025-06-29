@@ -33,7 +33,7 @@ export default function Navigation() {
         {/* Logo */}
         <div className="flex items-center mb-8">
           <CarIcon className="h-8 w-8 text-primary-600" />
-          <span className="ml-2 text-xl font-bold text-gray-900">VCarpool</span>
+          <span className="ml-2 text-xl font-bold text-gray-900">Carpool</span>
         </div>
 
         {/* User Info */}
@@ -58,7 +58,7 @@ export default function Navigation() {
           </div>
         )}
 
-        {/* Note: Individual trip creation removed - VCarpool uses group-based scheduling */}
+        {/* Note: Individual trip creation removed - Carpool uses group-based scheduling */}
 
         {/* Navigation Links */}
         <ul className="space-y-1">

@@ -1,4 +1,4 @@
-import { Trip } from "@vcarpool/shared";
+import { Trip } from "@carpool/shared";
 
 export interface TripRepositoryPort {
   create(trip: Trip): Promise<Trip>;

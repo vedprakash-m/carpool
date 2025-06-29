@@ -9,7 +9,7 @@ import { container } from '../container';
 import { ZodSchema } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthService, JwtPayload } from '../services/auth.service';
-import { UserRole } from '@vcarpool/shared';
+import { UserRole } from '@carpool/shared';
 import { ILogger } from '../utils/logger';
 import { handleError, Errors } from '../utils/error-handler';
 

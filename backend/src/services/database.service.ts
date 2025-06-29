@@ -89,7 +89,7 @@ export class DatabaseService {
     const testUsers: User[] = [
       {
         id: '1',
-        email: 'admin@vcarpool.com',
+        email: 'admin@carpool.com',
         passwordHash: '', // Will be set below
         firstName: 'Admin',
         lastName: 'User',
@@ -102,7 +102,7 @@ export class DatabaseService {
       },
       {
         id: '2',
-        email: 'parent@vcarpool.com',
+        email: 'parent@carpool.com',
         passwordHash: '', // Will be set below
         firstName: 'John',
         lastName: 'Parent',

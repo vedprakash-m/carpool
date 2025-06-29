@@ -9,7 +9,7 @@ export class PushService {
     const publicKey = process.env.VAPID_PUBLIC_KEY;
     const privateKey = process.env.VAPID_PRIVATE_KEY;
     if (publicKey && privateKey) {
-      webpush.setVapidDetails('mailto:support@vcarpool.com', publicKey, privateKey);
+      webpush.setVapidDetails('mailto:support@carpool.com', publicKey, privateKey);
       this.vapidSet = true;
     }
   }

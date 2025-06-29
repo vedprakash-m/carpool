@@ -1,6 +1,6 @@
 # Infrastructure Templates
 
-This directory contains the Azure Bicep templates for VCarpool infrastructure deployment.
+This directory contains the Azure Bicep templates for Carpool infrastructure deployment.
 
 ## 📁 Template Files
 
@@ -40,7 +40,7 @@ This directory contains the Azure Bicep templates for VCarpool infrastructure de
 
 - **Purpose**: Deploy all resources to single resource group (legacy approach)
 - **Target Resource Group**: `vcarpool-rg`
-- **Resources**: All VCarpool resources in one resource group
+- **Resources**: All Carpool resources in one resource group
 - **Status**: Maintained for rollback scenarios
 - **Parameters**: `main.parameters.json`
 - **Usage**: `az deployment group create --resource-group vcarpool-rg --template-file main.bicep --parameters @main.parameters.json`

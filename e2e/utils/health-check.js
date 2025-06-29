@@ -10,7 +10,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:7072';
 const MONGODB_URL =
   process.env.MONGODB_URL ||
-  'mongodb://testuser:testpass@localhost:27018/vcarpool_test?authSource=admin';
+  'mongodb://testuser:testpass@localhost:27018/carpool_test?authSource=admin';
 
 async function healthCheck() {
   console.log('🏥 Starting health check...');
@@ -117,7 +117,7 @@ async function checkDatabase() {
     await client.connect();
 
     // Perform a simple operation
-    const db = client.db('vcarpool_test');
+    const db = client.db('carpool_test');
     await db.admin().ping();
 
     const collections = await db.listCollections().toArray();

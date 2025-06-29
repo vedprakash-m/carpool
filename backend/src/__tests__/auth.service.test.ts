@@ -12,7 +12,7 @@
 
 import 'reflect-metadata';
 import { AuthService, JwtPayload } from '../services/auth.service';
-import { User, UserRole } from '@vcarpool/shared';
+import { User, UserRole } from '@carpool/shared';
 import { UserRepository } from '../repositories/user.repository';
 import { ILogger } from '../utils/logger';
 

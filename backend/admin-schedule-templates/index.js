@@ -1,8 +1,8 @@
-const { CosmosClient } = require("@azure/cosmos");
-const UnifiedResponseHandler = require("../src/utils/unified-response.service");
+const { CosmosClient } = require('@azure/cosmos');
+const UnifiedResponseHandler = require('../src/utils/unified-response.service');
 
 module.exports = async function (context, req) {
-  context.log("Admin Schedule Templates API called");
+  context.log('Admin Schedule Templates API called');
 
   // Handle preflight requests
   const preflightResponse = UnifiedResponseHandler.handlePreflight(req);
@@ -20,7 +20,7 @@ module.exports = async function (context, req) {
     }
 
     // Get token from auth header
-    const token = req.headers.authorization.split(" ")[1];
+    const token = req.headers.authorization.split(' ')[1];
 
     // Initialize Cosmos DB (use environment variables or fallback to mock)
     let cosmosClient = null;
@@ -31,47 +31,33 @@ module.exports = async function (context, req) {
         endpoint: process.env.COSMOS_DB_ENDPOINT,
         key: process.env.COSMOS_DB_KEY,
       });
-      const database = cosmosClient.database("vcarpool");
-      templatesContainer = database.container("scheduleTemplates");
+      const database = cosmosClient.database('carpool');
+      templatesContainer = database.container('scheduleTemplates');
     }
 
     const templateId = req.params.id;
     const method = req.method.toUpperCase();
 
     switch (method) {
-      case "GET":
+      case 'GET':
         context.res = await handleGet(templatesContainer, templateId, context);
         return;
-      case "POST":
+      case 'POST':
         context.res = await handlePost(templatesContainer, req, context);
         return;
-      case "PUT":
-        context.res = await handlePut(
-          templatesContainer,
-          templateId,
-          req,
-          context
-        );
+      case 'PUT':
+        context.res = await handlePut(templatesContainer, templateId, req, context);
         return;
-      case "DELETE":
-        context.res = await handleDelete(
-          templatesContainer,
-          templateId,
-          context
-        );
+      case 'DELETE':
+        context.res = await handleDelete(templatesContainer, templateId, context);
         return;
       default:
-        context.res = UnifiedResponseHandler.methodNotAllowedError(
-          `Method ${method} not allowed`
-        );
+        context.res = UnifiedResponseHandler.methodNotAllowedError(`Method ${method} not allowed`);
         return;
     }
   } catch (error) {
-    context.log.error("Template management error:", error);
-    context.res = UnifiedResponseHandler.internalError(
-      "Internal server error",
-      error.message
-    );
+    context.log.error('Template management error:', error);
+    context.res = UnifiedResponseHandler.internalError('Internal server error', error.message);
   }
 };
 
@@ -81,24 +67,16 @@ async function handleGet(container, templateId, context) {
     if (templateId) {
       // Get specific template
       if (container) {
-        const { resource: template } = await container
-          .item(templateId, templateId)
-          .read();
+        const { resource: template } = await container.item(templateId, templateId).read();
         if (!template) {
-          return UnifiedResponseHandler.notFoundError(
-            "Schedule template not found"
-          );
+          return UnifiedResponseHandler.notFoundError('Schedule template not found');
         }
         return UnifiedResponseHandler.success(template);
       } else {
         // Mock single template
-        const mockTemplate = getMockTemplates().find(
-          (t) => t.id === templateId
-        );
+        const mockTemplate = getMockTemplates().find((t) => t.id === templateId);
         if (!mockTemplate) {
-          return UnifiedResponseHandler.notFoundError(
-            "Schedule template not found"
-          );
+          return UnifiedResponseHandler.notFoundError('Schedule template not found');
         }
         return UnifiedResponseHandler.success(mockTemplate);
       }
@@ -106,7 +84,7 @@ async function handleGet(container, templateId, context) {
       // List all templates
       if (container) {
         const { resources: templates } = await container.items
-          .query("SELECT * FROM c ORDER BY c.dayOfWeek, c.startTime")
+          .query('SELECT * FROM c ORDER BY c.dayOfWeek, c.startTime')
           .fetchAll();
 
         return UnifiedResponseHandler.success({
@@ -131,7 +109,7 @@ async function handleGet(container, templateId, context) {
       }
     }
   } catch (error) {
-    context.log.error("Get templates error:", error);
+    context.log.error('Get templates error:', error);
     throw error;
   }
 }
@@ -143,18 +121,15 @@ async function handlePost(container, req, context) {
 
     // Validate required fields
     const requiredFields = [
-      "dayOfWeek",
-      "startTime",
-      "endTime",
-      "routeType",
-      "description",
-      "maxPassengers",
+      'dayOfWeek',
+      'startTime',
+      'endTime',
+      'routeType',
+      'description',
+      'maxPassengers',
     ];
 
-    const validationError = UnifiedResponseHandler.validateRequiredFields(
-      body,
-      requiredFields
-    );
+    const validationError = UnifiedResponseHandler.validateRequiredFields(body, requiredFields);
     if (validationError) {
       return validationError;
     }
@@ -162,7 +137,7 @@ async function handlePost(container, req, context) {
     // Validate day of week (0-6)
     if (body.dayOfWeek < 0 || body.dayOfWeek > 6) {
       return UnifiedResponseHandler.validationError(
-        "dayOfWeek must be between 0 (Sunday) and 6 (Saturday)"
+        'dayOfWeek must be between 0 (Sunday) and 6 (Saturday)',
       );
     }
 
@@ -170,20 +145,15 @@ async function handlePost(container, req, context) {
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(body.startTime) || !timeRegex.test(body.endTime)) {
       return UnifiedResponseHandler.validationError(
-        "startTime and endTime must be in HH:MM format"
+        'startTime and endTime must be in HH:MM format',
       );
     }
 
     // Validate route type
-    const validRouteTypes = [
-      "school_dropoff",
-      "school_pickup",
-      "multi_stop",
-      "point_to_point",
-    ];
+    const validRouteTypes = ['school_dropoff', 'school_pickup', 'multi_stop', 'point_to_point'];
     if (!validRouteTypes.includes(body.routeType)) {
       return UnifiedResponseHandler.validationError(
-        "routeType must be one of: " + validRouteTypes.join(", ")
+        'routeType must be one of: ' + validRouteTypes.join(', '),
       );
     }
 
@@ -204,25 +174,23 @@ async function handlePost(container, req, context) {
 
     if (container) {
       // Save to Cosmos DB
-      const { resource: createdTemplate } = await container.items.create(
-        template
-      );
-      context.log("Template created:", createdTemplate.id);
+      const { resource: createdTemplate } = await container.items.create(template);
+      context.log('Template created:', createdTemplate.id);
 
       return UnifiedResponseHandler.created(
         createdTemplate,
-        "Schedule template created successfully"
+        'Schedule template created successfully',
       );
     } else {
       // Mock creation
-      context.log("Mock template created:", template.id);
+      context.log('Mock template created:', template.id);
       return UnifiedResponseHandler.created(
         template,
-        "Schedule template created successfully (mock mode)"
+        'Schedule template created successfully (mock mode)',
       );
     }
   } catch (error) {
-    context.log.error("Create template error:", error);
+    context.log.error('Create template error:', error);
     throw error;
   }
 }
@@ -231,22 +199,16 @@ async function handlePost(container, req, context) {
 async function handlePut(container, templateId, req, context) {
   try {
     if (!templateId) {
-      return UnifiedResponseHandler.validationError(
-        "Template ID is required for updates"
-      );
+      return UnifiedResponseHandler.validationError('Template ID is required for updates');
     }
 
     const body = UnifiedResponseHandler.parseJsonBody(req);
 
     if (container) {
       // Get existing template
-      const { resource: existingTemplate } = await container
-        .item(templateId, templateId)
-        .read();
+      const { resource: existingTemplate } = await container.item(templateId, templateId).read();
       if (!existingTemplate) {
-        return UnifiedResponseHandler.notFoundError(
-          "Schedule template not found"
-        );
+        return UnifiedResponseHandler.notFoundError('Schedule template not found');
       }
 
       // Update template
@@ -261,17 +223,12 @@ async function handlePut(container, templateId, req, context) {
         .item(templateId, templateId)
         .replace(updatedTemplate);
 
-      return UnifiedResponseHandler.success(
-        result,
-        "Schedule template updated successfully"
-      );
+      return UnifiedResponseHandler.success(result, 'Schedule template updated successfully');
     } else {
       // Mock update
       const mockTemplate = getMockTemplates().find((t) => t.id === templateId);
       if (!mockTemplate) {
-        return UnifiedResponseHandler.notFoundError(
-          "Schedule template not found"
-        );
+        return UnifiedResponseHandler.notFoundError('Schedule template not found');
       }
 
       const updatedTemplate = {
@@ -283,11 +240,11 @@ async function handlePut(container, templateId, req, context) {
 
       return UnifiedResponseHandler.success(
         updatedTemplate,
-        "Schedule template updated successfully (mock mode)"
+        'Schedule template updated successfully (mock mode)',
       );
     }
   } catch (error) {
-    context.log.error("Update template error:", error);
+    context.log.error('Update template error:', error);
     throw error;
   }
 }
@@ -296,45 +253,34 @@ async function handlePut(container, templateId, req, context) {
 async function handleDelete(container, templateId, context) {
   try {
     if (!templateId) {
-      return UnifiedResponseHandler.validationError(
-        "Template ID is required for deletion"
-      );
+      return UnifiedResponseHandler.validationError('Template ID is required for deletion');
     }
 
     if (container) {
       // Check if template exists
-      const { resource: existingTemplate } = await container
-        .item(templateId, templateId)
-        .read();
+      const { resource: existingTemplate } = await container.item(templateId, templateId).read();
       if (!existingTemplate) {
-        return UnifiedResponseHandler.notFoundError(
-          "Schedule template not found"
-        );
+        return UnifiedResponseHandler.notFoundError('Schedule template not found');
       }
 
       // Delete template
       await container.item(templateId, templateId).delete();
 
-      return UnifiedResponseHandler.success(
-        null,
-        "Schedule template deleted successfully"
-      );
+      return UnifiedResponseHandler.success(null, 'Schedule template deleted successfully');
     } else {
       // Mock deletion
       const mockTemplate = getMockTemplates().find((t) => t.id === templateId);
       if (!mockTemplate) {
-        return UnifiedResponseHandler.notFoundError(
-          "Schedule template not found"
-        );
+        return UnifiedResponseHandler.notFoundError('Schedule template not found');
       }
 
       return UnifiedResponseHandler.success(
         null,
-        "Schedule template deleted successfully (mock mode)"
+        'Schedule template deleted successfully (mock mode)',
       );
     }
   } catch (error) {
-    context.log.error("Delete template error:", error);
+    context.log.error('Delete template error:', error);
     throw error;
   }
 }
@@ -343,134 +289,134 @@ async function handleDelete(container, templateId, context) {
 function getMockTemplates() {
   return [
     {
-      id: "template-monday-morning-dropoff",
+      id: 'template-monday-morning-dropoff',
       dayOfWeek: 1, // Monday
-      startTime: "07:30",
-      endTime: "08:30",
-      routeType: "school_dropoff",
-      description: "Monday Morning School Drop-off",
-      locationId: "lincoln-elementary",
+      startTime: '07:30',
+      endTime: '08:30',
+      routeType: 'school_dropoff',
+      description: 'Monday Morning School Drop-off',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-monday-afternoon-pickup",
+      id: 'template-monday-afternoon-pickup',
       dayOfWeek: 1, // Monday
-      startTime: "15:00",
-      endTime: "16:00",
-      routeType: "school_pickup",
-      description: "Monday Afternoon School Pick-up",
-      locationId: "lincoln-elementary",
+      startTime: '15:00',
+      endTime: '16:00',
+      routeType: 'school_pickup',
+      description: 'Monday Afternoon School Pick-up',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-tuesday-morning-dropoff",
+      id: 'template-tuesday-morning-dropoff',
       dayOfWeek: 2, // Tuesday
-      startTime: "07:30",
-      endTime: "08:30",
-      routeType: "school_dropoff",
-      description: "Tuesday Morning School Drop-off",
-      locationId: "lincoln-elementary",
+      startTime: '07:30',
+      endTime: '08:30',
+      routeType: 'school_dropoff',
+      description: 'Tuesday Morning School Drop-off',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-tuesday-afternoon-pickup",
+      id: 'template-tuesday-afternoon-pickup',
       dayOfWeek: 2, // Tuesday
-      startTime: "15:00",
-      endTime: "16:00",
-      routeType: "school_pickup",
-      description: "Tuesday Afternoon School Pick-up",
-      locationId: "lincoln-elementary",
+      startTime: '15:00',
+      endTime: '16:00',
+      routeType: 'school_pickup',
+      description: 'Tuesday Afternoon School Pick-up',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-wednesday-morning-dropoff",
+      id: 'template-wednesday-morning-dropoff',
       dayOfWeek: 3, // Wednesday
-      startTime: "07:30",
-      endTime: "08:30",
-      routeType: "school_dropoff",
-      description: "Wednesday Morning School Drop-off",
-      locationId: "lincoln-elementary",
+      startTime: '07:30',
+      endTime: '08:30',
+      routeType: 'school_dropoff',
+      description: 'Wednesday Morning School Drop-off',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-wednesday-afternoon-pickup",
+      id: 'template-wednesday-afternoon-pickup',
       dayOfWeek: 3, // Wednesday
-      startTime: "15:00",
-      endTime: "16:00",
-      routeType: "school_pickup",
-      description: "Wednesday Afternoon School Pick-up",
-      locationId: "lincoln-elementary",
+      startTime: '15:00',
+      endTime: '16:00',
+      routeType: 'school_pickup',
+      description: 'Wednesday Afternoon School Pick-up',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-thursday-morning-dropoff",
+      id: 'template-thursday-morning-dropoff',
       dayOfWeek: 4, // Thursday
-      startTime: "07:30",
-      endTime: "08:30",
-      routeType: "school_dropoff",
-      description: "Thursday Morning School Drop-off",
-      locationId: "lincoln-elementary",
+      startTime: '07:30',
+      endTime: '08:30',
+      routeType: 'school_dropoff',
+      description: 'Thursday Morning School Drop-off',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-thursday-afternoon-pickup",
+      id: 'template-thursday-afternoon-pickup',
       dayOfWeek: 4, // Thursday
-      startTime: "15:00",
-      endTime: "16:00",
-      routeType: "school_pickup",
-      description: "Thursday Afternoon School Pick-up",
-      locationId: "lincoln-elementary",
+      startTime: '15:00',
+      endTime: '16:00',
+      routeType: 'school_pickup',
+      description: 'Thursday Afternoon School Pick-up',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-friday-morning-dropoff",
+      id: 'template-friday-morning-dropoff',
       dayOfWeek: 5, // Friday
-      startTime: "07:30",
-      endTime: "08:30",
-      routeType: "school_dropoff",
-      description: "Friday Morning School Drop-off",
-      locationId: "lincoln-elementary",
+      startTime: '07:30',
+      endTime: '08:30',
+      routeType: 'school_dropoff',
+      description: 'Friday Morning School Drop-off',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
     {
-      id: "template-friday-afternoon-pickup",
+      id: 'template-friday-afternoon-pickup',
       dayOfWeek: 5, // Friday
-      startTime: "15:00",
-      endTime: "16:00",
-      routeType: "school_pickup",
-      description: "Friday Afternoon School Pick-up",
-      locationId: "lincoln-elementary",
+      startTime: '15:00',
+      endTime: '16:00',
+      routeType: 'school_pickup',
+      description: 'Friday Afternoon School Pick-up',
+      locationId: 'lincoln-elementary',
       maxPassengers: 4,
       isActive: true,
-      createdAt: "2025-01-01T00:00:00.000Z",
-      updatedAt: "2025-01-01T00:00:00.000Z",
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
     },
   ];
 }

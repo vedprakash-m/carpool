@@ -5,7 +5,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import { ApiResponse, PaginatedResponse, AuthResponse } from '@vcarpool/shared';
+import { ApiResponse, PaginatedResponse, AuthResponse } from '@carpool/shared';
 import {
   ApiErrorHandler,
   TimeoutError,
@@ -18,7 +18,7 @@ import { errorHandler } from './error-handling';
 // Mock data for development
 const MOCK_USER = {
   id: 'mock-user-123',
-  email: 'admin@vcarpool.com',
+  email: 'admin@carpool.com',
   firstName: 'Admin',
   lastName: 'User',
   role: 'parent' as const,
@@ -397,7 +397,7 @@ export class ApiClient {
             data: [
               {
                 id: 'msg-1',
-                content: 'Welcome to VCarpool! This is a mock message.',
+                content: 'Welcome to Carpool! This is a mock message.',
                 senderId: 'mock-user-456',
                 senderName: 'System Admin',
                 tripId: 'trip-1',
@@ -569,14 +569,14 @@ export class ApiClient {
 // Always use production backend API for now since local backend setup is complex
 const getApiUrl = () => {
   // For now, always use production API to avoid local setup complexity
-  return 'https://vcarpool-api-prod.azurewebsites.net/api';
+  return 'https://carpool-api-prod.azurewebsites.net/api';
 
   // Future: Enable local development when needed
   // if (
   //   typeof window !== "undefined" &&
   //   window.location.hostname.includes("azurestaticapps.net")
   // ) {
-  //   return "https://vcarpool-api-prod.azurewebsites.net/api";
+  //   return "https://carpool-api-prod.azurewebsites.net/api";
   // }
   // return process.env.NEXT_PUBLIC_API_URL || "http://localhost:7071/api";
 };

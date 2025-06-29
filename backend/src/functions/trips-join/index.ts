@@ -9,7 +9,7 @@ import {
   tripIdParamSchema,
   joinTripParamSchema,
   JoinTripRequest,
-} from "@vcarpool/shared";
+} from "@carpool/shared";
 import {
   compose,
   requestId,

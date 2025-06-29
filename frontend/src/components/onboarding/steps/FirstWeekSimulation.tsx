@@ -268,7 +268,7 @@ export default function FirstWeekSimulation({
             You're All Set! 🎉
           </h4>
           <p className="text-gray-700 mb-4">
-            You now understand how VCarpool works. Remember, this is about
+            You now understand how Carpool works. Remember, this is about
             building a community where families help each other while making
             school transportation easier for everyone.
           </p>

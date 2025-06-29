@@ -131,13 +131,13 @@ describe('Login Form Component', () => {
       const passwordInput = screen.getByPlaceholderText('Password');
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, 'admin@vcarpool.com');
+      await user.type(emailInput, 'admin@carpool.com');
       await user.type(passwordInput, TEST_ADMIN_PASSWORD);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
-          email: 'admin@vcarpool.com',
+          email: 'admin@carpool.com',
           password: TEST_ADMIN_PASSWORD,
         });
       });
@@ -155,13 +155,13 @@ describe('Login Form Component', () => {
       const passwordInput = screen.getByPlaceholderText('Password');
       const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-      await user.type(emailInput, 'admin@vcarpool.com');
+      await user.type(emailInput, 'admin@carpool.com');
       await user.type(passwordInput, TEST_ADMIN_PASSWORD);
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockLogin).toHaveBeenCalledWith({
-          email: 'admin@vcarpool.com',
+          email: 'admin@carpool.com',
           password: TEST_ADMIN_PASSWORD,
         });
       });
@@ -241,7 +241,7 @@ describe('Login Form Component', () => {
       const emailInput = screen.getByPlaceholderText('Email address');
       const passwordInput = screen.getByPlaceholderText('Password');
 
-      await user.type(emailInput, 'admin@vcarpool.com');
+      await user.type(emailInput, 'admin@carpool.com');
       await user.type(passwordInput, TEST_ADMIN_PASSWORD);
       await user.keyboard('{Enter}');
 

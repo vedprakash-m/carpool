@@ -1,5 +1,5 @@
 import { ChildService } from '../../services/child.service';
-import { Child, School } from '@vcarpool/shared';
+import { Child, School } from '@carpool/shared';
 
 describe('ChildService', () => {
   let childService: ChildService;

@@ -70,7 +70,7 @@ describe('PWA Integration', () => {
   describe('PWA Initializer Component', () => {
     test('renders without crashing', () => {
       render(<PWAInitializer />);
-      expect(screen.getByText(/install vcarpool/i)).toBeInTheDocument();
+      expect(screen.getByText(/install carpool/i)).toBeInTheDocument();
     });
 
     test('detects accessibility preferences on mount', async () => {
@@ -113,7 +113,7 @@ describe('PWA Integration', () => {
     test('shows install prompt for installable apps', () => {
       render(<PWAInitializer />);
 
-      expect(screen.getByText(/install vcarpool/i)).toBeInTheDocument();
+      expect(screen.getByText(/install carpool/i)).toBeInTheDocument();
       expect(
         screen.getByText(/get the full app experience/i)
       ).toBeInTheDocument();
@@ -216,7 +216,7 @@ describe('PWA Integration', () => {
       render(<PWAInitializer />);
 
       // Component should handle offline state
-      expect(screen.getByText(/install vcarpool/i)).toBeInTheDocument();
+      expect(screen.getByText(/install carpool/i)).toBeInTheDocument();
     });
 
     test('shows appropriate messaging for offline state', () => {
@@ -240,7 +240,7 @@ describe('PWA Integration', () => {
       render(<PWAInitializer />);
 
       // Should still show install prompt even when offline
-      expect(screen.getByText(/install vcarpool/i)).toBeInTheDocument();
+      expect(screen.getByText(/install carpool/i)).toBeInTheDocument();
     });
   });
 
@@ -284,7 +284,7 @@ describe('PWA Integration', () => {
       render(<PWAInitializer />);
 
       // Should show iOS-specific install instructions
-      expect(screen.getByText(/install vcarpool/i)).toBeInTheDocument();
+      expect(screen.getByText(/install carpool/i)).toBeInTheDocument();
     });
 
     test('handles Android Chrome installation flow', () => {
@@ -298,7 +298,7 @@ describe('PWA Integration', () => {
       render(<PWAInitializer />);
 
       // Should show Android-specific install flow
-      expect(screen.getByText(/install vcarpool/i)).toBeInTheDocument();
+      expect(screen.getByText(/install carpool/i)).toBeInTheDocument();
     });
 
     test('handles desktop browser installation', () => {
@@ -312,7 +312,7 @@ describe('PWA Integration', () => {
       render(<PWAInitializer />);
 
       // Should show desktop install prompt
-      expect(screen.getByText(/install vcarpool/i)).toBeInTheDocument();
+      expect(screen.getByText(/install carpool/i)).toBeInTheDocument();
     });
   });
 });

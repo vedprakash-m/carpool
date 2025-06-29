@@ -560,13 +560,13 @@ class BackupAndRecoveryManager {
         {
           name: 'System Administrator',
           role: 'Primary Contact',
-          email: 'admin@vcarpool.com',
+          email: 'admin@carpool.com',
           phone: '+1-555-0100',
         },
         {
           name: 'Database Administrator',
           role: 'Database Recovery',
-          email: 'dba@vcarpool.com',
+          email: 'dba@carpool.com',
           phone: '+1-555-0101',
         },
       ],

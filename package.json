@@ -1,7 +1,7 @@
 {
-  "name": "vcarpool-monorepo",
+  "name": "carpool-monorepo",
   "version": "1.0.0",
-  "description": "VCarpool - Comprehensive carpool management application",
+  "description": "Carpool - Comprehensive carpool management application",
   "main": "index.js",
   "workspaces": [
     "backend",
@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "start": "func start",
-    "deploy": "func azure functionapp publish vcarpool-api-prod",
+    "deploy": "func azure functionapp publish carpool-api-prod",
     "install:shared": "cd shared && npm install",
     "install:backend": "cd backend && npm install",
     "install:frontend": "cd frontend && npm install",

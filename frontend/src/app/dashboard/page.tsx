@@ -236,7 +236,7 @@ export default memo(function DashboardPage() {
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-8 text-center">
               <UserGroupIcon className="h-16 w-16 text-blue-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Welcome to VCarpool! 🚗
+                Welcome to Carpool! 🚗
               </h2>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
                 Get started by discovering carpool groups in your area or

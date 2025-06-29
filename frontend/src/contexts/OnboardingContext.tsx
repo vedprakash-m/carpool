@@ -44,7 +44,7 @@ interface OnboardingContextType {
 const defaultSteps: OnboardingStep[] = [
   {
     id: 'welcome_tour',
-    title: 'Welcome to VCarpool',
+    title: 'Welcome to Carpool',
     description: "Let's take a quick tour of your dashboard and key features",
     component: 'WelcomeTour',
     isCompleted: false,

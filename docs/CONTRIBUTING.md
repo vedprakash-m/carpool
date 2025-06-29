@@ -1,6 +1,6 @@
-# Contributing to vCarpool
+# Contributing to Carpool
 
-Thank you for your interest in contributing to vCarpool! This document provides guidelines for contributing to our smart carpool management platform.
+Thank you for your interest in contributing to Carpool! This document provides guidelines for contributing to our smart carpool management platform.
 
 ## Table of Contents
 
@@ -303,7 +303,7 @@ test(user): add unit tests for user service
 
 ## License Agreement
 
-By contributing to vCarpool, you agree that your contributions will be licensed under the same license as the project.
+By contributing to Carpool, you agree that your contributions will be licensed under the same license as the project.
 
 ## Contact
 
@@ -313,4 +313,4 @@ By contributing to vCarpool, you agree that your contributions will be licensed 
 
 ---
 
-Thank you for contributing to vCarpool! Your efforts help make transportation more sustainable and accessible for everyone.
+Thank you for contributing to Carpool! Your efforts help make transportation more sustainable and accessible for everyone.

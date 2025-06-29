@@ -1,8 +1,8 @@
-# 🚗 VCarpool
+# 🚗 Carpool
 
 <div align="center">
 
-![VCarpool Logo](https://img.shields.io/badge/VCarpool-School%20Carpool%20Management-blue?style=for-the-badge&logo=car&logoColor=white)
+![Carpool Logo](https://img.shields.io/badge/Carpool-School%20Carpool%20Management-blue?style=for-the-badge&logo=car&logoColor=white)
 
 **Enterprise-grade carpool coordination platform connecting school families for safe, reliable transportation.**
 
@@ -24,7 +24,7 @@
 
 ## 🌟 Transforming School Transportation
 
-VCarpool is a comprehensive, cloud-native platform that revolutionizes how school families coordinate carpools. Built with modern web technologies and enterprise-grade security, it eliminates the chaos of manual coordination while ensuring fair distribution of driving responsibilities.
+Carpool is a comprehensive, cloud-native platform that revolutionizes how school families coordinate carpools. Built with modern web technologies and enterprise-grade security, it eliminates the chaos of manual coordination while ensuring fair distribution of driving responsibilities.
 
 ### 🎯 **For Parents**
 
@@ -88,7 +88,7 @@ VCarpool is a comprehensive, cloud-native platform that revolutionizes how schoo
 - **Intuitive admin dashboard** for effortless group coordination
 - **Real-time notifications** via SMS and push notifications
 
-### 🏆 **What Makes VCarpool Special**
+### 🏆 **What Makes Carpool Special**
 
 **🎯 Production-Ready Excellence**
 
@@ -199,7 +199,7 @@ vcarpool/
 
 ### **💰 Cost-Optimized Multi-Resource Architecture**
 
-VCarpool implements an intelligent **dual-tier architecture** that separates persistent storage from compute:
+Carpool implements an intelligent **dual-tier architecture** that separates persistent storage from compute:
 
 **🗄️ Database Tier** (`vcarpool-db-rg`)
 

@@ -1,8 +1,8 @@
-# VCarpool Authentication Migration to Microsoft Entra External ID
+# Carpool Authentication Migration to Microsoft Entra External ID
 
 ## Executive Summary
 
-This document outlines a comprehensive plan to migrate VCarpool's custom JWT authentication system to Microsoft Entra External ID (formerly Azure AD B2C), providing enhanced security, reduced maintenance overhead, and improved user experience.
+This document outlines a comprehensive plan to migrate Carpool's custom JWT authentication system to Microsoft Entra External ID (formerly Azure AD B2C), providing enhanced security, reduced maintenance overhead, and improved user experience.
 
 ## Current State Analysis
 
@@ -31,7 +31,7 @@ This document outlines a comprehensive plan to migrate VCarpool's custom JWT aut
 
 ```bash
 # Azure CLI setup
-az ad app create --display-name "VCarpool-External-ID" \
+az ad app create --display-name "Carpool-External-ID" \
   --sign-in-audience "AzureADandPersonalMicrosoftAccount" \
   --enable-id-token-issuance true
 ```
@@ -139,7 +139,7 @@ export class EntraAuthService {
   }
 
   /**
-   * Sync Entra user with VCarpool database
+   * Sync Entra user with Carpool database
    */
   async syncUserWithDatabase(entraUser: EntraUserProfile): Promise<void> {
     try {
@@ -182,7 +182,7 @@ export class EntraAuthService {
   }
 
   /**
-   * Generate VCarpool session token for Entra-authenticated user
+   * Generate Carpool session token for Entra-authenticated user
    */
   async generateSessionToken(entraUser: EntraUserProfile): Promise<string> {
     const payload = {
@@ -357,7 +357,7 @@ export function HybridLogin() {
   return (
     <div className="max-w-md mx-auto mt-8">
       <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login to VCarpool</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Login to Carpool</h2>
 
         {/* Entra External ID Login (Primary) */}
         <button
@@ -535,7 +535,7 @@ export async function migrateUsersToEntra() {
 
 ## Conclusion
 
-Migrating to Microsoft Entra External ID is **highly recommended** for VCarpool. The migration will:
+Migrating to Microsoft Entra External ID is **highly recommended** for Carpool. The migration will:
 
 ✅ **Enhance Security**: Leverage Microsoft's enterprise-grade security  
 ✅ **Reduce Complexity**: Eliminate custom authentication maintenance  

@@ -19,14 +19,14 @@ Assignment Details:
 Request Message:
 "{requestMessage}"
 
-Please log into the VCarpool app to accept or decline this request.
+Please log into the Carpool app to accept or decline this request.
 
 You can contact {requestingDriverName} directly:
 • Email: {requestingDriverEmail}
 • Phone: {requestingDriverPhone}
 
 Best regards,
-VCarpool System
+Carpool System
     `,
   },
   swap_request_accepted: {
@@ -51,7 +51,7 @@ Contact Information:
 • Phone: {receivingDriverPhone}
 
 Best regards,
-VCarpool System
+Carpool System
     `,
   },
   swap_request_declined: {
@@ -72,7 +72,7 @@ Response Message:
 You may want to reach out to other parents or contact the school administration for assistance with this assignment.
 
 Best regards,
-VCarpool System
+Carpool System
     `,
   },
   assignment_reminder_24h: {
@@ -97,10 +97,10 @@ Route Information:
 
 Please ensure you're prepared for your carpool assignment. If you need to make any last-minute changes, please contact the other parents or school administration immediately.
 
-Need help? Log into the VCarpool app or contact the school office.
+Need help? Log into the Carpool app or contact the school office.
 
 Safe driving!
-VCarpool System
+Carpool System
     `,
   },
   assignment_reminder_2h: {
@@ -120,10 +120,10 @@ Quick Passenger List:
 
 Route: {pickupLocation} → {dropoffLocation}
 
-If you're running late or have any issues, please contact the parents directly through the VCarpool app.
+If you're running late or have any issues, please contact the parents directly through the Carpool app.
 
 Drive safely!
-VCarpool System
+Carpool System
     `,
   },
 };

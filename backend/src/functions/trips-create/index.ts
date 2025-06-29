@@ -13,7 +13,7 @@ import {
   requestId,
   requestLogging,
 } from "../../middleware";
-import { createTripSchema, CreateTripRequest, Trip } from "@vcarpool/shared";
+import { createTripSchema, CreateTripRequest, Trip } from "@carpool/shared";
 import { createFunctionHandler } from "../../middleware/function-handler";
 import { quickOptimize } from "../../middleware/phase2-optimization.middleware";
 

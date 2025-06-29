@@ -35,13 +35,13 @@ export function PWAInstallPrompt({
 
   const handleInstall = async () => {
     setIsInstalling(true);
-    announceLive('Installing VCarpool app...');
+    announceLive('Installing Carpool app...');
 
     try {
       const result = await promptInstall();
 
       if (result.outcome === 'accepted') {
-        announceLive('VCarpool app installed successfully!');
+        announceLive('Carpool app installed successfully!');
         setShowPrompt(false);
 
         // Request notification permission after install
@@ -84,7 +84,7 @@ export function PWAInstallPrompt({
             handleInstall();
           }
         }}
-        aria-label="Install VCarpool app"
+        aria-label="Install Carpool app"
       >
         {customTrigger}
       </div>
@@ -119,7 +119,7 @@ export function PWAInstallPrompt({
 
           <div className="ml-4 flex-1">
             <h3 className="text-lg font-semibold text-gray-900">
-              Install VCarpool
+              Install Carpool
             </h3>
             <p className="text-sm text-gray-600 mt-1">
               Get the full app experience with offline access, push
@@ -208,7 +208,7 @@ export function PWAInstallPrompt({
       </div>
 
       <div id="install-description" className="sr-only" aria-live="polite">
-        Install the VCarpool app for better performance and offline access.
+        Install the Carpool app for better performance and offline access.
       </div>
     </div>
   );
@@ -232,13 +232,13 @@ export function PWAInstallButton({
 
   const handleInstall = async () => {
     setIsInstalling(true);
-    announceLive('Installing VCarpool app...');
+    announceLive('Installing Carpool app...');
 
     try {
       const result = await promptInstall();
 
       if (result.outcome === 'accepted') {
-        announceLive('VCarpool app installed successfully!');
+        announceLive('Carpool app installed successfully!');
       } else if (result.outcome === 'dismissed') {
         announceLive('App installation cancelled');
       }
@@ -255,7 +255,7 @@ export function PWAInstallButton({
       onClick={handleInstall}
       disabled={isInstalling}
       className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`}
-      aria-label={showText ? undefined : 'Install VCarpool app'}
+      aria-label={showText ? undefined : 'Install Carpool app'}
     >
       {isInstalling ? (
         <svg

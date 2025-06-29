@@ -1,5 +1,5 @@
 import { Container } from '@azure/cosmos';
-import { Message, ChatRoom, ChatParticipant } from '@vcarpool/shared';
+import { Message, ChatRoom, ChatParticipant } from '@carpool/shared';
 import { v4 as uuidv4 } from 'uuid';
 
 export class MessageRepository {

@@ -1,4 +1,4 @@
-import { EmailRequest, EmailTemplate } from '@vcarpool/shared';
+import { EmailRequest, EmailTemplate } from '@carpool/shared';
 
 interface EmailServiceConfig {
   apiKey: string;
@@ -12,7 +12,7 @@ export class EmailService {
   constructor() {
     this.config = {
       apiKey: process.env.SENDGRID_API_KEY || '',
-      fromEmail: process.env.FROM_EMAIL || 'noreply@vcarpool.com',
+      fromEmail: process.env.FROM_EMAIL || 'noreply@carpool.com',
       fromName: process.env.FROM_NAME || 'VCarpool',
     };
   }

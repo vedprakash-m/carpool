@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Notification as RTNotification } from '@vcarpool/shared';
+import { Notification as RTNotification } from '@carpool/shared';
 import toast from 'react-hot-toast';
 
 interface NotificationContextValue {

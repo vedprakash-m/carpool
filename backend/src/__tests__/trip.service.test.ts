@@ -14,7 +14,7 @@ import { TripService } from '../services/trip.service';
 import { TripRepository } from '../repositories/trip.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { EmailService } from '../services/email.service';
-import { Trip, User, CreateTripRequest } from '@vcarpool/shared';
+import { Trip, User, CreateTripRequest } from '@carpool/shared';
 
 // Mock the dependencies
 jest.mock('../repositories/trip.repository');

@@ -7,7 +7,7 @@ set -e
 
 # Configuration
 API_BASE_URL="https://vcarpool-api-prod.azurewebsites.net/api/v1"
-ADMIN_EMAIL="admin@vcarpool.com"
+ADMIN_EMAIL="admin@carpool.com"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-test-admin-password}"
 
 # Colors for output

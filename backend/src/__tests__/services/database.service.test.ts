@@ -95,7 +95,7 @@ describe('DatabaseService', () => {
       // Wait a bit for async initialization
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      const user = await databaseService.getUserByEmail('admin@vcarpool.com');
+      const user = await databaseService.getUserByEmail('admin@carpool.com');
       expect(user).toBeTruthy();
       expect(user?.firstName).toBe('Admin');
       expect(user?.role).toBe('admin');
@@ -166,10 +166,10 @@ describe('DatabaseService', () => {
         // Wait for test users to be initialized
         await new Promise((resolve) => setTimeout(resolve, 10));
 
-        const user = await databaseService.getUserByEmail('admin@vcarpool.com');
+        const user = await databaseService.getUserByEmail('admin@carpool.com');
 
         expect(user).toBeTruthy();
-        expect(user?.email).toBe('admin@vcarpool.com');
+        expect(user?.email).toBe('admin@carpool.com');
       });
 
       it('should return null when user not found', async () => {
@@ -185,7 +185,7 @@ describe('DatabaseService', () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
 
         const updates = { firstName: 'Updated' };
-        const updatedUser = await databaseService.updateUser('admin@vcarpool.com', updates);
+        const updatedUser = await databaseService.updateUser('admin@carpool.com', updates);
 
         expect(updatedUser).toBeTruthy();
         expect(updatedUser?.firstName).toBe('Updated');
@@ -205,12 +205,12 @@ describe('DatabaseService', () => {
         // Wait for test users to be initialized
         await new Promise((resolve) => setTimeout(resolve, 10));
 
-        const result = await databaseService.deleteUser('admin@vcarpool.com');
+        const result = await databaseService.deleteUser('admin@carpool.com');
 
         expect(result).toBe(true);
 
         // Verify user is deleted
-        const user = await databaseService.getUserByEmail('admin@vcarpool.com');
+        const user = await databaseService.getUserByEmail('admin@carpool.com');
         expect(user).toBeNull();
       });
 

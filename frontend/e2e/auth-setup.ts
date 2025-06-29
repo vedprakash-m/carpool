@@ -18,21 +18,21 @@ export interface MockUser {
 export const defaultUsers: Record<string, MockUser> = {
   admin: {
     id: "e2e-admin-123",
-    email: "admin@vcarpool.test",
+    email: "admin@carpool.test",
     firstName: "Admin",
     lastName: "User",
     role: "admin",
   },
   parent: {
     id: "e2e-parent-456",
-    email: "parent@vcarpool.test",
+    email: "parent@carpool.test",
     firstName: "Parent",
     lastName: "User",
     role: "parent",
   },
   student: {
     id: "e2e-student-789",
-    email: "student@vcarpool.test",
+    email: "student@carpool.test",
     firstName: "Student",
     lastName: "User",
     role: "student",
@@ -53,21 +53,21 @@ export async function setupMockAuth(
     const mockUser = {
       admin: {
         id: "e2e-admin-123",
-        email: "admin@vcarpool.test",
+        email: "admin@carpool.test",
         firstName: "Admin",
         lastName: "User",
         role: "admin",
       },
       parent: {
         id: "e2e-parent-123",
-        email: "parent@vcarpool.test",
+        email: "parent@carpool.test",
         firstName: "Parent",
         lastName: "User",
         role: "parent",
       },
       student: {
         id: "e2e-student-123",
-        email: "student@vcarpool.test",
+        email: "student@carpool.test",
         firstName: "Student",
         lastName: "User",
         role: "student",
@@ -331,7 +331,7 @@ export async function setupMockAPIResponses(page: Page): Promise<void> {
         data: {
           user: {
             id: "e2e-admin-123",
-            email: "admin@vcarpool.test",
+            email: "admin@carpool.test",
             firstName: "Admin",
             lastName: "User",
             role: "admin",
@@ -352,7 +352,7 @@ export async function setupMockAPIResponses(page: Page): Promise<void> {
         success: true,
         data: {
           id: "e2e-admin-123",
-          email: "admin@vcarpool.test",
+          email: "admin@carpool.test",
           firstName: "Admin",
           lastName: "User",
           role: "admin",

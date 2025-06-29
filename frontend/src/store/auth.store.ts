@@ -1,4 +1,4 @@
-// filepath: /Users/vedprakashmishra/vcarpool/frontend/src/store/auth.store.ts
+// filepath: /Users/vedprakashmishra/carpool/frontend/src/store/auth.store.ts
 import { create } from 'zustand';
 import {
   User,

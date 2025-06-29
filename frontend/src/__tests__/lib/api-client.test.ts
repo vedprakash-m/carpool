@@ -1,11 +1,11 @@
 /**
  * Simplified ApiClient Tests
  * Focus on core functionality and mock mode behavior
- * VCarpool functional requirements verification
+ * Carpool functional requirements verification
  */
 
 // Simple test that bypasses axios constructor issues
-describe('ApiClient - VCarpool Core Functionality', () => {
+describe('ApiClient - Carpool Core Functionality', () => {
   // Mock localStorage
   const mockLocalStorage = {
     getItem: jest.fn(),
@@ -27,7 +27,7 @@ describe('ApiClient - VCarpool Core Functionality', () => {
   });
 
   describe('Mock Mode Testing', () => {
-    it('should validate mock user data structure for VCarpool', () => {
+    it('should validate mock user data structure for Carpool', () => {
       // Test the MOCK_USER constant that's used in the ApiClient
       const expectedUserStructure = {
         id: expect.any(String),
@@ -44,7 +44,7 @@ describe('ApiClient - VCarpool Core Functionality', () => {
       // This tests the structure without instantiating ApiClient
       const mockUser = {
         id: 'mock-user-123',
-        email: 'admin@vcarpool.com',
+        email: 'admin@carpool.com',
         firstName: 'Admin',
         lastName: 'User',
         role: 'admin',

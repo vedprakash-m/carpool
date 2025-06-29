@@ -6,7 +6,7 @@
  */
 
 import { UserRepository } from '../../repositories/user.repository';
-import { User, UserRole } from '@vcarpool/shared';
+import { User, UserRole } from '@carpool/shared';
 
 // Mock the CosmosDB container
 const mockContainer = {

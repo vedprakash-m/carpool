@@ -13,7 +13,7 @@ const { seedDatabase } = require('./seed-database.js');
 const execAsync = promisify(exec);
 
 export default async function globalSetup(config: FullConfig) {
-  console.log('🚀 Starting VCarpool E2E Global Setup...');
+  console.log('🚀 Starting Carpool E2E Global Setup...');
 
   try {
     // Step 1: Start services if not running in CI
@@ -42,10 +42,9 @@ export default async function globalSetup(config: FullConfig) {
     await seedDatabase();
 
     console.log('✅ E2E environment setup completed successfully');
-
   } catch (error) {
     console.error('❌ E2E setup failed:', error);
-    
+
     // Cleanup on failure
     if (!process.env.CI) {
       console.log('🧹 Cleaning up after failed setup...');
@@ -57,7 +56,7 @@ export default async function globalSetup(config: FullConfig) {
         console.warn('⚠️ Cleanup after failure also failed:', cleanupError);
       }
     }
-    
+
     throw error;
   }
 }

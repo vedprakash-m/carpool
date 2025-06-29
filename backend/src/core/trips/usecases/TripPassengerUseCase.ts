@@ -1,4 +1,4 @@
-import { Trip, TripStatus } from "@vcarpool/shared";
+import { Trip, TripStatus } from "@carpool/shared";
 import { TripRepositoryPort } from "../ports/TripRepositoryPort";
 import { Errors } from "../../../utils/error-handler";
 

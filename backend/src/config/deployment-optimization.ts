@@ -82,7 +82,7 @@ export const localSettingsTemplate = {
     BCRYPT_SALT_ROUNDS: '12',
     COSMOS_DB_ENDPOINT: '',
     COSMOS_DB_KEY: '',
-    COSMOS_DB_DATABASE: 'vcarpool-dev',
+    COSMOS_DB_DATABASE: 'carpool-dev',
 
     // Performance optimization
     WEBSITE_TIME_ZONE: 'UTC',
@@ -107,7 +107,7 @@ on:
     branches: [ main ]
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'vcarpool-functions'
+  AZURE_FUNCTIONAPP_NAME: 'carpool-functions'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './backend'
   NODE_VERSION: '18.x'
 
@@ -283,7 +283,7 @@ jobs:
       id: deploy
       uses: Azure/functions-action@v1
       with:
-        app-name: 'vcarpool-functions-staging'
+        app-name: 'carpool-functions-staging'
         package: \${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 `;
 
@@ -312,9 +312,9 @@ export const optimizedPackageScripts = {
     'security:audit': 'npm audit --audit-level moderate',
     'security:check': 'npm audit --audit-level high',
 
-    deploy: 'npm run build:production && func azure functionapp publish vcarpool-functions',
+    deploy: 'npm run build:production && func azure functionapp publish carpool-functions',
     'deploy:staging':
-      'npm run build:production && func azure functionapp publish vcarpool-functions-staging',
+      'npm run build:production && func azure functionapp publish carpool-functions-staging',
 
     clean: 'rimraf dist coverage .nyc_output',
     'clean:all': 'npm run clean && rimraf node_modules package-lock.json',
@@ -490,7 +490,7 @@ CMD ["/azure-functions-host/Microsoft.Azure.WebJobs.Script.WebHost"]
 // Azure Bicep template for infrastructure as code
 export const bicepTemplate = `
 @description('Name of the Azure Function App')
-param functionAppName string = 'vcarpool-functions'
+param functionAppName string = 'carpool-functions'
 
 @description('Location for all resources')
 param location string = resourceGroup().location
@@ -499,12 +499,12 @@ param location string = resourceGroup().location
 param environment string = 'dev'
 
 @description('Cosmos DB account name')
-param cosmosDbAccountName string = 'vcarpool-cosmos-\${environment}'
+param cosmosDbAccountName string = 'carpool-cosmos-\${environment}'
 
 // Variables
-var storageAccountName = 'vcarpoolstore\${environment}'
-var appInsightsName = 'vcarpool-insights-\${environment}'
-var hostingPlanName = 'vcarpool-plan-\${environment}'
+var storageAccountName = 'carpoolstore\${environment}'
+var appInsightsName = 'carpool-insights-\${environment}'
+var hostingPlanName = 'carpool-plan-\${environment}'
 
 // Storage Account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
@@ -535,7 +535,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 // Log Analytics Workspace
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'vcarpool-logs-\${environment}'
+  name: 'carpool-logs-\${environment}'
   location: location
   properties: {
     sku: {
@@ -612,13 +612,13 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'COSMOS_DB_DATABASE'
-          value: 'vcarpool'
+          value: 'carpool'
         }
       ]
       cors: {
         allowedOrigins: [
           'https://portal.azure.com'
-          'https://vcarpool-frontend-\${environment}.azurestaticapps.net'
+          'https://carpool-frontend-\${environment}.azurestaticapps.net'
         ]
         supportCredentials: false
       }
@@ -658,7 +658,7 @@ resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2022-11-15' = {
 
 // Key Vault for secrets
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
-  name: 'vcarpool-kv-\${environment}'
+  name: 'carpool-kv-\${environment}'
   location: location
   properties: {
     sku: {

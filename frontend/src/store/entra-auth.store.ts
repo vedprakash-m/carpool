@@ -155,7 +155,7 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
       }
     } catch (error) {
       set({
-        error: error.message || 'Login failed',
+        error: error instanceof Error ? error.message : 'Login failed',
         isLoading: false,
       });
       throw error;
@@ -243,7 +243,7 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
           });
 
           if (response.success && response.data) {
-            const vedUser = response.data.user as VedUser;
+            const vedUser = (response.data as { user: VedUser }).user;
 
             set({
               vedUser,

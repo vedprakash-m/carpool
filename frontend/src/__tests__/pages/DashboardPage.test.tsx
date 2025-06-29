@@ -679,7 +679,7 @@ describe.skip('Dashboard Page - Unified Family Dashboard & Role Transitions', ()
     });
   });
 
-  describe('VCarpool Business Logic Integration', () => {
+  describe('Carpool Business Logic Integration', () => {
     it('should display school-specific terminology throughout', () => {
       render(<DashboardPage />);
 

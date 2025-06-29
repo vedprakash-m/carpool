@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const manifest = {
-    name: 'VCarpool - Smart Carpool Management',
-    short_name: 'VCarpool',
+    name: 'Carpool - Smart Carpool Management',
+    short_name: 'Carpool',
     description:
       'Efficient carpool management for schools and families with real-time coordination',
     start_url: '/',

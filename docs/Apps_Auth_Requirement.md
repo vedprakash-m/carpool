@@ -35,7 +35,7 @@ The Vedprakash domain currently operates **five independent applications** with 
 | **Vimarsh (vimarsh.vedprakash.net)** | Supabase Authentication | Separate user accounts, manual user management |
 | **Vigor (vigor.vedprakash.net)** | Custom JWT System | Security maintenance overhead, no SSO |
 | **Pathfinder (pathfinder.vedprakash.net)** | Auth0 + Entra ID | Mixed systems, complexity and cost |
-| **VCarpool (carpool.vedprakash.net)** | Custom JWT System | Duplicated effort, security concerns |
+| **Carpool (carpool.vedprakash.net)** | Custom JWT System | Duplicated effort, security concerns |
 
 ### Business Problems We're Solving
 
@@ -122,7 +122,7 @@ The Vedprakash domain currently operates **five independent applications** with 
 - **Minimal code changes** required
 
 #### ⚠️ **Medium Risk Applications**
-- **Vigor & VCarpool**: Custom JWT systems need replacement
+- **Vigor & Carpool**: Custom JWT systems need replacement
 - **Database user ID migration** required
 - **Testing required** for existing user workflows
 

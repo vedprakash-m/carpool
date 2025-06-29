@@ -1,4 +1,4 @@
-import { User, UserPreferences, ApiResponse } from '@vcarpool/shared';
+import { User, UserPreferences, ApiResponse } from '@carpool/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { UserRepository } from '../repositories/user.repository';
 import { Errors } from '../utils/error-handler';

@@ -4,7 +4,7 @@ import {
   CreateTripRequest,
   UpdateTripRequest,
   JoinTripRequest,
-} from '@vcarpool/shared';
+} from '@carpool/shared';
 import { tripApi, TripFilters, TripStats } from '../lib/trip-api';
 
 interface TripStore {

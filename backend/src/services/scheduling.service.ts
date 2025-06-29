@@ -2,7 +2,7 @@ import { FamilyService } from './family.service';
 import { UserService } from './user.service';
 import { TripService } from './trip.service';
 import { PreferenceService } from './preference.service';
-import { Family, Assignment } from '@vcarpool/shared';
+import { Family, Assignment } from '@carpool/shared';
 
 // Represents the fairness debt for each family
 interface FairnessMetrics {

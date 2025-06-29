@@ -20,8 +20,8 @@ describe('EmailService', () => {
     jest.resetModules();
     process.env = { ...originalEnv };
     process.env.SENDGRID_API_KEY = 'test-api-key';
-    process.env.FROM_EMAIL = 'test@vcarpool.com';
-    process.env.FROM_NAME = 'Test VCarpool';
+    process.env.FROM_EMAIL = 'test@carpool.com';
+    process.env.FROM_NAME = 'Test Carpool';
 
     emailService = new EmailService();
 
@@ -427,7 +427,7 @@ describe('EmailService', () => {
       const email = 'user@test.com';
       const resetDetails = {
         firstName: 'John',
-        resetLink: 'https://vcarpool.com/reset?token=abc123',
+        resetLink: 'https://carpool.com/reset?token=abc123',
         resetToken: 'abc123',
       };
 

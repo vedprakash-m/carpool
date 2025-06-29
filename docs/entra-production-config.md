@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides the complete configuration setup for Microsoft Entra ID integration in the VCarpool application for production deployment.
+This guide provides the complete configuration setup for Microsoft Entra ID integration in the Carpool application for production deployment.
 
 ## Environment Variables
 
@@ -43,7 +43,7 @@ NEXT_PUBLIC_ENTRA_AUTHORITY=https://login.microsoftonline.com/vedid.onmicrosoft.
 NEXT_PUBLIC_API_BASE_URL=https://your-api-domain.azurewebsites.net/api
 
 # Application Configuration
-NEXT_PUBLIC_APP_NAME=VCarpool
+NEXT_PUBLIC_APP_NAME=Carpool
 NEXT_PUBLIC_ENVIRONMENT=production
 ```
 
@@ -56,7 +56,7 @@ NEXT_PUBLIC_ENVIRONMENT=production
 3. Configure the following:
 
 ```
-Name: VCarpool Production
+Name: Carpool Production
 Supported account types: Accounts in this organizational directory only (Single tenant)
 Redirect URI:
   - Type: Single-page application (SPA)
@@ -104,7 +104,7 @@ Create a new client secret:
 
 1. Go to "Certificates & secrets"
 2. Click "New client secret"
-3. Set description: "VCarpool Production Secret"
+3. Set description: "Carpool Production Secret"
 4. Set expiration: 24 months
 5. Copy the secret value (use as ENTRA_CLIENT_SECRET)
 
@@ -362,4 +362,4 @@ curl https://login.microsoftonline.com/vedid.onmicrosoft.com/discovery/v2.0/keys
 - [Microsoft Identity Platform Documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/)
 - [MSAL.js Documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-overview)
 - [Azure Functions Security Best Practices](https://docs.microsoft.com/en-us/azure/azure-functions/security-concepts)
-- [VCarpool Internal Documentation](../README.md)
+- [Carpool Internal Documentation](../README.md)

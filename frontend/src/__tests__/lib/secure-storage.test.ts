@@ -52,15 +52,15 @@ describe('SecureStorage', () => {
       setTokens(token, refreshToken, expiresIn);
 
       expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
-        'vcarpool_token',
+        'carpool_token',
         token
       );
       expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
-        'vcarpool_refresh_token',
+        'carpool_refresh_token',
         refreshToken
       );
       expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
-        'vcarpool_token_expires',
+        'carpool_token_expires',
         expect.stringMatching(/^\d+$/)
       );
     });
@@ -72,7 +72,7 @@ describe('SecureStorage', () => {
       setTokens(token, refreshToken);
 
       expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
-        'vcarpool_token_expires',
+        'carpool_token_expires',
         expect.stringMatching(/^\d+$/)
       );
     });
@@ -86,11 +86,11 @@ describe('SecureStorage', () => {
 
       mockSessionStorage.getItem.mockImplementation((key: string) => {
         switch (key) {
-          case 'vcarpool_token':
+          case 'carpool_token':
             return token;
-          case 'vcarpool_refresh_token':
+          case 'carpool_refresh_token':
             return refreshToken;
-          case 'vcarpool_token_expires':
+          case 'carpool_token_expires':
             return futureExpiry;
           default:
             return null;
@@ -121,11 +121,11 @@ describe('SecureStorage', () => {
 
       mockSessionStorage.getItem.mockImplementation((key: string) => {
         switch (key) {
-          case 'vcarpool_token':
+          case 'carpool_token':
             return token;
-          case 'vcarpool_refresh_token':
+          case 'carpool_refresh_token':
             return refreshToken;
-          case 'vcarpool_token_expires':
+          case 'carpool_token_expires':
             return pastExpiry;
           default:
             return null;
@@ -136,13 +136,13 @@ describe('SecureStorage', () => {
 
       expect(result).toBeNull();
       expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
-        'vcarpool_token'
+        'carpool_token'
       );
       expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
-        'vcarpool_refresh_token'
+        'carpool_refresh_token'
       );
       expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
-        'vcarpool_token_expires'
+        'carpool_token_expires'
       );
     });
 
@@ -170,11 +170,11 @@ describe('SecureStorage', () => {
 
       mockSessionStorage.getItem.mockImplementation((key: string) => {
         switch (key) {
-          case 'vcarpool_token':
+          case 'carpool_token':
             return 'token';
-          case 'vcarpool_refresh_token':
+          case 'carpool_refresh_token':
             return 'refresh';
-          case 'vcarpool_token_expires':
+          case 'carpool_token_expires':
             return futureExpiry;
           default:
             return null;
@@ -189,11 +189,11 @@ describe('SecureStorage', () => {
 
       mockSessionStorage.getItem.mockImplementation((key: string) => {
         switch (key) {
-          case 'vcarpool_token':
+          case 'carpool_token':
             return 'token';
-          case 'vcarpool_refresh_token':
+          case 'carpool_refresh_token':
             return 'refresh';
-          case 'vcarpool_token_expires':
+          case 'carpool_token_expires':
             return pastExpiry;
           default:
             return null;
@@ -214,13 +214,13 @@ describe('SecureStorage', () => {
       clearTokens();
 
       expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
-        'vcarpool_token'
+        'carpool_token'
       );
       expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
-        'vcarpool_refresh_token'
+        'carpool_refresh_token'
       );
       expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
-        'vcarpool_token_expires'
+        'carpool_token_expires'
       );
     });
   });
@@ -231,11 +231,11 @@ describe('SecureStorage', () => {
 
       mockSessionStorage.getItem.mockImplementation((key: string) => {
         switch (key) {
-          case 'vcarpool_token':
+          case 'carpool_token':
             return 'token';
-          case 'vcarpool_refresh_token':
+          case 'carpool_refresh_token':
             return 'refresh';
-          case 'vcarpool_token_expires':
+          case 'carpool_token_expires':
             return pastExpiry;
           default:
             return null;
@@ -250,11 +250,11 @@ describe('SecureStorage', () => {
 
       mockSessionStorage.getItem.mockImplementation((key: string) => {
         switch (key) {
-          case 'vcarpool_token':
+          case 'carpool_token':
             return 'token';
-          case 'vcarpool_refresh_token':
+          case 'carpool_refresh_token':
             return 'refresh';
-          case 'vcarpool_token_expires':
+          case 'carpool_token_expires':
             return futureExpiry;
           default:
             return null;

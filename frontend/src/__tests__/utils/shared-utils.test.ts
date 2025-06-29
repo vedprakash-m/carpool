@@ -9,7 +9,7 @@ import {
   formatUtils,
   stringUtils,
   asyncUtils,
-} from '@vcarpool/shared';
+} from '@carpool/shared';
 
 describe('dateUtils', () => {
   describe('formatDate', () => {

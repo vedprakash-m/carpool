@@ -26,7 +26,7 @@ interface JWKSCache {
 }
 
 // Legacy interface for backward compatibility during migration
-export interface VCarpoolUser extends User {
+export interface CarpoolUser extends User {
   entraObjectId?: string;
   authProvider: 'legacy' | 'entra';
   migrationDate?: Date;
@@ -217,7 +217,7 @@ export class EntraAuthService {
   /**
    * Legacy method for backward compatibility during migration
    */
-  async validateLegacyUser(user: User): Promise<VCarpoolUser> {
+  async validateLegacyUser(user: User): Promise<CarpoolUser> {
     return {
       ...user,
       authProvider: 'legacy',
@@ -227,7 +227,7 @@ export class EntraAuthService {
   /**
    * Create hybrid user during migration process
    */
-  async createHybridUser(entraUser: VedUser, legacyUser?: User): Promise<VCarpoolUser> {
+  async createHybridUser(entraUser: VedUser, legacyUser?: User): Promise<CarpoolUser> {
     if (legacyUser) {
       // Merge legacy user with Entra ID
       return {
@@ -238,7 +238,7 @@ export class EntraAuthService {
       };
     } else {
       // Create new user from Entra ID
-      const newUser: VCarpoolUser = {
+      const newUser: CarpoolUser = {
         id: entraUser.id,
         email: entraUser.email,
         passwordHash: '', // No password for Entra users

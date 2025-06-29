@@ -136,7 +136,7 @@ export default function AdminTemplatesPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          'https://vcarpool-api-prod.azurewebsites.net/api'
+          'https://carpool-api-prod.azurewebsites.net/api'
         }/v1/admin/schedule-templates`,
         {
           method: 'GET',
@@ -175,11 +175,11 @@ export default function AdminTemplatesPage() {
       const url = editingTemplate
         ? `${
             process.env.NEXT_PUBLIC_API_URL ||
-            'https://vcarpool-api-prod.azurewebsites.net/api'
+            'https://carpool-api-prod.azurewebsites.net/api'
           }/v1/admin/schedule-templates/${editingTemplate.id}`
         : `${
             process.env.NEXT_PUBLIC_API_URL ||
-            'https://vcarpool-api-prod.azurewebsites.net/api'
+            'https://carpool-api-prod.azurewebsites.net/api'
           }/v1/admin/schedule-templates`;
 
       const response = await fetch(url, {
@@ -226,7 +226,7 @@ export default function AdminTemplatesPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          'https://vcarpool-api-prod.azurewebsites.net/api'
+          'https://carpool-api-prod.azurewebsites.net/api'
         }/v1/admin/schedule-templates/${templateId}`,
         {
           method: 'DELETE',
@@ -287,15 +287,12 @@ export default function AdminTemplatesPage() {
     });
   };
 
-  const groupedTemplates = templates.reduce(
-    (acc, template) => {
-      const day = DAYS_OF_WEEK[template.dayOfWeek];
-      if (!acc[day]) acc[day] = [];
-      acc[day].push(template);
-      return acc;
-    },
-    {} as Record<string, ScheduleTemplate[]>
-  );
+  const groupedTemplates = templates.reduce((acc, template) => {
+    const day = DAYS_OF_WEEK[template.dayOfWeek];
+    if (!acc[day]) acc[day] = [];
+    acc[day].push(template);
+    return acc;
+  }, {} as Record<string, ScheduleTemplate[]>);
 
   // Sort templates within each day by start time
   Object.keys(groupedTemplates).forEach(day => {

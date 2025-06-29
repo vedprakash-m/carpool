@@ -65,7 +65,7 @@ interface TestFamilyUser {
 // Mock family users for comprehensive testing
 const mockFamilyParentUser: TestFamilyUser = {
   id: 'family-parent-1',
-  email: 'sarah.johnson@vcarpool.com',
+  email: 'sarah.johnson@carpool.com',
   role: 'parent',
   firstName: 'Sarah',
   lastName: 'Johnson',
@@ -131,7 +131,7 @@ const mockFamilyParentUser: TestFamilyUser = {
 
 const mockGroupAdminUser: TestFamilyUser = {
   id: 'group-admin-1',
-  email: 'admin.coordinator@vcarpool.com',
+  email: 'admin.coordinator@carpool.com',
   role: 'admin',
   firstName: 'Lisa',
   lastName: 'Martinez',
@@ -230,7 +230,7 @@ describe('Family-Oriented Azure Function Auth Endpoints', () => {
   describe('Progressive Parent Onboarding Authentication', () => {
     it('should authenticate family parent with onboarding progress tracking', async () => {
       mockRequest.body = {
-        email: 'sarah.johnson@vcarpool.com',
+        email: 'sarah.johnson@carpool.com',
         password: 'SecureFamily123!',
       };
 
@@ -273,7 +273,7 @@ describe('Family-Oriented Azure Function Auth Endpoints', () => {
       };
 
       mockRequest.body = {
-        email: 'incomplete.parent@vcarpool.com',
+        email: 'incomplete.parent@carpool.com',
         password: 'IncompleteParent123!',
       };
 
@@ -303,7 +303,7 @@ describe('Family-Oriented Azure Function Auth Endpoints', () => {
 
     it('should validate family registration with required fields', async () => {
       mockRequest.body = {
-        email: 'newparent@vcarpool.com',
+        email: 'newparent@carpool.com',
         password: 'NewParent123!',
         firstName: 'Jennifer',
         lastName: 'Davis',
@@ -334,7 +334,7 @@ describe('Family-Oriented Azure Function Auth Endpoints', () => {
           data: {
             user: {
               id: 'family-parent-new',
-              email: 'newparent@vcarpool.com',
+              email: 'newparent@carpool.com',
               firstName: 'Jennifer',
               lastName: 'Davis',
               role: 'parent',
@@ -367,7 +367,7 @@ describe('Family-Oriented Azure Function Auth Endpoints', () => {
   describe('Group Admin Role-Based Authentication', () => {
     it('should authenticate group admin with enhanced permissions', async () => {
       mockRequest.body = {
-        email: 'admin.coordinator@vcarpool.com',
+        email: 'admin.coordinator@carpool.com',
         password: 'AdminCoordinator123!',
       };
 
@@ -723,7 +723,7 @@ describe('Family-Oriented Azure Function Auth Endpoints', () => {
     it('should not expose sensitive family information in responses', async () => {
       const mockFamilyUserResponse = {
         id: 'family-parent-1',
-        email: 'sarah.johnson@vcarpool.com',
+        email: 'sarah.johnson@carpool.com',
         firstName: 'Sarah',
         lastName: 'Johnson',
         role: 'parent',

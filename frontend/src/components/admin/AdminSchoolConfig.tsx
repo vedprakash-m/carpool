@@ -86,7 +86,7 @@ export default function AdminSchoolConfig({
           School & Grade Configuration
         </h1>
         <p className="text-gray-600 mb-8">
-          Configure supported schools and grades for the VCarpool platform.
+          Configure supported schools and grades for the Carpool platform.
           These will appear as dropdown options during parent registration.
         </p>
 

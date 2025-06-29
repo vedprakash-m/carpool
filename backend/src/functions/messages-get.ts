@@ -10,7 +10,7 @@ import { UserRepository } from '../repositories/user.repository';
 import { TripRepository } from '../repositories/trip.repository';
 import { handleRequest } from '../utils/request-handler';
 import { handleValidation } from '../utils/validation-handler';
-import { messagesQuerySchema } from '@vcarpool/shared';
+import { messagesQuerySchema } from '@carpool/shared';
 import { compose, authenticate, requestId, requestLogging } from '../middleware';
 
 export async function messagesGet(
