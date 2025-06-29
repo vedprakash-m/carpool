@@ -74,7 +74,8 @@ VCarpool is a comprehensive, cloud-native platform that revolutionizes how schoo
 
 ### 🔒 **Enterprise-Grade Security**
 
-- **Multi-factor authentication** with JWT and secure refresh tokens
+- **Microsoft Entra ID integration** with Single Sign-On across all Vedprakash apps
+- **Enterprise-grade authentication** using OAuth 2.0 / OpenID Connect
 - **Three-tier verification** (SMS, address geocoding, emergency contacts)
 - **GDPR/COPPA compliant** privacy design from day one
 - **Rate limiting** and comprehensive input validation
@@ -157,7 +158,7 @@ Frontend: Next.js 14 + TypeScript + Tailwind CSS + Zustand
 Backend: Azure Functions v4 + Node.js 22 + TypeScript
 Database: Azure Cosmos DB (NoSQL, serverless)
 Caching: High-performance in-memory (Redis removed)
-Auth: JWT with secure refresh tokens
+Auth: Microsoft Entra ID with SSO integration
 IaC: Azure Bicep templates
 CI/CD: GitHub Actions with quality gates
 Testing: Jest + Playwright + 88.67% coverage
@@ -333,7 +334,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for
 | Endpoint                     | Method     | Description                         | Auth  |
 | ---------------------------- | ---------- | ----------------------------------- | ----- |
 | `/api/health`                | `GET`      | System health check                 | None  |
-| `/api/auth-login-simple`     | `POST`     | User authentication                 | None  |
+| `/api/auth-entra-unified`    | `POST`     | Microsoft Entra ID authentication   | None  |
 | `/api/auth-register-simple`  | `POST`     | User registration with verification | None  |
 | `/api/users-me`              | `GET`      | Current user profile                | JWT   |
 | `/api/trips-list`            | `GET`      | User's trip history                 | JWT   |
@@ -345,7 +346,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for
 **🔐 Authentication & Users**
 
 - Multi-step registration with address validation
-- JWT-based login with refresh tokens
+- Microsoft Entra ID SSO integration with standardized VedUser object
 - Profile management and preferences
 - SMS verification and emergency contacts
 

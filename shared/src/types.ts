@@ -1,11 +1,5 @@
 // User types
-export type UserRole =
-  | "admin"
-  | "group_admin"
-  | "parent"
-  | "child"
-  | "student"
-  | "trip_admin";
+export type UserRole = 'admin' | 'group_admin' | 'parent' | 'child' | 'student' | 'trip_admin';
 
 export interface RolePermissions {
   admin: {
@@ -93,7 +87,7 @@ export interface School {
   address: string;
   location: GeographicLocation;
   district?: string;
-  type: "elementary" | "middle" | "high" | "k12" | "other";
+  type: 'elementary' | 'middle' | 'high' | 'k12' | 'other';
   grades: string[];
   contactInfo?: {
     phone?: string;
@@ -123,7 +117,7 @@ export interface CarpoolGroup {
   maxChildren: number;
   ageGroups: string[];
   schedule: {
-    daysOfWeek: ("monday" | "tuesday" | "wednesday" | "thursday" | "friday")[];
+    daysOfWeek: ('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday')[];
     morningPickup?: {
       startTime: string; // "07:30"
       endTime: string; // "08:00"
@@ -138,7 +132,7 @@ export interface CarpoolGroup {
   pendingInvitations: CarpoolGroupInvitation[];
   joinRequests: CarpoolGroupJoinRequest[];
   // Status & Lifecycle
-  status: "active" | "inactive" | "purging" | "deleted" | "paused" | "archived";
+  status: 'active' | 'inactive' | 'purging' | 'deleted' | 'paused' | 'archived';
   isAcceptingMembers: boolean;
   inactivityDetectedAt?: Date;
   purgingStartedAt?: Date;
@@ -184,8 +178,8 @@ export interface CarpoolGroupInvitation {
   email: string;
   invitedBy: string;
   invitedByUser: User;
-  role: "parent" | "child"; // Updated to use new role system
-  status: "pending" | "accepted" | "declined" | "expired";
+  role: 'parent' | 'child'; // Updated to use new role system
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
   message?: string;
   sentAt: Date;
   expiresAt: Date;
@@ -198,7 +192,7 @@ export interface CarpoolGroupJoinRequest {
   group: CarpoolGroup;
   requesterId: string;
   requester: User;
-  status: "pending" | "approved" | "denied";
+  status: 'pending' | 'approved' | 'denied';
   message?: string;
   // Auto-matching data
   matchScore?: number;
@@ -273,7 +267,7 @@ export interface Location {
     lat: number;
     lng: number;
   };
-  type: "school" | "home" | "pickup_point" | "other";
+  type: 'school' | 'home' | 'pickup_point' | 'other';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -284,11 +278,7 @@ export interface WeeklyScheduleTemplateSlot {
   dayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
   startTime: string; // HH:MM format
   endTime: string; // HH:MM format
-  routeType:
-    | "school_dropoff"
-    | "school_pickup"
-    | "multi_stop"
-    | "point_to_point";
+  routeType: 'school_dropoff' | 'school_pickup' | 'multi_stop' | 'point_to_point';
   description: string;
   locationId?: string; // Reference to Location
   maxPassengers: number;
@@ -302,7 +292,7 @@ export interface DriverWeeklyPreference {
   driverParentId: string;
   weekStartDate: string; // ISO date string (Monday of the week)
   templateSlotId: string;
-  preferenceLevel: "preferable" | "less_preferable" | "unavailable";
+  preferenceLevel: 'preferable' | 'less_preferable' | 'unavailable';
   submissionTimestamp: Date;
 }
 
@@ -313,8 +303,8 @@ export interface RideAssignment {
   driverId: string;
   date: string; // ISO date string
   passengers: string[]; // Array of Child IDs
-  assignmentMethod: "automated" | "manual_override" | "swap_result";
-  status: "assigned" | "confirmed" | "completed" | "cancelled";
+  assignmentMethod: 'automated' | 'manual_override' | 'swap_result';
+  status: 'assigned' | 'confirmed' | 'completed' | 'cancelled';
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -368,7 +358,7 @@ export interface PickupLocation {
   estimatedTime: string;
 }
 
-export type TripStatus = "planned" | "active" | "completed" | "cancelled";
+export type TripStatus = 'planned' | 'active' | 'completed' | 'cancelled';
 
 // Schedule types
 export interface Schedule {
@@ -386,7 +376,7 @@ export interface Schedule {
   updatedAt: Date;
 }
 
-export type ScheduleStatus = "active" | "paused" | "inactive";
+export type ScheduleStatus = 'active' | 'paused' | 'inactive';
 
 // Swap request types - UPDATED to match Product Spec
 export interface SwapRequest {
@@ -402,12 +392,12 @@ export interface SwapRequest {
 }
 
 export type SwapRequestStatus =
-  | "pending"
-  | "accepted"
-  | "declined"
-  | "cancelled"
-  | "auto_accepted"
-  | "expired";
+  | 'pending'
+  | 'accepted'
+  | 'declined'
+  | 'cancelled'
+  | 'auto_accepted'
+  | 'expired';
 
 // API Response types
 export interface ApiResponse<T = any> {
@@ -503,7 +493,7 @@ export interface ParentGroupCreationRequest {
   maxChildren: number;
   ageGroups: string[];
   schedule: {
-    daysOfWeek: ("monday" | "tuesday" | "wednesday" | "thursday" | "friday")[];
+    daysOfWeek: ('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday')[];
     morningPickup?: {
       startTime: string;
       endTime: string;
@@ -528,7 +518,7 @@ export interface GroupReactivationRequest {
     newMembersPledged: number;
     totalExpectedMembers: number;
   };
-  status: "pending" | "approved" | "denied";
+  status: 'pending' | 'approved' | 'denied';
   requestedAt: Date;
   reviewedAt?: Date;
   reviewedBy?: string;
@@ -541,7 +531,7 @@ export interface InactivityDetectionResult {
   inactivityReasons: string[];
   lastActivityDate: Date;
   inactivityScore: number; // 0-100, higher means more inactive
-  recommendedAction: "monitor" | "warn" | "purge";
+  recommendedAction: 'monitor' | 'warn' | 'purge';
   gracePeriodDays: number;
 }
 
@@ -556,7 +546,7 @@ export interface SubmitWeeklyPreferencesRequest {
   weekStartDate: string; // ISO date string (Monday)
   preferences: {
     templateSlotId: string;
-    preferenceLevel: "preferable" | "less_preferable" | "unavailable";
+    preferenceLevel: 'preferable' | 'less_preferable' | 'unavailable';
   }[];
 }
 
@@ -570,7 +560,7 @@ export interface GenerateScheduleRequest {
 export interface CreateChildRequest {
   fullName: string;
   studentId: string;
-  grade?: string;
+  grade: string;
   emergencyContact?: string;
   pickupInstructions?: string;
 }
@@ -629,7 +619,7 @@ export interface EmailRequest {
   to: string[];
   templateId: string;
   variables: Record<string, any>;
-  priority?: "low" | "normal" | "high";
+  priority?: 'low' | 'normal' | 'high';
 }
 
 // Analytics types
@@ -658,13 +648,13 @@ export interface TripStats {
 
 // Notification types
 export type NotificationType =
-  | "trip_joined"
-  | "trip_left"
-  | "trip_cancelled"
-  | "trip_updated"
-  | "message_received"
-  | "trip_reminder"
-  | "pickup_reminder";
+  | 'trip_joined'
+  | 'trip_left'
+  | 'trip_cancelled'
+  | 'trip_updated'
+  | 'message_received'
+  | 'trip_reminder'
+  | 'pickup_reminder';
 
 export interface Notification {
   id: string;
@@ -680,10 +670,10 @@ export interface Notification {
 
 // Message and Chat types
 export enum MessageType {
-  text = "text",
-  location = "location",
-  system = "system",
-  image = "image",
+  text = 'text',
+  location = 'location',
+  system = 'system',
+  image = 'image',
 }
 
 export interface Message {
@@ -711,7 +701,7 @@ export interface Message {
 export interface ChatRoom {
   id: string;
   tripId: string;
-  type: "trip_chat";
+  type: 'trip_chat';
   name: string;
   description?: string;
   participants: string[]; // Array of user IDs
@@ -731,7 +721,7 @@ export interface ChatRoom {
 export interface ChatParticipant {
   userId: string;
   chatId: string;
-  role: "driver" | "passenger";
+  role: 'driver' | 'passenger';
   joinedAt: Date;
   lastReadAt?: Date;
   notificationsEnabled: boolean;
@@ -739,7 +729,7 @@ export interface ChatParticipant {
 
 // Real-time event types
 export interface RealTimeEvent {
-  type: "message" | "user_joined" | "user_left" | "typing" | "trip_update";
+  type: 'message' | 'user_joined' | 'user_left' | 'typing' | 'trip_update';
   chatId?: string;
   tripId?: string;
   userId: string;
@@ -783,7 +773,7 @@ export interface CreateNotificationRequest {
 // Response types for messaging
 export interface ChatRoomWithUnreadCount extends ChatRoom {
   unreadCount: number;
-  userRole: "driver" | "passenger";
+  userRole: 'driver' | 'passenger';
 }
 
 export interface MessageWithSender extends Message {
@@ -799,13 +789,13 @@ export interface WeeklySchedule {
   weekStartDate: string; // YYYY-MM-DD (Monday)
   weekEndDate: string; // YYYY-MM-DD (Friday)
   status:
-    | "preferences_open"
-    | "preferences_closed"
-    | "scheduling"
-    | "swaps_open"
-    | "finalized"
-    | "active"
-    | "completed";
+    | 'preferences_open'
+    | 'preferences_closed'
+    | 'scheduling'
+    | 'swaps_open'
+    | 'finalized'
+    | 'active'
+    | 'completed';
 
   // Important deadlines
   preferencesDeadline: string; // Saturday 10PM
@@ -850,7 +840,7 @@ export interface WeeklyPreferences {
 
 export interface DayPreference {
   canDrive: boolean;
-  preferredRole: "driver" | "passenger" | "either" | "unavailable";
+  preferredRole: 'driver' | 'passenger' | 'either' | 'unavailable';
   timeConstraints?: {
     earliestPickup?: string; // "07:30"
     latestDropoff?: string; // "16:00"
@@ -863,7 +853,7 @@ export interface WeeklyAssignment {
   id: string;
   scheduleId: string;
   date: string; // YYYY-MM-DD
-  dayOfWeek: "monday" | "tuesday" | "wednesday" | "thursday" | "friday";
+  dayOfWeek: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday';
 
   // Morning trip (home → school)
   morningTrip?: {
@@ -914,7 +904,7 @@ export interface RouteStop {
   estimatedTime: string;
   actualTime?: string;
   children: string[]; // Child names
-  type: "pickup" | "dropoff";
+  type: 'pickup' | 'dropoff';
 }
 
 export interface SwapRequest {
@@ -930,8 +920,8 @@ export interface SwapRequest {
   // What they're offering instead
   proposedChange: {
     date: string;
-    role: "driver" | "passenger";
-    timeSlot: "morning" | "afternoon" | "both";
+    role: 'driver' | 'passenger';
+    timeSlot: 'morning' | 'afternoon' | 'both';
   };
 
   // Who they're requesting to swap with
@@ -940,7 +930,7 @@ export interface SwapRequest {
 
   // Request details
   reason: string;
-  priority: "low" | "medium" | "high" | "emergency";
+  priority: 'low' | 'medium' | 'high' | 'emergency';
 
   // Response tracking
   status: SwapRequestStatus;
@@ -993,10 +983,7 @@ export interface SchedulingAlgorithmInput {
   history: DrivingHistory[];
   groupSettings: {
     maxConsecutiveDrivingDays: number;
-    preferredDrivingRotation:
-      | "equal"
-      | "preference_based"
-      | "availability_based";
+    preferredDrivingRotation: 'equal' | 'preference_based' | 'availability_based';
     allowSingleParentDays: boolean;
   };
 }
@@ -1014,13 +1001,9 @@ export interface SchedulingAlgorithmOutput {
 }
 
 export interface SchedulingConflict {
-  type:
-    | "insufficient_drivers"
-    | "route_inefficiency"
-    | "preference_conflict"
-    | "capacity_exceeded";
+  type: 'insufficient_drivers' | 'route_inefficiency' | 'preference_conflict' | 'capacity_exceeded';
   date: string;
-  timeSlot: "morning" | "afternoon";
+  timeSlot: 'morning' | 'afternoon';
   description: string;
   suggestedResolutions: string[];
   affectedParents: string[];
@@ -1030,17 +1013,17 @@ export interface SchedulingConflict {
 export interface CarpoolGroupSchedulingSettings {
   // Scheduling preferences
   preferenceSubmissionDeadline: {
-    dayOfWeek: "friday" | "saturday" | "sunday";
+    dayOfWeek: 'friday' | 'saturday' | 'sunday';
     time: string; // "22:00"
   };
   swapRequestDeadline: {
-    dayOfWeek: "saturday" | "sunday" | "monday";
+    dayOfWeek: 'saturday' | 'sunday' | 'monday';
     time: string; // "17:00"
   };
 
   // Algorithm settings
   maxConsecutiveDrivingDays: number;
-  drivingRotationStrategy: "equal" | "preference_based" | "availability_based";
+  drivingRotationStrategy: 'equal' | 'preference_based' | 'availability_based';
   allowSingleParentDays: boolean;
 
   // Route optimization
@@ -1049,7 +1032,7 @@ export interface CarpoolGroupSchedulingSettings {
 
   // Emergency procedures
   emergencyBackupParents: string[]; // Parent IDs willing to be emergency backup
-  emergencyContactMethod: "phone" | "sms" | "app" | "all";
+  emergencyContactMethod: 'phone' | 'sms' | 'app' | 'all';
 }
 
 export interface RecurringSchedule {
@@ -1099,7 +1082,7 @@ export interface PhoneValidation {
   attemptCount: number;
   attempts?: number; // Alias for backward compatibility
   expiresAt: Date;
-  status?: "pending" | "verified" | "failed";
+  status?: 'pending' | 'verified' | 'failed';
   isValid?: boolean;
 }
 
@@ -1110,7 +1093,7 @@ export interface AddressValidation {
   distanceFromSchool?: number;
   withinServiceArea: boolean;
   isValid: boolean;
-  status?: "pending" | "verified" | "failed";
+  status?: 'pending' | 'verified' | 'failed';
   validationMessage?: string;
   error?: string;
 }
@@ -1132,7 +1115,7 @@ export interface RegistrationData {
   }[];
 
   // Transportation Role
-  transportationRole: "driver_regular" | "driver_occasional" | "passenger_only";
+  transportationRole: 'driver_regular' | 'driver_occasional' | 'passenger_only';
 
   // Emergency Contact
   emergencyContact: {
@@ -1155,7 +1138,7 @@ export interface SchoolConfiguration {
   address: string;
   location: GeographicLocation;
   district: string;
-  type: "elementary" | "middle" | "high" | "k12" | "other";
+  type: 'elementary' | 'middle' | 'high' | 'k12' | 'other';
   grades: string[];
   serviceRadius: number; // miles
   contactInfo: {
@@ -1171,52 +1154,52 @@ export interface SchoolConfiguration {
 // Default school configurations for demonstration
 export const DEFAULT_SCHOOLS: SchoolConfiguration[] = [
   {
-    id: "lincoln-elementary",
-    name: "Lincoln Elementary School",
-    address: "123 Oak Street, Springfield, IL 62701",
+    id: 'lincoln-elementary',
+    name: 'Lincoln Elementary School',
+    address: '123 Oak Street, Springfield, IL 62701',
     location: {
-      address: "123 Oak Street, Springfield, IL 62701",
+      address: '123 Oak Street, Springfield, IL 62701',
       latitude: 39.7817,
       longitude: -89.6501,
-      zipCode: "62701",
-      city: "Springfield",
-      state: "IL",
-      country: "USA",
-      formattedAddress: "123 Oak Street, Springfield, IL 62701, USA",
+      zipCode: '62701',
+      city: 'Springfield',
+      state: 'IL',
+      country: 'USA',
+      formattedAddress: '123 Oak Street, Springfield, IL 62701, USA',
     },
-    district: "Springfield School District 186",
-    type: "elementary",
-    grades: ["K", "1", "2", "3", "4", "5"],
+    district: 'Springfield School District 186',
+    type: 'elementary',
+    grades: ['K', '1', '2', '3', '4', '5'],
     serviceRadius: 20,
     contactInfo: {
-      phone: "(217) 555-0123",
-      email: "info@lincolnelementary.edu",
-      website: "https://lincolnelementary.edu",
+      phone: '(217) 555-0123',
+      email: 'info@lincolnelementary.edu',
+      website: 'https://lincolnelementary.edu',
     },
     isActive: true,
   },
   {
-    id: "tesla-stem-redmond",
-    name: "Tesla STEM High School",
-    address: "4301 228th Ave NE, Redmond, WA 98053",
+    id: 'tesla-stem-redmond',
+    name: 'Tesla STEM High School',
+    address: '4301 228th Ave NE, Redmond, WA 98053',
     location: {
-      address: "4301 228th Ave NE, Redmond, WA 98053",
+      address: '4301 228th Ave NE, Redmond, WA 98053',
       latitude: 47.674,
       longitude: -122.1215,
-      zipCode: "98053",
-      city: "Redmond",
-      state: "WA",
-      country: "USA",
-      formattedAddress: "4301 228th Ave NE, Redmond, WA 98053, USA",
+      zipCode: '98053',
+      city: 'Redmond',
+      state: 'WA',
+      country: 'USA',
+      formattedAddress: '4301 228th Ave NE, Redmond, WA 98053, USA',
     },
-    district: "Lake Washington School District",
-    type: "high",
-    grades: ["9", "10", "11", "12"],
+    district: 'Lake Washington School District',
+    type: 'high',
+    grades: ['9', '10', '11', '12'],
     serviceRadius: 25,
     contactInfo: {
-      phone: "(425) 936-2410",
-      email: "tesla@lwsd.org",
-      website: "https://tesla.lwsd.org",
+      phone: '(425) 936-2410',
+      email: 'tesla@lwsd.org',
+      website: 'https://tesla.lwsd.org',
     },
     isActive: true,
   },
@@ -1224,7 +1207,7 @@ export const DEFAULT_SCHOOLS: SchoolConfiguration[] = [
 
 // Legacy compatibility - use Tesla STEM as default for existing code
 export const TESLA_STEM_HIGH_SCHOOL: SchoolConfiguration = DEFAULT_SCHOOLS.find(
-  (school) => school.id === "tesla-stem-redmond"
+  (school) => school.id === 'tesla-stem-redmond',
 )!;
 
 // Service Area Configuration (deprecated - use school-specific serviceRadius)
@@ -1241,14 +1224,10 @@ export interface TravelingParentSchedule {
     reason?: string;
   }[];
   makeupOptions: {
-    selectedOption:
-      | "extra_weekly"
-      | "weekend_special"
-      | "extended_coverage"
-      | "custom";
+    selectedOption: 'extra_weekly' | 'weekend_special' | 'extended_coverage' | 'custom';
     makeupPlan: string;
     deadline: Date;
-    status: "pending" | "approved" | "completed";
+    status: 'pending' | 'approved' | 'completed';
   };
   makeupCommitment?: {
     windowWeeks: number;
@@ -1272,7 +1251,7 @@ export interface TravelingParentSchedule {
 
 export interface MakeupOption {
   id: string;
-  type: "extra_weekly" | "weekend_special" | "extended_coverage" | "custom";
+  type: 'extra_weekly' | 'weekend_special' | 'extended_coverage' | 'custom';
   description: string;
   windowWeeks: number;
   isFlexible: boolean;
@@ -1282,4 +1261,34 @@ export interface MakeupOption {
   };
   additionalTrips: number;
   approved: boolean;
+}
+
+// Microsoft Entra ID Integration Types
+export interface VedUser {
+  id: string; // Entra ID subject claim (primary user identifier)
+  email: string; // User's email from Entra ID
+  name: string; // Display name from Entra ID
+  firstName?: string; // Given name from Entra ID
+  lastName?: string; // Family name from Entra ID
+  permissions: string[]; // App-specific permissions array
+  vedProfile?: {
+    // Vedprakash-specific profile data
+    phoneNumber?: string;
+    homeAddress?: string;
+    emergencyContact?: string;
+    role: UserRole;
+    preferences: UserPreferences;
+    isActiveDriver?: boolean;
+    travelSchedule?: {
+      isRegularTraveler: boolean;
+      travelPattern?: string;
+      needsMakeupOptions: boolean;
+      makeupCommitmentWeeks: number;
+    };
+  };
+}
+
+// Legacy User interface (for backward compatibility during migration)
+export interface LegacyUser extends User {
+  // Existing User interface maintained for migration period
 }

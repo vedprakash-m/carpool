@@ -1,5 +1,6 @@
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { validateEntraToken } from '../src/services/entra-auth.service';
+import { AuthService } from '../src/services/auth.service';
 import { VedUser } from '../../shared/src/types';
 
 export async function authEntraUnified(
@@ -10,19 +11,6 @@ export async function authEntraUnified(
 
   try {
     const method = request.method;
-
-    // Handle preflight OPTIONS request
-    if (method === 'OPTIONS') {
-      return {
-        status: 204,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Access-Control-Max-Age': '86400',
-        },
-      };
-    }
 
     if (method === 'POST') {
       const body = (await request.json()) as any;
@@ -51,10 +39,7 @@ export async function authEntraUnified(
             }),
           };
         } catch (error) {
-          context.log(
-            'Entra authentication failed:',
-            error instanceof Error ? error.message : String(error),
-          );
+          context.log.error('Entra authentication failed:', error.message);
           return {
             status: 401,
             headers: {
@@ -64,14 +49,13 @@ export async function authEntraUnified(
             body: JSON.stringify({
               success: false,
               error: 'Authentication failed',
-              details: error instanceof Error ? error.message : 'Invalid or expired token',
+              details: error.message,
               authType: 'entra',
               timestamp: new Date().toISOString(),
             }),
           };
         }
       }
-
       // Handle legacy authentication fallback
       if (body.authProvider === 'legacy' || (!body.authProvider && body.email && body.password)) {
         return {
@@ -127,7 +111,7 @@ export async function authEntraUnified(
       try {
         // Validate the token (could be Entra ID or legacy)
         const vedUser: VedUser = await validateEntraToken(context, authHeader);
-
+        
         return {
           status: 200,
           headers: {
@@ -142,10 +126,7 @@ export async function authEntraUnified(
           }),
         };
       } catch (error) {
-        context.log(
-          'Token validation failed:',
-          error instanceof Error ? error.message : String(error),
-        );
+        context.log.error('Token validation failed:', error.message);
         return {
           status: 401,
           headers: {
@@ -155,41 +136,78 @@ export async function authEntraUnified(
           body: JSON.stringify({
             success: false,
             error: 'Token validation failed',
-            details: error instanceof Error ? error.message : 'Unknown error',
+            details: error.message,
             timestamp: new Date().toISOString(),
           }),
         };
       }
     }
+      }
 
-    // Method not allowed
+      const token = authHeader.substring(7);
+
+      // Try Entra External ID validation first
+      try {
+        const entraUser = await entraAuthService.validateEntraToken(token);
+        if (entraUser) {
+          const user = await entraAuthService.syncUserWithDatabase(entraUser);
+
+          return {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              success: true,
+              user: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                authProvider: 'entra',
+              },
+            }),
+          };
+        }
+      } catch (error) {
+        context.log('Entra token validation failed, trying legacy:', error.message);
+      }
+
+      // For legacy token validation, we'll need to use existing middleware
+      // This endpoint focuses on Entra authentication
+      return {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          success: false,
+          error: 'Invalid token - use existing auth endpoints for legacy tokens',
+        }),
+      };
+    }
+
     return {
       status: 405,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        Allow: 'GET, POST, OPTIONS',
       },
       body: JSON.stringify({
         success: false,
         error: 'Method not allowed',
-        message: `${method} is not supported on this endpoint`,
-        timestamp: new Date().toISOString(),
       }),
     };
   } catch (error) {
-    context.log('Authentication service error:', error);
+    context.error('Authentication service error:', error);
     return {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
         success: false,
-        error: 'Internal server error',
-        message: 'Authentication service temporarily unavailable',
-        timestamp: new Date().toISOString(),
+        error: 'Authentication service error',
       }),
     };
   }

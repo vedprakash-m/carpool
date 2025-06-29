@@ -171,6 +171,32 @@ export class DatabaseService {
     }
   }
 
+  public async getUserByEntraId(entraId: string): Promise<User | null> {
+    if (this.useRealDatabase && this.container) {
+      try {
+        const { resources } = await this.container.items
+          .query({
+            query: 'SELECT * FROM c WHERE c.entraObjectId = @entraId',
+            parameters: [{ name: '@entraId', value: entraId }],
+          })
+          .fetchAll();
+
+        return resources.length > 0 ? (resources[0] as User) : null;
+      } catch (error) {
+        console.error('Error fetching user by Entra ID from Cosmos DB:', error);
+        return null;
+      }
+    } else {
+      // Search through in-memory users for Entra ID
+      for (const user of this.inMemoryUsers.values()) {
+        if ((user as any).entraObjectId === entraId) {
+          return user;
+        }
+      }
+      return null;
+    }
+  }
+
   public async updateUser(email: string, updates: Partial<User>): Promise<User | null> {
     const user = await this.getUserByEmail(email);
     if (!user) return null;

@@ -1,19 +1,31 @@
-import { ConfidentialClientApplication } from '@azure/msal-node';
 import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
+import { InvocationContext } from '@azure/functions';
+import { VedUser } from '../../../shared/src/types';
 import { DatabaseService, User } from './database.service';
 
-export interface EntraUserProfile {
-  objectId: string;
+interface EntraIDClaims {
+  sub: string;
   email: string;
-  givenName: string;
-  surname: string;
-  role: 'parent' | 'admin' | 'student';
-  schoolId?: string;
-  phoneVerified: boolean;
-  addressVerified: boolean;
-  emergencyContact?: string;
+  name: string;
+  given_name?: string;
+  family_name?: string;
+  oid: string;
+  tid: string;
+  aud: string;
+  iss: string;
+  iat: number;
+  exp: number;
 }
 
+interface JWKSCache {
+  [key: string]: {
+    key: string;
+    timestamp: number;
+  };
+}
+
+// Legacy interface for backward compatibility during migration
 export interface VCarpoolUser extends User {
   entraObjectId?: string;
   authProvider: 'legacy' | 'entra';
@@ -25,161 +37,256 @@ export interface VCarpoolUser extends User {
 }
 
 export class EntraAuthService {
-  private msalInstance: ConfidentialClientApplication;
+  private client: jwksClient.JwksClient;
+  private keyCache: JWKSCache = {};
+  private cacheTimeout = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
   private databaseService: DatabaseService;
 
   constructor() {
-    this.msalInstance = new ConfidentialClientApplication({
-      auth: {
-        clientId: process.env.ENTRA_CLIENT_ID!,
-        clientSecret: process.env.ENTRA_CLIENT_SECRET!,
-        authority: process.env.ENTRA_AUTHORITY!,
-      },
+    this.client = jwksClient({
+      jwksUri: 'https://login.microsoftonline.com/vedid.onmicrosoft.com/discovery/v2.0/keys',
+      cache: true,
+      cacheMaxEntries: 5,
+      cacheMaxAge: this.cacheTimeout,
+      rateLimit: true,
+      jwksRequestsPerMinute: 5,
     });
     this.databaseService = DatabaseService.getInstance();
   }
 
-  /**
-   * Validate Entra External ID token and extract user profile
-   */
-  async validateEntraToken(token: string): Promise<EntraUserProfile | null> {
+  private async getSigningKey(kid: string): Promise<string> {
+    // Check cache first
+    const cached = this.keyCache[kid];
+    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      return cached.key;
+    }
+
     try {
-      // For now, we'll validate the token structure and decode the JWT
-      // In production, you should validate against Entra External ID
-      const decoded = jwt.decode(token, { complete: true });
-      if (!decoded || typeof decoded.payload === 'string') {
+      const key = await this.client.getSigningKey(kid);
+      const signingKey = key.getPublicKey();
+
+      // Cache the key
+      this.keyCache[kid] = {
+        key: signingKey,
+        timestamp: Date.now(),
+      };
+
+      return signingKey;
+    } catch (error: any) {
+      throw new Error(`Unable to get signing key: ${error?.message || 'Unknown error'}`);
+    }
+  }
+
+  async validateToken(token: string): Promise<VedUser> {
+    try {
+      // Decode token header to get kid
+      const decodedHeader = jwt.decode(token, { complete: true });
+      if (!decodedHeader || typeof decodedHeader === 'string') {
         throw new Error('Invalid token format');
       }
 
-      const claims = decoded.payload as any;
-
-      // Check if this is an Entra token by looking for specific claims
-      if (!claims.sub || !claims.email) {
-        return null;
+      const { kid } = decodedHeader.header;
+      if (!kid) {
+        throw new Error('Token missing kid in header');
       }
 
-      return {
-        objectId: claims.sub,
-        email: claims.email,
-        givenName: claims.given_name || '',
-        surname: claims.family_name || '',
-        role: this.mapEntraRoleToVCarpool(claims['extension_Role'] || 'parent'),
-        schoolId: claims['extension_SchoolId'],
-        phoneVerified: claims['extension_PhoneVerified'] === 'true',
-        addressVerified: claims['extension_AddressVerified'] === 'true',
-        emergencyContact: claims['extension_EmergencyContact'],
+      // Get signing key
+      const signingKey = await this.getSigningKey(kid);
+
+      // Verify token
+      const decoded = jwt.verify(token, signingKey, {
+        audience: process.env.ENTRA_CLIENT_ID,
+        issuer: 'https://login.microsoftonline.com/vedid.onmicrosoft.com/v2.0',
+        algorithms: ['RS256'],
+      }) as EntraIDClaims;
+
+      // Extract user information and convert to VedUser format
+      const vedUser: VedUser = {
+        id: decoded.sub, // Use subject claim as primary identifier
+        email: decoded.email,
+        name: decoded.name,
+        firstName: decoded.given_name,
+        lastName: decoded.family_name,
+        permissions: [], // Will be populated from app-specific data
+        vedProfile: undefined, // Will be loaded from database if exists
       };
-    } catch (error) {
-      console.error('Entra token validation failed:', error);
-      return null;
+
+      return vedUser;
+    } catch (error: any) {
+      if (error?.name === 'JsonWebTokenError') {
+        throw new Error('Invalid token signature');
+      } else if (error?.name === 'TokenExpiredError') {
+        throw new Error('Token has expired');
+      } else if (error?.name === 'NotBeforeError') {
+        throw new Error('Token not active yet');
+      } else {
+        throw new Error(`Token validation failed: ${error?.message || 'Unknown error'}`);
+      }
     }
   }
-
-  /**
-   * Map Entra roles to VCarpool roles
-   */
-  private mapEntraRoleToVCarpool(entraRole: string): 'parent' | 'admin' | 'student' {
-    switch (entraRole.toLowerCase()) {
-      case 'admin':
-      case 'superadmin':
-        return 'admin';
-      case 'student':
-      case 'child':
-        return 'student';
-      default:
-        return 'parent';
-    }
-  }
-
-  /**
-   * Sync Entra user with VCarpool database
-   */
-  async syncUserWithDatabase(entraUser: EntraUserProfile): Promise<VCarpoolUser> {
+  async enrichUserWithProfile(vedUser: VedUser, context: InvocationContext): Promise<VedUser> {
     try {
-      const existingUser = (await this.databaseService.getUserByEmail(
-        entraUser.email,
-      )) as VCarpoolUser;
+      // Load user profile from Cosmos DB based on vedUser.id
+      const existingUser = await this.databaseService.getUserByEntraId(vedUser.id);
 
       if (existingUser) {
-        // Update existing user with Entra information
-        const updatedUser: VCarpoolUser = {
-          ...existingUser,
-          entraObjectId: entraUser.objectId,
-          firstName: entraUser.givenName,
-          lastName: entraUser.surname,
-          role: entraUser.role,
-          phoneVerified: entraUser.phoneVerified,
-          addressVerified: entraUser.addressVerified,
-          emergencyContact: entraUser.emergencyContact,
-          schoolId: entraUser.schoolId,
-          authProvider: 'entra',
-          updatedAt: new Date().toISOString(),
-          migrationDate:
-            existingUser.authProvider === 'legacy' ? new Date() : existingUser.migrationDate,
+        // User exists, enrich with profile data
+        return {
+          ...vedUser,
+          permissions: this.getUserPermissions(existingUser.role),
+          vedProfile: {
+            phoneNumber: existingUser.phoneNumber,
+            homeAddress: existingUser.address,
+            emergencyContact: (existingUser as any).emergencyContact,
+            role: existingUser.role as any,
+            preferences: {
+              pickupLocation: '',
+              dropoffLocation: '',
+              preferredTime: '',
+              isDriver: false,
+              smokingAllowed: false,
+              notifications: {
+                email: true,
+                sms: true,
+                tripReminders: true,
+                swapRequests: true,
+                scheduleChanges: true,
+              },
+            },
+            isActiveDriver: (existingUser as any).isActiveDriver,
+            travelSchedule: (existingUser as any).travelSchedule,
+          },
         };
-
-        await this.databaseService.updateUser(existingUser.id, updatedUser);
-        return updatedUser;
       } else {
-        // Create new user from Entra profile
-        const newUser: VCarpoolUser = {
-          id: `user_${Date.now()}`,
-          entraObjectId: entraUser.objectId,
-          email: entraUser.email,
-          passwordHash: '', // No password for Entra users
-          firstName: entraUser.givenName,
-          lastName: entraUser.surname,
-          role: entraUser.role,
-          phoneVerified: entraUser.phoneVerified,
-          addressVerified: entraUser.addressVerified,
-          emergencyContact: entraUser.emergencyContact,
-          schoolId: entraUser.schoolId,
-          authProvider: 'entra',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+        // New user, create basic profile
+        context.log(`Creating new user profile for Entra ID: ${vedUser.id}`);
+        return {
+          ...vedUser,
+          permissions: ['basic_access'],
+          vedProfile: {
+            role: 'parent', // Default role
+            preferences: {
+              pickupLocation: '',
+              dropoffLocation: '',
+              preferredTime: '',
+              isDriver: false,
+              smokingAllowed: false,
+              notifications: {
+                email: true,
+                sms: true,
+                tripReminders: true,
+                swapRequests: true,
+                scheduleChanges: true,
+              },
+            },
+          },
         };
-
-        const createdUser = await this.databaseService.createUser(newUser);
-        return createdUser as VCarpoolUser;
       }
     } catch (error) {
-      console.error('User sync failed:', error);
-      throw new Error('Failed to sync user with database');
+      context.log(`Failed to enrich user profile: ${error}`);
+      // Return basic user if profile enrichment fails
+      return {
+        ...vedUser,
+        permissions: ['basic_access'],
+      };
     }
   }
 
-  /**
-   * Generate VCarpool session token for Entra-authenticated user
-   */
-  async generateSessionToken(user: VCarpoolUser): Promise<string> {
-    const payload = {
-      userId: user.entraObjectId || user.id,
-      email: user.email,
-      role: user.role,
-      schoolId: user.schoolId,
-      phoneVerified: user.phoneVerified,
-      addressVerified: user.addressVerified,
-      authProvider: user.authProvider,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours
+  private getUserPermissions(role: string): string[] {
+    const permissionMap: Record<string, string[]> = {
+      admin: ['platform_management', 'group_admin_promotion', 'system_configuration'],
+      group_admin: [
+        'group_management',
+        'member_management',
+        'trip_scheduling',
+        'emergency_coordination',
+      ],
+      parent: ['trip_participation', 'preference_submission', 'child_management'],
+      child: ['schedule_viewing', 'safety_reporting', 'profile_management'],
+      student: ['schedule_viewing', 'safety_reporting', 'profile_management'],
+      trip_admin: [
+        'group_management',
+        'member_management',
+        'trip_scheduling',
+        'emergency_coordination',
+      ],
     };
 
-    return jwt.sign(payload, process.env.JWT_SECRET!, { algorithm: 'HS256' });
+    return permissionMap[role] || ['basic_access'];
+  }
+  /**
+   * Legacy method for backward compatibility during migration
+   */
+  async validateLegacyUser(user: User): Promise<VCarpoolUser> {
+    return {
+      ...user,
+      authProvider: 'legacy',
+    };
   }
 
   /**
-   * Validate if user needs additional VCarpool verification
+   * Create hybrid user during migration process
    */
-  async requiresAdditionalVerification(user: VCarpoolUser): Promise<{
-    needsPhoneVerification: boolean;
-    needsAddressVerification: boolean;
-    needsEmergencyContact: boolean;
-  }> {
-    return {
-      needsPhoneVerification: !user.phoneVerified,
-      needsAddressVerification: !user.addressVerified,
-      needsEmergencyContact: !user.emergencyContact,
-    };
+  async createHybridUser(entraUser: VedUser, legacyUser?: User): Promise<VCarpoolUser> {
+    if (legacyUser) {
+      // Merge legacy user with Entra ID
+      return {
+        ...legacyUser,
+        entraObjectId: entraUser.id,
+        authProvider: 'entra',
+        migrationDate: new Date(),
+      };
+    } else {
+      // Create new user from Entra ID
+      const newUser: VCarpoolUser = {
+        id: entraUser.id,
+        email: entraUser.email,
+        passwordHash: '', // No password for Entra users
+        firstName: entraUser.firstName || '',
+        lastName: entraUser.lastName || '',
+        role: 'parent', // Convert UserRole to database role
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        entraObjectId: entraUser.id,
+        authProvider: 'entra',
+      };
+      return newUser;
+    }
   }
 }
+
+// Singleton instance
+export const entraAuthService = new EntraAuthService();
+
+// Middleware function for Azure Functions
+export async function validateEntraToken(
+  context: InvocationContext,
+  authHeader?: string,
+): Promise<VedUser> {
+  if (!authHeader) {
+    throw new Error('Authorization header is required');
+  }
+
+  if (!authHeader.startsWith('Bearer ')) {
+    throw new Error('Authorization header must start with "Bearer "');
+  }
+
+  const token = authHeader.substring(7);
+  if (!token) {
+    throw new Error('Token is required');
+  }
+
+  try {
+    const vedUser = await entraAuthService.validateToken(token);
+    const enrichedUser = await entraAuthService.enrichUserWithProfile(vedUser, context);
+
+    context.log(`Successfully authenticated user: ${enrichedUser.email}`);
+    return enrichedUser;
+  } catch (error: any) {
+    context.log(`Authentication failed: ${error?.message || 'Unknown error'}`);
+    throw new Error(`Authentication failed: ${error?.message || 'Unknown error'}`);
+  }
+}
+
+export default entraAuthService;

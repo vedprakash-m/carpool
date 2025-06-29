@@ -164,7 +164,7 @@ Look for issues labeled `good first issue` or `help wanted`. These are great sta
 const jwtSecret = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // REAL TOKEN
 
 # ✅ DO THIS INSTEAD
-const jwtSecret = process.env.JWT_SECRET || "your-jwt-secret-here";
+const authToken = process.env.ENTRA_CLIENT_SECRET || "your-entra-secret-here";
 ```
 
 **Use placeholder values in code:**
@@ -172,8 +172,8 @@ const jwtSecret = process.env.JWT_SECRET || "your-jwt-secret-here";
 ```typescript
 // ✅ GOOD: Use placeholders
 const config = {
-  jwtSecret: process.env.JWT_SECRET || "your-jwt-secret-here",
-  cosmosKey: process.env.COSMOS_DB_KEY || "your-cosmos-key-here",
+  entraClientSecret: process.env.ENTRA_CLIENT_SECRET || 'your-entra-secret-here',
+  cosmosKey: process.env.COSMOS_DB_KEY || 'your-cosmos-key-here',
 };
 ```
 
@@ -191,10 +191,10 @@ const userSchema = z.object({
 
 ### Authentication & Authorization
 
-- Use the existing JWT middleware for protected endpoints
-- Implement proper role-based access control
+- Use Microsoft Entra ID tokens for protected endpoints
+- Implement proper role-based access control with VedUser standard
 - Never trust client-side data
-- Always verify user permissions on the server
+- Always verify user permissions on the server using JWKS validation
 
 ### Rate Limiting
 
