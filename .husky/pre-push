@@ -1,25 +1,20 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "🚀 Running pre-push validation..."
+echo "🚀 Running optimized pre-push validation..."
 
-# Always run comprehensive validation first
-echo "🔍 Running comprehensive validation..."
-./scripts/comprehensive-validation.sh || {
-    echo "❌ Comprehensive validation failed"
+# Run optimized validation that skips redundant checks
+echo "🔍 Running optimized validation..."
+./scripts/pre-push-optimized.sh || {
+    echo "❌ Optimized validation failed"
     exit 1
 }
 
 # Check if Docker is available for additional E2E tests
 if docker info >/dev/null 2>&1; then
-    echo "🐳 Docker available - running additional E2E tests..."
-    ./scripts/validate-local.sh || {
-        echo "❌ Docker-based validation failed"
-        exit 1
-    }
+    echo "🐳 Docker available - E2E tests included in validation"
 else
-    echo "⚠️  Docker not available - skipping Docker-based E2E tests"
-    echo "📝 Note: Docker-based E2E tests will run in CI pipeline"
+    echo "⚠️  Docker not available - E2E tests will run in CI pipeline"
 fi
 
 echo "✅ Pre-push validation passed!"

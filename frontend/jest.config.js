@@ -29,8 +29,8 @@ const config = {
   // Module name mapping
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@vcarpool/shared$': '<rootDir>/../shared/dist',
-    '^@vcarpool/shared/(.*)$': '<rootDir>/../shared/dist/$1',
+    '^@carpool/shared$': '<rootDir>/../shared/src',
+    '^@carpool/shared/(.*)$': '<rootDir>/../shared/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
 
@@ -62,7 +62,7 @@ const config = {
   ],
 
   // Transform ignore patterns
-  transformIgnorePatterns: ['/node_modules/(?!(@vcarpool/shared)/)'],
+  transformIgnorePatterns: ['/node_modules/(?!(@carpool/shared)/)'],
 
   // Coverage configuration
   collectCoverage: true,

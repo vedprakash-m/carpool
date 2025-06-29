@@ -4,7 +4,7 @@ const withPWA = require('next-pwa')({ dest: 'public' });
 const nextConfig = {
   // Basic configuration
   reactStrictMode: true,
-  transpilePackages: ['@vcarpool/shared'],
+  transpilePackages: ['@carpool/shared'],
 
   // Simple build configuration for Azure Static Web Apps
   swcMinify: true,
@@ -35,7 +35,7 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL ||
       (process.env.NODE_ENV === 'production'
-        ? 'https://vcarpool-api-prod.azurewebsites.net/api'
+        ? 'https://carpool-api-prod.azurewebsites.net/api'
         : 'http://localhost:7071/api'),
     NEXT_PUBLIC_ENV: process.env.NODE_ENV,
   },

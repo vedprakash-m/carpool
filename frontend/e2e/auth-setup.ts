@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Page } from '@playwright/test';
 
 /**
  * E2E Authentication Setup Helper
@@ -12,30 +12,30 @@ export interface MockUser {
   email: string;
   firstName: string;
   lastName: string;
-  role: "admin" | "parent" | "student";
+  role: 'admin' | 'parent' | 'student';
 }
 
 export const defaultUsers: Record<string, MockUser> = {
   admin: {
-    id: "e2e-admin-123",
-    email: "admin@carpool.test",
-    firstName: "Admin",
-    lastName: "User",
-    role: "admin",
+    id: 'e2e-admin-123',
+    email: 'admin@carpool.test',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'admin',
   },
   parent: {
-    id: "e2e-parent-456",
-    email: "parent@carpool.test",
-    firstName: "Parent",
-    lastName: "User",
-    role: "parent",
+    id: 'e2e-parent-456',
+    email: 'parent@carpool.test',
+    firstName: 'Parent',
+    lastName: 'User',
+    role: 'parent',
   },
   student: {
-    id: "e2e-student-789",
-    email: "student@carpool.test",
-    firstName: "Student",
-    lastName: "User",
-    role: "student",
+    id: 'e2e-student-789',
+    email: 'student@carpool.test',
+    firstName: 'Student',
+    lastName: 'User',
+    role: 'student',
   },
 };
 
@@ -46,31 +46,31 @@ export const defaultUsers: Record<string, MockUser> = {
  */
 export async function setupMockAuth(
   page: Page,
-  role: "admin" | "parent" | "student" = "admin"
+  role: 'admin' | 'parent' | 'student' = 'admin'
 ) {
   // Set up mock authentication for E2E tests
-  await page.addInitScript((userRole) => {
+  await page.addInitScript(userRole => {
     const mockUser = {
       admin: {
-        id: "e2e-admin-123",
-        email: "admin@carpool.test",
-        firstName: "Admin",
-        lastName: "User",
-        role: "admin",
+        id: 'e2e-admin-123',
+        email: 'admin@carpool.test',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
       },
       parent: {
-        id: "e2e-parent-123",
-        email: "parent@carpool.test",
-        firstName: "Parent",
-        lastName: "User",
-        role: "parent",
+        id: 'e2e-parent-123',
+        email: 'parent@carpool.test',
+        firstName: 'Parent',
+        lastName: 'User',
+        role: 'parent',
       },
       student: {
-        id: "e2e-student-123",
-        email: "student@carpool.test",
-        firstName: "Student",
-        lastName: "User",
-        role: "student",
+        id: 'e2e-student-123',
+        email: 'student@carpool.test',
+        firstName: 'Student',
+        lastName: 'User',
+        role: 'student',
       },
     };
 
@@ -78,13 +78,13 @@ export async function setupMockAuth(
     const token = `mock-jwt-token-${userRole}-${Date.now()}`;
 
     // Set localStorage items that the app expects
-    localStorage.setItem("vcarpool_token", token);
-    localStorage.setItem("vcarpool_user", JSON.stringify(user));
-    localStorage.setItem("access_token", token);
-    localStorage.setItem("refresh_token", `refresh-${token}`);
+    localStorage.setItem('carpool_token', token);
+    localStorage.setItem('carpool_user', JSON.stringify(user));
+    localStorage.setItem('access_token', token);
+    localStorage.setItem('refresh_token', `refresh-${token}`);
 
     // Mock API responses for E2E tests
-    console.log("Mock API responses configured for E2E tests");
+    console.log('Mock API responses configured for E2E tests');
 
     // Override fetch to return mock responses
     const originalFetch = window.fetch;
@@ -93,8 +93,8 @@ export async function setupMockAuth(
 
       // Mock auth endpoints
       if (
-        urlString.includes("/auth/token") ||
-        urlString.includes("/auth/login")
+        urlString.includes('/auth/token') ||
+        urlString.includes('/auth/login')
       ) {
         return new Response(
           JSON.stringify({
@@ -107,13 +107,13 @@ export async function setupMockAuth(
           }),
           {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           }
         );
       }
 
       // Mock user profile endpoint
-      if (urlString.includes("/users/me")) {
+      if (urlString.includes('/users/me')) {
         return new Response(
           JSON.stringify({
             success: true,
@@ -121,13 +121,13 @@ export async function setupMockAuth(
           }),
           {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           }
         );
       }
 
       // Mock trips stats endpoint
-      if (urlString.includes("/trips/stats")) {
+      if (urlString.includes('/trips/stats')) {
         return new Response(
           JSON.stringify({
             success: true,
@@ -140,40 +140,40 @@ export async function setupMockAuth(
           }),
           {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           }
         );
       }
 
       // Mock admin endpoints
-      if (urlString.includes("/admin/generate-schedule")) {
+      if (urlString.includes('/admin/generate-schedule')) {
         return new Response(
           JSON.stringify({
             success: true,
             data: {
               assignmentsCreated: 12,
-              message: "Schedule generated successfully",
+              message: 'Schedule generated successfully',
             },
           }),
           {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           }
         );
       }
 
       // Mock trips list endpoint
-      if (urlString.includes("/trips") && !urlString.includes("/stats")) {
+      if (urlString.includes('/trips') && !urlString.includes('/stats')) {
         return new Response(
           JSON.stringify({
             success: true,
             data: {
               trips: [
                 {
-                  id: "trip-1",
-                  destination: "Lincoln Elementary School",
-                  date: "2025-01-15",
-                  departureTime: "08:00",
+                  id: 'trip-1',
+                  destination: 'Lincoln Elementary School',
+                  date: '2025-01-15',
+                  departureTime: '08:00',
                   maxPassengers: 4,
                   currentPassengers: 2,
                 },
@@ -188,7 +188,7 @@ export async function setupMockAuth(
           }),
           {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           }
         );
       }
@@ -207,18 +207,18 @@ export async function clearMockAuth(page: Page) {
   try {
     await page.evaluate(() => {
       try {
-        localStorage.removeItem("vcarpool_token");
-        localStorage.removeItem("vcarpool_user");
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        localStorage.removeItem('carpool_token');
+        localStorage.removeItem('carpool_user');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
       } catch (e) {
         // Ignore localStorage access errors in test environment
-        console.log("localStorage access denied, continuing with test");
+        console.log('localStorage access denied, continuing with test');
       }
     });
   } catch (error) {
     // If page.evaluate fails, continue with test - this is expected in some test environments
-    console.log("clearMockAuth failed, continuing with test:", error);
+    console.log('clearMockAuth failed, continuing with test:', error);
   }
 }
 
@@ -235,8 +235,8 @@ export async function getAuthState(page: Page): Promise<{
   try {
     return await page.evaluate(() => {
       try {
-        const token = localStorage.getItem("vcarpool_token");
-        const userStr = localStorage.getItem("vcarpool_user");
+        const token = localStorage.getItem('carpool_token');
+        const userStr = localStorage.getItem('carpool_user');
         const user = userStr ? JSON.parse(userStr) : null;
 
         return {
@@ -276,8 +276,8 @@ export async function waitForAuth(
     await page.waitForFunction(
       () => {
         try {
-          const token = localStorage.getItem("vcarpool_token");
-          const user = localStorage.getItem("vcarpool_user");
+          const token = localStorage.getItem('carpool_token');
+          const user = localStorage.getItem('carpool_user');
           return !!token && !!user;
         } catch (e) {
           // If localStorage is not accessible, assume auth is ready
@@ -288,7 +288,7 @@ export async function waitForAuth(
     );
   } catch (error) {
     // If waitForFunction fails, continue - this is expected in some test environments
-    console.log("waitForAuth timeout, continuing with test");
+    console.log('waitForAuth timeout, continuing with test');
   }
 }
 
@@ -301,7 +301,7 @@ export async function waitForAuth(
 export async function authenticateAndNavigate(
   page: Page,
   route: string,
-  userType: "admin" | "parent" | "student" = "admin"
+  userType: 'admin' | 'parent' | 'student' = 'admin'
 ): Promise<void> {
   // Setup authentication first
   await setupMockAuth(page, userType);
@@ -310,7 +310,7 @@ export async function authenticateAndNavigate(
   await page.goto(route);
 
   // Wait for page to load
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState('domcontentloaded');
 
   // Verify auth is working
   await waitForAuth(page);
@@ -322,50 +322,50 @@ export async function authenticateAndNavigate(
  */
 export async function setupMockAPIResponses(page: Page): Promise<void> {
   // Mock authentication endpoints
-  await page.route("**/api/v1/auth/token", async (route) => {
+  await page.route('**/api/v1/auth/token', async route => {
     await route.fulfill({
       status: 200,
-      contentType: "application/json",
+      contentType: 'application/json',
       body: JSON.stringify({
         success: true,
         data: {
           user: {
-            id: "e2e-admin-123",
-            email: "admin@carpool.test",
-            firstName: "Admin",
-            lastName: "User",
-            role: "admin",
+            id: 'e2e-admin-123',
+            email: 'admin@carpool.test',
+            firstName: 'Admin',
+            lastName: 'User',
+            role: 'admin',
           },
-          token: "mock-jwt-token-for-e2e",
-          refreshToken: "mock-refresh-token-for-e2e",
+          token: 'mock-jwt-token-for-e2e',
+          refreshToken: 'mock-refresh-token-for-e2e',
         },
       }),
     });
   });
 
   // Mock user profile endpoint
-  await page.route("**/api/v1/users/me", async (route) => {
+  await page.route('**/api/v1/users/me', async route => {
     await route.fulfill({
       status: 200,
-      contentType: "application/json",
+      contentType: 'application/json',
       body: JSON.stringify({
         success: true,
         data: {
-          id: "e2e-admin-123",
-          email: "admin@carpool.test",
-          firstName: "Admin",
-          lastName: "User",
-          role: "admin",
+          id: 'e2e-admin-123',
+          email: 'admin@carpool.test',
+          firstName: 'Admin',
+          lastName: 'User',
+          role: 'admin',
         },
       }),
     });
   });
 
   // Mock trip statistics endpoint
-  await page.route("**/api/v1/trips/stats", async (route) => {
+  await page.route('**/api/v1/trips/stats', async route => {
     await route.fulfill({
       status: 200,
-      contentType: "application/json",
+      contentType: 'application/json',
       body: JSON.stringify({
         success: true,
         data: {
@@ -384,10 +384,10 @@ export async function setupMockAPIResponses(page: Page): Promise<void> {
   });
 
   // Mock schedule generation endpoint
-  await page.route("**/api/v1/admin/generate-schedule", async (route) => {
+  await page.route('**/api/v1/admin/generate-schedule', async route => {
     await route.fulfill({
       status: 200,
-      contentType: "application/json",
+      contentType: 'application/json',
       body: JSON.stringify({
         success: true,
         data: {
@@ -397,13 +397,13 @@ export async function setupMockAPIResponses(page: Page): Promise<void> {
           algorithmSteps: [
             {
               step: 1,
-              name: "exclude_unavailable_slots",
+              name: 'exclude_unavailable_slots',
               driversProcessed: 25,
               slotsExcluded: 8,
             },
             {
               step: 2,
-              name: "assign_preferable_slots",
+              name: 'assign_preferable_slots',
               driversProcessed: 17,
               slotsAssigned: 5,
             },
@@ -413,5 +413,5 @@ export async function setupMockAPIResponses(page: Page): Promise<void> {
     });
   });
 
-  console.log("Mock API responses configured for E2E tests");
+  console.log('Mock API responses configured for E2E tests');
 }
