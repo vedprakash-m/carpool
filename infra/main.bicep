@@ -123,11 +123,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'COSMOS_DB_ENDPOINT'
-          value: cosmosAccount.properties.documentEndpoint
+          value: cosmosAccountForConfig.properties.documentEndpoint
         }
         {
           name: 'COSMOS_DB_KEY'
-          value: cosmosAccount.listKeys().primaryMasterKey
+          value: cosmosAccountForConfig.listKeys().primaryMasterKey
         }
         {
           name: 'COSMOS_DB_DATABASE_ID'
@@ -165,281 +165,19 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   }
 }
 
-// Reference to existing Cosmos DB in the database resource group
-// Note: This template now supports both single-RG and multi-RG deployments
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existing = {
+// Reference to existing Cosmos DB for configuration (read-only)
+resource cosmosAccountForConfig 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existing = {
   name: cosmosDbAccountName
   scope: resourceGroup(databaseResourceGroup)
 }
 
-// Cosmos DB Database
-resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
-  parent: cosmosAccount
-  name: 'carpool'
-  properties: {
-    resource: {
-      id: 'carpool'
-    }
-    options: {
-      throughput: 400
-    }
-  }
-}
-
-// Cosmos DB Containers
-resource usersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'users'
-  properties: {
-    resource: {
-      id: 'users'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-    }
-  }
-}
-
-resource tripsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'trips'
-  properties: {
-    resource: {
-      id: 'trips'
-      partitionKey: {
-        paths: [
-          '/driverId'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-    }
-  }
-}
-
-resource schedulesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'schedules'
-  properties: {
-    resource: {
-      id: 'schedules'
-      partitionKey: {
-        paths: [
-          '/userId'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-    }
-  }
-}
-
-resource swapRequestsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'swapRequests'
-  properties: {
-    resource: {
-      id: 'swapRequests'
-      partitionKey: {
-        paths: [
-          '/requesterId'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-    }
-  }
-}
-
-resource emailTemplatesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'email-templates'
-  properties: {
-    resource: {
-      id: 'email-templates'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-    }
-  }
-}
-
-resource notificationsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'notifications'
-  properties: {
-    resource: {
-      id: 'notifications'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-    }
-  }
-}
-
-resource messagesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'messages'
-  properties: {
-    resource: {
-      id: 'messages'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-    }
-  }
-}
-
-resource chatsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'chats'
-  properties: {
-    resource: {
-      id: 'chats'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-    }
-  }
-}
-
-resource chatParticipantsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  parent: cosmosDatabase
-  name: 'chatParticipants'
-  properties: {
-    resource: {
-      id: 'chatParticipants'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-    }
+// Deploy Cosmos DB containers using module to avoid cross-scope issues
+module cosmosContainers 'modules/cosmos-containers.bicep' = {
+  name: 'cosmosContainers'
+  scope: resourceGroup(databaseResourceGroup)
+  params: {
+    cosmosDbAccountName: cosmosDbAccountName
+    throughput: 400
   }
 }
 
@@ -485,7 +223,7 @@ resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {
 // Output the endpoints for reference
 output functionAppEndpoint string = 'https://${functionApp.properties.defaultHostName}/api'
 output staticWebAppEndpoint string = 'https://${staticWebApp.properties.defaultHostname}'
-output cosmosDbEndpoint string = cosmosAccount.properties.documentEndpoint
+output cosmosDbEndpoint string = cosmosAccountForConfig.properties.documentEndpoint
 
 // Output resource names for CI/CD pipeline
 output functionAppName string = functionApp.name

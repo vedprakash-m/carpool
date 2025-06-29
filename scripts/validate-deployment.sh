@@ -10,6 +10,7 @@ RESOURCE_GROUP="${RESOURCE_GROUP:-carpool-rg}"
 DB_RESOURCE_GROUP="${DB_RESOURCE_GROUP:-carpool-db-rg}"
 ENVIRONMENT="${ENVIRONMENT:-prod}"
 APP_NAME="${APP_NAME:-carpool}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -242,12 +243,37 @@ display_summary() {
     echo ""
 }
 
+# Function to validate Bicep templates locally
+validate_bicep_templates() {
+    log "Running Bicep template validation..."
+    
+    local bicep_script="$SCRIPT_DIR/validate-bicep.sh"
+    
+    if [ ! -f "$bicep_script" ]; then
+        warning "Bicep validation script not found: $bicep_script"
+        warning "Skipping local Bicep template validation"
+        return 0
+    fi
+    
+    if "$bicep_script" >/dev/null 2>&1; then
+        success "Bicep template validation passed"
+        return 0
+    else
+        error "Bicep template validation failed"
+        log "Run '$bicep_script' for detailed error information"
+        return 1
+    fi
+}
+
 # Main validation function
 main() {
     log "Starting deployment validation for Carpool"
     log "Environment: $ENVIRONMENT"
     
     local validation_failed=false
+    
+    # First validate Bicep templates locally
+    validate_bicep_templates || validation_failed=true
     
     # Validate resource groups
     validate_resource_group "$DB_RESOURCE_GROUP" "Database" || validation_failed=true
@@ -295,6 +321,9 @@ case "${1:-validate}" in
     "validate")
         main
         ;;
+    "bicep")
+        validate_bicep_templates
+        ;;
     "cosmos")
         validate_cosmos_db
         ;;
@@ -308,8 +337,9 @@ case "${1:-validate}" in
         validate_e2e_connectivity
         ;;
     "help")
-        echo "Usage: $0 [validate|cosmos|function-app|static-web-app|e2e|help]"
+        echo "Usage: $0 [validate|bicep|cosmos|function-app|static-web-app|e2e|help]"
         echo "  validate        - Full deployment validation (default)"
+        echo "  bicep           - Validate Bicep templates only"
         echo "  cosmos          - Validate Cosmos DB only"
         echo "  function-app    - Validate Function App only"
         echo "  static-web-app  - Validate Static Web App only"
