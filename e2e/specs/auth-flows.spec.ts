@@ -25,7 +25,7 @@ test.describe('Authentication E2E Tests', () => {
   test.describe('Legacy Authentication Flow', () => {
     test('should login successfully with valid legacy credentials', async ({ page }) => {
       // Navigate to login page
-      await expect(page.locator('h2:has-text("Sign in to VCarpool")')).toBeVisible();
+      await expect(page.locator('h2:has-text("Sign in to Carpool")')).toBeVisible();
 
       // Check for toggle to legacy login
       const legacyToggle = page.locator('button:has-text("Use Email & Password")');
@@ -185,7 +185,7 @@ test.describe('Authentication E2E Tests', () => {
 
       // Verify redirect to login page
       await expect(page).toHaveURL(/\/login/);
-      await expect(page.locator('h2:has-text("Sign in to VCarpool")')).toBeVisible();
+      await expect(page.locator('h2:has-text("Sign in to Carpool")')).toBeVisible();
     });
 
     test('should redirect unauthenticated users to login', async ({ page }) => {
@@ -194,7 +194,7 @@ test.describe('Authentication E2E Tests', () => {
 
       // Should be redirected to login
       await expect(page).toHaveURL(/\/login/);
-      await expect(page.locator('h2:has-text("Sign in to VCarpool")')).toBeVisible();
+      await expect(page.locator('h2:has-text("Sign in to Carpool")')).toBeVisible();
     });
   });
 

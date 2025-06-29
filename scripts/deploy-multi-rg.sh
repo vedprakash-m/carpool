@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Multi-Resource Group Deployment Script for VCarpool
+# Multi-Resource Group Deployment Script for Carpool
 # This script deploys infrastructure across two resource groups for cost optimization:
-# - Database resources in vcarpool-db-rg (persistent)
-# - Compute resources in vcarpool-rg (can be deleted to save costs)
+# - Database resources in carpool-db-rg (persistent)
+# - Compute resources in carpool-rg (can be deleted to save costs)
 
 set -e
 
 # Configuration
 LOCATION="eastus"
-APP_NAME="vcarpool"
+APP_NAME="carpool"
 ENVIRONMENT="${ENVIRONMENT:-prod}"
 DB_RESOURCE_GROUP="${APP_NAME}-db-rg"
 COMPUTE_RESOURCE_GROUP="${APP_NAME}-rg"
@@ -70,7 +70,7 @@ deploy_database() {
     if [ "$ENVIRONMENT" = "prod" ]; then
         # For production, check if containers already exist to avoid partition key conflicts
         local cosmos_account="${APP_NAME}-cosmos-${ENVIRONMENT}"
-        if az cosmosdb sql container show --account-name "$cosmos_account" --resource-group "$DB_RESOURCE_GROUP" --database-name "vcarpool" --name "notifications" >/dev/null 2>&1; then
+        if az cosmosdb sql container show --account-name "$cosmos_account" --resource-group "$DB_RESOURCE_GROUP" --database-name "carpool" --name "notifications" >/dev/null 2>&1; then
             log "Found existing containers in production, skipping container creation to avoid conflicts"
             skip_containers="true"
         fi
@@ -210,7 +210,7 @@ show_cost_optimization() {
 
 # Main execution
 main() {
-    log "Starting multi-resource group deployment for VCarpool"
+    log "Starting multi-resource group deployment for Carpool"
     log "Environment: $ENVIRONMENT"
     log "Location: $LOCATION"
     

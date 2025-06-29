@@ -2,7 +2,7 @@
 param location string = resourceGroup().location
 
 @description('App name that will be used as prefix for all resources')
-param appName string = 'vcarpool'
+param appName string = 'carpool'
 
 @description('Environment name (dev, test, prod)')
 @allowed([
@@ -19,7 +19,7 @@ param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
 param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
 
 @description('Azure Key Vault name (existing)')
-param keyVaultName string = 'vcarpool-keyvault'
+param keyVaultName string = 'carpool-keyvault'
 
 // Tags for all resources
 var tags = {
@@ -75,10 +75,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' existing = {
 // Cosmos DB Database
 resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
   parent: cosmosAccount
-  name: 'vcarpool'
+  name: 'carpool'
   properties: {
     resource: {
-      id: 'vcarpool'
+      id: 'carpool'
     }
     options: {
       throughput: 400

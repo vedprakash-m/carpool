@@ -22,7 +22,7 @@ module.exports = async function (context, req) {
     // Database connection
     const endpoint = process.env.COSMOS_DB_ENDPOINT;
     const key = process.env.COSMOS_DB_KEY;
-    const databaseId = process.env.COSMOS_DB_DATABASE_ID || "vcarpool";
+    const databaseId = process.env.COSMOS_DB_DATABASE_ID || "carpool";
 
     if (!endpoint || !key) {
       context.log("Missing database configuration");

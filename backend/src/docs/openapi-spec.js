@@ -1,6 +1,6 @@
 "use strict";
 /**
- * OpenAPI 3.0 Specification for vCarpool API
+ * OpenAPI 3.0 Specification for Carpool API
  * Comprehensive API documentation with security and performance considerations
  */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -8,7 +8,7 @@ exports.openApiSpec = void 0;
 exports.openApiSpec = {
     openapi: '3.0.0',
     info: {
-        title: 'vCarpool API',
+        title: 'Carpool API',
         version: '1.0.0',
         description: `
       Comprehensive carpool management system API for schools.
@@ -26,7 +26,7 @@ exports.openApiSpec = {
       - Audit logging for all operations
     `,
         contact: {
-            name: 'vCarpool Support',
+            name: 'Carpool Support',
             email: 'support@carpool.com'
         },
         license: {
@@ -36,11 +36,11 @@ exports.openApiSpec = {
     },
     servers: [
         {
-            url: 'https://vcarpool-functions.azurewebsites.net/api',
+            url: 'https://carpool-functions.azurewebsites.net/api',
             description: 'Production server'
         },
         {
-            url: 'https://vcarpool-functions-staging.azurewebsites.net/api',
+            url: 'https://carpool-functions-staging.azurewebsites.net/api',
             description: 'Staging server'
         },
         {

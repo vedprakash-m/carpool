@@ -416,7 +416,7 @@ class BackupAndRecoveryManager {
                     description: "Activate secondary Azure region if primary is unavailable",
                     automated: true,
                     estimatedTime: 10,
-                    script: "az functionapp restart --name vcarpool-functions-secondary --resource-group vcarpool-rg",
+                    script: "az functionapp restart --name carpool-functions-secondary --resource-group carpool-rg",
                 },
                 {
                     id: "restore_database",

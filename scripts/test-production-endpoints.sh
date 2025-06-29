@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# VCarpool Production API Endpoint Testing Script
+# Carpool Production API Endpoint Testing Script
 # Comprehensive validation of all v1 API endpoints
 
 set -e
 
 # Configuration
-API_BASE_URL="https://vcarpool-api-prod.azurewebsites.net/api/v1"
+API_BASE_URL="https://carpool-api-prod.azurewebsites.net/api/v1"
 ADMIN_EMAIL="admin@carpool.com"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-test-admin-password}"
 
@@ -22,7 +22,7 @@ TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
 
-echo -e "${BLUE}🧪 VCarpool Production API Testing Suite${NC}"
+echo -e "${BLUE}🧪 Carpool Production API Testing Suite${NC}"
 echo -e "${BLUE}====================================${NC}"
 echo "📋 API Base URL: $API_BASE_URL"
 echo "🕐 Test Started: $(date)"

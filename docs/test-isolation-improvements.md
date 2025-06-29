@@ -96,8 +96,8 @@ Updated `.husky/pre-push` to:
 
 Fixed all test expectations to match rebrand changes:
 
-- `vcarpool-dev-secret-key` → `carpool-dev-secret-key`
-- `vcarpooldb` → `carpooldb`
+- `carpool-dev-secret-key` → `carpool-dev-secret-key`
+- `carpooldb` → `carpooldb`
 - Updated all test assertions accordingly
 
 ## Long-term Solutions

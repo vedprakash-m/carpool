@@ -51,7 +51,7 @@ export default function PhoneVerification({
 
   const loadVerificationStatus = async () => {
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch('/api/phone-verification?action=status', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -86,7 +86,7 @@ export default function PhoneVerification({
     setMessage(null);
 
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch('/api/phone-verification?action=send-code', {
         method: 'POST',
         headers: {
@@ -142,7 +142,7 @@ export default function PhoneVerification({
     setMessage(null);
 
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch(
         '/api/phone-verification?action=verify-code',
         {
@@ -222,8 +222,8 @@ export default function PhoneVerification({
             message.type === 'success'
               ? 'bg-green-50 border border-green-200 text-green-800'
               : message.type === 'error'
-                ? 'bg-red-50 border border-red-200 text-red-800'
-                : 'bg-blue-50 border border-blue-200 text-blue-800'
+              ? 'bg-red-50 border border-red-200 text-red-800'
+              : 'bg-blue-50 border border-blue-200 text-blue-800'
           }`}
         >
           {message.text}

@@ -55,7 +55,7 @@ module.exports = async function (context, req) {
         endpoint: process.env.COSMOS_DB_ENDPOINT,
         key: process.env.COSMOS_DB_KEY,
       });
-      const database = cosmosClient.database("vcarpool");
+      const database = cosmosClient.database("carpool");
       usersContainer = database.container("users");
       designationsContainer = database.container("driverDesignations");
     }

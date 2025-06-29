@@ -2,7 +2,7 @@ import { CosmosClient } from '@azure/cosmos';
 
 const endpoint = process.env.COSMOS_DB_ENDPOINT || '';
 const key = process.env.COSMOS_DB_KEY || '';
-const databaseId = process.env.COSMOS_DB_DATABASE_ID || 'vcarpool';
+const databaseId = process.env.COSMOS_DB_DATABASE_ID || 'carpool';
 
 export const cosmosClient = new CosmosClient({ endpoint, key });
 export const database = cosmosClient.database(databaseId);

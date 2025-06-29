@@ -65,7 +65,7 @@ const path = __importStar(require('path'));
 // Configuration Schemas
 const DatabaseConfigSchema = zod_1.z.object({
   connectionString: zod_1.z.string().min(1, 'Database connection string is required'),
-  databaseName: zod_1.z.string().default('vcarpool'),
+  databaseName: zod_1.z.string().default('carpool'),
   maxRetries: zod_1.z.number().min(0).default(3),
   retryDelay: zod_1.z.number().min(0).default(1000),
   connectionPoolSize: zod_1.z.number().min(1).default(10),
@@ -87,7 +87,7 @@ const EmailConfigSchema = zod_1.z.object({
   smtpUser: zod_1.z.string().optional(),
   smtpPassword: zod_1.z.string().optional(),
   fromEmail: zod_1.z.string().email(),
-  fromName: zod_1.z.string().default('vCarpool'),
+  fromName: zod_1.z.string().default('Carpool'),
 });
 const CacheConfigSchema = zod_1.z.object({
   provider: zod_1.z.enum(['memory']).default('memory'),
@@ -282,7 +282,7 @@ class ConfigurationManager {
       timezone: 'UTC',
       database: {
         connectionString: '',
-        databaseName: 'vcarpool',
+        databaseName: 'carpool',
         maxRetries: 3,
         retryDelay: 1000,
         connectionPoolSize: 10,
@@ -299,7 +299,7 @@ class ConfigurationManager {
       email: {
         provider: 'sendgrid',
         fromEmail: 'noreply@carpool.com',
-        fromName: 'vCarpool',
+        fromName: 'Carpool',
       },
       cache: {
         provider: 'memory',
@@ -362,7 +362,7 @@ class ConfigurationManager {
       timezone: env.TIMEZONE,
       database: {
         connectionString: env.COSMOS_DB_CONNECTION_STRING || '',
-        databaseName: env.COSMOS_DB_NAME || 'vcarpool',
+        databaseName: env.COSMOS_DB_NAME || 'carpool',
         maxRetries: env.DB_MAX_RETRIES ? parseInt(env.DB_MAX_RETRIES) : 3,
         retryDelay: env.DB_RETRY_DELAY ? parseInt(env.DB_RETRY_DELAY) : 1000,
         connectionPoolSize: env.DB_POOL_SIZE ? parseInt(env.DB_POOL_SIZE) : 10,
@@ -384,7 +384,7 @@ class ConfigurationManager {
         smtpUser: env.SMTP_USER,
         smtpPassword: env.SMTP_PASSWORD,
         fromEmail: env.FROM_EMAIL || 'noreply@carpool.com',
-        fromName: env.FROM_NAME || 'vCarpool',
+        fromName: env.FROM_NAME || 'Carpool',
       },
       cache: {
         provider: env.CACHE_PROVIDER || 'memory',
@@ -414,7 +414,7 @@ class ConfigurationManager {
     };
   }
   async loadFromFile() {
-    const configPaths = ['config/config.json', 'config.json', '.vcarpool.json'];
+    const configPaths = ['config/config.json', 'config.json', '.carpool.json'];
     for (const configPath of configPaths) {
       try {
         const fullPath = path.resolve(configPath);

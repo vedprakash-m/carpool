@@ -1,6 +1,6 @@
 /**
  * Standardized CORS Middleware for Azure Functions
- * Consolidates CORS handling across all VCarpool endpoints
+ * Consolidates CORS handling across all Carpool endpoints
  */
 
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
@@ -148,7 +148,7 @@ export class CorsMiddleware {
     staging: {
       origins: [
         'https://lively-stone-016bfa20f.6.azurestaticapps.net',
-        'https://vcarpool-staging.azurewebsites.net',
+        'https://carpool-staging.azurewebsites.net',
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -157,8 +157,8 @@ export class CorsMiddleware {
     production: {
       origins: [
         'https://lively-stone-016bfa20f.6.azurestaticapps.net',
-        'https://vcarpool.app',
-        'https://www.vcarpool.app',
+        'https://carpool.app',
+        'https://www.carpool.app',
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

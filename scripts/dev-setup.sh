@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# vCarpool Development Environment Setup Script
-# Sets up a local development environment for the vCarpool project
+# Carpool Development Environment Setup Script
+# Sets up a local development environment for the Carpool project
 
 set -e # Exit immediately if a command fails
 
-echo "🚗 Setting up vCarpool development environment..."
+echo "🚗 Setting up Carpool development environment..."
 
 # Check prerequisites
 echo "📋 Checking prerequisites..."

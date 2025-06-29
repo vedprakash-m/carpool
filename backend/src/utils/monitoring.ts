@@ -31,7 +31,7 @@ export function initializeMonitoring(): void {
     // Start Application Insights
     if (appInsights.defaultClient) {
       appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.cloudRole] =
-        'vCarpool-Backend';
+        'Carpool-Backend';
     }
     appInsights.start();
 

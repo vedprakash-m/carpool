@@ -92,20 +92,20 @@ echo "🔗 Cross-package Validation"
 echo "---------------------------"
 
 echo "Checking for old brand references..."
-VCARPOOL_REFS=$(grep -r "vcarpool" --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" . | grep -v "comprehensive-validation.sh" | wc -l || echo "0")
+VCARPOOL_REFS=$(grep -r "carpool" --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" . | grep -v "comprehensive-validation.sh" | wc -l || echo "0")
 if [ "$VCARPOOL_REFS" -gt 0 ]; then
-    echo "❌ Found $VCARPOOL_REFS references to old 'vcarpool' brand:"
-    grep -r "vcarpool" --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" . | grep -v "comprehensive-validation.sh" | head -10
+    echo "❌ Found $VCARPOOL_REFS references to old 'carpool' brand:"
+    grep -r "carpool" --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" . | grep -v "comprehensive-validation.sh" | head -10
     exit 1
 else
     echo "✅ No old brand references found"
 fi
 
 echo "Checking for consistent package names..."
-PACKAGE_INCONSISTENCIES=$(find . -name "package.json" -not -path "./node_modules/*" -exec grep -l "vcarpool" {} \; | wc -l || echo "0")
+PACKAGE_INCONSISTENCIES=$(find . -name "package.json" -not -path "./node_modules/*" -exec grep -l "carpool" {} \; | wc -l || echo "0")
 if [ "$PACKAGE_INCONSISTENCIES" -gt 0 ]; then
     echo "❌ Found package.json files with old brand:"
-    find . -name "package.json" -not -path "./node_modules/*" -exec grep -l "vcarpool" {} \;
+    find . -name "package.json" -not -path "./node_modules/*" -exec grep -l "carpool" {} \;
     exit 1
 else
     echo "✅ All package.json files updated"
@@ -126,9 +126,9 @@ ENV_FILES=(
 for file in "${ENV_FILES[@]}"; do
     if [ -f "$file" ]; then
         echo "Checking $file..."
-        if grep -q "vcarpool" "$file" 2>/dev/null; then
+        if grep -q "carpool" "$file" 2>/dev/null; then
             echo "❌ Found old brand references in $file"
-            grep "vcarpool" "$file"
+            grep "carpool" "$file"
             exit 1
         else
             echo "✅ $file is clean"

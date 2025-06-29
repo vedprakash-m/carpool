@@ -7,7 +7,7 @@ const messaging_service_1 = require("../services/messaging.service");
 const message_repository_1 = require("../repositories/message.repository");
 const user_repository_1 = require("../repositories/user.repository");
 const trip_repository_1 = require("../repositories/trip.repository");
-const shared_1 = require("@vcarpool/shared");
+const shared_1 = require("@carpool/shared");
 const middleware_1 = require("../middleware");
 async function chatsCreate(request, context) {
     const logger = context; // Use context for logging if needed

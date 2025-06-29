@@ -56,7 +56,7 @@ async function globalSetup() {
     if (!process.env.JWT_REFRESH_SECRET)
         process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
     if (!process.env.COSMOS_DB_DATABASE_ID)
-        process.env.COSMOS_DB_DATABASE_ID = 'vcarpool-test';
+        process.env.COSMOS_DB_DATABASE_ID = 'carpool-test';
     // Initialize test database
     try {
         // In a real environment, you might connect to a test Cosmos DB

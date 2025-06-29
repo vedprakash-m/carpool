@@ -28,7 +28,7 @@ class EntraIDMigrationValidator {
   private results: ValidationResult[] = [];
   private rootPath: string;
 
-  constructor(rootPath: string = '/Users/vedprakashmishra/vcarpool') {
+  constructor(rootPath: string = '/Users/vedprakashmishra/carpool') {
     this.rootPath = rootPath;
   }
 

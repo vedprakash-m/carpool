@@ -16,8 +16,8 @@ This guide provides step-by-step instructions for deploying the Microsoft Entra 
    # Create production Azure AD App Registration
    az ad app create --display-name "Carpool Production" \
      --sign-in-audience AzureADMyOrg \
-     --web-redirect-uris "https://vcarpool.com/" \
-     --spa-redirect-uris "https://vcarpool.com/auth/callback"
+     --web-redirect-uris "https://carpool.com/" \
+     --spa-redirect-uris "https://carpool.com/auth/callback"
 
    # Configure API permissions
    az ad app permission add --id {app-id} --api 00000003-0000-0000-c000-000000000000 \
@@ -28,19 +28,19 @@ This guide provides step-by-step instructions for deploying the Microsoft Entra 
 
    ```bash
    # Store production secrets
-   az keyvault secret set --vault-name vcarpool-vault --name entra-client-id --value {client-id}
-   az keyvault secret set --vault-name vcarpool-vault --name entra-client-secret --value {client-secret}
-   az keyvault secret set --vault-name vcarpool-vault --name entra-tenant-id --value vedid.onmicrosoft.com
+   az keyvault secret set --vault-name carpool-vault --name entra-client-id --value {client-id}
+   az keyvault secret set --vault-name carpool-vault --name entra-client-secret --value {client-secret}
+   az keyvault secret set --vault-name carpool-vault --name entra-tenant-id --value vedid.onmicrosoft.com
    ```
 
 3. **Function App Configuration**
    ```bash
    # Update production function app settings
-   az functionapp config appsettings set -g vcarpool-prod -n vcarpool-api \
+   az functionapp config appsettings set -g carpool-prod -n carpool-api \
      --settings \
-     ENTRA_CLIENT_ID="@Microsoft.KeyVault(VaultName=vcarpool-vault;SecretName=entra-client-id)" \
-     ENTRA_CLIENT_SECRET="@Microsoft.KeyVault(VaultName=vcarpool-vault;SecretName=entra-client-secret)" \
-     ENTRA_TENANT_ID="@Microsoft.KeyVault(VaultName=vcarpool-vault;SecretName=entra-tenant-id)"
+     ENTRA_CLIENT_ID="@Microsoft.KeyVault(VaultName=carpool-vault;SecretName=entra-client-id)" \
+     ENTRA_CLIENT_SECRET="@Microsoft.KeyVault(VaultName=carpool-vault;SecretName=entra-client-secret)" \
+     ENTRA_TENANT_ID="@Microsoft.KeyVault(VaultName=carpool-vault;SecretName=entra-tenant-id)"
    ```
 
 #### Day -1: Staging Deployment and Testing
@@ -48,12 +48,12 @@ This guide provides step-by-step instructions for deploying the Microsoft Entra 
 1. **Deploy to Staging Environment**
 
    ```bash
-   cd /Users/vedprakashmishra/vcarpool
+   cd /Users/vedprakashmishra/carpool
 
    # Build and deploy backend
    cd backend
    npm run build
-   func azure functionapp publish vcarpool-api-staging
+   func azure functionapp publish carpool-api-staging
 
    # Build and deploy frontend
    cd ../frontend
@@ -105,7 +105,7 @@ This guide provides step-by-step instructions for deploying the Microsoft Entra 
 
 ```bash
 # Create database backup
-cd /Users/vedprakashmishra/vcarpool/backend
+cd /Users/vedprakashmishra/carpool/backend
 node scripts/migrate-users.ts --dry-run
 
 # Execute migration with backup
@@ -118,10 +118,10 @@ node scripts/migrate-users.ts --backup-path ./migration-backups
 # Deploy new backend with Entra ID support
 cd backend
 npm run build
-func azure functionapp publish vcarpool-api-prod
+func azure functionapp publish carpool-api-prod
 
 # Verify deployment
-curl https://vcarpool-api.azurewebsites.net/api/health
+curl https://carpool-api.azurewebsites.net/api/health
 ```
 
 **Step 3: Frontend Deployment (15 minutes)**
@@ -133,7 +133,7 @@ npm run build
 swa deploy ./out --env production
 
 # Verify deployment
-curl https://vcarpool.com/health
+curl https://carpool.com/health
 ```
 
 **Step 4: DNS and Traffic Routing (10 minutes)**
@@ -141,10 +141,10 @@ curl https://vcarpool.com/health
 ```bash
 # Update DNS to point to new deployment
 az network dns record-set cname set-record \
-  --resource-group vcarpool-prod \
-  --zone-name vcarpool.com \
+  --resource-group carpool-prod \
+  --zone-name carpool.com \
   --record-set-name www \
-  --cname vcarpool-prod.azurestaticapps.net
+  --cname carpool-prod.azurestaticapps.net
 ```
 
 #### Post-Deployment Validation (30 minutes)
@@ -153,13 +153,13 @@ az network dns record-set cname set-record \
 
    ```bash
    # Backend health
-   curl https://vcarpool-api.azurewebsites.net/api/health
+   curl https://carpool-api.azurewebsites.net/api/health
 
    # Frontend health
-   curl https://vcarpool.com/api/health
+   curl https://carpool.com/api/health
 
    # Authentication endpoints
-   curl -X POST https://vcarpool-api.azurewebsites.net/api/auth-entra-unified \
+   curl -X POST https://carpool-api.azurewebsites.net/api/auth-entra-unified \
      -H "Content-Type: application/json" \
      -d '{"authMethod": "legacy", "email": "test@example.com", "password": "test"}'
    ```
@@ -198,11 +198,11 @@ az network dns record-set cname set-record \
    - All your data and preferences are preserved
 
    How to Use:
-   1. Visit vcarpool.com
+   1. Visit carpool.com
    2. Click "Continue with Microsoft" for the new experience
    3. Or use "Email & Password" for the existing login method
 
-   Questions? Contact support@vcarpool.com
+   Questions? Contact support@carpool.com
 
    Best regards,
    The Carpool Team
@@ -221,13 +221,13 @@ az network dns record-set cname set-record \
    ```bash
    # Check authentication metrics
    az monitor metrics list \
-     --resource vcarpool-api \
+     --resource carpool-api \
      --metric "AuthenticationSuccessRate" \
      --interval PT1H
 
    # Review Application Insights logs
    az monitor app-insights query \
-     --app vcarpool-insights \
+     --app carpool-insights \
      --analytics-query "requests | where name contains 'auth' | summarize count() by resultCode"
    ```
 
@@ -294,10 +294,10 @@ az network dns record-set cname set-record \
    ```bash
    # Point DNS back to previous version
    az network dns record-set cname set-record \
-     --resource-group vcarpool-prod \
-     --zone-name vcarpool.com \
+     --resource-group carpool-prod \
+     --zone-name carpool.com \
      --record-set-name www \
-     --cname vcarpool-legacy.azurestaticapps.net
+     --cname carpool-legacy.azurestaticapps.net
    ```
 
 2. **Database Rollback**
@@ -310,8 +310,8 @@ az network dns record-set cname set-record \
 3. **Application Rollback**
    ```bash
    # Deploy previous version
-   func azure functionapp publish vcarpool-api-prod --slot staging
-   az functionapp deployment slot swap -g vcarpool-prod -n vcarpool-api --slot staging
+   func azure functionapp publish carpool-api-prod --slot staging
+   az functionapp deployment slot swap -g carpool-prod -n carpool-api --slot staging
    ```
 
 #### Post-Rollback Actions

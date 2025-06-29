@@ -1,5 +1,5 @@
 /**
- * Auth Register Function - VCarpool Business Logic Tests
+ * Auth Register Function - Carpool Business Logic Tests
  * ALIGNMENT WITH USER_EXPERIENCE.MD REQUIREMENTS:
  *
  * 1. PROGRESSIVE PARENT ONBOARDING: Multi-step family registration with guided onboarding flow
@@ -51,7 +51,7 @@ interface TestFamilyUser {
   };
 }
 
-describe("Auth Register - VCarpool Family-Oriented Business Requirements", () => {
+describe("Auth Register - Carpool Family-Oriented Business Requirements", () => {
   describe("Family Registration & Progressive Onboarding", () => {
     it("should validate family registration with progressive onboarding", () => {
       const validateFamilyRegistration = (familyData: TestFamilyUser) => {
@@ -360,7 +360,7 @@ describe("Auth Register - VCarpool Family-Oriented Business Requirements", () =>
       return emailRegex.test(email);
     };
 
-    // VCarpool email validation
+    // Carpool email validation
     expect(validateEmail("parent@school.edu")).toBe(true);
     expect(validateEmail("student@lincolnelementary.org")).toBe(true);
     expect(validateEmail("admin@district.k12.us")).toBe(true);
@@ -394,7 +394,7 @@ describe("Auth Register - VCarpool Family-Oriented Business Requirements", () =>
 });
 
 describe("Password Security Requirements", () => {
-  it("should enforce VCarpool password strength standards", () => {
+  it("should enforce Carpool password strength standards", () => {
     const validatePasswordStrength = (password: string) => {
       return {
         minLength: password.length >= 8,
@@ -445,7 +445,7 @@ describe("Password Security Requirements", () => {
 });
 
 describe("User Role Validation for School Carpool", () => {
-  it("should validate VCarpool role assignments", () => {
+  it("should validate Carpool role assignments", () => {
     const validateRole = (role: string) => {
       const validRoles = ["admin", "parent", "student"];
       return {
@@ -462,7 +462,7 @@ describe("User Role Validation for School Carpool", () => {
       };
     };
 
-    // Valid VCarpool roles
+    // Valid Carpool roles
     const adminRole = validateRole("admin");
     expect(adminRole.isValid).toBe(true);
     expect(adminRole.permissions).toContain("delete");
@@ -500,7 +500,7 @@ describe("User Role Validation for School Carpool", () => {
 });
 
 describe("User Profile Data Validation", () => {
-  it("should validate required fields for VCarpool registration", () => {
+  it("should validate required fields for Carpool registration", () => {
     const validateUserData = (userData: any) => {
       const required = ["email", "firstName", "lastName", "password", "role"];
       const missing = required.filter((field) => !userData[field]);
@@ -634,7 +634,7 @@ describe("Registration Business Logic", () => {
   });
 });
 
-describe("VCarpool API Response Format", () => {
+describe("Carpool API Response Format", () => {
   it("should return consistent success response format", () => {
     const createSuccessResponse = (userData: any, token: string) => {
       return {

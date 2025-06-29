@@ -4,7 +4,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { User, Trip, TripRequest, School } from '@vcarpool/shared';
+import { User, Trip, TripRequest, School } from '@carpool/shared';
 
 export class TestDataFactory {
   /**

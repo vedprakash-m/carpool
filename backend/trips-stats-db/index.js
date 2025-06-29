@@ -10,7 +10,7 @@ const cosmosClient = new CosmosClient({
 });
 
 const database = cosmosClient.database(
-  process.env.COSMOS_DB_DATABASE || "vcarpool"
+  process.env.COSMOS_DB_DATABASE || "carpool"
 );
 const tripsContainer = database.container("trips");
 const usersContainer = database.container("users");

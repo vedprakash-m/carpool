@@ -2,7 +2,7 @@
 param location string = resourceGroup().location
 
 @description('App name that will be used as prefix for all resources')
-param appName string = 'vcarpool'
+param appName string = 'carpool'
 
 @description('Environment name (dev, test, prod)')
 @allowed([
@@ -131,7 +131,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'COSMOS_DB_DATABASE_ID'
-          value: 'vcarpool'
+          value: 'carpool'
         }
         {
           name: 'JWT_SECRET'
@@ -175,10 +175,10 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existi
 // Cosmos DB Database
 resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
   parent: cosmosAccount
-  name: 'vcarpool'
+  name: 'carpool'
   properties: {
     resource: {
-      id: 'vcarpool'
+      id: 'carpool'
     }
     options: {
       throughput: 400

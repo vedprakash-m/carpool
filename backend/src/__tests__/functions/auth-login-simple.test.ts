@@ -15,7 +15,7 @@ import { describe, it, expect } from "@jest/globals";
  * permissions, emergency contact access, and role-based family authentication
  */
 
-describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
+describe("Auth Login Function - Carpool Family-Oriented Requirements", () => {
   // Family-oriented authentication interfaces
   interface TestFamilyLoginUser {
     email: string;
@@ -103,7 +103,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
     });
 
     it("should validate email and password format requirements", () => {
-      // VCarpool login requirements
+      // Carpool login requirements
       const validEmail = "parent@school.edu";
       const validPassword = "SecurePass123!";
 
@@ -183,12 +183,12 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
       expect(parentAuth.canAccessEmergencyFeatures).toBe(true);
       expect(parentAuth.canSetPreferences).toBe(true);
 
-      // VCarpool requirement: Only these 4 roles supported
+      // Carpool requirement: Only these 4 roles supported
       expect(userRoles).toHaveLength(4);
     });
 
     it("should enforce JWT token structure for family authentication", () => {
-      // Family-oriented JWT payload structure expected by VCarpool
+      // Family-oriented JWT payload structure expected by Carpool
       const expectedFamilyTokenPayload = {
         userId: "user-123",
         email: "parent@school.edu",
@@ -208,7 +208,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
         permissions: expect.any(Array), // Role-based permissions array
       };
 
-      // Verify family-oriented structure matches VCarpool API specification
+      // Verify family-oriented structure matches Carpool API specification
       expect(expectedFamilyTokenPayload).toHaveProperty("userId");
       expect(expectedFamilyTokenPayload).toHaveProperty("email");
       expect(expectedFamilyTokenPayload).toHaveProperty("role");
@@ -429,7 +429,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
 
   describe("Security Requirements", () => {
     it("should implement proper password security standards", () => {
-      // VCarpool security: bcrypt with 12 rounds
+      // Carpool security: bcrypt with 12 rounds
       const mockHashedPassword =
         "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewarnQR4nPFzZBGy";
 
@@ -439,7 +439,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
     });
 
     it("should generate secure refresh tokens", () => {
-      // VCarpool requirement: 7-day refresh token lifecycle
+      // Carpool requirement: 7-day refresh token lifecycle
       const tokenLifetime = 7 * 24 * 60 * 60; // 7 days in seconds
       const mockRefreshToken = "refresh_token_placeholder_string_for_testing";
 
@@ -467,7 +467,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
     });
   });
 
-  describe("VCarpool API Response Standards", () => {
+  describe("Carpool API Response Standards", () => {
     it("should return consistent success response format", () => {
       const mockSuccessResponse = {
         success: true,
@@ -484,7 +484,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
         },
       };
 
-      // VCarpool API standards
+      // Carpool API standards
       expect(mockSuccessResponse.success).toBe(true);
       expect(mockSuccessResponse.data).toHaveProperty("user");
       expect(mockSuccessResponse.data).toHaveProperty("token");
@@ -502,7 +502,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
         },
       };
 
-      // VCarpool error handling standards
+      // Carpool error handling standards
       expect(mockErrorResponse.success).toBe(false);
       expect(mockErrorResponse.error).toHaveProperty("code");
       expect(mockErrorResponse.error).toHaveProperty("message");
@@ -518,7 +518,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
         "Content-Type": "application/json",
       };
 
-      // VCarpool CORS requirements
+      // Carpool CORS requirements
       expect(mockHeaders["Access-Control-Allow-Origin"]).toBe("*");
       expect(mockHeaders["Access-Control-Allow-Methods"]).toContain("POST");
       expect(mockHeaders["Content-Type"]).toBe("application/json");
@@ -527,7 +527,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
 
   describe("User Experience Requirements", () => {
     it("should handle rate limiting for security", () => {
-      // VCarpool: Max 5 login attempts per 15 minutes
+      // Carpool: Max 5 login attempts per 15 minutes
       const rateLimitConfig = {
         maxAttempts: 5,
         windowMinutes: 15,
@@ -569,7 +569,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
       const testEmail = "parent@school.edu";
       const emailDomain = testEmail.split("@")[1];
 
-      // VCarpool can support multiple school domains
+      // Carpool can support multiple school domains
       expect(schoolDomains).toContain(emailDomain);
     });
   });
@@ -598,7 +598,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
         },
       };
 
-      // VCarpool should handle outages gracefully
+      // Carpool should handle outages gracefully
       expect(fallbackResponse.error.statusCode).toBe(503);
       expect(fallbackResponse.error.message).toContain(
         "temporarily unavailable"
@@ -608,7 +608,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
 
   describe("Performance Requirements", () => {
     it("should complete login within acceptable time limits", () => {
-      // VCarpool performance target: < 2 seconds
+      // Carpool performance target: < 2 seconds
       const maxResponseTimeMs = 2000;
       const typicalResponseTimeMs = 800;
 
@@ -632,12 +632,12 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
         userId: "user-123",
         timestamp: new Date().toISOString(),
         ipAddress: "192.168.1.100",
-        userAgent: "VCarpool-App/1.0",
+        userAgent: "Carpool-App/1.0",
         success: true,
         location: "School District Network",
       };
 
-      // VCarpool security monitoring
+      // Carpool security monitoring
       expect(loginEvent.userId).toBeDefined();
       expect(loginEvent.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
       expect(loginEvent.success).toBe(true);
@@ -654,7 +654,7 @@ describe("Auth Login Function - VCarpool Family-Oriented Requirements", () => {
         activeChildContext: "child-1",
       };
 
-      // VCarpool multi-child support
+      // Carpool multi-child support
       expect(parentAccount.children).toHaveLength(2);
       expect(parentAccount.activeChildContext).toBe("child-1");
       expect(parentAccount.children[0].grade).toBeDefined();

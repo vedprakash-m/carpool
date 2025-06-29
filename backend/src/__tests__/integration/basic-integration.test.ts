@@ -1,5 +1,5 @@
 /**
- * Basic Integration Tests for VCarpool Backend
+ * Basic Integration Tests for Carpool Backend
  *
  * These tests improve coverage by importing and exercising main implementation files
  * that would otherwise show 0% coverage despite having comprehensive unit tests.

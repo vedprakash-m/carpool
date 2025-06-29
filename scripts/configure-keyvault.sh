@@ -1,19 +1,19 @@
 #!/bin/bash
 
-# VCarpool Key Vault Configuration Script
+# Carpool Key Vault Configuration Script
 # Configures access policies and secrets after initial deployment
 
 set -e
 
 # Configuration
-RESOURCE_GROUP="vcarpool-rg"
-DB_RESOURCE_GROUP="vcarpool-db-rg"
-APP_NAME="vcarpool"
+RESOURCE_GROUP="carpool-rg"
+DB_RESOURCE_GROUP="carpool-db-rg"
+APP_NAME="carpool"
 ENVIRONMENT="prod"
-KEY_VAULT_NAME="vcarpool-keyvault"
+KEY_VAULT_NAME="carpool-keyvault"
 FUNCTION_APP_NAME="${APP_NAME}-api-${ENVIRONMENT}"
 
-echo "🔐 Configuring Azure Key Vault for VCarpool Production..."
+echo "🔐 Configuring Azure Key Vault for Carpool Production..."
 
 # Get Function App managed identity
 echo "📋 Getting Function App managed identity..."
@@ -60,7 +60,7 @@ az keyvault secret set \
   --vault-name "$KEY_VAULT_NAME" \
   --name "cosmos-db-key" \
   --value "$COSMOS_DB_KEY" \
-  --description "Cosmos DB primary key for VCarpool database"
+  --description "Cosmos DB primary key for Carpool database"
 
 az keyvault secret set \
   --vault-name "$KEY_VAULT_NAME" \

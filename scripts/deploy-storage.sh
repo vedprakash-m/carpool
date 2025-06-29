@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-APP_NAME="vcarpool"
+APP_NAME="carpool"
 ENVIRONMENT="prod"
 DEFAULT_LOCATION="eastus2"
 
@@ -44,20 +44,20 @@ Commands:
   help          - Show this help
 
 Options:
-  --resource-group NAME     - Target resource group name (default: vcarpool-storage-rg)
+  --resource-group NAME     - Target resource group name (default: carpool-storage-rg)
   --location LOCATION       - Target location (default: eastus2)
-  --storage-name NAME       - Storage account name (default: vcarpoolsa{env}new)
+  --storage-name NAME       - Storage account name (default: carpoolsa{env}new)
   --environment ENV         - Environment (dev/test/prod, default: prod)
 
 Examples:
   # Deploy to new dedicated storage resource group
-  $0 deploy --resource-group vcarpool-storage-rg --location eastus2
+  $0 deploy --resource-group carpool-storage-rg --location eastus2
   
   # Deploy to database resource group (consolidate)
-  $0 deploy --resource-group vcarpool-db-rg --location eastus2
+  $0 deploy --resource-group carpool-db-rg --location eastus2
   
   # Plan deployment (dry run)
-  $0 plan --resource-group vcarpool-storage-rg --location westus2
+  $0 plan --resource-group carpool-storage-rg --location westus2
 
 EOF
 }
@@ -199,7 +199,7 @@ get_outputs() {
 }
 
 # Default values
-RESOURCE_GROUP="vcarpool-storage-rg"
+RESOURCE_GROUP="carpool-storage-rg"
 LOCATION="$DEFAULT_LOCATION"
 STORAGE_NAME="${APP_NAME}sa${ENVIRONMENT}new"
 ENVIRONMENT="prod"

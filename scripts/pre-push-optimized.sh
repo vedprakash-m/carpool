@@ -103,10 +103,10 @@ fi
 
 # 5. Brand consistency checks
 print_status "INFO" "Checking for old brand references..."
-VCARPOOL_REFS=$(grep -r "vcarpool" --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude="pre-push-optimized.sh" . | wc -l || echo "0")
+VCARPOOL_REFS=$(grep -r "carpool" --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude="pre-push-optimized.sh" . | wc -l || echo "0")
 if [ "$VCARPOOL_REFS" -gt 0 ]; then
-    print_status "ERROR" "Found $VCARPOOL_REFS references to old 'vcarpool' brand:"
-    grep -r "vcarpool" --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude="pre-push-optimized.sh" . | head -5
+    print_status "ERROR" "Found $VCARPOOL_REFS references to old 'carpool' brand:"
+    grep -r "carpool" --exclude-dir=node_modules --exclude-dir=.git --exclude="*.log" --exclude="pre-push-optimized.sh" . | head -5
     exit 1
 else
     print_status "SUCCESS" "No old brand references found"

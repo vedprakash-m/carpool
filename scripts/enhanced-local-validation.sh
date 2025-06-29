@@ -2,7 +2,7 @@
 
 set -e
 
-echo "🚀 Enhanced VCarpool Local Validation (CI/CD Equivalent)"
+echo "🚀 Enhanced Carpool Local Validation (CI/CD Equivalent)"
 echo "======================================================="
 
 # Colors for output

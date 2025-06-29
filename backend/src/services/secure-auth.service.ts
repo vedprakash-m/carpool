@@ -261,7 +261,7 @@ class SecureAuthService {
 
     return jwt.sign(payload, jwtSecret, {
       expiresIn: config.auth.jwtExpiresIn,
-      issuer: 'vcarpool-app',
+      issuer: 'carpool-app',
       subject: user.id,
     } as jwt.SignOptions);
   }

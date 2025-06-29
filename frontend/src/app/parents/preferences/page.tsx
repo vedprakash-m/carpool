@@ -108,7 +108,7 @@ export default function WeeklyPreferencesPage() {
   const loadSchedules = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch(
         '/api/admin/weekly-scheduling?action=schedules&status=preferences_open',
         {
@@ -146,7 +146,7 @@ export default function WeeklyPreferencesPage() {
 
   const loadExistingPreferences = async (scheduleId: string) => {
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch(
         `/api/admin/weekly-scheduling?action=my-preferences&scheduleId=${scheduleId}`,
         {
@@ -275,7 +275,7 @@ export default function WeeklyPreferencesPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch(
         '/api/admin/weekly-scheduling?action=submit-preferences',
         {

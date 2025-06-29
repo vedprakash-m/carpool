@@ -21,7 +21,7 @@ export default async function globalSetup() {
   if (!process.env.NODE_ENV) (process.env as any).NODE_ENV = 'test';
   if (!process.env.JWT_SECRET) (process.env as any).JWT_SECRET = 'test-jwt-secret';
   if (!process.env.JWT_REFRESH_SECRET) (process.env as any).JWT_REFRESH_SECRET = 'test-refresh-secret';
-  if (!process.env.COSMOS_DB_DATABASE_ID) (process.env as any).COSMOS_DB_DATABASE_ID = 'vcarpool-test';
+  if (!process.env.COSMOS_DB_DATABASE_ID) (process.env as any).COSMOS_DB_DATABASE_ID = 'carpool-test';
   
   // Initialize test database
   try {

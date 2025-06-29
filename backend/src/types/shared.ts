@@ -1,5 +1,6 @@
 // Shared types for backend
 export enum UserRole {
+  SUPER_ADMIN = 'super_admin',
   ADMIN = 'admin',
   GROUP_ADMIN = 'group_admin',
   PARENT = 'parent',
@@ -9,6 +10,12 @@ export enum UserRole {
 }
 
 export interface RolePermissions {
+  super_admin: {
+    platform_management: boolean;
+    group_admin_promotion: boolean;
+    system_configuration: boolean;
+    safety_escalation: boolean;
+  };
   admin: {
     platform_management: boolean;
     group_admin_promotion: boolean;

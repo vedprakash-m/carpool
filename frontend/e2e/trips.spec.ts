@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Comprehensive E2E tests for the Trip Management functionality in vCarpool
- * 
+ * Comprehensive E2E tests for the Trip Management functionality in Carpool
+ *
  * This test suite covers:
  * - Authentication setup for accessing protected routes
  * - Navigation to trip-related pages
@@ -16,102 +16,127 @@ test.describe('Trip Management Flow', () => {
     // Mock all relevant API responses with retries for reliability
     await retry(async () => await mockAuthEndpoints(page), 3);
     await retry(async () => await mockTripEndpoints(page), 3);
-    
+
     // Set up authentication state in localStorage for protected routes
     await retry(async () => await setupAuthState(page), 3);
-    
+
     // Verify authentication succeeded by navigating to dashboard with more reliable loading
     await page.goto('/dashboard');
-    
+
     // Wait for load events with increased timeouts for CI environment
     await Promise.all([
       page.waitForLoadState('domcontentloaded'),
-      page.waitForLoadState('networkidle').catch(() => console.log('NetworkIdle timeout acceptable'))
+      page
+        .waitForLoadState('networkidle')
+        .catch(() => console.log('NetworkIdle timeout acceptable')),
     ]);
   });
 
-  test('should display authenticated dashboard page with user info', async ({ page }) => {
+  test('should display authenticated dashboard page with user info', async ({
+    page,
+  }) => {
     // Verify we're on the dashboard page
     expect(page.url()).toContain('/dashboard');
-    
+
     // Take a screenshot for verification in test results
     await page.screenshot({ path: 'e2e/test-results/dashboard-page.png' });
   });
 
-  test('should navigate to trips page and display trip tabs', async ({ page }) => {
+  test('should navigate to trips page and display trip tabs', async ({
+    page,
+  }) => {
     // Ensure authentication is properly set
     await setupAuthState(page);
-    
+
     // Navigate to trips page
     await page.goto('/trips');
     await Promise.all([
       page.waitForLoadState('domcontentloaded'),
-      page.waitForLoadState('networkidle').catch(() => console.log('NetworkIdle timeout acceptable'))
+      page
+        .waitForLoadState('networkidle')
+        .catch(() => console.log('NetworkIdle timeout acceptable')),
     ]);
-    
+
     // Verify trips page is loaded
     expect(page.url()).toContain('/trips');
-    
+
     // Verify the trips page elements using more specific selectors
-    await expect(page.getByRole('heading', { name: 'Trips', exact: true })).toBeVisible();
-    
+    await expect(
+      page.getByRole('heading', { name: 'Trips', exact: true })
+    ).toBeVisible();
+
     // Use more specific selectors to avoid ambiguity
     // Look for the tab navigation specifically
-    await expect(page.locator('nav button', { hasText: 'My Trips' }).first()).toBeVisible();
-    await expect(page.locator('nav button', { hasText: 'Available Trips' }).first()).toBeVisible();
-    
+    await expect(
+      page.locator('nav button', { hasText: 'My Trips' }).first()
+    ).toBeVisible();
+    await expect(
+      page.locator('nav button', { hasText: 'Available Trips' }).first()
+    ).toBeVisible();
+
     // Take a screenshot for verification
     await page.screenshot({ path: 'e2e/test-results/trips-page.png' });
   });
 
-  test('should attempt trip creation page navigation with auth', async ({ page }) => {
+  test('should attempt trip creation page navigation with auth', async ({
+    page,
+  }) => {
     // Ensure authentication is properly set before navigation
     await setupAuthState(page);
-    
+
     // Navigate to dashboard first to ensure auth is active
     await page.goto('/dashboard');
     await Promise.all([
       page.waitForLoadState('domcontentloaded'),
-      page.waitForLoadState('networkidle').catch(() => console.log('NetworkIdle timeout acceptable'))
+      page
+        .waitForLoadState('networkidle')
+        .catch(() => console.log('NetworkIdle timeout acceptable')),
     ]);
-    
+
     // Then navigate to trip creation page
     await page.goto('/trips/create');
     await Promise.all([
       page.waitForLoadState('domcontentloaded'),
-      page.waitForLoadState('networkidle').catch(() => console.log('NetworkIdle timeout acceptable'))
+      page
+        .waitForLoadState('networkidle')
+        .catch(() => console.log('NetworkIdle timeout acceptable')),
     ]);
-    
+
     // Take a screenshot for verification
-    await page.screenshot({ path: 'e2e/test-results/trip-creation-attempt.png' });
-    
+    await page.screenshot({
+      path: 'e2e/test-results/trip-creation-attempt.png',
+    });
+
     // Get current URL after navigation attempt
     const currentUrl = await page.url();
     console.log('Current URL:', currentUrl);
-    
+
     // In a real application we expect to either:
     // 1. See the trip creation page if auth is working
     // 2. Be redirected to login page if auth is not persisting correctly between pages
     // For now we'll simply verify we're on either page without failing the test
     expect(
-      currentUrl.includes('/trips/create') || 
-      currentUrl.includes('/login')
+      currentUrl.includes('/trips/create') || currentUrl.includes('/login')
     ).toBe(true);
-    
+
     // If we're on the login page, document it in the test report
     if (currentUrl.includes('/login')) {
-      console.log('Note: Redirected to login page - this is expected behavior if auth token validation fails');
+      console.log(
+        'Note: Redirected to login page - this is expected behavior if auth token validation fails'
+      );
     }
   });
 
-  test('should verify trip creation API mock and response', async ({ page }) => {
+  test('should verify trip creation API mock and response', async ({
+    page,
+  }) => {
     // Mock the POST endpoint for trip creation with specific response
     await page.route('**/api/trips', async route => {
       if (route.request().method() === 'POST') {
         // Inspect the request body to verify format
         const body = JSON.parse(route.request().postData() || '{}');
         console.log('Trip creation request body:', body);
-        
+
         await route.fulfill({
           status: 201,
           contentType: 'application/json',
@@ -124,9 +149,9 @@ test.describe('Trip Management Flow', () => {
               departureTime: '2025-05-26T09:00:00Z',
               availableSeats: body.maxPassengers || 4,
               passengers: [],
-              status: 'scheduled'
-            }
-          })
+              status: 'scheduled',
+            },
+          }),
         });
       }
     });
@@ -138,23 +163,23 @@ test.describe('Trip Management Flow', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer mock-token'
+            Authorization: 'Bearer mock-token',
           },
           body: JSON.stringify({
             destination: 'New School',
             date: '2025-05-26',
             departureTime: '09:00',
             maxPassengers: 4,
-            notes: 'Test trip created by E2E test'
-          })
+            notes: 'Test trip created by E2E test',
+          }),
         });
-        
+
         return await response.json();
       } catch (error) {
         return { error: String(error) };
       }
     });
-    
+
     // Verify the mock API response structure
     expect(response.success).toBe(true);
     expect(response.data).toBeDefined();
@@ -171,25 +196,25 @@ test.describe('Trip Management Flow', () => {
         body: JSON.stringify({
           success: false,
           error: 'Internal server error',
-          message: 'An error occurred processing your request'
-        })
+          message: 'An error occurred processing your request',
+        }),
       });
     });
-    
+
     // Verify the error response handling
     const errorResponse = await page.evaluate(async () => {
       try {
         const response = await fetch('/api/trips/error-test', {
           headers: {
-            'Authorization': 'Bearer mock-token'
-          }
+            Authorization: 'Bearer mock-token',
+          },
         });
         return await response.json();
       } catch (error) {
         return { fetchError: String(error) };
       }
     });
-    
+
     // Check error response structure
     expect(errorResponse.success).toBe(false);
     expect(errorResponse.error).toBe('Internal server error');
@@ -201,17 +226,21 @@ test.describe('Trip Management Flow', () => {
     await page.goto('/login');
     await Promise.all([
       page.waitForLoadState('domcontentloaded'),
-      page.waitForLoadState('networkidle').catch(() => console.log('NetworkIdle timeout acceptable'))
+      page
+        .waitForLoadState('networkidle')
+        .catch(() => console.log('NetworkIdle timeout acceptable')),
     ]);
-    
+
     // Take a screenshot of the login page
     await page.screenshot({ path: 'e2e/test-results/login-page-direct.png' });
-    
+
     // Verify we're on the login page
     expect(page.url()).toContain('/login');
-    
+
     // Verify login form elements are visible
-    await expect(page.getByRole('heading', { name: /sign in to your account/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /sign in to your account/i })
+    ).toBeVisible();
     await expect(page.getByPlaceholder(/email/i)).toBeVisible();
     await expect(page.getByPlaceholder(/password/i)).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
@@ -227,7 +256,11 @@ import type { Page, Route } from '@playwright/test';
  * @param times Number of times to retry
  * @param delay Delay between retries in ms
  */
-async function retry<T>(fn: () => Promise<T>, times: number, delay = 1000): Promise<T> {
+async function retry<T>(
+  fn: () => Promise<T>,
+  times: number,
+  delay = 1000
+): Promise<T> {
   try {
     return await fn();
   } catch (error) {
@@ -254,12 +287,12 @@ async function mockAuthEndpoints(page: Page): Promise<void> {
             email: 'test@example.com',
             firstName: 'Test',
             lastName: 'User',
-            role: 'user'
+            role: 'user',
           },
           token: 'mock-token',
-          refreshToken: 'mock-refresh-token'
-        }
-      })
+          refreshToken: 'mock-refresh-token',
+        },
+      }),
     });
   });
 
@@ -275,9 +308,9 @@ async function mockAuthEndpoints(page: Page): Promise<void> {
           email: 'test@example.com',
           firstName: 'Test',
           lastName: 'User',
-          role: 'user'
-        }
-      })
+          role: 'user',
+        },
+      }),
     });
   });
 }
@@ -299,7 +332,7 @@ async function mockTripEndpoints(page: Page): Promise<void> {
       availableSeats: 3,
       passengers: [],
       status: 'planned',
-      notes: 'Regular morning trip'
+      notes: 'Regular morning trip',
     },
     {
       id: 'trip-2',
@@ -312,8 +345,8 @@ async function mockTripEndpoints(page: Page): Promise<void> {
       availableSeats: 2,
       passengers: ['passenger-1'],
       status: 'planned',
-      notes: 'Study group trip'
-    }
+      notes: 'Study group trip',
+    },
   ];
 
   // Route all trip-related API calls
@@ -328,42 +361,44 @@ async function mockTripEndpoints(page: Page): Promise<void> {
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: mockTrips
-        })
+          data: mockTrips,
+        }),
       });
       return;
     }
 
     // GET /api/trips/my-trips
     if (method === 'GET' && url.includes('/api/trips/my-trips')) {
-      const myTrips = mockTrips.filter(t => 
-        t.driverId === 'test-user-id' || t.passengers.includes('test-user-id')
+      const myTrips = mockTrips.filter(
+        t =>
+          t.driverId === 'test-user-id' || t.passengers.includes('test-user-id')
       );
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: myTrips
-        })
+          data: myTrips,
+        }),
       });
       return;
     }
 
     // GET /api/trips/available
     if (method === 'GET' && url.includes('/api/trips/available')) {
-      const availableTrips = mockTrips.filter(t => 
-        t.driverId !== 'test-user-id' && 
-        !t.passengers.includes('test-user-id') &&
-        t.availableSeats > 0
+      const availableTrips = mockTrips.filter(
+        t =>
+          t.driverId !== 'test-user-id' &&
+          !t.passengers.includes('test-user-id') &&
+          t.availableSeats > 0
       );
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: availableTrips
-        })
+          data: availableTrips,
+        }),
       });
       return;
     }
@@ -374,8 +409,8 @@ async function mockTripEndpoints(page: Page): Promise<void> {
       contentType: 'application/json',
       body: JSON.stringify({
         success: true,
-        data: []
-      })
+        data: [],
+      }),
     });
   });
 }
@@ -387,7 +422,7 @@ async function setupAuthState(page: Page): Promise<void> {
   await page.goto('/');
   await page.evaluate(() => {
     localStorage.clear();
-    
+
     const authState = {
       state: {
         user: {
@@ -395,18 +430,18 @@ async function setupAuthState(page: Page): Promise<void> {
           email: 'test@example.com',
           firstName: 'Test',
           lastName: 'User',
-          role: 'user'
+          role: 'user',
         },
         token: 'mock-token',
         refreshToken: 'mock-refresh-token',
         isAuthenticated: true,
         isLoading: false,
         loading: false,
-        error: null
+        error: null,
       },
-      version: 0
+      version: 0,
     };
-    
+
     localStorage.setItem('auth-storage', JSON.stringify(authState));
   });
 }

@@ -7,7 +7,7 @@
 (process.env as any).NODE_ENV = 'test';
 (process.env as any).JWT_SECRET = 'test-jwt-secret';
 (process.env as any).JWT_REFRESH_SECRET = 'test-refresh-secret';
-(process.env as any).COSMOS_DB_DATABASE_ID = 'vcarpool-test';
+(process.env as any).COSMOS_DB_DATABASE_ID = 'carpool-test';
 
 // Timeout configuration for tests
 jest.setTimeout(30000); // Increase timeout for CI environments

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const functions_1 = require("@azure/functions");
-const shared_1 = require("@vcarpool/shared");
+const shared_1 = require("@carpool/shared");
 const container_1 = require("../../container");
 const middleware_1 = require("../../middleware");
 const monitoring_1 = require("../../utils/monitoring");

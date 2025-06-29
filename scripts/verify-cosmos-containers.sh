@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# VCarpool Cosmos DB Container Verification Script
+# Carpool Cosmos DB Container Verification Script
 # Verifies all containers exist and match Bicep template definitions
 
 set -e
 
 # Configuration
-RESOURCE_GROUP="vcarpool-rg"
-COSMOS_DB_NAME="vcarpool-cosmos-prod"
-DATABASE_NAME="vcarpool"
+RESOURCE_GROUP="carpool-rg"
+COSMOS_DB_NAME="carpool-cosmos-prod"
+DATABASE_NAME="carpool"
 
 echo "🔍 Verifying Cosmos DB Containers..."
 echo "Cosmos DB: $COSMOS_DB_NAME"

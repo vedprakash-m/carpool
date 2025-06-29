@@ -1,5 +1,5 @@
 import { AuthService } from "../auth.service";
-import { User } from "@vcarpool/shared";
+import { User } from "@carpool/shared";
 import { TestDataFactory, MockServices, TestAssertions } from "@tests/utils";
 import { UserRepository } from "../../repositories/user.repository";
 

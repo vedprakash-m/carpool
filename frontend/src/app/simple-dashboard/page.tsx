@@ -22,7 +22,7 @@ export default function SimpleDashboard() {
     }
 
     // Test API directly
-    fetch('https://vcarpool-api-prod.azurewebsites.net/api/trips/stats', {
+    fetch('https://carpool-api-prod.azurewebsites.net/api/trips/stats', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

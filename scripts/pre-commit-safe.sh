@@ -48,7 +48,7 @@ fi
 
 # 2. Check for old brand references (excluding infrastructure and build artifacts)
 print_status "INFO" "Checking for old brand references in source code..."
-VCARPOOL_REFS=$(grep -r "vcarpool" \
+VCARPOOL_REFS=$(grep -r "carpool" \
   --exclude-dir=node_modules \
   --exclude-dir=.git \
   --exclude-dir=infra \
@@ -66,8 +66,8 @@ VCARPOOL_REFS=$(grep -r "vcarpool" \
   --exclude=".env.local" \
   . | wc -l || echo "0")
 if [ "$VCARPOOL_REFS" -gt 0 ]; then
-    print_status "ERROR" "Found $VCARPOOL_REFS references to old 'vcarpool' brand in source code"
-    grep -r "vcarpool" \
+    print_status "ERROR" "Found $VCARPOOL_REFS references to old 'carpool' brand in source code"
+    grep -r "carpool" \
       --exclude-dir=node_modules \
       --exclude-dir=.git \
       --exclude-dir=infra \

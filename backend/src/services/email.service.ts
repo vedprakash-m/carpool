@@ -13,7 +13,7 @@ export class EmailService {
     this.config = {
       apiKey: process.env.SENDGRID_API_KEY || '',
       fromEmail: process.env.FROM_EMAIL || 'noreply@carpool.com',
-      fromName: process.env.FROM_NAME || 'VCarpool',
+      fromName: process.env.FROM_NAME || 'Carpool',
     };
   }
 
@@ -273,6 +273,8 @@ export class EmailService {
         id: 'trip-created',
         name: 'Trip Created',
         subject: 'Your carpool trip has been created',
+        html: '<p>Hi {{driverName}}, your trip to {{destination}} on {{tripDate}} at {{departureTime}} has been created.</p>',
+        text: 'Hi {{driverName}}, your trip to {{destination}} on {{tripDate}} at {{departureTime}} has been created.',
         htmlContent:
           '<p>Hi {{driverName}}, your trip to {{destination}} on {{tripDate}} at {{departureTime}} has been created.</p>',
         textContent:
@@ -283,6 +285,8 @@ export class EmailService {
         id: 'trip-joined',
         name: 'Trip Joined',
         subject: 'Someone joined your carpool trip',
+        html: '<p>Hi {{driverName}}, {{passengerName}} has joined your trip to {{destination}} on {{tripDate}}.</p>',
+        text: 'Hi {{driverName}}, {{passengerName}} has joined your trip to {{destination}} on {{tripDate}}.',
         htmlContent:
           '<p>Hi {{driverName}}, {{passengerName}} has joined your trip to {{destination}} on {{tripDate}}.</p>',
         textContent:
@@ -293,6 +297,8 @@ export class EmailService {
         id: 'join-confirmation',
         name: 'Join Confirmation',
         subject: "You've joined a carpool trip",
+        html: "<p>Hi {{passengerName}}, you've successfully joined {{driverName}}'s trip to {{destination}} on {{tripDate}} at {{departureTime}}.</p>",
+        text: "Hi {{passengerName}}, you've successfully joined {{driverName}}'s trip to {{destination}} on {{tripDate}} at {{departureTime}}.",
         htmlContent:
           "<p>Hi {{passengerName}}, you've successfully joined {{driverName}}'s trip to {{destination}} on {{tripDate}} at {{departureTime}}.</p>",
         textContent:
@@ -303,6 +309,8 @@ export class EmailService {
         id: 'trip-reminder',
         name: 'Trip Reminder',
         subject: 'Reminder: Your carpool trip is tomorrow',
+        html: "<p>Don't forget about your carpool trip to {{destination}} tomorrow at {{departureTime}} with {{driverName}}.</p>",
+        text: "Don't forget about your carpool trip to {{destination}} tomorrow at {{departureTime}} with {{driverName}}.",
         htmlContent:
           "<p>Don't forget about your carpool trip to {{destination}} tomorrow at {{departureTime}} with {{driverName}}.</p>",
         textContent:
@@ -313,6 +321,8 @@ export class EmailService {
         id: 'trip-updated',
         name: 'Trip Updated',
         subject: 'Your carpool trip has been updated',
+        html: '<p>{{driverName}} has updated the trip to {{destination}} on {{tripDate}}. Changes: {{changes}}.</p>',
+        text: '{{driverName}} has updated the trip to {{destination}} on {{tripDate}}. Changes: {{changes}}.',
         htmlContent:
           '<p>{{driverName}} has updated the trip to {{destination}} on {{tripDate}}. Changes: {{changes}}.</p>',
         textContent:
@@ -323,6 +333,8 @@ export class EmailService {
         id: 'trip-cancelled',
         name: 'Trip Cancelled',
         subject: 'Carpool trip cancelled',
+        html: '<p>Unfortunately, {{driverName}} has cancelled the trip to {{destination}} on {{tripDate}}. Reason: {{reason}}.</p>',
+        text: 'Unfortunately, {{driverName}} has cancelled the trip to {{destination}} on {{tripDate}}. Reason: {{reason}}.',
         htmlContent:
           '<p>Unfortunately, {{driverName}} has cancelled the trip to {{destination}} on {{tripDate}}. Reason: {{reason}}.</p>',
         textContent:

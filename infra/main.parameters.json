@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "appName": {
-      "value": "vcarpool"
+      "value": "carpool"
     },
     "environmentName": {
       "value": "prod"
@@ -12,19 +12,19 @@
       "value": "eastus"
     },
     "cosmosDbAccountName": {
-      "value": "vcarpool-cosmos-prod"
+      "value": "carpool-cosmos-prod"
     },
     "functionAppName": {
-      "value": "vcarpool-api-prod"
+      "value": "carpool-api-prod"
     },
     "staticWebAppName": {
-      "value": "vcarpool-web-prod"
+      "value": "carpool-web-prod"
     },
     "appInsightsName": {
-      "value": "vcarpool-insights-prod"
+      "value": "carpool-insights-prod"
     },
     "storageAccountName": {
-      "value": "vcarpoolsaprod"
+      "value": "carpoolsaprod"
     }
   }
 }

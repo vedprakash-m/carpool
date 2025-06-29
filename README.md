@@ -125,8 +125,8 @@ Carpool is a comprehensive, cloud-native platform that revolutionizes how school
 
 ```bash
 # Clone and setup
-git clone https://github.com/vedprakash-m/vcarpool.git
-cd vcarpool
+git clone https://github.com/vedprakash-m/carpool.git
+cd carpool
 
 # Install all dependencies (uses npm workspaces)
 npm install
@@ -175,7 +175,7 @@ Testing: Jest + Playwright + 88.67% coverage
 ### **Project Structure**
 
 ```
-vcarpool/
+carpool/
 ├── 🌐 frontend/          # Next.js App Router application
 │   ├── src/app/          # Page components and layouts
 │   ├── components/       # Reusable UI components
@@ -201,13 +201,13 @@ vcarpool/
 
 Carpool implements an intelligent **dual-tier architecture** that separates persistent storage from compute:
 
-**🗄️ Database Tier** (`vcarpool-db-rg`)
+**🗄️ Database Tier** (`carpool-db-rg`)
 
 - **Always persistent** - Azure Cosmos DB with all user data
 - **Never deleted** - Ensures data safety during cost optimization
 - **~$24/month** - Predictable storage costs
 
-**⚡ Compute Tier** (`vcarpool-rg`)
+**⚡ Compute Tier** (`carpool-rg`)
 
 - **Deletable/Restorable** - Functions, Static Web App, Key Vault, Monitoring
 - **70% cost savings** during inactive periods
@@ -414,8 +414,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for
 ### Getting Help
 
 - **📚 Documentation**: Comprehensive guides in [docs/](docs/)
-- **🐛 Issues**: [GitHub Issues](https://github.com/vedprakash-m/vcarpool/issues) for bugs and feature requests
-- **💡 Discussions**: [GitHub Discussions](https://github.com/vedprakash-m/vcarpool/discussions) for questions
+- **🐛 Issues**: [GitHub Issues](https://github.com/vedprakash-m/carpool/issues) for bugs and feature requests
+- **💡 Discussions**: [GitHub Discussions](https://github.com/vedprakash-m/carpool/discussions) for questions
 - **🔒 Security**: Report security issues privately via email
 
 ### Community
@@ -451,7 +451,7 @@ This project is licensed under the **[GNU Affero General Public License v3.0](LI
 
 **Make carpooling safe, fair, and efficient for your school community**
 
-[⭐ Star this Project](https://github.com/vedprakash-m/vcarpool) • [🚀 Try Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [🐛 Report Issues](https://github.com/vedprakash-m/vcarpool/issues) • [💡 Request Features](https://github.com/vedprakash-m/vcarpool/discussions)
+[⭐ Star this Project](https://github.com/vedprakash-m/carpool) • [🚀 Try Live Demo](https://lively-stone-016bfa20f.6.azurestaticapps.net) • [🐛 Report Issues](https://github.com/vedprakash-m/carpool/issues) • [💡 Request Features](https://github.com/vedprakash-m/carpool/discussions)
 
 **Built with ❤️ for safer, smarter, more sustainable school transportation**
 

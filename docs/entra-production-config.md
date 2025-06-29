@@ -24,7 +24,7 @@ JWT_EXPIRES_IN=24h
 # Database Configuration
 COSMOS_DB_ENDPOINT=your-cosmos-endpoint
 COSMOS_DB_KEY=your-cosmos-key
-COSMOS_DB_DATABASE_NAME=vcarpool
+COSMOS_DB_DATABASE_NAME=carpool
 
 # Application Insights
 APPLICATIONINSIGHTS_CONNECTION_STRING=your-app-insights-connection-string

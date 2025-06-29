@@ -109,7 +109,7 @@ async function sendVerificationCode(userId, requestData, context) {
 
     // In production, send SMS via Twilio, AWS SNS, or similar service
     context.log(
-      `Mock SMS to ${phoneNumber}: Your VCarpool verification code is ${verificationCode}`
+      `Mock SMS to ${phoneNumber}: Your Carpool verification code is ${verificationCode}`
     );
 
     // Update user's phone number

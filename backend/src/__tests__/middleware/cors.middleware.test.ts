@@ -13,9 +13,9 @@ describe('CorsMiddleware', () => {
   beforeEach(() => {
     mockRequest = {
       method: 'GET',
-      url: 'https://api.vcarpool.com/test',
+      url: 'https://api.carpool.com/test',
       headers: new Headers({
-        origin: 'https://vcarpool.com',
+        origin: 'https://carpool.com',
         'content-type': 'application/json',
       }),
     };
@@ -94,7 +94,7 @@ describe('CorsMiddleware', () => {
 
     it('should handle single origin string', () => {
       const options: CorsOptions = {
-        origins: 'https://vcarpool.com',
+        origins: 'https://carpool.com',
       };
 
       const headers = CorsMiddleware.createHeaders(options);
@@ -103,7 +103,7 @@ describe('CorsMiddleware', () => {
 
     it('should handle multiple origins array', () => {
       const options: CorsOptions = {
-        origins: ['https://vcarpool.com', 'https://app.vcarpool.com'],
+        origins: ['https://carpool.com', 'https://app.carpool.com'],
       };
 
       const headers = CorsMiddleware.createHeaders(options);

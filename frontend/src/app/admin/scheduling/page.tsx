@@ -85,7 +85,7 @@ export default function SchedulingDashboardPage() {
   const loadSchedules = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch(
         '/api/admin/weekly-scheduling?action=schedules&limit=20',
         {
@@ -129,7 +129,7 @@ export default function SchedulingDashboardPage() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch(
         '/api/admin/weekly-scheduling?action=create-schedule',
         {
@@ -175,7 +175,7 @@ export default function SchedulingDashboardPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch(
         '/api/admin/weekly-scheduling?action=generate-assignments',
         {

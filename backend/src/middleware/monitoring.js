@@ -28,7 +28,7 @@ if (process.env.APPINSIGHTS_CONNECTION_STRING) {
 const client = appInsights.defaultClient;
 
 /**
- * Custom metrics for VCarpool business logic
+ * Custom metrics for Carpool business logic
  */
 const customMetrics = {
   // Authentication metrics

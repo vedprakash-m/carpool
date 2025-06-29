@@ -23,7 +23,7 @@ const indexHtml = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>vCarpool - Loading...</title>
+    <title>Carpool - Loading...</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="/favicon.ico">
     <style>
@@ -63,7 +63,7 @@ const indexHtml = `<!DOCTYPE html>
 <body>
     <div class="loading">
         <div class="spinner"></div>
-        <h2>Loading vCarpool...</h2>
+        <h2>Loading Carpool...</h2>
         <p>Initializing application...</p>
     </div>
 </body>

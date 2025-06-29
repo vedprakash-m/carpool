@@ -1,10 +1,10 @@
 #!/bin/bash
 
-echo "🔍 VCarpool Backend Deployment Verification"
+echo "🔍 Carpool Backend Deployment Verification"
 echo "==========================================="
 
 # Backend API base URL
-API_BASE="https://vcarpool-api-prod.azurewebsites.net/api"
+API_BASE="https://carpool-api-prod.azurewebsites.net/api"
 
 # Test credentials
 TEST_EMAIL="admin@carpool.com"
@@ -65,7 +65,7 @@ echo "🔧 Checking Azure Function App Status..."
 
 # List deployed functions
 echo "Deployed functions:"
-az functionapp function list --name "vcarpool-api-prod" --resource-group "vcarpool-rg" --query "[].{Name:name,Trigger:config.bindings[0].type}" --output table 2>/dev/null || echo "   ⚠️  Could not list functions (Azure CLI not configured)"
+az functionapp function list --name "carpool-api-prod" --resource-group "carpool-rg" --query "[].{Name:name,Trigger:config.bindings[0].type}" --output table 2>/dev/null || echo "   ⚠️  Could not list functions (Azure CLI not configured)"
 
 echo ""
 echo "📋 Summary:"

@@ -1,5 +1,5 @@
 /**
- * Database Service for VCarpool Application
+ * Database Service for Carpool Application
  * Provides unified interface for Cosmos DB and in-memory storage
  */
 

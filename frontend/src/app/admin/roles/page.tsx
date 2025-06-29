@@ -63,7 +63,7 @@ export default function RoleManagementPage() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch('/api/admin/roles', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ export default function RoleManagementPage() {
 
   const fetchEligibleParents = async () => {
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch(
         '/api/admin/roles?action=eligible-group-admins',
         {
@@ -115,7 +115,7 @@ export default function RoleManagementPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch('/api/admin/roles?action=promote', {
         method: 'PUT',
         headers: {

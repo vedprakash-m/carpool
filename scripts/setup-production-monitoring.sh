@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# VCarpool Production Monitoring Setup Script
+# Carpool Production Monitoring Setup Script
 # Configures Application Insights, alerts, and health checks for production
 
 set -e
 
-echo "📊 VCarpool Production Monitoring Setup"
+echo "📊 Carpool Production Monitoring Setup"
 echo "======================================="
 
 # Configuration
-RESOURCE_GROUP="vcarpool-rg"
-FUNCTION_APP_NAME="vcarpool-api-prod"
-STATIC_WEB_APP_NAME="vcarpool-web-prod"
-COSMOS_DB_NAME="vcarpool-cosmos-prod"
-APP_INSIGHTS_NAME="vcarpool-insights-prod"
-ACTION_GROUP_NAME="vcarpool-alerts"
+RESOURCE_GROUP="carpool-rg"
+FUNCTION_APP_NAME="carpool-api-prod"
+STATIC_WEB_APP_NAME="carpool-web-prod"
+COSMOS_DB_NAME="carpool-cosmos-prod"
+APP_INSIGHTS_NAME="carpool-insights-prod"
+ACTION_GROUP_NAME="carpool-alerts"
 
 # Email for alerts
 read -p "Enter email for production alerts: " ALERT_EMAIL
@@ -55,7 +55,7 @@ echo "📧 Setting up alert action group..."
 az monitor action-group create \
     --name $ACTION_GROUP_NAME \
     --resource-group $RESOURCE_GROUP \
-    --short-name "VCarpool" \
+    --short-name "Carpool" \
     --email-receivers \
         name=admin \
         email=$ALERT_EMAIL \
@@ -91,7 +91,7 @@ az monitor metrics alert create \
 az monitor metrics alert create \
     --name "Database Connection Failures" \
     --resource-group $RESOURCE_GROUP \
-    --scopes "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/vcarpool-db-rg/providers/Microsoft.DocumentDB/databaseAccounts/$COSMOS_DB_NAME" \
+    --scopes "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/carpool-db-rg/providers/Microsoft.DocumentDB/databaseAccounts/$COSMOS_DB_NAME" \
     --condition "total TotalRequestUnits > 400" \
     --window-size 5m \
     --evaluation-frequency 1m \
@@ -265,9 +265,9 @@ EOF
 echo "🔍 Setting up availability tests..."
 az monitor app-insights web-test create \
     --resource-group $RESOURCE_GROUP \
-    --name "VCarpool Health Check" \
+    --name "Carpool Health Check" \
     --location "West US 2" \
-    --web-test-name "vcarpool-health-check" \
+    --web-test-name "carpool-health-check" \
     --url-to-test "https://$FUNCTION_APP_NAME.azurewebsites.net/api/health-check" \
     --frequency 300 \
     --timeout 30 \
@@ -277,7 +277,7 @@ az monitor app-insights web-test create \
 
 echo "📝 Creating monitoring runbook..."
 cat > PRODUCTION_MONITORING_RUNBOOK.md << 'EOF'
-# VCarpool Production Monitoring Runbook
+# Carpool Production Monitoring Runbook
 
 ## 🚨 Alert Response Procedures
 

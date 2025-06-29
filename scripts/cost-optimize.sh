@@ -37,7 +37,7 @@ error() {
 # Function to estimate costs
 show_cost_analysis() {
     echo ""
-    log "💰 Cost Analysis for VCarpool Infrastructure"
+    log "💰 Cost Analysis for Carpool Infrastructure"
     echo ""
     echo "🗄️  Database Resource Group: $DB_RESOURCE_GROUP"
     echo "   Resources:"
@@ -120,7 +120,7 @@ restore_compute_resources() {
     fi
     
     log "Running deployment script to restore compute resources..."
-    /Users/vedprakashmishra/vcarpool/scripts/deploy-multi-rg.sh
+    /Users/vedprakashmishra/carpool/scripts/deploy-multi-rg.sh
     
     success "Compute resources restored"
     log "Your application should be accessible again"
@@ -145,7 +145,7 @@ check_deletion_status() {
 
 # Function to show help
 show_help() {
-    echo "VCarpool Cost Optimization Script"
+    echo "Carpool Cost Optimization Script"
     echo ""
     echo "Usage: $0 [command]"
     echo ""

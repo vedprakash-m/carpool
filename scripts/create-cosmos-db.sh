@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# VCarpool Cosmos DB Creation Script
+# Carpool Cosmos DB Creation Script
 # Creates Cosmos DB account, database, and all required containers
 
 set -e  # Exit on any error
 
 # Configuration
-RESOURCE_GROUP="vcarpool-rg"
-COSMOS_DB_NAME="vcarpool-cosmos-prod"
-DATABASE_NAME="vcarpool"
+RESOURCE_GROUP="carpool-rg"
+COSMOS_DB_NAME="carpool-cosmos-prod"
+DATABASE_NAME="carpool"
 LOCATION="eastus2"
 
-echo "🚀 Creating Cosmos DB for VCarpool..."
+echo "🚀 Creating Cosmos DB for Carpool..."
 echo "Resource Group: $RESOURCE_GROUP"
 echo "Cosmos DB Name: $COSMOS_DB_NAME"
 echo "Database Name: $DATABASE_NAME"
@@ -37,7 +37,7 @@ else
         --kind GlobalDocumentDB \
         --default-consistency-level Session \
         --enable-free-tier true \
-        --tags application=vcarpool environment=prod
+        --tags application=carpool environment=prod
     echo "✅ Cosmos DB Account created successfully"
 fi
 

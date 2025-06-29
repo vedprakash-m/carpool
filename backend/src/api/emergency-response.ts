@@ -1,4 +1,4 @@
-// Emergency Response API for VCarpool
+// Emergency Response API for Carpool
 // Simplified version for beta testing - no safety claims to avoid liability
 
 export const emergencyController = {

@@ -8,7 +8,7 @@ const message_repository_1 = require("../repositories/message.repository");
 const user_repository_1 = require("../repositories/user.repository");
 const trip_repository_1 = require("../repositories/trip.repository");
 const validation_handler_1 = require("../utils/validation-handler");
-const shared_1 = require("@vcarpool/shared");
+const shared_1 = require("@carpool/shared");
 const middleware_1 = require("../middleware");
 async function messagesGet(request, context) {
     const logger = context; // Use context for logging if needed

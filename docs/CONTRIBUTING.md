@@ -22,7 +22,7 @@ Before contributing, please:
 
 1. Read this contributing guide thoroughly
 2. Review the [PROJECT_METADATA.md](PROJECT_METADATA.md) to understand the project architecture
-3. Check existing [issues](https://github.com/vedprakashmishra/vcarpool/issues) and [pull requests](https://github.com/vedprakashmishra/vcarpool/pulls)
+3. Check existing [issues](https://github.com/vedprakashmishra/carpool/issues) and [pull requests](https://github.com/vedprakashmishra/carpool/pulls)
 4. Set up your development environment
 
 ## Code of Conduct
@@ -75,8 +75,8 @@ Look for issues labeled `good first issue` or `help wanted`. These are great sta
 1. **Fork and clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/vcarpool.git
-   cd vcarpool
+   git clone https://github.com/your-username/carpool.git
+   cd carpool
    ```
 
 2. **Install dependencies:**
@@ -308,8 +308,8 @@ By contributing to Carpool, you agree that your contributions will be licensed u
 ## Contact
 
 - **Project Lead**: [Vedprakash Mishra](https://github.com/vedprakashmishra)
-- **Issues**: [GitHub Issues](https://github.com/vedprakashmishra/vcarpool/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/vedprakashmishra/vcarpool/discussions)
+- **Issues**: [GitHub Issues](https://github.com/vedprakashmishra/carpool/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/vedprakashmishra/carpool/discussions)
 
 ---
 

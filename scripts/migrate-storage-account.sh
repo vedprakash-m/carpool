@@ -6,8 +6,8 @@
 set -e
 
 # Configuration
-SOURCE_STORAGE_ACCOUNT="vcarpoolsaprod"
-SOURCE_RESOURCE_GROUP="vcarpool-rg"
+SOURCE_STORAGE_ACCOUNT="carpoolsaprod"
+SOURCE_RESOURCE_GROUP="carpool-rg"
 TARGET_STORAGE_ACCOUNT=""
 TARGET_RESOURCE_GROUP=""
 ENVIRONMENT="prod"
@@ -55,13 +55,13 @@ Options:
 
 Examples:
   # Plan migration to new resource group
-  $0 plan --target-name vcarpoolsanew --target-rg vcarpool-storage-rg --target-location eastus2
+  $0 plan --target-name carpoolsanew --target-rg carpool-storage-rg --target-location eastus2
   
   # Execute migration
-  $0 create-target --target-name vcarpoolsanew --target-rg vcarpool-storage-rg --target-location eastus2
-  $0 migrate-data --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
-  $0 update-config --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
-  $0 verify --target-name vcarpoolsanew --target-rg vcarpool-storage-rg
+  $0 create-target --target-name carpoolsanew --target-rg carpool-storage-rg --target-location eastus2
+  $0 migrate-data --target-name carpoolsanew --target-rg carpool-storage-rg
+  $0 update-config --target-name carpoolsanew --target-rg carpool-storage-rg
+  $0 verify --target-name carpoolsanew --target-rg carpool-storage-rg
 
 EOF
 }
@@ -152,7 +152,7 @@ create_target_storage() {
         --access-tier Hot \
         --https-only true \
         --min-tls-version TLS1_2 \
-        --tags application=vcarpool environment="$ENVIRONMENT" createdBy=migration
+        --tags application=carpool environment="$ENVIRONMENT" createdBy=migration
     
     success "Target storage account created: $target_name"
 }
@@ -211,14 +211,14 @@ update_function_config() {
     
     log "Updating Function App configuration..."
     
-    local function_app_name="vcarpool-api-${ENVIRONMENT}"
+    local function_app_name="carpool-api-${ENVIRONMENT}"
     local target_key=$(az storage account keys list --account-name "$target_name" --resource-group "$target_rg" --query '[0].value' -o tsv)
     local new_connection_string="DefaultEndpointsProtocol=https;AccountName=${target_name};EndpointSuffix=core.windows.net;AccountKey=${target_key}"
     
     # Update AzureWebJobsStorage setting
     az functionapp config appsettings set \
         --name "$function_app_name" \
-        --resource-group "vcarpool-rg" \
+        --resource-group "carpool-rg" \
         --settings "AzureWebJobsStorage=$new_connection_string"
     
     success "Function App configuration updated"
@@ -240,8 +240,8 @@ verify_migration() {
     fi
     
     # Check Function App status
-    local function_app_name="vcarpool-api-${ENVIRONMENT}"
-    local app_status=$(az functionapp show --name "$function_app_name" --resource-group "vcarpool-rg" --query state -o tsv)
+    local function_app_name="carpool-api-${ENVIRONMENT}"
+    local app_status=$(az functionapp show --name "$function_app_name" --resource-group "carpool-rg" --query state -o tsv)
     
     if [ "$app_status" = "Running" ]; then
         success "Function App is running"
@@ -251,7 +251,7 @@ verify_migration() {
     
     # Test function endpoint
     log "Testing function app endpoint..."
-    local function_url=$(az functionapp show --name "$function_app_name" --resource-group "vcarpool-rg" --query defaultHostName -o tsv)
+    local function_url=$(az functionapp show --name "$function_app_name" --resource-group "carpool-rg" --query defaultHostName -o tsv)
     
     if curl -f -s "https://${function_url}/api/hello" > /dev/null; then
         success "Function app endpoint is responding"

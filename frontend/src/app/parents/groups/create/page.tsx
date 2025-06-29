@@ -190,7 +190,7 @@ export default function CreateGroupPage() {
     setMessage(null);
 
     try {
-      const token = localStorage.getItem('vcarpool_token');
+      const token = localStorage.getItem('carpool_token');
       const response = await fetch('/api/parent/groups/create', {
         method: 'POST',
         headers: {

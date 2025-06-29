@@ -38,7 +38,7 @@ module.exports = async function (context, req) {
     try {
       const decoded = jwt.verify(
         token,
-        process.env.JWT_SECRET || "temp-jwt-secret-vcarpool"
+        process.env.JWT_SECRET || "temp-jwt-secret-carpool"
       );
       if (decoded.role !== "admin") {
         context.res = UnifiedResponseHandler.forbiddenError(

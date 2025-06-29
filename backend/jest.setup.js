@@ -1,1 +1,1 @@
-require('reflect-metadata');
+require('../node_modules/reflect-metadata');

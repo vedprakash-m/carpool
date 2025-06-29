@@ -7,7 +7,7 @@
 ### Frontend Login Test ✅ **WORKING**
 
 - **URL**: https://lively-stone-016bfa20f.6.azurestaticapps.net/
-- **Email**: `admin@vcarpool.com`
+- **Email**: `admin@carpool.com`
 - **Password**: `[Set via ADMIN_PASSWORD environment variable]` ⚠️ _(Use environment variables for security)_
 
 ### Alternative Test Account
@@ -19,14 +19,14 @@
 
 ```bash
 # Test authentication endpoint
-curl -X POST https://vcarpool-api-prod.azurewebsites.net/api/auth/login \
+curl -X POST https://carpool-api-prod.azurewebsites.net/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@vcarpool.com","password":"${ADMIN_PASSWORD}"}'
+  -d '{"email":"admin@carpool.com","password":"${ADMIN_PASSWORD}"}'
 
 # Test other endpoints
-curl https://vcarpool-api-prod.azurewebsites.net/api/health
-curl https://vcarpool-api-prod.azurewebsites.net/api/trips/stats
-curl https://vcarpool-api-prod.azurewebsites.net/api/users/me
+curl https://carpool-api-prod.azurewebsites.net/api/health
+curl https://carpool-api-prod.azurewebsites.net/api/trips/stats
+curl https://carpool-api-prod.azurewebsites.net/api/users/me
 ```
 
 ## Current Status: 🎉 **FULLY FUNCTIONAL**

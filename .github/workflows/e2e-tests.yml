@@ -1,4 +1,4 @@
-name: vCarpool E2E Tests
+name: Carpool E2E Tests
 
 on:
   # Called by CI pipeline

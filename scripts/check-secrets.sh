@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Custom secret detection script for vCarpool project
+# Custom secret detection script for Carpool project
 # This script checks for common patterns that might indicate leaked secrets
 
 set -e
@@ -104,8 +104,8 @@ for file in $FILES; do
     check_pattern "$file" "hardcoded_password" "password[[:space:]]*[:=][[:space:]]*['\"][^'\"]{8,}['\"]" "false"
 done
 
-# Check for specific vCarpool patterns
-echo "🎯 Checking vCarpool-specific patterns..."
+# Check for specific Carpool patterns
+echo "🎯 Checking Carpool-specific patterns..."
 
 for file in $FILES; do
     if [ ! -f "$file" ]; then

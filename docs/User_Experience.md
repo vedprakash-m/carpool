@@ -1,8 +1,10 @@
 # Carpool User Experience Documentation
 
 **Version**: 3.0  
-**Last Updated**: January 2024  
-**Status**: Source of Truth for UX/UI Design
+**Last Updated**: June 25, 2025  
+**Status**: Development in Progress  
+**Beta Testing**: August 2025  
+**Target Launch**: September 2025
 
 ---
 
@@ -58,7 +60,7 @@
 - Role-based access that empowers without overwhelming
 - **Universal Geographic Support**: Automatic service area detection based on family address with configurable radius for any school
 - **Traveling Parent Fairness**: Flexible makeup options (2-6 weeks) for parents who travel, ensuring long-term equity
-- Child agency through supervised self-registration process
+- **Student agency through supervised self-registration process**
 
 ### Key Platform Decisions
 
@@ -87,6 +89,20 @@
 - 2-6 week makeup window for additional trips
 - Fair distribution algorithm accounts for travel schedules
 - Clear communication tools for makeup arrangements
+
+**Decision 5: Enterprise Communication Infrastructure**
+
+- Azure Communication Services integration for reliable, scalable notifications
+- Multi-channel communication (SMS, email, push notifications) through shared services
+- Cost-optimized resource group architecture with pause/resume capabilities for development environments
+
+**Decision 6: Unified Authentication Standards**
+
+- **Domain**: vedid.onmicrosoft.com (shared identity provider across all .vedprakash.net apps)
+- **Implementation**: @azure/msal-react (frontend), @azure/msal-node (backend)
+- **User Object**: Standardized VedUser interface following Vedprakash Domain Authentication Requirements
+- **SSO Experience**: Single sign-on across all Vedprakash applications
+- **Security**: Enterprise-grade authentication with JWKS token validation
 
 ---
 
@@ -124,7 +140,7 @@
 **Core Workflows**:
 
 - Group creation with school selection and service area definition
-- Join request review with parent/child profile assessment
+- Join request review with parent/student profile assessment
 - Weekly trip scheduling with preference monitoring
 - Conflict resolution tools with manual assignment override
 - Group member management and emergency contact coordination
@@ -132,13 +148,13 @@
 
 ### Parent
 
-**Primary Goal**: Reliable, safe transportation for children with minimal coordination overhead  
+**Primary Goal**: Reliable, safe transportation for students with minimal coordination overhead  
 **Key Responsibilities**:
 
 - Discover and request to join appropriate carpool groups
 - Submit weekly driving preferences by Saturday 10PM deadline
 - Respond to swap requests by Sunday 5PM deadline
-- Maintain accurate child and emergency contact information
+- Maintain accurate student and emergency contact information
 - Coordinate pickup logistics with assigned drivers
 
 **Core Workflows**:
@@ -149,7 +165,7 @@
 - Swap request creation and response management
 - Schedule viewing with pickup logistics coordination
 
-### Child
+### Student
 
 **Primary Goal**: Safe participation in carpool system with age-appropriate autonomy  
 **Key Responsibilities**:
@@ -163,7 +179,7 @@
 
 - Invitation-based registration with parent oversight
 - Profile management with supervised updates
-- Schedule viewing with child-friendly interface
+- Schedule viewing with student-friendly interface
 - Safety reporting mechanism with immediate escalation
 
 ---
@@ -224,8 +240,8 @@ WIREFRAME: Complete Registration Required
 │ [123 Main St, Redmond, WA 98052    ] [🔍 Verify Address]  │
 │ Distance from school: 3.2 miles ✓                         │
 │                                                             │
-│ 👶 Child Information:                                      │
-│ Child Name: [Emma Smith             ] *Required            │
+│ �‍🎓 Student Information:                                   │
+│ Student Name: [Emma Smith             ] *Required            │
 │ Grade:      [9th Grade ▼           ] *Required            │
 │ School:     [Lincoln Elementary ▼] *Auto-detected         │
 │ Student ID: [ES2024                 ] Optional             │
@@ -260,7 +276,7 @@ WIREFRAME: Registration Validation Steps
 │                                                             │
 │ Primary Parent:                                             │
 │ First Name: [Sarah            ] Last Name: [Johnson      ] │
-│ **Note**: Account creation happens through Microsoft Entra ID │
+│ **Note**: Account creation happens through Microsoft Entra ID (vedid.onmicrosoft.com) │
 │ [Continue with Microsoft Account →]                        │
 │                                                             │
 │ Optional - Second Parent:                                   │
@@ -283,17 +299,17 @@ WIREFRAME: Registration Validation Steps
 │                                                             │
 │ ⚠ Please validate your home address to continue            │
 │                                                             │
-│                              [← Back] [Next: Add Children →] │
+│                              [← Back] [Next: Add Students →] │
 ├─────────────────────────────────────────────────────────────┤
-│ Step 3 of 3: Children Information                          │
+│ Step 3 of 3: Student Information                           │
 │                                                             │
-│ Child 1:                                                    │
+│ Student 1:                                                  │
 │ First Name: [Emma             ] Last Name: [Johnson      ] │
 │ Grade: [3rd Grade      ▼] School: [Tesla STEM High     ▼] │
 │                                                             │
-│ [+ Add Another Child]                                       │
+│ [+ Add Another Student]                                     │
 │                                                             │
-│ ⚠ At least one child is required                          │
+│ ⚠ At least one student is required                        │
 │                                                             │
 │                              [← Back] [Create Account →]   │
 └─────────────────────────────────────────────────────────────┘
@@ -308,7 +324,7 @@ WIREFRAME: Registration Validation Steps
 │                                                             │
 │ ┌─────────────────────────────────────────────────────────┐ │
 │ │ 🔍 Join an Existing Group                              │ │
-│ │ "I want to find a carpool for my child"               │ │
+│ │ "I want to find a carpool for my student"              │ │
 │ │ [Find Groups Near Me →]                               │ │
 │ └─────────────────────────────────────────────────────────┘ │
 │                                                             │
@@ -330,13 +346,13 @@ WIREFRAME: Minimal Registration (Join Path)
 ├─────────────────────────────────────────────────────────────┤
 │ Let's find carpool groups near you:                        │
 │                                                             │
-│ 🏫 Your child's school:                                    │
+│ 🏫 Your student's school:                                  │
 │ [Lincoln Elementary School        ▼] [📍 2.1 mi]         │
 │                                                             │
 │ 📍 Your location (for nearby groups):                      │
 │ [Use My Location] OR [Enter Address]                       │
 │                                                             │
-│ 👶 Child's grade: [2nd Grade ▼]                           │
+│ �‍🎓 Student's grade: [2nd Grade ▼]                        │
 │                                                             │
 │ ⏰ When do you need carpool?                               │
 │ ☑ Morning (drop-off)  ☐ Afternoon (pickup)                │
@@ -359,7 +375,7 @@ WIREFRAME: Registration with Context
 │ Email: [john@example.com        ]                          │
 │ Phone: [(555) 123-4567         ]                          │
 │                                                             │
-│ 👶 Child Information:                                      │
+│ �‍🎓 Student Information:                                   │
 │ Name: [Emma Parent              ]                          │
 │ Grade: [2nd Grade ▼] (pre-filled)                         │
 │ School: [Lincoln Elementary ▼] (pre-filled)               │
@@ -376,11 +392,11 @@ WIREFRAME: Registration with Context
 │                    [← Back] [Join Group & Complete Setup] │
 └─────────────────────────────────────────────────────────────┘
 
-WIREFRAME: Child Information Entry
+WIREFRAME: Student Information Entry
 ┌─────────────────────────────────────────────────────────────┐
-│ Step 2 of 3: Children Information                          │
+│ Step 2 of 3: Student Information                           │
 │                                                             │
-│ Child 1:                                                    │
+│ Student 1:                                                  │
 │ ┌─────────────────────────────────────────────────────────┐ │
 │ │ Name: [Emma Parent          ] Grade: [2nd ▼]           │ │
 │ │ School: [Lincoln Elementary ▼] [Search Schools]        │ │
@@ -389,7 +405,7 @@ WIREFRAME: Child Information Entry
 │ │ Special Instructions: [Pickup at main entrance        ]│ │
 │ └─────────────────────────────────────────────────────────┘ │
 │                                                             │
-│ [+ Add Another Child]                                       │
+│ [+ Add Another Student]                                     │
 │                                                             │
 │ Emergency Backup Contact:                                   │
 │ Name: [Grandma Smith        ] Phone: [(555) 555-5555]     │
@@ -424,11 +440,11 @@ WIREFRAME: Initial Preferences
 ```
 WIREFRAME: Mobile Registration Flow
 ┌─────────────────────────┐ ┌─────────────────────────┐ ┌─────────────────────────┐
-│ ☰ Carpool         [?] │ │ ☰ Children Info    [?] │ │ ☰ Preferences      [?] │
+│ ☰ Carpool         [?] │ │ ☰ Student Info     [?] │ │ ☰ Preferences      [?] │
 ├─────────────────────────┤ ├─────────────────────────┤ ├─────────────────────────┤
-│ Join the Carpool       │ │ Add Your Children      │ │ Your Availability      │
+│ Join the Carpool       │ │ Add Your Students      │ │ Your Availability      │
 │ Community              │ │                        │ │                        │
-│                        │ │ Child 1                │ │ 📅 This Week           │
+│                        │ │ Student 1              │ │ 📅 This Week           │
 │ 👤 Your Info           │ │ Name: [Emma Parent   ] │ │                        │
 │ First: [John         ] │ │ Grade: [2nd ▼]       │ │                        │
 │ Last: [Parent        ] │ │ School:               │ │ M [��] [👥] [❌]      │
@@ -497,7 +513,7 @@ WIREFRAME: Join Request Modal
 │ │ driving duties 2-3 days per week.                      │ │
 │ └─────────────────────────────────────────────────────────┘ │
 │                                                             │
-│ Children Information:                                       │
+│ Student Information:                                        │
 │ ┌─────────────────────────────────────────────────────────┐ │
 │ │ Emma Parent - Grade 2 [📝 Edit]                        │ │
 │ │ Lincoln Elementary                                      │ │
@@ -648,7 +664,7 @@ WIREFRAME: Algorithm Execution
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Journey 5: Emergency Response & Crisis Coordination
+### Journey 5: Emergency Response & Crisis Coordination _(Post-Beta Feature)_
 
 #### Emergency Alert System (No Safety Claims)
 
@@ -717,7 +733,7 @@ WIREFRAME: Emergency Alert Details
 │                          [Cancel] [Send Alert Now]         │
 └─────────────────────────────────────────────────────────────┘
 
-WIREFRAME: Emergency Response Dashboard
+WIREFRAME: Emergency Response Dashboard *(Post-Beta Feature)*
 ┌─────────────────────────────────────────────────────────────┐
 │ 🚨 Active Emergency: Mike Chen - 2 min ago                 │
 ├─────────────────────────────────────────────────────────────┤
@@ -904,49 +920,70 @@ WIREFRAME: Cross-Group Coordination Alert
 
 ---
 
-## Implementation Summary (January 2025)
+## Implementation Summary (June 25, 2025)
 
-### ✅ COMPLETED FEATURES
+### ✅ Features with Completed UX Design (Technical Implementation Status Noted Below)
 
-#### 1. Emergency Response System (No Safety Claims)
+#### 1. Emergency Response System _(Post-Beta Implementation)_ (No Safety Claims)
 
-- **Status**: Beta-ready implementation
+- **UX Design**: ✅ Complete
+- **Technical Implementation**: 🚧 Post-Beta Development
 - **Approach**: Coordination tool with liability disclaimers
 - **Components**: Emergency alert interface, contact management, crisis communication
 - **Key Principle**: "Call 911 for emergencies, use app for coordination"
 
-#### 2. Progressive Onboarding Experience
+#### 2. Enhanced Communication Integration
 
-- **Status**: UX design completed
-- **Approach**: Intent-first registration with minimal friction
-- **Flow**: Find groups → Context registration → Group joining
-- **Innovation**: School/location-based group discovery before account creation
-
-#### 3. Enhanced Communication Integration
-
-- **Status**: Existing system enhanced
+- **UX Design**: ✅ Complete
+- **Technical Implementation**: 🚧 In Progress (Phases 1-3)
 - **Features**: Carpool context, voice messages, location sharing, emergency integration
 - **Strategy**: Full in-app experience as northstar goal
 - **Migration**: Progressive transition from external platforms
 
-#### 4. Unified Family Dashboard
+#### 3. Unified Family Dashboard
 
-- **Status**: Design specifications completed
+- **UX Design**: ✅ Complete
+- **Technical Implementation**: 🚧 Planned for Beta
 - **Features**: Multi-group management, role switching, conflict detection
 - **Innovation**: Seamless Parent ↔ Group Admin role transitions
 - **Value**: Single dashboard for families with multiple children/groups
+
+### 🚧 IN DEVELOPMENT FOR BETA (August 2025)
+
+#### 1. Progressive Onboarding Experience
+
+- **UX Design**: ✅ Complete
+- **Technical Implementation**: 🚧 In Progress (Phase 1)
+- **Approach**: Intent-first registration with minimal friction
+- **Flow**: Find groups → Context registration → Group joining
+- **Innovation**: School/location-based group discovery before account creation
+- **Target**: Ready for Beta testing in August
+
+#### 2. Enhanced Notification System
+
+- **UX Design**: ✅ Complete
+- **Technical Implementation**: 🚧 In Progress (enhanced email/SMS templates)
+- **Approach**: Improved email and SMS notification delivery
+- **Features**: Mobile-responsive email templates, reliable SMS delivery, delivery tracking
+- **Implementation**: Enhanced Azure Communication Services integration
+- **Timeline**: Ready for August beta testing
 
 ### 🔄 BETA TESTING BACKLOG
 
 **Postponed for Post-Beta Implementation:**
 
+- WhatsApp Bridge Integration (one-way notification system via WhatsApp Business API)
+- Automated Conflict Resolution (fairness-based scheduling algorithm with suggestions)
+- Super Admin Escalation System (backup administration and dispute mediation)
+- Enhanced Safety Reporting System (comprehensive incident documentation and automated alerts)
+- Emergency Response System and Crisis Coordination (comprehensive incident reporting and automated contact trees)
 - Real-time coordination with traffic integration
 - Enhanced discovery with compatibility matching
 - Data analytics and performance insights
 - Accessibility and inclusion features
 - Trust and community verification features
 
-**Rationale**: Friction-free beta testing prioritizing user adoption over feature completeness
+**Rationale**: Friction-free beta testing prioritizing user adoption over feature completeness. Emergency response features require extensive testing and regulatory consideration before deployment.
 
 ---
 
@@ -1125,12 +1162,13 @@ WIREFRAME: Mobile Navigation Pattern
 - **Swap Request System**: Create, respond, and auto-acceptance workflow
 - **Mobile-Responsive Design**: Touch-friendly interfaces for all core functions
 
-#### Phase 4: Registration Enhancement (COMPLETED June 2025)
+#### Phase 4: Registration Enhancement (In Development for Beta)
 
-- **✅ Three-Step Registration**: Family info → Address verification → Children details
-- **✅ Address Validation Integration**: Real-time geocoding and service area verification
-- **✅ Type System Updates**: Enhanced RegisterRequest interface with homeAddress support
-- **✅ Backend Integration**: Updated address validation APIs for registration flow
+- **Three-Step Registration**: Family info → Address verification → Children details
+- **Address Validation Integration**: Real-time geocoding and service area verification
+- **Type System Updates**: Enhanced RegisterRequest interface with homeAddress support
+- **Backend Integration**: Updated address validation APIs for registration flow
+- **Target**: Ready for August 2025 beta testing
 
 ### 🔄 Partially Implemented
 
@@ -1419,22 +1457,23 @@ WIREFRAME: Super Admin Reactivation Review
 
 ### Phase 5: Community & Communication (Priority: MEDIUM)
 
-#### Enhanced In-App Communication System (IMPLEMENTED)
+#### Enhanced In-App Communication System (In Development for Beta)
 
 **Status**: Core communication system enhanced with carpool-specific features
 
 **Need**: Own the complete carpool coordination communication experience
 **Justification**: Communication is the critical success factor for carpool groups - must be seamless, contextual, and integrated
-**Strategic Approach**: Progressive migration from WhatsApp bridge to full in-app experience
+**Strategic Approach**: Focus on in-app experience first, add WhatsApp bridge post-beta
 
-**Phase 1: WhatsApp Bridge (0-3 months) - Adoption Enabler**
+**Phase 1: Enhanced Email/SMS (Beta) - Foundation**
 
-- Temporary WhatsApp integration to reduce adoption friction
-- Auto-create groups with carpool context for immediate usability
-- Basic announcement relay through Group Admin
-- **Purpose**: Get users comfortable with platform while building in-app features
+- Improved email and SMS notification templates with mobile-responsive design
+- Reliable delivery tracking and fallback mechanisms
+- Enhanced notification templates for schedule updates, reminders, emergency communications
+- Azure Communication Services integration for better deliverability
+- **Purpose**: Establish reliable communication foundation for beta testing
 
-**Phase 2: In-App Communication Launch (3-6 months) - Core Development**
+**Phase 2: In-App Communication Launch (Beta) - Core Development**
 
 **Rich Messaging with Carpool Context**:
 
@@ -1475,15 +1514,16 @@ WIREFRAME: Super Admin Reactivation Review
 - Better notification control and customization
 - Superior integration with all carpool features
 
-**WhatsApp Transition Strategy**:
+**Post-Beta WhatsApp Integration Strategy**:
 
-- Phase 1: "Also available on WhatsApp"
-- Phase 2: "Best experience in-app, WhatsApp backup"
-- Phase 3: "WhatsApp optional for external coordination only"
+- Phase 1 (Post-Beta): Develop WhatsApp Business API integration
+- Phase 2: "Also available on WhatsApp" (gradual rollout)
+- Phase 3: "Best experience in-app, WhatsApp backup"
+- Phase 4: "WhatsApp optional for external coordination only"
 
 **Success Metrics**:
 
-- 90% of group communication happening in-app by end of Phase 3
+- 90% of group communication happening in-app by end of implementation
 - 95% parent satisfaction with in-app communication experience
 - 50% reduction in coordination issues due to improved communication
 
@@ -1539,7 +1579,7 @@ WIREFRAME: Super Admin Reactivation Review
 
 #### Advanced Safety Features
 
-**Need**: Enhanced child safety and emergency response
+**Need**: Enhanced student safety and emergency response _(Post-Beta Feature)_
 **Justification**: Primary concern for all parents in the system
 **Features**:
 
@@ -1889,6 +1929,7 @@ WIREFRAME: Super Admin Reactivation Review
 
 **Purpose**: Critical coordination without requiring app to be open
 **Types**: Schedule updates, emergency alerts, social coordination
+**Infrastructure**: Azure Communication Services for reliable, multi-channel delivery
 
 #### Notification Categories & Timing
 

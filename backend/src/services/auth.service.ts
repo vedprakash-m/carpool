@@ -24,6 +24,17 @@ const JWT_REFRESH_EXPIRES_IN = '7d';
 
 // Role permissions mapping
 const ROLE_PERMISSIONS: Record<UserRole, readonly string[]> = {
+  super_admin: [
+    'platform_management',
+    'group_admin_promotion',
+    'system_configuration',
+    'create_users',
+    'generate_schedule',
+    'view_all_data',
+    'manage_system',
+    'manage_groups',
+    'manage_roles',
+  ] as const,
   admin: [
     'create_users',
     'generate_schedule',

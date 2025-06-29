@@ -35,15 +35,15 @@ This document provides a comprehensive plan for rebranding the Carpool applicati
 
 ```json
 // Current package.json structure to change:
-"name": "vcarpool-monorepo" → "carpool-monorepo"
+"name": "carpool-monorepo" → "carpool-monorepo"
 ```
 
 **NPM Package Namespaces**
 
-- `@vcarpool/backend` → `@carpool/backend`
-- `@vcarpool/frontend` → `@carpool/frontend`
-- `@vcarpool/shared` → `@carpool/shared`
-- `@vcarpool/e2e-tests` → `@carpool/e2e-tests`
+- `@carpool/backend` → `@carpool/backend`
+- `@carpool/frontend` → `@carpool/frontend`
+- `@carpool/shared` → `@carpool/shared`
+- `@carpool/e2e-tests` → `@carpool/e2e-tests`
 
 **Files Affected**:
 
@@ -60,17 +60,17 @@ This document provides a comprehensive plan for rebranding the Carpool applicati
 
 **Resource Group Names**
 
-- `vcarpool-rg` → `carpool-rg`
-- `vcarpool-db-rg` → `carpool-db-rg`
+- `carpool-rg` → `carpool-rg`
+- `carpool-db-rg` → `carpool-db-rg`
 
 **Azure Service Names**
 
-- `vcarpool-api-prod` → `carpool-api-prod`
-- `vcarpool-web-prod` → `carpool-web-prod`
-- `vcarpool-cosmos-prod` → `carpool-cosmos-prod`
-- `vcarpool-insights-prod` → `carpool-insights-prod`
-- `vcarpool-keyvault` → `carpool-keyvault`
-- `vcarpoolsaprod` → `carpoolsaprod`
+- `carpool-api-prod` → `carpool-api-prod`
+- `carpool-web-prod` → `carpool-web-prod`
+- `carpool-cosmos-prod` → `carpool-cosmos-prod`
+- `carpool-insights-prod` → `carpool-insights-prod`
+- `carpool-keyvault` → `carpool-keyvault`
+- `carpoolsaprod` → `carpoolsaprod`
 
 **Infrastructure Files**
 
@@ -89,17 +89,17 @@ This document provides a comprehensive plan for rebranding the Carpool applicati
 
 **Database Names**
 
-- Cosmos DB Database: `vcarpool` → `carpool`
-- Test Database: `vcarpool_test` → `carpool_test`
-- Database ID: `vcarpooldb` → `carpooldb`
+- Cosmos DB Database: `carpool` → `carpool`
+- Test Database: `carpool_test` → `carpool_test`
+- Database ID: `carpooldb` → `carpooldb`
 
 **Configuration Updates**
 
 ```bash
 # Environment variables to update:
-COSMOS_DB_DATABASE_ID=vcarpool → carpool
-COSMOS_DB_NAME=vcarpool → carpool
-AZURE_STORAGE_CONTAINER=vcarpool → carpool
+COSMOS_DB_DATABASE_ID=carpool → carpool
+COSMOS_DB_NAME=carpool → carpool
+AZURE_STORAGE_CONTAINER=carpool → carpool
 ```
 
 **Files Affected**:
@@ -114,24 +114,24 @@ AZURE_STORAGE_CONTAINER=vcarpool → carpool
 **Root Environment File (/.env)**
 
 ```bash
-PROJECT_NAME=vcarpool → carpool
-AZURE_RESOURCE_GROUP=vcarpool-db-rg → carpool-db-rg
-AZURE_KEY_VAULT_NAME=vcarpool-keyvault → carpool-keyvault
-AZURE_STORAGE_ACCOUNT_NAME=vcarpoolsaprod → carpoolsaprod
-COSMOS_DB_ENDPOINT=https://vcarpool-db-manual.documents.azure.com → carpool-db-manual
-COSMOS_DB_DATABASE_ID=vcarpool → carpool
-COSMOS_DB_NAME=vcarpool → carpool
+PROJECT_NAME=carpool → carpool
+AZURE_RESOURCE_GROUP=carpool-db-rg → carpool-db-rg
+AZURE_KEY_VAULT_NAME=carpool-keyvault → carpool-keyvault
+AZURE_STORAGE_ACCOUNT_NAME=carpoolsaprod → carpoolsaprod
+COSMOS_DB_ENDPOINT=https://carpool-db-manual.documents.azure.com → carpool-db-manual
+COSMOS_DB_DATABASE_ID=carpool → carpool
+COSMOS_DB_NAME=carpool → carpool
 ADMIN_PASSWORD=Carpool2025!SecureAdmin → Carpool2025!SecureAdmin
-FROM_EMAIL=noreply@vcarpool.com → noreply@carpool.com
+FROM_EMAIL=noreply@carpool.com → noreply@carpool.com
 FROM_NAME=Carpool → Carpool
-AZURE_FUNCTIONAPP_NAME=vcarpool-api-prod → carpool-api-prod
-AZURE_STATICWEBAPP_NAME=vcarpool-web-dev → carpool-web-dev
-WEBSITE_CONTENTSHARE=vcarpool-api-prod → carpool-api-prod
+AZURE_FUNCTIONAPP_NAME=carpool-api-prod → carpool-api-prod
+AZURE_STATICWEBAPP_NAME=carpool-web-dev → carpool-web-dev
+WEBSITE_CONTENTSHARE=carpool-api-prod → carpool-api-prod
 ```
 
 **Backend Local Settings (backend/local.settings.json)**
 
-- 50+ configuration values containing "vcarpool"
+- 50+ configuration values containing "carpool"
 - JWT secrets and keys (consider regenerating)
 - Email configuration
 - Database connection strings
@@ -141,10 +141,10 @@ WEBSITE_CONTENTSHARE=vcarpool-api-prod → carpool-api-prod
 **Production URLs**
 
 ```
-Current: https://vcarpool-api-prod.azurewebsites.net
+Current: https://carpool-api-prod.azurewebsites.net
 Target:  https://carpool-api-prod.azurewebsites.net
 
-Current: https://vcarpool-functions.azurewebsites.net
+Current: https://carpool-functions.azurewebsites.net
 Target:  https://carpool-functions.azurewebsites.net
 ```
 
@@ -172,9 +172,9 @@ Target:  https://carpool-functions.azurewebsites.net
 
 ```typescript
 // Current storage keys to change:
-'vcarpool_token' → 'carpool_token'
-'vcarpool_refresh_token' → 'carpool_refresh_token'
-'vcarpool_token_expires' → 'carpool_token_expires'
+'carpool_token' → 'carpool_token'
+'carpool_refresh_token' → 'carpool_refresh_token'
+'carpool_token_expires' → 'carpool_token_expires'
 ```
 
 **Files Affected**
@@ -198,9 +198,9 @@ async createHybridUser(...): Promise<CarpoolUser> → CarpoolUser
 
 **Service Configuration**
 
-- Email service: `noreply@vcarpool.com` → `noreply@carpool.com`
+- Email service: `noreply@carpool.com` → `noreply@carpool.com`
 - Service names: "Carpool" → "Carpool"
-- JWT issuer: `vcarpool-app` → `carpool-app`
+- JWT issuer: `carpool-app` → `carpool-app`
 - Push notification details
 
 **Files Affected**
@@ -216,17 +216,17 @@ async createHybridUser(...): Promise<CarpoolUser> → CarpoolUser
 
 ```javascript
 // Mock email addresses to update:
-'admin@vcarpool.com' → 'admin@carpool.com'
-'parent@vcarpool.com' → 'parent@carpool.com'
-'admin@vcarpool.test' → 'admin@carpool.test'
+'admin@carpool.com' → 'admin@carpool.com'
+'parent@carpool.com' → 'parent@carpool.com'
+'admin@carpool.test' → 'admin@carpool.test'
 // + 50+ other test emails
 ```
 
 **Docker & E2E Setup**
 
-- Container names: `vcarpool-*` → `carpool-*`
-- Database names: `vcarpool_test` → `carpool_test`
-- Network names: `vcarpool-test-network` → `carpool-test-network`
+- Container names: `carpool-*` → `carpool-*`
+- Database names: `carpool_test` → `carpool_test`
+- Network names: `carpool-test-network` → `carpool-test-network`
 
 **Files Affected**
 
@@ -314,11 +314,11 @@ async createHybridUser(...): Promise<CarpoolUser> → CarpoolUser
 
 1. **Update package.json files**
 
-   - Root package: `vcarpool-monorepo` → `carpool-monorepo`
-   - Backend: `@vcarpool/backend` → `@carpool/backend`
-   - Frontend: `@vcarpool/frontend` → `@carpool/frontend`
-   - Shared: `@vcarpool/shared` → `@carpool/shared`
-   - E2E: `@vcarpool/e2e-tests` → `@carpool/e2e-tests`
+   - Root package: `carpool-monorepo` → `carpool-monorepo`
+   - Backend: `@carpool/backend` → `@carpool/backend`
+   - Frontend: `@carpool/frontend` → `@carpool/frontend`
+   - Shared: `@carpool/shared` → `@carpool/shared`
+   - E2E: `@carpool/e2e-tests` → `@carpool/e2e-tests`
 
 2. **Update TypeScript configurations**
    - Path mappings in `tsconfig.json` files
@@ -349,7 +349,7 @@ npm install
 
 1. **Update import statements**
 
-   - Find and replace `@vcarpool/` with `@carpool/` across backend
+   - Find and replace `@carpool/` with `@carpool/` across backend
    - Update 50+ TypeScript files
 
 2. **Update service interfaces**
@@ -375,7 +375,7 @@ npm install
 
 1. **Update import statements**
 
-   - Find and replace `@vcarpool/` with `@carpool/` across frontend
+   - Find and replace `@carpool/` with `@carpool/` across frontend
    - Update 30+ TypeScript/React files
 
 2. **Update API client**
@@ -730,7 +730,7 @@ The estimated 8-10 business day timeline is aggressive but achievable with dedic
 
 ### Completion Summary
 
-The comprehensive rebranding from "VCarpool" to "Carpool" has been successfully completed across the entire technology stack. All 400+ identified references have been systematically updated.
+The comprehensive rebranding from "Carpool" to "Carpool" has been successfully completed across the entire technology stack. All 400+ identified references have been systematically updated.
 
 ### What Was Updated
 
@@ -748,19 +748,19 @@ The comprehensive rebranding from "VCarpool" to "Carpool" has been successfully 
 
 3. **✅ Database References**
 
-   - Database names changed from "vcarpool" to "carpool"
+   - Database names changed from "carpool" to "carpool"
    - Connection strings updated
    - Default database references updated
 
 4. **✅ API URLs & Endpoints**
 
-   - Production API URLs updated: vcarpool-api-prod.azurewebsites.net → carpool-api-prod.azurewebsites.net
+   - Production API URLs updated: carpool-api-prod.azurewebsites.net → carpool-api-prod.azurewebsites.net
    - All hardcoded API references updated
    - Frontend API client configuration updated
 
 5. **✅ UI Branding & Local Storage**
 
-   - Browser storage keys updated: vcarpool_token → carpool_token
+   - Browser storage keys updated: carpool_token → carpool_token
    - PWA install prompts updated to "Carpool"
    - Test assertions updated for new branding
 
@@ -781,7 +781,7 @@ The comprehensive rebranding from "VCarpool" to "Carpool" has been successfully 
 - **Frontend Build**: ✅ Successful
 - **Backend Tests**: ✅ 14/14 tests passing in sample test file
 - **No Build Errors**: ✅ Confirmed
-- **No Remaining References**: ✅ All vcarpool/VCarpool references updated
+- **No Remaining References**: ✅ All carpool/Carpool references updated
 
 ### Notes
 

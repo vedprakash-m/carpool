@@ -2,7 +2,7 @@
 param location string = resourceGroup().location
 
 @description('App name that will be used as prefix for all resources')
-param appName string = 'vcarpool'
+param appName string = 'carpool'
 
 @description('Environment name (dev, test, prod)')
 @allowed([
@@ -178,7 +178,7 @@ resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {
     tier: 'Free'
   }
   properties: {
-    repositoryUrl: 'https://github.com/vedprakash-m/vcarpool'
+    repositoryUrl: 'https://github.com/vedprakash-m/carpool'
     branch: 'main'
     buildProperties: {
       appLocation: '/frontend'

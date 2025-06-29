@@ -1,13 +1,13 @@
 /**
  * Azure Functions Integration Tests
- * Testing deployed VCarpool Azure Functions endpoints
+ * Testing deployed Carpool Azure Functions endpoints
  */
 
-describe("Azure Functions - VCarpool Integration Tests", () => {
+describe("Azure Functions - Carpool Integration Tests", () => {
   // Test configuration
   const AZURE_BASE_URL =
     process.env.AZURE_FUNCTIONS_URL ||
-    "https://vcarpool-api-test.azurewebsites.net";
+    "https://carpool-api-test.azurewebsites.net";
   const TEST_EMAIL = "test@carpool.com";
   const TEST_PASSWORD = "TestPass123!";
 
@@ -182,7 +182,7 @@ describe("Azure Functions - VCarpool Integration Tests", () => {
     });
   });
 
-  describe("VCarpool Business Logic Validation", () => {
+  describe("Carpool Business Logic Validation", () => {
     it("should validate school carpool specific constraints", () => {
       const carpoolConstraints = {
         maxPassengers: 6, // Reasonable limit for school carpool

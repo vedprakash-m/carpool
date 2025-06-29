@@ -78,12 +78,12 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { data: deployment } = await github.rest.repos.createDeployment({
+            const { data: deployment } =            await github.rest.repos.createDeployment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: '${{ github.event.inputs.commit-sha || github.sha }}',
               environment: '${{ steps.env.outputs.environment }}',
-              description: 'VCarpool deployment via ${{ github.event.inputs.triggered-by }}',
+              description: 'Carpool deployment via ${{ github.event.inputs.triggered-by }}',
               auto_merge: false,
               required_contexts: []
             });
@@ -194,6 +194,10 @@ jobs:
     if: needs.deployment-planning.outputs.deploy-infra == 'true'
     timeout-minutes: 30
     environment: ${{ needs.deployment-planning.outputs.environment }}
+    outputs:
+      function-app-name: ${{ steps.deploy-infra.outputs.function-app-name }}
+      static-web-app-name: ${{ steps.deploy-infra.outputs.static-web-app-name }}
+      resource-group: ${{ steps.deploy-infra.outputs.resource-group }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -208,16 +212,94 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy infrastructure
+        id: deploy-infra
         run: |
           echo "🏗️ Deploying infrastructure..."
-          # Infrastructure deployment would go here
-          # For now, we'll simulate the deployment
+
+          # Set deployment parameters
+          RESOURCE_GROUP="carpool-rg"
+          DB_RESOURCE_GROUP="carpool-db-rg"
+          ENVIRONMENT="${{ needs.deployment-planning.outputs.environment }}"
+          APP_NAME="carpool"
+
+          # Ensure resource groups exist
+          echo "📋 Creating resource groups..."
+          az group create --name "$DB_RESOURCE_GROUP" --location "$AZURE_LOCATION" --output none || true
+          az group create --name "$RESOURCE_GROUP" --location "$AZURE_LOCATION" --output none || true
+
+          # Deploy database resources first
+          echo "📊 Deploying database resources..."
+          DB_DEPLOYMENT=$(az deployment group create \
+            --resource-group "$DB_RESOURCE_GROUP" \
+            --template-file "infra/database.bicep" \
+            --parameters \
+              appName="$APP_NAME" \
+              environmentName="$ENVIRONMENT" \
+              location="$AZURE_LOCATION" \
+            --mode Incremental \
+            --verbose \
+            --query "properties.provisioningState" \
+            --output tsv)
+
+          if [ "$DB_DEPLOYMENT" != "Succeeded" ]; then
+            echo "❌ Database deployment failed"
+            exit 1
+          fi
+
+          # Deploy compute resources
+          echo "⚡ Deploying compute resources..."
+          COMPUTE_DEPLOYMENT=$(az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --template-file "infra/main-compute.bicep" \
+            --parameters \
+              appName="$APP_NAME" \
+              environmentName="$ENVIRONMENT" \
+              location="$AZURE_LOCATION" \
+              databaseResourceGroup="$DB_RESOURCE_GROUP" \
+            --mode Incremental \
+            --verbose \
+            --query "properties.provisioningState" \
+            --output tsv)
+
+          if [ "$COMPUTE_DEPLOYMENT" != "Succeeded" ]; then
+            echo "❌ Compute deployment failed"
+            exit 1
+          fi
+
+          # Get deployment outputs
+          FUNCTION_APP_NAME=$(az deployment group show \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "main-compute" \
+            --query "properties.outputs.functionAppName.value" \
+            --output tsv 2>/dev/null || echo "carpool-api-$ENVIRONMENT")
+
+          STATIC_WEB_APP_NAME=$(az deployment group show \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "main-compute" \
+            --query "properties.outputs.staticWebAppName.value" \
+            --output tsv 2>/dev/null || echo "carpool-web-$ENVIRONMENT")
+
+          # Set outputs for subsequent jobs
+          echo "function-app-name=$FUNCTION_APP_NAME" >> $GITHUB_OUTPUT
+          echo "static-web-app-name=$STATIC_WEB_APP_NAME" >> $GITHUB_OUTPUT
+          echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
+
           echo "✅ Infrastructure deployment completed"
+          echo "📱 Function App: $FUNCTION_APP_NAME"
+          echo "🌐 Static Web App: $STATIC_WEB_APP_NAME"
 
       - name: Validate infrastructure
         run: |
-          echo "🔍 Validating deployed infrastructure..."
-          # Infrastructure validation would go here
+          echo "🔍 Validating deployed infrastructure..."          # Make validation script executable
+          chmod +x scripts/validate-deployment.sh
+
+          # Run infrastructure validation
+          RESOURCE_GROUP="carpool-rg" \
+          DB_RESOURCE_GROUP="carpool-db-rg" \
+          ENVIRONMENT="${{ needs.deployment-planning.outputs.environment }}" \
+          APP_NAME="carpool" \
+          ./scripts/validate-deployment.sh validate
+
           echo "✅ Infrastructure validation passed"
 
   # Stage 4: Backend Deployment
@@ -269,19 +351,45 @@ jobs:
         run: |
           echo "🚀 Deploying backend to Azure Functions..."
 
-          # Deploy to Azure Functions
           cd backend
 
-          # Install Azure Functions Core Tools if needed
-          if ! command -v func &> /dev/null; then
-            npm install -g azure-functions-core-tools@4
+          # Get Function App name from infrastructure deployment
+          FUNCTION_APP_NAME="${{ needs.deploy-infrastructure.outputs.function-app-name }}"
+          RESOURCE_GROUP="${{ needs.deploy-infrastructure.outputs.resource-group }}"
+
+          if [ -z "$FUNCTION_APP_NAME" ]; then
+            echo "❌ Function App name not available from infrastructure deployment"
+            exit 1
           fi
 
-          # Deploy (simulated for now)
-          echo "✅ Backend deployment completed"
+          echo "📦 Deploying to Function App: $FUNCTION_APP_NAME"
+
+          # Install Azure Functions Core Tools
+          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+
+          # Verify Function App exists
+          if ! az functionapp show --name "$FUNCTION_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "❌ Function App $FUNCTION_APP_NAME not found in resource group $RESOURCE_GROUP"
+            exit 1
+          fi
+
+          # Deploy using Azure Functions Core Tools
+          echo "📤 Publishing functions..."
+          func azure functionapp publish "$FUNCTION_APP_NAME" --typescript --force
+
+          # Verify deployment
+          BACKEND_URL="https://${FUNCTION_APP_NAME}.azurewebsites.net"
+          echo "🔍 Verifying deployment..."
+          for i in {1..10}; do
+            if curl -s "$BACKEND_URL/api/hello" >/dev/null 2>&1; then
+              echo "✅ Backend deployment verification successful"
+              break
+            fi
+            echo "⏳ Waiting for Function App to be ready... (attempt $i/10)"
+            sleep 30
+          done
 
           # Set backend URL output
-          BACKEND_URL="https://vcarpool-functions.azurewebsites.net"
           echo "backend-url=$BACKEND_URL" >> $GITHUB_OUTPUT
           echo "🌐 Backend deployed to: $BACKEND_URL"
 
@@ -324,7 +432,7 @@ jobs:
 
       - name: Build frontend
         env:
-          NEXT_PUBLIC_API_URL: ${{ needs.deploy-backend.outputs.backend-url || 'https://vcarpool-functions.azurewebsites.net' }}
+          NEXT_PUBLIC_API_URL: ${{ needs.deploy-backend.outputs.backend-url || 'https://carpool-functions.azurewebsites.net' }}
         run: |
           echo "📦 Building frontend for deployment..."
           npm run build:shared
@@ -342,11 +450,54 @@ jobs:
         run: |
           echo "🚀 Deploying frontend to Azure Static Web Apps..."
 
-          # Deploy to Azure Static Web Apps (simulated for now)
-          echo "✅ Frontend deployment completed"
+          # Get Static Web App name from infrastructure deployment
+          STATIC_WEB_APP_NAME="${{ needs.deploy-infrastructure.outputs.static-web-app-name }}"
+          RESOURCE_GROUP="${{ needs.deploy-infrastructure.outputs.resource-group }}"
 
-          # Set frontend URL output
-          FRONTEND_URL="https://vcarpool-frontend.azurestaticapps.net"
+          if [ -z "$STATIC_WEB_APP_NAME" ]; then
+            echo "❌ Static Web App name not available from infrastructure deployment"
+            exit 1
+          fi
+
+          echo "📦 Deploying to Static Web App: $STATIC_WEB_APP_NAME"
+
+          # Get Static Web App deployment token
+          SWA_TOKEN=$(az staticwebapp secrets list \
+            --name "$STATIC_WEB_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "properties.apiKey" \
+            --output tsv)
+
+          if [ -z "$SWA_TOKEN" ]; then
+            echo "❌ Could not retrieve Static Web App deployment token"
+            exit 1
+          fi
+
+          # Install SWA CLI
+          npm install -g @azure/static-web-apps-cli
+
+          # Deploy to Static Web Apps
+          cd frontend
+          echo "📤 Deploying frontend build..."
+          npx @azure/static-web-apps-cli deploy \
+            --deployment-token "$SWA_TOKEN" \
+            --app-location "." \
+            --output-location "out" \
+            --verbose
+
+          # Get Static Web App URL
+          FRONTEND_URL=$(az staticwebapp show \
+            --name "$STATIC_WEB_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "defaultHostname" \
+            --output tsv)
+
+          if [ -n "$FRONTEND_URL" ]; then
+            FRONTEND_URL="https://$FRONTEND_URL"
+          else
+            FRONTEND_URL="https://${STATIC_WEB_APP_NAME}.azurestaticapps.net"
+          fi
+
           echo "frontend-url=$FRONTEND_URL" >> $GITHUB_OUTPUT
           echo "🌐 Frontend deployed to: $FRONTEND_URL"
 

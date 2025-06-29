@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚑 VCarpool Emergency Backend Deployment"
+echo "🚑 Carpool Emergency Backend Deployment"
 echo "========================================"
 
 # Check if we're in the right directory
@@ -76,8 +76,8 @@ echo "🚀 Deploying to Azure Functions..."
 
 # Deploy using Azure CLI
 az functionapp deployment source config-zip \
-    --resource-group "vcarpool-rg" \
-    --name "vcarpool-api-prod" \
+    --resource-group "carpool-rg" \
+    --name "carpool-api-prod" \
     --src "deployment-backup.zip" \
     --timeout 600
 

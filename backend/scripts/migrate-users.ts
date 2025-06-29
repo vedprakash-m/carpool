@@ -3,7 +3,7 @@
 /**
  * User Data Migration Script for Microsoft Entra ID Integration
  *
- * This script handles the migration of existing VCarpool users to support
+ * This script handles the migration of existing Carpool users to support
  * Microsoft Entra ID authentication while maintaining backward compatibility.
  *
  * Features:
@@ -110,7 +110,7 @@ class UserMigrationService {
     this.log('info', 'Fetching all users from database');
 
     try {
-      const container = cosmosClient.database('vcarpool').container('users');
+      const container = cosmosClient.database('carpool').container('users');
       const { resources: users } = await container.items.query('SELECT * FROM c').fetchAll();
 
       this.log('info', `Found ${users.length} users in database`);
@@ -172,7 +172,7 @@ class UserMigrationService {
     }
 
     try {
-      const container = cosmosClient.database('vcarpool').container('users');
+      const container = cosmosClient.database('carpool').container('users');
       await container.item(userId, userId).replace(userData);
       this.log('debug', `Successfully updated user ${userId}`);
       return true;
@@ -232,7 +232,7 @@ class UserMigrationService {
           continue;
         }
 
-        const container = cosmosClient.database('vcarpool').container('users');
+        const container = cosmosClient.database('carpool').container('users');
         await container.item(backup.id, backup.id).replace(backup.originalData);
         this.log('debug', `Rolled back user ${backup.id}`);
       } catch (error) {

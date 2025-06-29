@@ -4,7 +4,7 @@ const functions_1 = require("@azure/functions");
 require("reflect-metadata");
 const container_1 = require("../../container");
 const middleware_1 = require("../../middleware");
-const shared_1 = require("@vcarpool/shared");
+const shared_1 = require("@carpool/shared");
 const error_handler_1 = require("../../utils/error-handler");
 async function tripsCreateHandler(request, context) {
     const logger = container_1.container.resolve("ILogger");

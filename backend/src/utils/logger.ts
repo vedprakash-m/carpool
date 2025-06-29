@@ -32,7 +32,7 @@ interface LoggerConfig {
 
 // Default configuration
 const defaultConfig: LoggerConfig = {
-  service: 'vcarpool',
+  service: 'carpool',
   minLevel: process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG,
   enableConsole: true,
   enableApplicationInsights: true,

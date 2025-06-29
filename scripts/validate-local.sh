@@ -2,7 +2,7 @@
 
 set -e  # Exit on any error
 
-echo "🔍 VCarpool Local Validation Script"
+echo "🔍 Carpool Local Validation Script"
 echo "=================================="
 echo "Validating complete local environment..."
 

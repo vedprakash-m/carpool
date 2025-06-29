@@ -18,7 +18,7 @@ function generateSwaggerUI() {
 <!DOCTYPE html>
 <html>
 <head>
-  <title>vCarpool API Documentation</title>
+  <title>Carpool API Documentation</title>
   <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css" />
   <style>
     html {
@@ -102,7 +102,7 @@ function generateReDocUI() {
 <!DOCTYPE html>
 <html>
 <head>
-  <title>vCarpool API Documentation</title>
+  <title>Carpool API Documentation</title>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
@@ -202,7 +202,7 @@ async function docsIndex(request, context) {
 <!DOCTYPE html>
 <html>
 <head>
-  <title>vCarpool API Documentation</title>
+  <title>Carpool API Documentation</title>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
@@ -283,13 +283,13 @@ async function docsIndex(request, context) {
 </head>
 <body>
   <div class="container">
-    <h1>vCarpool API Documentation</h1>
+    <h1>Carpool API Documentation</h1>
     <p class="subtitle">Comprehensive carpool management system API</p>
     
     <div class="api-info">
       <h3>API Information</h3>
       <p><strong>Version:</strong> ${openapi_spec_1.openApiSpec.info.version}</p>
-      <p><strong>Base URL:</strong> ${openapi_spec_1.openApiSpec.servers[0]?.url || 'https://vcarpool-functions.azurewebsites.net/api'}</p>
+      <p><strong>Base URL:</strong> ${openapi_spec_1.openApiSpec.servers[0]?.url || 'https://carpool-functions.azurewebsites.net/api'}</p>
       <p><strong>Authentication:</strong> JWT Bearer Token</p>
     </div>
 
@@ -367,7 +367,7 @@ function generateClientExamples() {
 // JavaScript/Node.js Example
 const axios = require('axios');
 
-const API_BASE_URL = 'https://vcarpool-functions.azurewebsites.net/api';
+const API_BASE_URL = 'https://carpool-functions.azurewebsites.net/api';
 let authToken = null;
 
 // Login
@@ -452,7 +452,7 @@ import requests
 import json
 from datetime import datetime
 
-API_BASE_URL = 'https://vcarpool-functions.azurewebsites.net/api'
+API_BASE_URL = 'https://carpool-functions.azurewebsites.net/api'
 auth_token = None
 
 def login(email, password):
@@ -565,7 +565,7 @@ if __name__ == "__main__":
 # cURL Examples
 
 # 1. Login
-curl -X POST https://vcarpool-functions.azurewebsites.net/api/auth/login \\
+curl -X POST https://carpool-functions.azurewebsites.net/api/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{
     "email": "user@example.com",
@@ -576,11 +576,11 @@ curl -X POST https://vcarpool-functions.azurewebsites.net/api/auth/login \\
 TOKEN="your-jwt-token-here"
 
 # 2. Get trips with pagination
-curl -X GET "https://vcarpool-functions.azurewebsites.net/api/trips?page=1&limit=10" \\
+curl -X GET "https://carpool-functions.azurewebsites.net/api/trips?page=1&limit=10" \\
   -H "Authorization: Bearer $TOKEN"
 
 # 3. Create a new trip
-curl -X POST https://vcarpool-functions.azurewebsites.net/api/trips \\
+curl -X POST https://carpool-functions.azurewebsites.net/api/trips \\
   -H "Authorization: Bearer $TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -593,11 +593,11 @@ curl -X POST https://vcarpool-functions.azurewebsites.net/api/trips \\
   }'
 
 # 4. Get a specific trip
-curl -X GET https://vcarpool-functions.azurewebsites.net/api/trips/TRIP_ID \\
+curl -X GET https://carpool-functions.azurewebsites.net/api/trips/TRIP_ID \\
   -H "Authorization: Bearer $TOKEN"
 
 # 5. Join a trip
-curl -X POST https://vcarpool-functions.azurewebsites.net/api/trips/TRIP_ID/join \\
+curl -X POST https://carpool-functions.azurewebsites.net/api/trips/TRIP_ID/join \\
   -H "Authorization: Bearer $TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -605,7 +605,7 @@ curl -X POST https://vcarpool-functions.azurewebsites.net/api/trips/TRIP_ID/join
   }'
 
 # 6. Update user profile
-curl -X PUT https://vcarpool-functions.azurewebsites.net/api/users/profile \\
+curl -X PUT https://carpool-functions.azurewebsites.net/api/users/profile \\
   -H "Authorization: Bearer $TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -616,6 +616,6 @@ curl -X PUT https://vcarpool-functions.azurewebsites.net/api/users/profile \\
   }'
 
 # 7. Health check (no authentication required)
-curl -X GET https://vcarpool-functions.azurewebsites.net/api/health`
+curl -X GET https://carpool-functions.azurewebsites.net/api/health`
     };
 }

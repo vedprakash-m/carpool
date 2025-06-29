@@ -1,6 +1,6 @@
 /**
  * Unified Response Utilities
- * Standardizes all API responses across VCarpool backend
+ * Standardizes all API responses across Carpool backend
  */
 
 import { HttpRequest, HttpResponseInit } from '@azure/functions';

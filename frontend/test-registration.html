@@ -48,7 +48,7 @@
   </head>
   <body>
     <div class="container">
-      <h1>VCarpool Registration Form Debugging</h1>
+      <h1>Carpool Registration Form Debugging</h1>
 
       <div class="test-case info">
         <h2>Registration Form Test</h2>
@@ -154,36 +154,36 @@
 
     <script>
       function testServiceWorker() {
-        const resultDiv = document.getElementById("sw-result");
+        const resultDiv = document.getElementById('sw-result');
 
-        if ("serviceWorker" in navigator) {
+        if ('serviceWorker' in navigator) {
           navigator.serviceWorker
-            .register("/sw.js")
-            .then((registration) => {
+            .register('/sw.js')
+            .then(registration => {
               resultDiv.innerHTML =
                 '<div style="color: green;">✓ Service Worker registered successfully</div>';
 
               // Test manifest
-              fetch("/manifest.json")
-                .then((response) => response.json())
-                .then((manifest) => {
+              fetch('/manifest.json')
+                .then(response => response.json())
+                .then(manifest => {
                   resultDiv.innerHTML +=
                     '<div style="color: green;">✓ PWA Manifest loaded successfully</div>';
                   resultDiv.innerHTML +=
-                    "<div>App Name: " + manifest.name + "</div>";
+                    '<div>App Name: ' + manifest.name + '</div>';
                 })
-                .catch((error) => {
+                .catch(error => {
                   resultDiv.innerHTML +=
                     '<div style="color: red;">✗ PWA Manifest error: ' +
                     error.message +
-                    "</div>";
+                    '</div>';
                 });
             })
-            .catch((error) => {
+            .catch(error => {
               resultDiv.innerHTML =
                 '<div style="color: red;">✗ Service Worker registration failed: ' +
                 error.message +
-                "</div>";
+                '</div>';
             });
         } else {
           resultDiv.innerHTML =
@@ -192,65 +192,65 @@
       }
 
       function validateForm() {
-        const resultDiv = document.getElementById("validation-result");
+        const resultDiv = document.getElementById('validation-result');
         const formData = {
-          familyName: document.getElementById("familyName").value,
+          familyName: document.getElementById('familyName').value,
           parent: {
-            firstName: document.getElementById("parentFirstName").value,
-            lastName: document.getElementById("parentLastName").value,
-            email: document.getElementById("parentEmail").value,
-            password: document.getElementById("parentPassword").value,
+            firstName: document.getElementById('parentFirstName').value,
+            lastName: document.getElementById('parentLastName').value,
+            email: document.getElementById('parentEmail').value,
+            password: document.getElementById('parentPassword').value,
           },
           children: [
             {
-              firstName: document.getElementById("childFirstName").value,
-              lastName: document.getElementById("childLastName").value,
-              grade: document.getElementById("childGrade").value,
-              school: document.getElementById("childSchool").value,
+              firstName: document.getElementById('childFirstName').value,
+              lastName: document.getElementById('childLastName').value,
+              grade: document.getElementById('childGrade').value,
+              school: document.getElementById('childSchool').value,
             },
           ],
         };
 
         // Basic validation
         let errors = [];
-        if (!formData.familyName) errors.push("Family name is required");
+        if (!formData.familyName) errors.push('Family name is required');
         if (!formData.parent.firstName)
-          errors.push("Parent first name is required");
+          errors.push('Parent first name is required');
         if (!formData.parent.lastName)
-          errors.push("Parent last name is required");
-        if (!formData.parent.email) errors.push("Parent email is required");
+          errors.push('Parent last name is required');
+        if (!formData.parent.email) errors.push('Parent email is required');
         if (!formData.parent.password || formData.parent.password.length < 8)
-          errors.push("Password must be at least 8 characters");
+          errors.push('Password must be at least 8 characters');
         if (!formData.children[0].firstName)
-          errors.push("Child first name is required");
+          errors.push('Child first name is required');
         if (!formData.children[0].lastName)
-          errors.push("Child last name is required");
-        if (!formData.children[0].grade) errors.push("Child grade is required");
+          errors.push('Child last name is required');
+        if (!formData.children[0].grade) errors.push('Child grade is required');
         if (!formData.children[0].school)
-          errors.push("Child school is required");
+          errors.push('Child school is required');
 
         if (errors.length === 0) {
           resultDiv.innerHTML =
             '<div style="color: green;">✓ Form validation passed</div>';
           resultDiv.innerHTML +=
-            "<pre>" + JSON.stringify(formData, null, 2) + "</pre>";
+            '<pre>' + JSON.stringify(formData, null, 2) + '</pre>';
         } else {
           resultDiv.innerHTML =
             '<div style="color: red;">✗ Form validation failed:</div>';
-          errors.forEach((error) => {
+          errors.forEach(error => {
             resultDiv.innerHTML +=
-              '<div style="color: red;">• ' + error + "</div>";
+              '<div style="color: red;">• ' + error + '</div>';
           });
         }
       }
 
       function testAPIConnection() {
-        const resultDiv = document.getElementById("api-result");
-        resultDiv.innerHTML = "<div>Testing API connection...</div>";
+        const resultDiv = document.getElementById('api-result');
+        resultDiv.innerHTML = '<div>Testing API connection...</div>';
 
         // Test if backend is running
-        fetch("/api/health")
-          .then((response) => {
+        fetch('/api/health')
+          .then(response => {
             if (response.ok) {
               resultDiv.innerHTML =
                 '<div style="color: green;">✓ Backend API is responding</div>';
@@ -258,22 +258,22 @@
               resultDiv.innerHTML =
                 '<div style="color: orange;">⚠ Backend API returned status: ' +
                 response.status +
-                "</div>";
+                '</div>';
             }
           })
-          .catch((error) => {
+          .catch(error => {
             resultDiv.innerHTML =
               '<div style="color: red;">✗ Backend API connection failed: ' +
               error.message +
-              "</div>";
+              '</div>';
             resultDiv.innerHTML +=
               '<div style="color: blue;">ℹ This is expected if backend is not running locally</div>';
           });
       }
 
       // Auto-run tests on page load
-      window.addEventListener("load", function () {
-        console.log("Registration Form Test Page Loaded");
+      window.addEventListener('load', function () {
+        console.log('Registration Form Test Page Loaded');
         testServiceWorker();
       });
     </script>

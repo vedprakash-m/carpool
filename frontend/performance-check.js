@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Performance monitoring script for vCarpool frontend
+ * Performance monitoring script for Carpool frontend
  * Helps identify startup issues in Azure Static Web Apps deployment
  */
 
 const fs = require("fs");
 const path = require("path");
 
-console.log("🔍 vCarpool Frontend Performance Check");
+console.log("🔍 Carpool Frontend Performance Check");
 console.log("=====================================");
 
 // Check Node.js version

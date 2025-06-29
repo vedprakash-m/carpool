@@ -1,42 +1,42 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
 import {
   setupMockAuth,
   setupMockAPIResponses,
   authenticateAndNavigate,
   clearMockAuth,
   getAuthState,
-} from "./auth-setup";
+} from './auth-setup';
 
 /**
  * Core Functionality E2E Tests
  *
- * Enhanced E2E test suite for VCarpool's essential functionality
+ * Enhanced E2E test suite for Carpool's essential functionality
  * using proper authentication mocking and business logic validation.
  */
 
-test.describe("VCarpool Core Application Functionality", () => {
+test.describe('Carpool Core Application Functionality', () => {
   // Clear auth state before each test
   test.beforeEach(async ({ page }) => {
     await clearMockAuth(page);
   });
 
-  test("should load the homepage without errors", async ({ page }) => {
-    await page.goto("/");
+  test('should load the homepage without errors', async ({ page }) => {
+    await page.goto('/');
 
     // Wait for page to load
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState('domcontentloaded');
 
     // Take a screenshot for debugging
-    await page.screenshot({ path: "e2e/test-results/homepage-debug.png" });
+    await page.screenshot({ path: 'e2e/test-results/homepage-debug.png' });
 
     // Log the page title and URL for debugging
     const title = await page.title();
     const url = page.url();
-    console.log("Page title:", title);
-    console.log("Page URL:", url);
+    console.log('Page title:', title);
+    console.log('Page URL:', url);
 
     // Verify essential elements are present
-    await expect(page).toHaveTitle(/VCarpool/i);
+    await expect(page).toHaveTitle(/Carpool/i);
 
     // Should have some basic navigation or branding
     const hasNavigation =
@@ -47,34 +47,34 @@ test.describe("VCarpool Core Application Functionality", () => {
     expect(hasNavigation || hasBranding).toBeTruthy();
   });
 
-  test("should handle authentication flow", async ({ page }) => {
+  test('should handle authentication flow', async ({ page }) => {
     // Setup mock authentication
-    await setupMockAuth(page, "admin");
+    await setupMockAuth(page, 'admin');
     await setupMockAPIResponses(page);
 
-    await page.goto("/");
-    await page.waitForLoadState("domcontentloaded");
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
 
     // Verify auth state
     const authState = await getAuthState(page);
     expect(authState.isAuthenticated).toBe(true);
-    expect(authState.user?.role).toBe("admin");
+    expect(authState.user?.role).toBe('admin');
 
-    console.log("Authentication test passed:", authState);
+    console.log('Authentication test passed:', authState);
   });
 
-  test("should navigate to admin dashboard with proper authentication", async ({
+  test('should navigate to admin dashboard with proper authentication', async ({
     page,
   }) => {
     await setupMockAPIResponses(page);
-    await authenticateAndNavigate(page, "/admin", "admin");
+    await authenticateAndNavigate(page, '/admin', 'admin');
 
     // Wait for dashboard to load
     await page.waitForTimeout(2000);
 
     // Take screenshot for debugging
     await page.screenshot({
-      path: "e2e/test-results/admin-dashboard-debug.png",
+      path: 'e2e/test-results/admin-dashboard-debug.png',
     });
 
     // Verify we're on an admin page (look for admin-specific content)
@@ -86,9 +86,9 @@ test.describe("VCarpool Core Application Functionality", () => {
         .count()) > 0;
 
     if (!hasAdminContent) {
-      const pageContent = await page.textContent("body");
+      const pageContent = await page.textContent('body');
       console.log(
-        "Page content for debugging:",
+        'Page content for debugging:',
         pageContent?.substring(0, 500)
       );
     }
@@ -96,17 +96,17 @@ test.describe("VCarpool Core Application Functionality", () => {
     expect(hasAdminContent).toBeTruthy();
   });
 
-  test("should navigate to trips page with proper authentication", async ({
+  test('should navigate to trips page with proper authentication', async ({
     page,
   }) => {
     await setupMockAPIResponses(page);
-    await authenticateAndNavigate(page, "/trips", "parent");
+    await authenticateAndNavigate(page, '/trips', 'parent');
 
     // Wait for trips page to load
     await page.waitForTimeout(2000);
 
     // Take screenshot for debugging
-    await page.screenshot({ path: "e2e/test-results/trips-page-debug.png" });
+    await page.screenshot({ path: 'e2e/test-results/trips-page-debug.png' });
 
     // Verify we're on trips page (look for trip-related content)
     const hasTripsContent =
@@ -117,16 +117,16 @@ test.describe("VCarpool Core Application Functionality", () => {
         .count()) > 0;
 
     if (!hasTripsContent) {
-      const pageContent = await page.textContent("body");
-      console.log("Trips page content:", pageContent?.substring(0, 500));
+      const pageContent = await page.textContent('body');
+      console.log('Trips page content:', pageContent?.substring(0, 500));
     }
 
     expect(hasTripsContent).toBeTruthy();
   });
 
-  test("should handle schedule creation workflow", async ({ page }) => {
+  test('should handle schedule creation workflow', async ({ page }) => {
     await setupMockAPIResponses(page);
-    await authenticateAndNavigate(page, "/admin", "admin");
+    await authenticateAndNavigate(page, '/admin', 'admin');
 
     // Wait for page to fully load
     await page.waitForTimeout(3000);
@@ -148,7 +148,7 @@ test.describe("VCarpool Core Application Functionality", () => {
 
       // Take screenshot of result
       await page.screenshot({
-        path: "e2e/test-results/schedule-generation-debug.png",
+        path: 'e2e/test-results/schedule-generation-debug.png',
       });
 
       // Verify some response (could be success message, modal, etc.)
@@ -162,25 +162,25 @@ test.describe("VCarpool Core Application Functionality", () => {
       // This test is exploratory - log results for improvement
       console.log(`Schedule generation response found: ${hasResponse}`);
     } else {
-      console.log("No schedule generation buttons found - may need UI updates");
+      console.log('No schedule generation buttons found - may need UI updates');
     }
 
     // Test passes if we can navigate and interact with the page
     expect(true).toBe(true);
   });
 
-  test("should handle role-based access control", async ({ page }) => {
+  test('should handle role-based access control', async ({ page }) => {
     await setupMockAPIResponses(page);
 
     // Test student access to admin page
-    await authenticateAndNavigate(page, "/admin", "student");
+    await authenticateAndNavigate(page, '/admin', 'student');
     await page.waitForTimeout(2000);
 
     const url = page.url();
-    console.log("Student accessing admin - URL:", url);
+    console.log('Student accessing admin - URL:', url);
 
     // Should either redirect or show access denied
-    const isAdminPage = url.includes("/admin");
+    const isAdminPage = url.includes('/admin');
     const hasAccessDenied =
       (await page
         .locator(
@@ -192,15 +192,15 @@ test.describe("VCarpool Core Application Functionality", () => {
     expect(!isAdminPage || hasAccessDenied).toBeTruthy();
   });
 
-  test("should handle API error scenarios gracefully", async ({ page }) => {
+  test('should handle API error scenarios gracefully', async ({ page }) => {
     // Don't setup mock responses to simulate API failures
-    await setupMockAuth(page, "admin");
+    await setupMockAuth(page, 'admin');
 
-    await page.goto("/admin");
+    await page.goto('/admin');
     await page.waitForTimeout(3000);
 
     // Take screenshot of error state
-    await page.screenshot({ path: "e2e/test-results/api-error-debug.png" });
+    await page.screenshot({ path: 'e2e/test-results/api-error-debug.png' });
 
     // Should handle errors gracefully (no crashes)
     const hasErrorHandling =
@@ -217,21 +217,21 @@ test.describe("VCarpool Core Application Functionality", () => {
     expect(pageTitle).toBeDefined();
   });
 
-  test("should maintain responsive design on mobile viewport", async ({
+  test('should maintain responsive design on mobile viewport', async ({
     page,
   }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
 
     await setupMockAPIResponses(page);
-    await authenticateAndNavigate(page, "/", "parent");
+    await authenticateAndNavigate(page, '/', 'parent');
 
     // Wait for responsive layout
     await page.waitForTimeout(1000);
 
     // Take mobile screenshot
     await page.screenshot({
-      path: "e2e/test-results/mobile-responsive-debug.png",
+      path: 'e2e/test-results/mobile-responsive-debug.png',
     });
 
     // Check that navigation adapts (hamburger menu, collapsed nav, etc.)
@@ -245,19 +245,19 @@ test.describe("VCarpool Core Application Functionality", () => {
     console.log(`Mobile navigation found: ${hasMobileNav}`);
 
     // Test that content fits in mobile viewport
-    const bodyWidth = await page.locator("body").boundingBox();
+    const bodyWidth = await page.locator('body').boundingBox();
     expect(bodyWidth?.width).toBeLessThanOrEqual(375);
   });
 });
 
-test.describe("VCarpool Business Logic E2E Tests", () => {
+test.describe('Carpool Business Logic E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
     await clearMockAuth(page);
     await setupMockAPIResponses(page);
   });
 
-  test("should display trip statistics correctly", async ({ page }) => {
-    await authenticateAndNavigate(page, "/trips", "parent");
+  test('should display trip statistics correctly', async ({ page }) => {
+    await authenticateAndNavigate(page, '/trips', 'parent');
     await page.waitForTimeout(2000);
 
     // Look for statistics display
@@ -271,34 +271,34 @@ test.describe("VCarpool Business Logic E2E Tests", () => {
     console.log(`Trip statistics displayed: ${hasStats}`);
 
     // Take screenshot for verification
-    await page.screenshot({ path: "e2e/test-results/trip-stats-debug.png" });
+    await page.screenshot({ path: 'e2e/test-results/trip-stats-debug.png' });
 
     // Should show some trip-related data
     expect(hasStats).toBeTruthy();
   });
 
-  test("should handle different user roles appropriately", async ({ page }) => {
+  test('should handle different user roles appropriately', async ({ page }) => {
     // Test Admin role
-    await authenticateAndNavigate(page, "/", "admin");
+    await authenticateAndNavigate(page, '/', 'admin');
     await page.waitForTimeout(1000);
 
     const adminAuthState = await getAuthState(page);
-    expect(adminAuthState.user?.role).toBe("admin");
+    expect(adminAuthState.user?.role).toBe('admin');
 
     // Test Parent role
     await clearMockAuth(page);
-    await authenticateAndNavigate(page, "/", "parent");
+    await authenticateAndNavigate(page, '/', 'parent');
     await page.waitForTimeout(1000);
 
     const parentAuthState = await getAuthState(page);
-    expect(parentAuthState.user?.role).toBe("parent");
+    expect(parentAuthState.user?.role).toBe('parent');
 
     // Test Student role
     await clearMockAuth(page);
-    await authenticateAndNavigate(page, "/", "student");
+    await authenticateAndNavigate(page, '/', 'student');
     await page.waitForTimeout(1000);
 
     const studentAuthState = await getAuthState(page);
-    expect(studentAuthState.user?.role).toBe("student");
+    expect(studentAuthState.user?.role).toBe('student');
   });
 });

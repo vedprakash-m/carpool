@@ -1,7 +1,20 @@
 // User types
-export type UserRole = 'admin' | 'group_admin' | 'parent' | 'child' | 'student' | 'trip_admin';
+export type UserRole =
+  | 'super_admin'
+  | 'admin'
+  | 'group_admin'
+  | 'parent'
+  | 'child'
+  | 'student'
+  | 'trip_admin';
 
 export interface RolePermissions {
+  super_admin: {
+    platform_management: boolean;
+    group_admin_promotion: boolean;
+    system_configuration: boolean;
+    safety_escalation: boolean;
+  };
   admin: {
     platform_management: boolean;
     group_admin_promotion: boolean;
@@ -1291,4 +1304,158 @@ export interface VedUser {
 // Legacy User interface (for backward compatibility during migration)
 export interface LegacyUser extends User {
   // Existing User interface maintained for migration period
+}
+
+// Safety Reporting types - NEW for Beta Implementation
+export interface SafetyReport {
+  id: string;
+  type: 'safety_report';
+  groupId: string;
+  reportType: SafetyReportType;
+  description: string;
+  severity: SafetyReportSeverity;
+  isAnonymous: boolean;
+  reporterUserId?: string;
+  driverId?: string;
+  incidentDate?: string;
+  status: SafetyReportStatus;
+  escalationLevel: 'group_admin' | 'super_admin';
+  assignedTo: string;
+  createdAt: string;
+  updatedAt: string;
+  timeline: SafetyReportTimelineEntry[];
+}
+
+export type SafetyReportType =
+  | 'vehicle_safety'
+  | 'driving_behavior'
+  | 'child_safety'
+  | 'emergency'
+  | 'other';
+
+export type SafetyReportSeverity = 'low' | 'medium' | 'high' | 'critical';
+
+export type SafetyReportStatus = 'open' | 'investigating' | 'resolved' | 'closed';
+
+export interface SafetyReportTimelineEntry {
+  action: string;
+  timestamp: string;
+  by: string;
+  details: string;
+}
+
+// Fairness Tracking types - NEW for Beta Implementation
+export interface FairnessReport {
+  groupId: string;
+  reportPeriod: {
+    weeksBack: number;
+    startDate: string;
+    endDate: string;
+  };
+  fairnessMetrics: FairnessMetrics;
+  historicalScores: HistoricalFairnessScore[];
+  recommendations: FairnessRecommendation[];
+  generatedAt: string;
+}
+
+export interface FairnessMetrics {
+  totalTrips: number;
+  totalWeeks: number;
+  activeDrivers: number;
+  driverStatistics: DriverFairnessStats[];
+  groupFairnessScore: number;
+  coefficientOfVariation: number;
+  fairnessLevel: FairnessLevel;
+  tripDistribution: TripDistribution;
+}
+
+export interface DriverFairnessStats {
+  userId: string;
+  userName: string;
+  totalTrips: number;
+  expectedTrips: number;
+  fairnessScore: number;
+  isActive: boolean;
+  weeklyBreakdown: Record<string, number>;
+}
+
+export interface HistoricalFairnessScore {
+  weekStartDate: string;
+  weekEndDate: string;
+  fairnessScore: number;
+  totalTrips: number;
+  activeDrivers: number;
+}
+
+export interface FairnessLevel {
+  level: 'excellent' | 'good' | 'moderate' | 'concerning' | 'poor';
+  description: string;
+}
+
+export interface TripDistribution {
+  min: number;
+  max: number;
+  average: number;
+  standardDeviation: number;
+}
+
+export interface FairnessRecommendation {
+  type: string;
+  priority: 'low' | 'medium' | 'high';
+  title: string;
+  description: string;
+  action: string;
+  drivers?: Array<{
+    userId: string;
+    userName: string;
+    currentRatio: number;
+  }>;
+  suggestedActions?: string[];
+}
+
+// Notification types - Enhanced for Azure Communication Services
+export interface NotificationTemplate {
+  id: string;
+  name: string;
+  channel: 'email' | 'sms' | 'both';
+  emailTemplate?: EmailTemplate;
+  smsTemplate?: SmsTemplate;
+  variables: string[];
+  isActive: boolean;
+}
+
+export interface EmailTemplate {
+  subject: string;
+  html: string;
+  text: string;
+}
+
+export interface SmsTemplate {
+  message: string;
+}
+
+export interface NotificationDelivery {
+  id: string;
+  templateName: string;
+  recipients: number;
+  channel: 'email' | 'sms' | 'both';
+  priority: 'low' | 'normal' | 'high';
+  status: 'pending' | 'sent' | 'delivered' | 'failed';
+  results: {
+    email?: NotificationChannelResult;
+    sms?: NotificationChannelResult;
+  };
+  timestamp: string;
+}
+
+export interface NotificationChannelResult {
+  deliveredCount: number;
+  failedCount: number;
+  details: Array<{
+    recipient: string;
+    messageId?: string;
+    status: string;
+    error?: string;
+    timestamp: string;
+  }>;
 }

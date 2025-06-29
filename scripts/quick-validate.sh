@@ -2,7 +2,7 @@
 
 set -e
 
-echo "🚀 Quick VCarpool Validation (No Docker Required)"
+echo "🚀 Quick Carpool Validation (No Docker Required)"
 echo "============================================="
 
 # Colors

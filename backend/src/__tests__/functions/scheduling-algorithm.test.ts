@@ -13,7 +13,7 @@
  * weekly preference integration, and family-centered carpool group management
  */
 
-describe('VCarpool Family-Oriented Scheduling Algorithm - Core Business Logic', () => {
+describe('Carpool Family-Oriented Scheduling Algorithm - Core Business Logic', () => {
   // Family-oriented test data representing school carpool scenario
   interface TestFamilyDriver {
     id: string;
@@ -505,7 +505,7 @@ describe('VCarpool Family-Oriented Scheduling Algorithm - Core Business Logic', 
     });
   });
 
-  describe('VCarpool-Specific Requirements', () => {
+  describe('Carpool-Specific Requirements', () => {
     it('should support school-focused route types', () => {
       const schoolRoutes = ['school-dropoff', 'school-pickup', 'after-school-activity'];
 

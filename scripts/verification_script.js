@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Verification Script for VCarpool Security Fixes
+ * Verification Script for Carpool Security Fixes
  * This script verifies that both critical issues have been resolved:
  * 1. Authentication bypass vulnerabilities
  * 2. Tesla STEM school naming inconsistencies
@@ -10,16 +10,16 @@
 const fs = require("fs");
 const path = require("path");
 
-console.log("🔍 VCarpool Security & Consistency Verification");
+console.log("🔍 Carpool Security & Consistency Verification");
 console.log("=".repeat(50));
 
 // 1. Verify authentication bypass fixes
 console.log("\n📛 Checking Authentication Security Fixes...");
 
 const authFiles = [
-  "/Users/vedprakashmishra/vcarpool/backend/src/functions/auth-login-legacy/index.js",
-  "/Users/vedprakashmishra/vcarpool/backend/src/functions/auth-login-simple/index.js",
-  "/Users/vedprakashmishra/vcarpool/backend/src/utils/unified-auth.js",
+  "/Users/vedprakashmishra/carpool/backend/src/functions/auth-login-legacy/index.js",
+  "/Users/vedprakashmishra/carpool/backend/src/functions/auth-login-simple/index.js",
+  "/Users/vedprakashmishra/carpool/backend/src/utils/unified-auth.js",
 ];
 
 let securityIssues = 0;
@@ -60,9 +60,9 @@ authFiles.forEach((filePath) => {
 console.log("\n🏫 Checking Tesla STEM School Naming Consistency...");
 
 const schoolFiles = [
-  "/Users/vedprakashmishra/vcarpool/backend/parent-group-search/index.js",
-  "/Users/vedprakashmishra/vcarpool/backend/address-validation/index.js",
-  "/Users/vedprakashmishra/vcarpool/frontend/src/config/schools.ts",
+  "/Users/vedprakashmishra/carpool/backend/parent-group-search/index.js",
+  "/Users/vedprakashmishra/carpool/backend/address-validation/index.js",
+  "/Users/vedprakashmishra/carpool/frontend/src/config/schools.ts",
 ];
 
 let namingIssues = 0;

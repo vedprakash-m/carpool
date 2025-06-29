@@ -2,7 +2,7 @@
 
 /**
  * Admin User Creation Script
- * Creates an admin user for VCarpool application
+ * Creates an admin user for Carpool application
  */
 
 import { CosmosClient } from "@azure/cosmos";
@@ -23,7 +23,7 @@ const question = (query) =>
   new Promise((resolve) => rl.question(query, resolve));
 
 async function createAdminUser() {
-  console.log("🔐 VCarpool Admin User Creation\n");
+  console.log("🔐 Carpool Admin User Creation\n");
 
   try {
     // Get Cosmos DB connection
@@ -40,7 +40,7 @@ async function createAdminUser() {
     }
 
     const client = new CosmosClient(connectionString);
-    const database = client.database("vcarpool");
+    const database = client.database("carpool");
     const usersContainer = database.container("users");
 
     // Get admin user details
