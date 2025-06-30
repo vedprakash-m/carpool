@@ -231,20 +231,61 @@ jobs:
       - name: Run E2E tests
         if: matrix.suite == 'e2e'
         run: |
+          # Clean up any existing Docker artifacts
+          docker compose -f docker-compose.e2e.yml down -v 2>/dev/null || true
+          docker image rm carpool-backend-test 2>/dev/null || true
+
+          # Build Docker images with proper monorepo context
+          echo "🔨 Building Docker images for E2E testing..."
+          docker compose -f docker-compose.e2e.yml build --no-cache || {
+            echo "❌ Docker build failed - monorepo dependency issue detected"
+            echo "🔍 Diagnosing build failure..."
+            ls -la shared/ || echo "❌ shared directory not found"
+            ls -la shared/dist/ || echo "❌ shared/dist not found - package not built"
+            echo "📋 Docker build context analysis:"
+            echo "Current directory: $(pwd)"
+            echo "Docker compose file:"
+            head -20 docker-compose.e2e.yml
+            echo "💡 Ensure: 1) shared package is built, 2) Docker context is monorepo root, 3) Dockerfiles use multi-stage builds"
+            exit 1
+          }
+
           # Start Docker services for E2E testing
+          echo "🚀 Starting Docker services..."
           docker compose -f docker-compose.e2e.yml up -d
 
           # Wait for services to be ready with enhanced timeout and health checks
-          timeout 300 bash -c 'until docker compose -f docker-compose.e2e.yml exec -T mongo mongosh --eval "db.adminCommand(\"ismaster\")" >/dev/null 2>&1; do sleep 5; done'
-          timeout 300 bash -c 'until curl -f http://localhost:7072/api/health >/dev/null 2>&1; do sleep 5; done'
+          echo "⏳ Waiting for services to be ready..."
+          timeout 300 bash -c 'until docker compose -f docker-compose.e2e.yml exec -T mongodb-test mongosh --eval "db.adminCommand(\"ismaster\")" >/dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 5; done' || {
+            echo "❌ MongoDB failed to start within timeout"
+            docker compose -f docker-compose.e2e.yml logs mongodb-test
+            docker compose -f docker-compose.e2e.yml down -v
+            exit 1
+          }
+          timeout 300 bash -c 'until curl -f http://localhost:7072/api/health >/dev/null 2>&1; do echo "Waiting for backend..."; sleep 5; done' || {
+            echo "❌ Backend health check failed within timeout"
+            docker compose -f docker-compose.e2e.yml logs backend-test
+            docker compose -f docker-compose.e2e.yml down -v
+            exit 1
+          }
 
           # Install E2E dependencies and run tests
+          echo "🎭 Running Playwright E2E tests..."
           cd e2e
           npm ci
           npx playwright install --with-deps chromium
-          npx playwright test
+          npx playwright test || {
+            echo "❌ E2E tests failed"
+            echo "🐛 Showing Docker logs for debugging:"
+            cd ..
+            docker compose -f docker-compose.e2e.yml logs backend-test
+            docker compose -f docker-compose.e2e.yml logs mongodb-test
+            docker compose -f docker-compose.e2e.yml down -v
+            exit 1
+          }
 
           # Cleanup Docker services
+          cd ..
           docker compose -f docker-compose.e2e.yml down -v
           echo "✅ E2E tests passed" >> $GITHUB_STEP_SUMMARY
 

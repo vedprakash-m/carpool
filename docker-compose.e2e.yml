@@ -1,7 +1,7 @@
 # Carpool E2E Testing Environment
 # This docker-compose file sets up an isolated testing environment for the carpool application
 
-version: '3.8'
+# Note: Removed version as it's obsolete in newer Docker Compose versions
 
 services:
   # MongoDB instance dedicated for E2E testing
@@ -30,8 +30,8 @@ services:
   # Backend service for E2E testing
   backend-test:
     build:
-      context: ./backend
-      dockerfile: ../e2e/docker/Dockerfile.backend-test
+      context: . # Build from monorepo root, not just backend
+      dockerfile: e2e/docker/Dockerfile.backend-test
     container_name: carpool-backend-test
     restart: no
     ports:
@@ -62,8 +62,8 @@ services:
   # Frontend service for E2E testing
   frontend-test:
     build:
-      context: ./frontend
-      dockerfile: ../e2e/docker/Dockerfile.frontend-test
+      context: . # Build from monorepo root
+      dockerfile: e2e/docker/Dockerfile.frontend-test
     container_name: carpool-frontend-test
     restart: no
     ports:

@@ -1357,6 +1357,78 @@ interface CostEstimation {
 }
 ```
 
+## 8.5 CI/CD Pipeline & Monorepo Build Strategy
+
+### 8.5.1 Pipeline Architecture
+
+**GitHub Actions Workflow**: Comprehensive testing and deployment automation with monorepo support.
+
+**Pipeline Stages**:
+
+1. **Validation** - Fast parallel validation (lint, typecheck, security)
+2. **Testing** - Comprehensive test matrix (unit, integration, E2E)
+3. **Build** - Application artifacts with workspace dependencies
+4. **Deploy** - Infrastructure and application deployment
+5. **Monitoring** - Health checks and performance validation
+
+### 8.5.2 Monorepo Docker Build Strategy
+
+**Challenge Solved (June 2025)**: Docker E2E builds failing due to workspace dependency resolution.
+
+**Multi-Stage Build Approach**:
+
+```dockerfile
+# Stage 1: Build shared package
+FROM node:20-alpine AS shared-builder
+COPY package*.json ./
+COPY shared/ ./shared/
+RUN npm ci --ignore-scripts
+RUN npm run build --workspace=shared
+
+# Stage 2: Build application
+FROM node:20-alpine AS app-builder
+COPY --from=shared-builder /app/shared/dist ./shared/dist
+COPY backend/ ./backend/
+RUN npm ci --ignore-scripts && npm run build --workspace=backend
+
+# Stage 3: Runtime
+FROM node:20-alpine AS runtime
+COPY --from=shared-builder /app/shared/dist ./shared/dist
+COPY --from=app-builder /app/backend/dist ./backend/dist
+```
+
+**Key Improvements Implemented**:
+
+- ✅ **Monorepo Context**: Docker build context set to repository root
+- ✅ **Workspace Resolution**: Multi-stage builds handle `@carpool/shared` dependencies
+- ✅ **Error Diagnostics**: Enhanced CI/CD error messages for faster troubleshooting
+- ✅ **Local Validation**: Exact CI/CD failure pattern replication in local testing
+
+### 8.5.3 E2E Testing with Docker
+
+**Docker Compose Configuration**:
+
+```yaml
+services:
+  backend-test:
+    build:
+      context: . # Monorepo root context
+      dockerfile: e2e/docker/Dockerfile.backend-test
+    environment:
+      - NODE_ENV=test
+      - COSMOS_DB_CONNECTION_STRING=mongodb://testuser:testpass@mongodb-test:27017/carpool_test?authSource=admin
+    depends_on:
+      mongodb-test:
+        condition: service_healthy
+```
+
+**Validation Improvements**:
+
+- Enhanced local validation script mirrors CI/CD exactly
+- Docker build testing integrated into development workflow
+- Comprehensive error diagnostics for monorepo dependency issues
+- Consistent Docker Compose command usage (`docker compose` vs `docker-compose`)
+
 ## 9. Deployment Strategy
 
 ### 9.1 Single Environment, Cost-Optimized Deployment

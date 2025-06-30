@@ -142,11 +142,36 @@ log "${YELLOW}🌐 Running E2E tests with Docker...${NC}"
 # Check if Docker is running
 if ! docker info >/dev/null 2>&1; then
     log "${RED}❌ Docker is not running. Please start Docker Desktop${NC}"
+    log "${YELLOW}💡 Docker is required for E2E testing to catch monorepo build issues${NC}"
+    log "${YELLOW}   Start Docker Desktop and re-run this script to validate E2E setup${NC}"
+    log "${YELLOW}   This script would have caught the CI/CD Docker build failure!${NC}"
     exit 1
 fi
 
-# Clean up any existing containers
+# Clean up any existing containers and images
+log "   🧹 Cleaning up existing containers and test images..."
 $DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml down -v 2>/dev/null || true
+
+# Remove any existing test images to ensure fresh build
+docker image rm carpool-backend-test 2>/dev/null || true
+docker image prune -f 2>/dev/null || true
+
+# Test Docker build first (this catches monorepo issues)
+log "   🔨 Testing Docker build (monorepo validation)..."
+$DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml build --no-cache || {
+    log "${RED}❌ Docker build failed${NC}"
+    log "${RED}   This exactly matches the CI/CD failure pattern!${NC}"
+    log "${YELLOW}💡 Troubleshooting tips:${NC}"
+    log "   1. Check if @carpool/shared package is properly built:"
+    ls -la shared/dist/ 2>/dev/null || log "${RED}     ❌ shared/dist not found - run 'npm run build --workspace=shared'${NC}"
+    log "   2. Verify Docker build context includes shared package:"
+    log "      Docker context should be monorepo root (current directory)"
+    log "   3. Ensure Dockerfile handles workspace dependencies correctly:"
+    log "      Should use multi-stage build with shared package compilation"
+    log "   4. Check Docker Compose configuration:"
+    grep -A 5 "context:" docker-compose.e2e.yml || log "${RED}     ❌ Docker context not set to monorepo root${NC}"
+    exit 1
+}
 
 # Start services
 log "   🐳 Starting Docker services..."
