@@ -159,7 +159,7 @@ jobs:
           az deployment group validate \
             --resource-group carpool-rg-${{ matrix.environment }} \
             --template-file infra/main.bicep \
-            --parameters environment=${{ matrix.environment }}
+            --parameters environmentName=${{ matrix.environment }}
           echo "✅ Bicep validation passed for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
 
   # =============================================================================
