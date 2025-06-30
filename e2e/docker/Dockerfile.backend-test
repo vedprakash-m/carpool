@@ -61,7 +61,11 @@ COPY --from=shared-builder /app/shared/package.json ./shared/package.json
 COPY --from=backend-builder /app/backend/dist ./backend/dist
 COPY --from=backend-builder /app/backend/package.json ./backend/package.json
 COPY --from=backend-builder /app/backend/host.json ./backend/host.json
-COPY --from=backend-builder /app/backend/local.settings.json ./backend/local.settings.json
+COPY --from=backend-builder /app/backend/local.settings.sample.json ./backend/local.settings.sample.json
+
+# Create local.settings.json from sample (safe for CI/CD where secrets aren't present)
+RUN echo "Creating local.settings.json from sample template for containerized environment" && \
+    cp ./backend/local.settings.sample.json ./backend/local.settings.json
 
 # Install only production dependencies
 RUN npm ci --only=production --ignore-scripts

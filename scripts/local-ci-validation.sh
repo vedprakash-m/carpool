@@ -100,6 +100,35 @@ if [ ! -f "shared/dist/index.d.ts" ]; then
     exit 1
 fi
 
+# Step 4: Check for missing config files that CI/CD would not have
+log "${YELLOW}🔍 Checking for CI/CD environment compatibility...${NC}"
+missing_files=""
+
+# Check for files that Docker expects but might be gitignored
+if [ ! -f "backend/local.settings.json" ]; then
+    if [ ! -f "backend/local.settings.sample.json" ]; then
+        missing_files="$missing_files backend/local.settings.sample.json"
+        log "${RED}❌ Missing backend/local.settings.sample.json (required for Docker build)${NC}"
+    else
+        log "${YELLOW}⚠️  backend/local.settings.json missing (will use sample in Docker)${NC}"
+    fi
+fi
+
+# Check for other potential gitignored files that Docker might need
+if [ ! -f "backend/.env" ] && [ ! -f "backend/.env.sample" ]; then
+    # This is ok, just noting for completeness
+    log "${BLUE}ℹ️  No backend/.env files found (expected for this project)${NC}"
+fi
+
+if [ -n "$missing_files" ]; then
+    log "${RED}❌ Missing files that would cause Docker build failures:${NC}"
+    for file in $missing_files; do
+        log "${RED}   - $file${NC}"
+    done
+    log "${YELLOW}💡 These files are needed for Docker builds in CI/CD${NC}"
+    exit 1
+fi
+
 log "${GREEN}✅ Shared package built successfully${NC}"
 
 # Step 4: Validate code quality (exactly like CI)
@@ -158,6 +187,15 @@ docker image prune -f 2>/dev/null || true
 
 # Test Docker build first (this catches monorepo issues)
 log "   🔨 Testing Docker build (monorepo validation)..."
+
+# Temporarily rename gitignored files to simulate CI/CD environment
+TEMP_RENAMED_FILES=()
+if [ -f "backend/local.settings.json" ]; then
+    mv "backend/local.settings.json" "backend/local.settings.json.backup"
+    TEMP_RENAMED_FILES+=("backend/local.settings.json")
+    log "   📝 Temporarily hiding local.settings.json to simulate CI/CD environment"
+fi
+
 $DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml build --no-cache || {
     log "${RED}❌ Docker build failed${NC}"
     log "${RED}   This exactly matches the CI/CD failure pattern!${NC}"
@@ -170,8 +208,26 @@ $DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml build --no-cache || {
     log "      Should use multi-stage build with shared package compilation"
     log "   4. Check Docker Compose configuration:"
     grep -A 5 "context:" docker-compose.e2e.yml || log "${RED}     ❌ Docker context not set to monorepo root${NC}"
+    log "   5. Check for missing config files (may be gitignored):"
+    log "      - backend/local.settings.json (should have sample version)"
+    
+    # Restore renamed files before exiting
+    for file in "${TEMP_RENAMED_FILES[@]}"; do
+        if [ -f "${file}.backup" ]; then
+            mv "${file}.backup" "$file"
+            log "   📝 Restored $file"
+        fi
+    done
     exit 1
 }
+
+# Restore any renamed files after successful build
+for file in "${TEMP_RENAMED_FILES[@]}"; do
+    if [ -f "${file}.backup" ]; then
+        mv "${file}.backup" "$file"
+        log "   📝 Restored $file after successful Docker build test"
+    fi
+done
 
 # Start services
 log "   🐳 Starting Docker services..."

@@ -15,6 +15,16 @@ npm error 404 Not Found - GET https://registry.npmjs.org/@carpool%2fshared - Not
 npm error 404  '@carpool/shared@1.0.0' is not in this registry.
 ```
 
+### **SECONDARY FAILURE: Missing Config Files in Docker Build**
+
+**Error Pattern:**
+
+```
+COPY failed: file not found in build context or excluded by .dockerignore: "backend/local.settings.json"
+```
+
+**Root Cause:** Local development files like `local.settings.json` are gitignored but required by Docker builds.
+
 ## Root Cause Analysis (5 Whys)
 
 ### **Problem: Docker Build Failure in CI/CD E2E Tests**
@@ -32,6 +42,14 @@ npm error 404  '@carpool/shared@1.0.0' is not in this registry.
 3. **Why?** When Docker isn't running, the script exits early without testing Docker builds
 4. **Why?** Local development might use different validation paths than CI/CD
 5. **Why?** Insufficient guidance on required local environment setup for E2E validation
+
+### **Secondary Gap Analysis: Missing Config Files**
+
+1. **Why?** Local validation didn't catch missing `local.settings.json` in Docker builds
+2. **Why?** Local environment has the actual file, so Docker builds succeed locally
+3. **Why?** CI/CD environment doesn't have gitignored files like `local.settings.json`
+4. **Why?** Dockerfile expected the file without handling its absence gracefully
+5. **Why?** No sample/template files were provided for containerized environments
 
 ## Solutions Implemented
 
@@ -85,7 +103,51 @@ $DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml build --no-cache || {
 }
 ```
 
-### 3. **Verified Monorepo Docker Configuration**
+### 3. **Docker Configuration for Missing Config Files**
+
+**Files Modified:**
+
+- `e2e/docker/Dockerfile.backend-test`
+- `backend/local.settings.sample.json` (new)
+
+**Changes:**
+
+- **Graceful Config Handling**: Modified Dockerfile to handle missing `local.settings.json`
+- **Sample Template Creation**: Added `local.settings.sample.json` with safe default values
+- **Conditional File Copy**: Docker now uses sample config when real config is unavailable
+- **CI/CD Compatibility**: Ensures Docker builds work without sensitive/gitignored files
+
+**Key Features:**
+
+```dockerfile
+# Create local.settings.json from sample (safe for CI/CD where secrets aren't present)
+RUN echo "Creating local.settings.json from sample template for containerized environment" && \
+    cp ./backend/local.settings.sample.json ./backend/local.settings.json
+```
+
+### 4. **Enhanced Local Validation Script**
+
+**Files Modified:**
+
+- `scripts/local-ci-validation.sh`
+
+**New Features:**
+
+- **CI/CD Environment Simulation**: Temporarily hides gitignored files to test real CI/CD conditions
+- **Missing Config Detection**: Validates required template files exist for Docker builds
+- **Docker Build Testing**: Tests exact CI/CD Docker build process locally
+
+**Key Improvements:**
+
+```bash
+# Simulate CI/CD by hiding gitignored files during Docker build test
+if [ -f "backend/local.settings.json" ]; then
+    mv "backend/local.settings.json" "backend/local.settings.json.backup"
+    log "Temporarily hiding local.settings.json to simulate CI/CD environment"
+fi
+```
+
+### 5. **Verified Monorepo Docker Configuration**
 
 **Files Verified:**
 
