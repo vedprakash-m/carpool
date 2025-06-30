@@ -12,14 +12,11 @@ param appName string = 'carpool'
 ])
 param environmentName string = 'dev'
 
-@description('Azure Cosmos DB account name')
-param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
+@description('Azure Cosmos DB account name - Tech Spec naming')
+param cosmosDbAccountName string = 'carpool-db'
 
-@description('Azure Storage Account name')
-param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
-
-@description('Azure Key Vault name (existing)')
-param keyVaultName string = 'carpool-keyvault'
+@description('Azure Storage Account name - Tech Spec naming')
+param storageAccountName string = 'carpoolsa'
 
 // Tags for all resources
 var tags = {
@@ -67,9 +64,25 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
   }
 }
 
-// Key Vault for secrets (reference existing resource)
-resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' existing = {
-  name: keyVaultName
+// Key Vault for secrets management (Tech Spec naming: carpool-kv)
+resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
+  name: 'carpool-kv'
+  location: location
+  tags: tags
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    accessPolicies: []
+    enabledForDeployment: true
+    enabledForTemplateDeployment: true
+    enabledForDiskEncryption: true
+    softDeleteRetentionInDays: 90
+    enableSoftDelete: true
+    enablePurgeProtection: true
+  }
 }
 
 // Cosmos DB Database

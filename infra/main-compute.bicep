@@ -19,20 +19,20 @@ param functionAppName string = '${appName}-func'
 param staticWebAppName string = '${appName}-web'
 
 @description('Azure Application Insights name')
-param appInsightsName string = '${appName}-insights-${environmentName}'
+param appInsightsName string = '${appName}-insights'
 
 @description('Azure Key Vault name')
-param keyVaultName string = '${appName}-kv-${environmentName}'
+param keyVaultName string = '${appName}-kv'
 
 // Database resource group and resource details (from database deployment)
 @description('Database resource group name')
 param databaseResourceGroup string = '${appName}-db-rg'
 
-@description('Cosmos DB account name from database resource group')
-param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
+@description('Cosmos DB account name from database resource group - Tech Spec naming')
+param cosmosDbAccountName string = 'carpool-db'
 
-@description('Storage Account name from database resource group')
-param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
+@description('Storage Account name from database resource group - Tech Spec naming')
+param storageAccountName string = 'carpoolsa'
 
 // Tags for all resources
 var tags = {
@@ -52,7 +52,7 @@ var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${stor
 
 // Application Service Plan
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: 'EastUSPlan'
+  name: 'carpool-plan'
   location: location
   tags: tags
   sku: {

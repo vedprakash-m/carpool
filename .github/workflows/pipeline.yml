@@ -142,7 +142,7 @@ jobs:
     if: always() && (github.event_name == 'workflow_dispatch' || needs.changes.result != 'skipped')
     strategy:
       matrix:
-        environment: [dev, prod]
+        environment: [prod]
     steps:
       - uses: actions/checkout@v4
 
