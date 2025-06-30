@@ -14,7 +14,7 @@ import {
   AddressValidation,
   TravelingParentSchedule,
   MakeupOption,
-} from '@shared/types';
+} from '@carpool/shared';
 
 describe('Tesla Stem High School Registration System', () => {
   describe('Registration-First Access Control', () => {
