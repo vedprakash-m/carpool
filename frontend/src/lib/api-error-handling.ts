@@ -317,7 +317,7 @@ export const apiClient = new ApiClient(
       if (error instanceof AuthenticationError) {
         // Redirect to login or trigger auth refresh
         if (typeof window !== 'undefined') {
-          const { useAuthStore } = await import('@/store/auth.store');
+          const { useAuthStore } = await import('../store/auth.store');
           const logout = useAuthStore.getState().logout;
           logout();
           window.location.href = '/login';

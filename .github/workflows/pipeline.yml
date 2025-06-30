@@ -153,13 +153,36 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Validate Bicep Templates
+      - name: Ensure Resource Groups Exist
         run: |
-          az deployment group what-if \
-            --resource-group carpool-rg-${{ matrix.environment }} \
-            --template-file infra/main.bicep \
-            --parameters environmentName=${{ matrix.environment }}
-          echo "✅ Bicep validation passed for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+          # Create resource groups if they don't exist (using proper naming convention)
+          az group create --name carpool-db-rg --location eastus --tags application=carpool environment=${{ matrix.environment }} || true
+          az group create --name carpool-rg --location eastus --tags application=carpool environment=${{ matrix.environment }} || true
+          echo "✅ Resource groups ensured for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Validate Database Bicep Template
+        run: |
+          az deployment group validate \
+            --resource-group carpool-db-rg \
+            --template-file infra/database.bicep \
+            --parameters \
+              appName=carpool \
+              environmentName=${{ matrix.environment }} \
+              location=eastus \
+              skipContainerCreation=true
+          echo "✅ Database Bicep validation passed for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Validate Compute Bicep Template
+        run: |
+          az deployment group validate \
+            --resource-group carpool-rg \
+            --template-file infra/main-compute.bicep \
+            --parameters \
+              appName=carpool \
+              environmentName=${{ matrix.environment }} \
+              location=eastus \
+              databaseResourceGroup=carpool-db-rg
+          echo "✅ Compute Bicep validation passed for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
 
   # =============================================================================
   # STAGE 2: COMPREHENSIVE TESTING
@@ -284,6 +307,16 @@ jobs:
         with:
           name: build-artifacts-${{ needs.build.outputs.version }}
 
+      - name: Setup deployment tools
+        run: |
+          # Install Azure Functions Core Tools
+          npm install -g azure-functions-core-tools@4
+
+          # Install Azure Static Web Apps CLI
+          npm install -g @azure/static-web-apps-cli
+
+          echo "✅ Deployment tools installed" >> $GITHUB_STEP_SUMMARY
+
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -292,25 +325,53 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy infrastructure
-        if: inputs.force_deploy == true
         run: |
-          az deployment group create \
-            --resource-group carpool-rg-${{ inputs.environment || 'prod' }} \
-            --template-file infra/main.bicep \
-            --parameters environment=${{ inputs.environment || 'prod' }}
-          echo "✅ Infrastructure deployed" >> $GITHUB_STEP_SUMMARY
+          # Always deploy infrastructure to ensure it's up to date
+          chmod +x scripts/deploy-multi-rg.sh
+
+          # Map environment input to proper value (production -> prod)
+          ENV_NAME="${{ inputs.environment || 'production' }}"
+          if [ "$ENV_NAME" = "production" ]; then
+            ENV_NAME="prod"
+          elif [ "$ENV_NAME" = "staging" ]; then
+            ENV_NAME="dev"
+          fi
+
+          ENVIRONMENT="$ENV_NAME" ./scripts/deploy-multi-rg.sh
+          echo "✅ Infrastructure deployed using multi-RG approach for environment: $ENV_NAME" >> $GITHUB_STEP_SUMMARY
 
       - name: Deploy backend functions
         run: |
           cd backend
-          func azure functionapp publish carpool-functions-${{ inputs.environment || 'prod' }} --typescript
-          echo "✅ Backend functions deployed" >> $GITHUB_STEP_SUMMARY
+          # Use the correct function app name from tech spec (carpool-func)
+          FUNCTION_APP_NAME="carpool-func"
+          func azure functionapp publish "$FUNCTION_APP_NAME" --typescript
+          echo "✅ Backend functions deployed to $FUNCTION_APP_NAME" >> $GITHUB_STEP_SUMMARY
 
       - name: Deploy frontend
         run: |
           cd frontend
-          npm run deploy:azure
-          echo "✅ Frontend deployed to Static Web Apps" >> $GITHUB_STEP_SUMMARY
+
+          # Build the frontend first
+          npm run build:swa
+
+          # Deploy to Static Web Apps (using correct naming convention)
+          STATIC_WEB_APP_NAME="carpool-web"
+
+          # Get deployment token from Azure
+          DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
+            --name "$STATIC_WEB_APP_NAME" \
+            --resource-group "carpool-rg" \
+            --query "properties.apiKey" -o tsv)
+
+          # Deploy using SWA CLI
+          npx @azure/static-web-apps-cli deploy \
+            --app-location . \
+            --api-location ../backend \
+            --output-location .next \
+            --deployment-token "$DEPLOYMENT_TOKEN"
+
+          echo "✅ Frontend deployed to Static Web Apps: $STATIC_WEB_APP_NAME" >> $GITHUB_STEP_SUMMARY
 
   # =============================================================================
   # STAGE 5: POST-DEPLOYMENT VALIDATION
@@ -327,7 +388,8 @@ jobs:
           # Wait for deployment to stabilize
           sleep 30
 
-          HEALTH_URL="https://carpool-functions-${{ inputs.environment || 'prod' }}.azurewebsites.net/api/health"
+          # Use correct function app name (carpool-func)
+          HEALTH_URL="https://carpool-func.azurewebsites.net/api/health"
 
           for i in {1..5}; do
             echo "🔄 Health check attempt $i/5..."
@@ -402,12 +464,12 @@ jobs:
         run: |
           echo "🔄 Rolling back to version: ${{ inputs.rollback_version || 'previous' }}"
 
-          # Get previous deployment slot or version
+          # Get previous deployment slot or version (using correct naming)
           PREVIOUS_VERSION="${{ inputs.rollback_version }}"
           if [ -z "$PREVIOUS_VERSION" ]; then
             PREVIOUS_VERSION=$(az functionapp deployment list-publishing-profiles \
-              --name carpool-functions-${{ inputs.environment || 'prod' }} \
-              --resource-group carpool-rg-${{ inputs.environment || 'prod' }} \
+              --name carpool-func \
+              --resource-group carpool-rg \
               --query "[0].publishUrl" -o tsv)
           fi
 

@@ -16,10 +16,10 @@ param environmentName string = 'dev'
 param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
 
 @description('Azure Function App name')
-param functionAppName string = '${appName}-api-${environmentName}'
+param functionAppName string = '${appName}-func'
 
 @description('Azure Static Web App name')
-param staticWebAppName string = '${appName}-web-${environmentName}'
+param staticWebAppName string = '${appName}-web'
 
 @description('Azure Application Insights name')
 param appInsightsName string = '${appName}-insights-${environmentName}'
@@ -152,7 +152,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       ]
       cors: {
         allowedOrigins: [
-          'https://${staticWebAppName}.azurestaticapps.net'
+          'https://${staticWebApp.properties.defaultHostname}'
           'http://localhost:3000' // For local development
         ]
         supportCredentials: true
