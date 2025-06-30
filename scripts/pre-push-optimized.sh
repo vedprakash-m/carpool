@@ -62,27 +62,16 @@ fi
 if [ "$SKIP_BASIC_CHECKS" = false ]; then
     print_status "INFO" "Running type checking & linting..."
     
-    # Type checking (parallel)
-    (cd backend && npx tsc --noEmit --skipLibCheck) &
-    BACKEND_TYPE_PID=$!
+    # Build shared package first (required for workspace)
+    npm run build:shared || { print_status "ERROR" "Shared package build failed"; exit 1; }
     
-    (cd frontend && npx tsc --noEmit --skipLibCheck) &
-    FRONTEND_TYPE_PID=$!
+    # Type checking using workspace-aware commands
+    npm run type-check:backend || { print_status "ERROR" "Backend type checking failed"; exit 1; }
+    npm run type-check:frontend || { print_status "ERROR" "Frontend type checking failed"; exit 1; }
     
-    # Wait for type checking
-    wait $BACKEND_TYPE_PID || { print_status "ERROR" "Backend type checking failed"; exit 1; }
-    wait $FRONTEND_TYPE_PID || { print_status "ERROR" "Frontend type checking failed"; exit 1; }
-    
-    # Linting (parallel)
-    (cd backend && npm run lint --silent) &
-    BACKEND_LINT_PID=$!
-    
-    (cd frontend && npm run lint --silent) &
-    FRONTEND_LINT_PID=$!
-    
-    # Wait for linting
-    wait $BACKEND_LINT_PID || { print_status "ERROR" "Backend linting failed"; exit 1; }
-    wait $FRONTEND_LINT_PID || { print_status "ERROR" "Frontend linting failed"; exit 1; }
+    # Linting using workspace commands
+    npm run lint:backend || { print_status "ERROR" "Backend linting failed"; exit 1; }
+    npm run lint:frontend || { print_status "ERROR" "Frontend linting failed"; exit 1; }
     
     print_status "SUCCESS" "Basic validation completed"
 else
@@ -92,31 +81,31 @@ fi
 # 2. Build validation (critical for deployment)
 print_status "INFO" "Quick build validation..."
 
-# Fast dependency check (don't reinstall if already present)
+# Fast dependency check (npm workspaces - install from root)
 DEPS_MISSING=false
-if [ ! -f "backend/node_modules/.bin/tsc" ]; then
-    print_status "INFO" "Installing backend dependencies (first time)..."
-    (cd backend && npm ci --silent --prefer-offline)
+if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/tsc" ]; then
+    print_status "INFO" "Installing workspace dependencies (first time)..."
+    npm ci --silent --prefer-offline
     DEPS_MISSING=true
 fi
 
-if [ ! -f "frontend/node_modules/.bin/next" ]; then
-    print_status "INFO" "Installing frontend dependencies (first time)..."
-    (cd frontend && npm ci --silent --prefer-offline)
-    DEPS_MISSING=true
-fi
-
-# Quick build check (don't do full builds every time)
+# Quick build check using workspace commands
 print_status "INFO" "Quick build validation..."
 
-# Backend - just compile check, no full build
-(cd backend && npx tsc --noEmit --skipLibCheck) || {
+# Ensure shared package is built first
+npm run build:shared || {
+    print_status "ERROR" "Shared package build failed"
+    exit 1
+}
+
+# Backend - use workspace-aware type checking
+npm run type-check:backend || {
     print_status "ERROR" "Backend compilation failed"
     exit 1
 }
 
-# Frontend - just Next.js lint and type check, no full build
-(cd frontend && npx next lint --quiet && npx tsc --noEmit --skipLibCheck) || {
+# Frontend - use workspace-aware validation
+npm run type-check:frontend || {
     print_status "ERROR" "Frontend validation failed"
     exit 1
 }
@@ -127,12 +116,9 @@ print_status "SUCCESS" "Build validation completed (quick mode)"
 print_status "INFO" "Running essential tests..."
 
 # Only run the most critical tests to save time
-if [ -f "backend/package.json" ]; then
-    # Just run a quick smoke test, not full test suite
-    (cd backend && npm run test -- --testNamePattern="health|config" --passWithNoTests --silent) || {
-        print_status "WARNING" "Some backend tests failed - full tests will run in CI"
-    }
-fi
+npm run test:backend:ci --silent || {
+    print_status "WARNING" "Some backend tests failed - full tests will run in CI"
+}
 
 print_status "SUCCESS" "Essential tests completed"
 

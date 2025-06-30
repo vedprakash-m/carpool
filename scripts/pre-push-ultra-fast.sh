@@ -36,21 +36,25 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# 1. Only type check - no linting
+# 1. Only type check - no linting, use workspace commands
 print_status "INFO" "Quick type checking..."
-if [ -d "backend" ] && [ -f "backend/package.json" ]; then
-    (cd backend && npx tsc --noEmit --skipLibCheck) || {
-        print_status "ERROR" "Backend type check failed"
-        exit 1
-    }
-fi
 
-if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
-    (cd frontend && npx tsc --noEmit --skipLibCheck) || {
-        print_status "ERROR" "Frontend type check failed"
-        exit 1
-    }
-fi
+# Ensure shared package is built first
+npm run build:shared --silent || {
+    print_status "ERROR" "Shared package build failed"
+    exit 1
+}
+
+# Use workspace-aware type checking
+npm run type-check:backend --silent || {
+    print_status "ERROR" "Backend type check failed"
+    exit 1
+}
+
+npm run type-check:frontend --silent || {
+    print_status "ERROR" "Frontend type check failed"
+    exit 1
+}
 
 # 2. Skip builds - trust that they work
 print_status "INFO" "Skipping builds (CI will validate)"
