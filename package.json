@@ -12,11 +12,6 @@
   "scripts": {
     "start": "func start",
     "deploy": "func azure functionapp publish carpool-api-prod",
-    "install:all": "npm install && npm run install:shared && npm run install:backend && npm run install:frontend && npm run install:e2e",
-    "install:shared": "cd shared && npm install",
-    "install:backend": "cd backend && npm install",
-    "install:frontend": "cd frontend && npm install",
-    "install:e2e": "cd e2e && npm install",
     "build:shared": "cd shared && npm run build",
     "type-check": "npm run type-check:backend && npm run type-check:frontend",
     "type-check:backend": "cd backend && npm run type-check",
@@ -34,8 +29,7 @@
     "build:frontend": "cd frontend && npm run build",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "postinstall": "npm run install:shared && npm run install:backend && npm run install:frontend"
+    "dev:frontend": "cd frontend && npm run dev"
   },
   "dependencies": {},
   "devDependencies": {
