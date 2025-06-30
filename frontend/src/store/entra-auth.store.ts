@@ -4,7 +4,7 @@ import {
   AccountInfo,
   InteractionRequiredAuthError,
 } from '@azure/msal-browser';
-import { VedUser } from '../../../shared/src/types';
+import { VedUser } from '@carpool/shared';
 import { apiClient } from '../lib/api-client';
 
 // MSAL Configuration following Apps_Auth_Requirement.md

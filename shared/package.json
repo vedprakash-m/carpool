@@ -9,7 +9,7 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --build --force",
     "dev": "tsc --watch",
     "test": "echo 'Shared package: No tests to run. Build validation passed.' && exit 0",
     "clean": "rm -rf dist"

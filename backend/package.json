@@ -40,7 +40,7 @@
     "@azure/msal-node": "^3.6.1",
     "@azure/service-bus": "^7.9.5",
     "@azure/web-pubsub": "^1.2.0",
-    "@carpool/shared": "file:../shared",
+    "@carpool/shared": "1.0.0",
     "@opentelemetry/auto-instrumentations-node": "^0.60.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.202.0",
     "@opentelemetry/resources": "^2.0.1",
