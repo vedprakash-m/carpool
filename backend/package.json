@@ -17,7 +17,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:integration": "jest --config jest.integration.config.js",
+    "test:integration": "jest --config jest.config.integration.json",
     "test:ci": "jest --ci --coverage --watchAll=false",
     "test:health-check": "node -e \"console.log('Health check passed')\"",
     "validate:local": "../scripts/local-ci-validation.sh",

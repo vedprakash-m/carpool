@@ -29,5 +29,7 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@shared/(.*)$': '<rootDir>/../shared/src/$1',
+    '^@carpool/shared$': '<rootDir>/../shared/dist/index.js',
+    '^@carpool/shared/(.*)$': '<rootDir>/../shared/dist/$1',
   },
 };
