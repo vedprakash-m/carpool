@@ -155,7 +155,7 @@ jobs:
 
       - name: Validate Bicep Templates
         run: |
-          az deployment group validate \
+          az deployment group what-if \
             --resource-group carpool-rg-${{ matrix.environment }} \
             --template-file infra/main.bicep \
             --parameters environmentName=${{ matrix.environment }}
