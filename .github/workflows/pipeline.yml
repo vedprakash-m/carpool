@@ -232,10 +232,10 @@ jobs:
         if: matrix.suite == 'e2e'
         run: |
           # Start Docker services for E2E testing
-          docker-compose -f docker-compose.e2e.yml up -d
+          docker compose -f docker-compose.e2e.yml up -d
 
           # Wait for services to be ready with enhanced timeout and health checks
-          timeout 300 bash -c 'until docker-compose -f docker-compose.e2e.yml exec -T mongo mongosh --eval "db.adminCommand(\"ismaster\")" >/dev/null 2>&1; do sleep 5; done'
+          timeout 300 bash -c 'until docker compose -f docker-compose.e2e.yml exec -T mongo mongosh --eval "db.adminCommand(\"ismaster\")" >/dev/null 2>&1; do sleep 5; done'
           timeout 300 bash -c 'until curl -f http://localhost:7072/api/health >/dev/null 2>&1; do sleep 5; done'
 
           # Install E2E dependencies and run tests
@@ -245,7 +245,7 @@ jobs:
           npx playwright test
 
           # Cleanup Docker services
-          docker-compose -f docker-compose.e2e.yml down -v
+          docker compose -f docker-compose.e2e.yml down -v
           echo "✅ E2E tests passed" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload test coverage

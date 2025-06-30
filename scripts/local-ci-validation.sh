@@ -24,6 +24,17 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Docker Compose command detection (handle both docker-compose and docker compose)
+get_docker_compose_cmd() {
+    if command_exists docker-compose; then
+        echo "docker-compose"
+    elif command_exists docker && docker compose version >/dev/null 2>&1; then
+        echo "docker compose"
+    else
+        return 1
+    fi
+}
+
 # Validate environment
 log "${YELLOW}🔍 Validating environment...${NC}"
 
@@ -37,10 +48,13 @@ if ! command_exists docker; then
     exit 1
 fi
 
-if ! command_exists docker-compose; then
-    log "${RED}❌ docker-compose not found. Please install Docker Compose${NC}"
+DOCKER_COMPOSE_CMD=$(get_docker_compose_cmd)
+if [ $? -ne 0 ]; then
+    log "${RED}❌ Neither 'docker-compose' nor 'docker compose' found. Please install Docker Compose${NC}"
     exit 1
 fi
+
+log "   ✅ Using Docker Compose command: ${DOCKER_COMPOSE_CMD}"
 
 # Check Node version
 NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
@@ -132,18 +146,18 @@ if ! docker info >/dev/null 2>&1; then
 fi
 
 # Clean up any existing containers
-docker-compose -f docker-compose.e2e.yml down -v 2>/dev/null || true
+$DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml down -v 2>/dev/null || true
 
 # Start services
 log "   🐳 Starting Docker services..."
-docker-compose -f docker-compose.e2e.yml up -d
+$DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml up -d
 
 # Wait for services to be ready with proper health checks
 log "   ⏳ Waiting for services to be ready..."
-timeout 300 bash -c 'until docker-compose -f docker-compose.e2e.yml exec -T mongo mongosh --eval "db.adminCommand(\"ismaster\")" >/dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 5; done' || {
+timeout 300 bash -c 'until '$DOCKER_COMPOSE_CMD' -f docker-compose.e2e.yml exec -T mongo mongosh --eval "db.adminCommand(\"ismaster\")" >/dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 5; done' || {
     log "${RED}❌ MongoDB failed to start${NC}"
-    docker-compose -f docker-compose.e2e.yml logs mongo
-    docker-compose -f docker-compose.e2e.yml down
+    $DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml logs mongo
+    $DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml down
     exit 1
 }
 
@@ -160,14 +174,14 @@ npx playwright install --with-deps chromium
 npx playwright test || {
     log "${RED}❌ E2E tests failed${NC}"
     cd ..
-    docker-compose -f docker-compose.e2e.yml down
+    $DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml down
     exit 1
 }
 cd ..
 
 # Cleanup Docker services
 log "   🧹 Cleaning up Docker services..."
-docker-compose -f docker-compose.e2e.yml down -v
+$DOCKER_COMPOSE_CMD -f docker-compose.e2e.yml down -v
 
 # Step 7: Build applications (exactly like CI)
 log "${YELLOW}🔨 Building applications...${NC}"
