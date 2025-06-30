@@ -63,7 +63,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
     }
-    enableFreeTier: true  // Keep free tier enabled as existing setup
+    enableFreeTier: false  // Disable free tier as subscription already has one
   }
 }
 

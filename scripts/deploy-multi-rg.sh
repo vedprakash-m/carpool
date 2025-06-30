@@ -8,7 +8,7 @@
 set -e
 
 # Configuration
-LOCATION="eastus"
+LOCATION="eastus2"
 APP_NAME="carpool"
 ENVIRONMENT="${ENVIRONMENT:-prod}"
 DB_RESOURCE_GROUP="${APP_NAME}-db-rg"

@@ -42,11 +42,13 @@ var tags = {
   resourceType: 'compute'
 }
 
-// Reference to existing storage account in database resource group
-resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
-  name: storageAccountName
-  scope: resourceGroup(databaseResourceGroup)
-}
+// Database resource references using direct resource IDs to avoid cross-RG issues
+var storageResourceId = resourceId(databaseResourceGroup, 'Microsoft.Storage/storageAccounts', storageAccountName)
+var cosmosResourceId = resourceId(databaseResourceGroup, 'Microsoft.DocumentDB/databaseAccounts', cosmosDbAccountName)
+var keyVaultResourceId = resourceId(databaseResourceGroup, 'Microsoft.KeyVault/vaults', keyVaultName)
+
+// Get storage account connection string once to avoid multiple API calls
+var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageResourceId, '2021-08-01').keys[0].value}'
 
 // Application Service Plan
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
@@ -81,11 +83,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
   scope: resourceGroup(databaseResourceGroup)
 }
 
-// Reference to existing Cosmos DB in the database resource group
-resource existingCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existing = {
-  name: cosmosDbAccountName
-  scope: resourceGroup(databaseResourceGroup)
-}
+// Get Cosmos DB connection details once to avoid multiple API calls
+var cosmosConnectionString = listConnectionStrings(cosmosResourceId, '2021-10-15').connectionStrings[0].connectionString
+var cosmosPrimaryKey = listKeys(cosmosResourceId, '2021-10-15').primaryMasterKey
+var cosmosEndpoint = reference(cosmosResourceId, '2021-10-15').documentEndpoint
 
 // Azure Function App
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
@@ -102,11 +103,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+          value: storageConnectionString
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+          value: storageConnectionString
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
@@ -134,15 +135,15 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'COSMOS_DB_CONNECTION_STRING'
-          value: existingCosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+          value: cosmosConnectionString
         }
         {
           name: 'COSMOS_DB_ENDPOINT'
-          value: existingCosmosAccount.properties.documentEndpoint
+          value: cosmosEndpoint
         }
         {
           name: 'COSMOS_DB_KEY'
-          value: existingCosmosAccount.listKeys().primaryMasterKey
+          value: cosmosPrimaryKey
         }
         {
           name: 'ENVIRONMENT'
@@ -193,8 +194,8 @@ output functionAppName string = functionApp.name
 output functionAppDefaultHostName string = functionApp.properties.defaultHostName
 output staticWebAppName string = staticWebApp.name
 output staticWebAppDefaultHostName string = staticWebApp.properties.defaultHostname
-output storageAccountName string = storageAccount.name
+output storageAccountName string = storageAccountName
 output appInsightsName string = appInsights.name
 output keyVaultName string = keyVault.name
-output cosmosDbAccountName string = existingCosmosAccount.name
-output cosmosDbEndpoint string = existingCosmosAccount.properties.documentEndpoint
+output cosmosDbAccountName string = cosmosDbAccountName
+output cosmosDbEndpoint string = cosmosEndpoint

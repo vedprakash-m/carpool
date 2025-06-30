@@ -56,7 +56,7 @@ on:
 
 env:
   NODE_VERSION: '22.x'
-  AZURE_LOCATION: 'eastus'
+  AZURE_LOCATION: 'eastus2'
 
 permissions:
   contents: read
@@ -156,8 +156,8 @@ jobs:
       - name: Ensure Resource Groups Exist
         run: |
           # Create resource groups if they don't exist (using proper naming convention)
-          az group create --name carpool-db-rg --location eastus --tags application=carpool environment=${{ matrix.environment }} || true
-          az group create --name carpool-rg --location eastus --tags application=carpool environment=${{ matrix.environment }} || true
+          az group create --name carpool-db-rg --location eastus2 --tags application=carpool environment=${{ matrix.environment }} || true
+          az group create --name carpool-rg --location eastus2 --tags application=carpool environment=${{ matrix.environment }} || true
           echo "✅ Resource groups ensured for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Validate Database Bicep Template
@@ -168,7 +168,7 @@ jobs:
             --parameters \
               appName=carpool \
               environmentName=${{ matrix.environment }} \
-              location=eastus \
+              location=eastus2 \
               skipContainerCreation=true
           echo "✅ Database Bicep validation passed for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
 
@@ -182,7 +182,7 @@ jobs:
             --parameters \
               appName=carpool \
               environmentName=${{ matrix.environment }} \
-              location=eastus \
+              location=eastus2 \
               databaseResourceGroup=carpool-db-rg || echo "⚠️ What-if analysis completed with warnings (expected for cross-RG references)"
           echo "✅ Compute Bicep template syntax validated for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
 
