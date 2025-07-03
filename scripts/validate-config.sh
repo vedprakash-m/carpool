@@ -215,3 +215,4 @@ else
     print_status "INFO" "Fix the errors above to prevent CI/CD failures"
     exit 1
 fi
+# Test pre-commit fix
