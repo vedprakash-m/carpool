@@ -2,7 +2,18 @@
 
 set -e
 
-echo "⚡ Lightning Fast Pre-commit"
+echo "# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+TS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(ts|tsx)$' | grep -v -E '(__tests__|\.test\.|\.spec\.)' || true)
+JS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(js|jsx)$' || true)
+ALL_TS_JS_FILES="$TS_FILES $JS_FILES"
+
+if [ -z "$TS_FILES" ] && [ -z "$JS_FILES" ]; then
+    print_status "INFO" "No TypeScript/JavaScript files staged - skipping checks"
+    exit 0
+fi
+
+print_status "INFO" "Checking $(echo "$ALL_TS_JS_FILES" | wc -w) staged files..."Fast Pre-commit"
 echo "=========================="
 
 # Colors
@@ -38,46 +49,46 @@ fi
 
 print_status "INFO" "Checking $(echo "$ALL_TS_JS_FILES" | wc -w) staged files..."
 
-# 1. Lightning-fast type checking (only staged files)
+# 1. Lightning-fast type checking (workspace-aware)
 if [ -n "$TS_FILES" ]; then
     print_status "INFO" "Type checking staged files..."
     
-    # Check backend files
+    # Check backend files - use workspace-aware command
     BACKEND_FILES=$(echo "$TS_FILES" | grep '^backend/' || true)
     if [ -n "$BACKEND_FILES" ]; then
-        echo "$BACKEND_FILES" | xargs -r npx tsc --noEmit --skipLibCheck 2>/dev/null || {
-            print_status "ERROR" "Backend type checking failed on staged files"
+        npm run type-check:backend --silent 2>/dev/null || {
+            print_status "ERROR" "Backend type checking failed"
             exit 1
         }
     fi
     
-    # Check frontend files  
+    # Check frontend files - use workspace-aware command
     FRONTEND_FILES=$(echo "$TS_FILES" | grep '^frontend/' || true)
     if [ -n "$FRONTEND_FILES" ]; then
-        (cd frontend && echo "$FRONTEND_FILES" | sed 's|^frontend/||' | xargs -r npx tsc --noEmit --skipLibCheck 2>/dev/null) || {
-            print_status "ERROR" "Frontend type checking failed on staged files"
+        npm run type-check:frontend --silent 2>/dev/null || {
+            print_status "ERROR" "Frontend type checking failed"
             exit 1
         }
     fi
 fi
 
-# 2. Quick lint (only staged files)
+# 2. Quick lint (workspace-aware)
 if [ -n "$ALL_TS_JS_FILES" ]; then
     print_status "INFO" "Linting staged files..."
     
-    # Backend linting
+    # Backend linting - use workspace-aware command
     BACKEND_LINT_FILES=$(echo "$ALL_TS_JS_FILES" | tr ' ' '\n' | grep '^backend/' || true)
     if [ -n "$BACKEND_LINT_FILES" ]; then
-        echo "$BACKEND_LINT_FILES" | xargs -r npx eslint --fix --quiet 2>/dev/null || {
+        npm run lint:backend --silent 2>/dev/null || {
             print_status "ERROR" "Backend linting failed"
             exit 1
         }
     fi
     
-    # Frontend linting
+    # Frontend linting - use workspace-aware command
     FRONTEND_LINT_FILES=$(echo "$ALL_TS_JS_FILES" | tr ' ' '\n' | grep '^frontend/' || true)
     if [ -n "$FRONTEND_LINT_FILES" ]; then
-        (cd frontend && echo "$FRONTEND_LINT_FILES" | sed 's|^frontend/||' | xargs -r npx eslint --fix --quiet 2>/dev/null) || {
+        npm run lint:frontend --silent 2>/dev/null || {
             print_status "ERROR" "Frontend linting failed"
             exit 1
         }
