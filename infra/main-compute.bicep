@@ -13,7 +13,7 @@ param appName string = 'carpool'
 param environmentName string = 'dev'
 
 @description('Azure Function App name')
-param functionAppName string = '${appName}-func'
+param functionAppName string = '${appName}-api'
 
 @description('Azure Static Web App name')
 param staticWebAppName string = '${appName}-web'

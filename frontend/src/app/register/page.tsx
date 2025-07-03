@@ -9,6 +9,7 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { RegisterRequest } from '@/types/shared';
 import { useAuthStore } from '@/store/auth.store';
+import { useEntraAuthStore } from '@/store/entra-auth.store';
 import {
   SchoolSelect,
   GradeSelect,
@@ -63,6 +64,12 @@ export default function RegisterPage() {
   const router = useRouter();
   const register = useAuthStore(state => state.register);
   const isLoading = useAuthStore(state => state.isLoading);
+
+  // Entra ID authentication
+  const { loginWithEntra, isLoading: entraLoading } = useEntraAuthStore();
+  const isEntraEnabled = process.env.NEXT_PUBLIC_ENABLE_ENTRA_AUTH === 'true';
+  const isLegacyEnabled = process.env.NEXT_PUBLIC_ENABLE_LEGACY_AUTH === 'true';
+
   const [currentStep, setCurrentStep] = useState(1);
   const [addressValidated, setAddressValidated] = useState(false);
 
@@ -189,6 +196,16 @@ export default function RegisterPage() {
     }
   };
 
+  const handleEntraSignup = async () => {
+    try {
+      await loginWithEntra();
+      toast.success('Welcome to Carpool!');
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast.error(error.message || 'Microsoft signup failed');
+    }
+  };
+
   const nextStep = () => setCurrentStep(prev => prev + 1);
   const prevStep = () => setCurrentStep(prev => prev - 1);
 
@@ -200,409 +217,460 @@ export default function RegisterPage() {
             <UsersIcon className="h-12 w-12 text-primary-600" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Join Carpool as a Family
+            {isEntraEnabled && !isLegacyEnabled
+              ? 'Join Carpool with Microsoft'
+              : 'Join Carpool as a Family'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link
-              href="/login"
-              className="font-medium text-primary-600 hover:text-primary-500"
-            >
-              Sign in
-            </Link>
+            {isEntraEnabled && !isLegacyEnabled ? (
+              'Use your Microsoft account to get started'
+            ) : (
+              <>
+                Already have an account?{' '}
+                <Link
+                  href="/login"
+                  className="font-medium text-primary-600 hover:text-primary-500"
+                >
+                  Sign in
+                </Link>
+              </>
+            )}
           </p>
         </div>
 
-        <form
-          className="mt-8 space-y-6"
-          onSubmit={handleSubmit(onSubmit)}
-          data-testid="registration-form"
-        >
-          {currentStep === 1 && (
-            <section>
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                Step 1: Family and Parent Information
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="familyName"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Family Name
-                  </label>
-                  <input
-                    {...registerField('familyName')}
-                    type="text"
-                    className="mt-1 input"
-                    placeholder="e.g., The Johnson Family"
-                    data-testid="family-name-input"
-                  />
-                  {errors.familyName && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.familyName.message}
-                    </p>
-                  )}
-                </div>
+        {/* Microsoft Sign Up Button */}
+        {isEntraEnabled && (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={handleEntraSignup}
+              disabled={entraLoading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid="microsoft-signup-button"
+            >
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 21 21">
+                <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+                <rect x="12" y="1" width="9" height="9" fill="#00a4ef" />
+                <rect x="1" y="12" width="9" height="9" fill="#7fba00" />
+                <rect x="12" y="12" width="9" height="9" fill="#ffb900" />
+              </svg>
+              {entraLoading ? 'Signing up...' : 'Continue with Microsoft'}
+            </button>
+          </div>
+        )}
 
-                <div className="grid grid-cols-2 gap-4">
+        {/* Divider */}
+        {isEntraEnabled && isLegacyEnabled && (
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-gray-50 text-gray-500">
+                  Or create account with email
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Traditional Registration Form */}
+        {isLegacyEnabled && (
+          <form
+            className="mt-8 space-y-6"
+            onSubmit={handleSubmit(onSubmit)}
+            data-testid="registration-form"
+          >
+            {currentStep === 1 && (
+              <section>
+                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                  Step 1: Family and Parent Information
+                </h3>
+                <div className="space-y-4">
                   <div>
                     <label
-                      htmlFor="parent.firstName"
+                      htmlFor="familyName"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      First Name
+                      Family Name
                     </label>
                     <input
-                      {...registerField('parent.firstName')}
+                      {...registerField('familyName')}
                       type="text"
                       className="mt-1 input"
-                      placeholder="Parent's First Name"
-                      data-testid="parent-first-name-input"
+                      placeholder="e.g., The Johnson Family"
+                      data-testid="family-name-input"
                     />
-                    {errors.parent?.firstName && (
+                    {errors.familyName && (
                       <p className="mt-1 text-sm text-red-600">
-                        {errors.parent.firstName.message}
+                        {errors.familyName.message}
                       </p>
                     )}
                   </div>
-                  <div>
-                    <label
-                      htmlFor="parent.lastName"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Last Name
-                    </label>
-                    <input
-                      {...registerField('parent.lastName')}
-                      type="text"
-                      className="mt-1 input"
-                      placeholder="Parent's Last Name"
-                      data-testid="parent-last-name-input"
-                    />
-                    {errors.parent?.lastName && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.parent.lastName.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
 
-                <div>
-                  <label
-                    htmlFor="parent.email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Email Address
-                  </label>
-                  <input
-                    {...registerField('parent.email')}
-                    type="email"
-                    className="mt-1 input"
-                    placeholder="Parent's Email Address"
-                    autoComplete="email"
-                    data-testid="parent-email-input"
-                  />
-                  {errors.parent?.email && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.parent.email.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="parent.password"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <input
-                    {...registerField('parent.password')}
-                    type="password"
-                    className="mt-1 input"
-                    placeholder="Minimum 8 characters"
-                    autoComplete="new-password"
-                    data-testid="parent-password-input"
-                  />
-                  {errors.parent?.password && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.parent.password.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="mt-6 flex justify-end">
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="btn-primary"
-                  data-testid="next-step-button"
-                >
-                  Next: Home Address
-                </button>
-              </div>
-            </section>
-          )}
-
-          {currentStep === 2 && (
-            <section>
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                <MapPinIcon className="h-5 w-5 inline mr-2" />
-                Step 2: Home Address Verification
-              </h3>
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600 mb-4">
-                  Your home address is used to verify eligibility and optimize
-                  carpool routes. We validate that your address is within the
-                  Tesla STEM High School service area.
-                </p>
-
-                <AddressValidation
-                  onValidationComplete={(verified: boolean) => {
-                    setAddressValidated(verified);
-                  }}
-                  required={true}
-                />
-
-                {!addressValidated && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                    <div className="flex">
-                      <MapPinIcon className="h-5 w-5 text-yellow-400 mr-2" />
-                      <p className="text-sm text-yellow-800">
-                        Please validate your home address to continue with
-                        registration.
-                      </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor="parent.firstName"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        First Name
+                      </label>
+                      <input
+                        {...registerField('parent.firstName')}
+                        type="text"
+                        className="mt-1 input"
+                        placeholder="Parent's First Name"
+                        data-testid="parent-first-name-input"
+                      />
+                      {errors.parent?.firstName && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.parent.firstName.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="parent.lastName"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Last Name
+                      </label>
+                      <input
+                        {...registerField('parent.lastName')}
+                        type="text"
+                        className="mt-1 input"
+                        placeholder="Parent's Last Name"
+                        data-testid="parent-last-name-input"
+                      />
+                      {errors.parent?.lastName && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.parent.lastName.message}
+                        </p>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
 
-              <div className="mt-6 flex justify-between">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="btn-secondary"
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="btn-primary"
-                  disabled={!addressValidated}
-                >
-                  Next: Add Children
-                </button>
-              </div>
-            </section>
-          )}
+                  <div>
+                    <label
+                      htmlFor="parent.email"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Email Address
+                    </label>
+                    <input
+                      {...registerField('parent.email')}
+                      type="email"
+                      className="mt-1 input"
+                      placeholder="Parent's Email Address"
+                      autoComplete="email"
+                      data-testid="parent-email-input"
+                    />
+                    {errors.parent?.email && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.parent.email.message}
+                      </p>
+                    )}
+                  </div>
 
-          {currentStep === 3 && (
-            <section>
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                Step 2: Children's Information
-              </h3>
-              <div className="space-y-6">
-                {(() => {
-                  try {
-                    // Extra safety check for rendering children
-                    if (
-                      !safeFields ||
-                      !Array.isArray(safeFields) ||
-                      safeFields.length === 0
-                    ) {
-                      console.error(
-                        'SafeFields is not a valid array:',
-                        safeFields
-                      );
-                      return (
-                        <div className="text-red-600 p-4 border border-red-200 rounded">
-                          Error loading children form. Please refresh the page.
-                        </div>
-                      );
-                    }
+                  <div>
+                    <label
+                      htmlFor="parent.password"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Password
+                    </label>
+                    <input
+                      {...registerField('parent.password')}
+                      type="password"
+                      className="mt-1 input"
+                      placeholder="Minimum 8 characters"
+                      autoComplete="new-password"
+                      data-testid="parent-password-input"
+                    />
+                    {errors.parent?.password && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.parent.password.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="btn-primary"
+                    data-testid="next-step-button"
+                  >
+                    Next: Home Address
+                  </button>
+                </div>
+              </section>
+            )}
 
-                    return safeFields.map((field, index) => {
-                      // Safety check for each field
-                      if (!field || typeof field !== 'object') {
+            {currentStep === 2 && (
+              <section>
+                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                  <MapPinIcon className="h-5 w-5 inline mr-2" />
+                  Step 2: Home Address Verification
+                </h3>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Your home address is used to verify eligibility and optimize
+                    carpool routes. We validate that your address is within the
+                    Tesla STEM High School service area.
+                  </p>
+
+                  <AddressValidation
+                    onValidationComplete={(verified: boolean) => {
+                      setAddressValidated(verified);
+                    }}
+                    required={true}
+                  />
+
+                  {!addressValidated && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                      <div className="flex">
+                        <MapPinIcon className="h-5 w-5 text-yellow-400 mr-2" />
+                        <p className="text-sm text-yellow-800">
+                          Please validate your home address to continue with
+                          registration.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-6 flex justify-between">
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="btn-secondary"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="btn-primary"
+                    disabled={!addressValidated}
+                  >
+                    Next: Add Children
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {currentStep === 3 && (
+              <section>
+                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                  Step 2: Children's Information
+                </h3>
+                <div className="space-y-6">
+                  {(() => {
+                    try {
+                      // Extra safety check for rendering children
+                      if (
+                        !safeFields ||
+                        !Array.isArray(safeFields) ||
+                        safeFields.length === 0
+                      ) {
                         console.error(
-                          `Invalid field at index ${index}:`,
-                          field
+                          'SafeFields is not a valid array:',
+                          safeFields
                         );
-                        return null;
+                        return (
+                          <div className="text-red-600 p-4 border border-red-200 rounded">
+                            Error loading children form. Please refresh the
+                            page.
+                          </div>
+                        );
                       }
 
-                      return (
-                        <div
-                          key={field.id || `fallback-${index}`}
-                          className="p-4 border border-gray-200 rounded-lg space-y-4"
-                        >
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-medium text-gray-800">
-                              Child {index + 1}
-                            </h4>
-                            {safeFields.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  // Enhanced safety checks for remove operation
-                                  try {
-                                    if (
-                                      index >= 0 &&
-                                      index < safeFields.length &&
-                                      fields &&
-                                      Array.isArray(fields) &&
-                                      fields.length > 1 &&
-                                      index < fields.length
-                                    ) {
-                                      console.log(
-                                        `Removing child at index ${index}, current fields length: ${fields.length}`
+                      return safeFields.map((field, index) => {
+                        // Safety check for each field
+                        if (!field || typeof field !== 'object') {
+                          console.error(
+                            `Invalid field at index ${index}:`,
+                            field
+                          );
+                          return null;
+                        }
+
+                        return (
+                          <div
+                            key={field.id || `fallback-${index}`}
+                            className="p-4 border border-gray-200 rounded-lg space-y-4"
+                          >
+                            <div className="flex justify-between items-center">
+                              <h4 className="font-medium text-gray-800">
+                                Child {index + 1}
+                              </h4>
+                              {safeFields.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    // Enhanced safety checks for remove operation
+                                    try {
+                                      if (
+                                        index >= 0 &&
+                                        index < safeFields.length &&
+                                        fields &&
+                                        Array.isArray(fields) &&
+                                        fields.length > 1 &&
+                                        index < fields.length
+                                      ) {
+                                        console.log(
+                                          `Removing child at index ${index}, current fields length: ${fields.length}`
+                                        );
+                                        remove(index);
+                                      } else {
+                                        console.warn(
+                                          `Cannot remove child at index ${index}. Fields length: ${fields?.length}, SafeFields length: ${safeFields.length}`
+                                        );
+                                      }
+                                    } catch (error) {
+                                      console.error(
+                                        'Error removing child:',
+                                        error
                                       );
-                                      remove(index);
-                                    } else {
-                                      console.warn(
-                                        `Cannot remove child at index ${index}. Fields length: ${fields?.length}, SafeFields length: ${safeFields.length}`
+                                      toast.error(
+                                        'Failed to remove child. Please try again.'
                                       );
                                     }
-                                  } catch (error) {
-                                    console.error(
-                                      'Error removing child:',
-                                      error
-                                    );
-                                    toast.error(
-                                      'Failed to remove child. Please try again.'
-                                    );
-                                  }
-                                }}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <TrashIcon className="h-5 w-5" />
-                              </button>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <input
-                              {...registerField(`children.${index}.firstName`)}
-                              placeholder="First Name"
-                              className="input"
-                              autoComplete="given-name"
-                            />
-                            <input
-                              {...registerField(`children.${index}.lastName`)}
-                              placeholder="Last Name"
-                              className="input"
-                              autoComplete="family-name"
-                            />
-                          </div>
+                                  }}
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <TrashIcon className="h-5 w-5" />
+                                </button>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <input
+                                {...registerField(
+                                  `children.${index}.firstName`
+                                )}
+                                placeholder="First Name"
+                                className="input"
+                                autoComplete="given-name"
+                              />
+                              <input
+                                {...registerField(`children.${index}.lastName`)}
+                                placeholder="Last Name"
+                                className="input"
+                                autoComplete="family-name"
+                              />
+                            </div>
 
-                          {/* Grade Dropdown */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Grade *
-                            </label>
-                            <Controller
-                              name={`children.${index}.grade`}
-                              control={control}
-                              render={({ field }) => (
-                                <GradeSelect
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  placeholder="Select Grade"
-                                  required
-                                />
-                              )}
-                            />
-                            {errors.children &&
-                              Array.isArray(errors.children) &&
-                              errors.children[index] &&
-                              errors.children[index]?.grade && (
-                                <p className="mt-1 text-sm text-red-600">
-                                  {errors.children[index]?.grade?.message}
-                                </p>
-                              )}
-                          </div>
+                            {/* Grade Dropdown */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Grade *
+                              </label>
+                              <Controller
+                                name={`children.${index}.grade`}
+                                control={control}
+                                render={({ field }) => (
+                                  <GradeSelect
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder="Select Grade"
+                                    required
+                                  />
+                                )}
+                              />
+                              {errors.children &&
+                                Array.isArray(errors.children) &&
+                                errors.children[index] &&
+                                errors.children[index]?.grade && (
+                                  <p className="mt-1 text-sm text-red-600">
+                                    {errors.children[index]?.grade?.message}
+                                  </p>
+                                )}
+                            </div>
 
-                          {/* School Dropdown */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              School *
-                            </label>
-                            <Controller
-                              name={`children.${index}.school`}
-                              control={control}
-                              render={({ field }) => (
-                                <SchoolSelect
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  placeholder="Select School"
-                                  required
-                                />
-                              )}
-                            />
-                            {errors.children &&
-                              Array.isArray(errors.children) &&
-                              errors.children[index] &&
-                              errors.children[index]?.school && (
-                                <p className="mt-1 text-sm text-red-600">
-                                  {errors.children[index]?.school?.message}
-                                </p>
-                              )}
+                            {/* School Dropdown */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                School *
+                              </label>
+                              <Controller
+                                name={`children.${index}.school`}
+                                control={control}
+                                render={({ field }) => (
+                                  <SchoolSelect
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder="Select School"
+                                    required
+                                  />
+                                )}
+                              />
+                              {errors.children &&
+                                Array.isArray(errors.children) &&
+                                errors.children[index] &&
+                                errors.children[index]?.school && (
+                                  <p className="mt-1 text-sm text-red-600">
+                                    {errors.children[index]?.school?.message}
+                                  </p>
+                                )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    });
-                  } catch (error) {
-                    console.error('Error rendering children form:', error);
-                    return (
-                      <div className="text-red-600 p-4 border border-red-200 rounded">
-                        Error rendering form. Please refresh the page.
-                      </div>
-                    );
-                  }
-                })()}
-                <button
-                  type="button"
-                  onClick={() => {
-                    try {
-                      console.log('Adding new child to form');
-                      append({
-                        firstName: '',
-                        lastName: '',
-                        grade: '',
-                        school: TESLA_STEM_HIGH_SCHOOL.name,
+                        );
                       });
                     } catch (error) {
-                      console.error('Error adding child:', error);
-                      toast.error('Failed to add child. Please try again.');
+                      console.error('Error rendering children form:', error);
+                      return (
+                        <div className="text-red-600 p-4 border border-red-200 rounded">
+                          Error rendering form. Please refresh the page.
+                        </div>
+                      );
                     }
-                  }}
-                  className="btn-secondary"
-                >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  Add Another Child
-                </button>
-              </div>
-              <div className="mt-6 flex justify-between">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="btn-secondary"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={isLoading}
-                  data-testid="submit-registration-button"
-                >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </button>
-              </div>
-            </section>
-          )}
-        </form>
+                  })()}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        console.log('Adding new child to form');
+                        append({
+                          firstName: '',
+                          lastName: '',
+                          grade: '',
+                          school: TESLA_STEM_HIGH_SCHOOL.name,
+                        });
+                      } catch (error) {
+                        console.error('Error adding child:', error);
+                        toast.error('Failed to add child. Please try again.');
+                      }
+                    }}
+                    className="btn-secondary"
+                  >
+                    <PlusIcon className="h-5 w-5 mr-2" />
+                    Add Another Child
+                  </button>
+                </div>
+                <div className="mt-6 flex justify-between">
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="btn-secondary"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={isLoading}
+                    data-testid="submit-registration-button"
+                  >
+                    {isLoading ? 'Creating Account...' : 'Create Account'}
+                  </button>
+                </div>
+              </section>
+            )}
+          </form>
+        )}
       </div>
     </div>
   );

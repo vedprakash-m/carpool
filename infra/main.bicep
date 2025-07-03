@@ -16,7 +16,7 @@ param environmentName string = 'dev'
 param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
 
 @description('Azure Function App name')
-param functionAppName string = '${appName}-func'
+param functionAppName string = '${appName}-api'
 
 @description('Azure Static Web App name')
 param staticWebAppName string = '${appName}-web'

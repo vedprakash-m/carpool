@@ -163,7 +163,7 @@ Confidential/.env.*
 
 # Local settings files
 local.settings.json
-local.settings.*.json
+# Note: local.settings.sample.json should be tracked as a template
 appsettings.Development.json
 appsettings.Local.json
 appsettings.*.local.json

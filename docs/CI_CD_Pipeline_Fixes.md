@@ -438,3 +438,128 @@ The comprehensive CI/CD pipeline fixes have established a robust, long-term solu
 4. **Supports Team Productivity**: Clear guidelines and automated tooling
 
 The implementation follows enterprise best practices and provides a foundation for scalable, reliable continuous integration and deployment.
+
+## 2025-07-03 Critical Configuration Management Fix
+
+### **NEW CRITICAL ISSUE: local.settings.sample.json Missing in CI/CD**
+
+**Error Pattern:**
+
+```
+failed to compute cache key: failed to calculate checksum of ref f3f57c73-cc58-4859-b84c-8d290ada94db::ihfut1gqcmvtb2cdj1qngeley: "/app/backend/local.settings.sample.json": not found
+```
+
+### **Root Cause Analysis (5 Whys)**
+
+1. **Why?** `local.settings.sample.json` file was not found during CI/CD Docker build
+2. **Why?** The file was being ignored by git via the pattern `local.settings.*.json`
+3. **Why?** Wasn't this caught in local E2E validation? Local validation didn't run the same Docker build process as CI/CD
+4. **Why?** Local validation scripts prioritize speed over completeness and don't include Docker builds
+5. **Why?** Mismatch between local development workflow and CI/CD pipeline validation environments
+
+### **Implemented Solution: Configuration Management Overhaul**
+
+#### **1. Git Ignore Pattern Fix**
+
+- **Changed**: `.gitignore` pattern from `local.settings.*.json` to specific exclusion
+- **Before**: Both `local.settings.json` and `local.settings.sample.json` were ignored
+- **After**: Only `local.settings.json` is ignored; `local.settings.sample.json` is tracked
+- **Rationale**: Sample files should be tracked as templates for CI/CD environments
+
+#### **2. Enhanced Local Validation**
+
+Created comprehensive validation scripts that mirror CI/CD environment:
+
+**Configuration Validation (`scripts/validate-config.sh`)**:
+
+- ✅ Validates all required files for Docker builds
+- ✅ Checks git tracking status of essential configuration files
+- ✅ Validates `.gitignore` and `.dockerignore` patterns
+- ✅ Verifies Dockerfile references to configuration files
+- ✅ Validates monorepo workspace configuration
+- ✅ Works without Docker daemon for essential checks
+
+**E2E Docker Validation (`scripts/validate-e2e-docker.sh`)**:
+
+- ✅ Replicates exact CI/CD Docker build process locally
+- ✅ Tests complete E2E environment startup
+- ✅ Validates container health and connectivity
+- ✅ Provides detailed diagnostics on failures
+
+#### **3. Pre-Push Integration**
+
+Updated `scripts/pre-push-optimized.sh` to include:
+
+- Configuration validation (always runs)
+- E2E Docker validation (when Docker available)
+- Graceful fallback when Docker not available
+
+#### **4. Package.json Scripts Enhancement**
+
+Added new npm scripts:
+
+```json
+{
+  "validate:config": "./scripts/validate-config.sh",
+  "validate:e2e-docker": "./scripts/validate-e2e-docker.sh",
+  "validate:ci-cd": "./scripts/validate-config.sh && ./scripts/validate-e2e-docker.sh",
+  "e2e:start": "npm run validate:e2e-docker && cd e2e && npm run start:services",
+  "e2e:full": "npm run validate:e2e-docker && cd e2e && npm run run:full"
+}
+```
+
+### **Prevention Strategy: Long-term Systemic Improvements**
+
+#### **1. Configuration Management Principles**
+
+- **Sample files** (`.sample.json`, `.template.env`) are tracked in git
+- **Local secrets** (`.json`, `.env`) are gitignored
+- **Docker builds** explicitly include sample files while excluding secrets
+- **Validation scripts** check consistency between local and CI/CD environments
+
+#### **2. Local-CI/CD Parity**
+
+- Local validation must mirror CI/CD processes as closely as possible
+- Configuration validation runs regardless of Docker availability
+- Pre-push hooks include both fast checks and comprehensive validation
+- Clear documentation on required local environment setup
+
+#### **3. Fail-Fast Validation**
+
+- Configuration issues detected before code push
+- Clear error messages with actionable remediation steps
+- Validation runs in both development and CI/CD environments
+- Comprehensive diagnostics for debugging failures
+
+### **Validation Results**
+
+After implementing fixes:
+
+```bash
+$ ./scripts/validate-config.sh
+🔧 Configuration Validation
+===========================
+✅ Found: backend/local.settings.sample.json
+✅ Git tracked: backend/local.settings.sample.json
+✅ local.settings.sample.json is not ignored by git
+✅ .dockerignore explicitly includes local.settings.sample.json
+✅ e2e/docker/Dockerfile.backend-test has proper COPY command for local.settings.sample.json
+✅ 🎉 Configuration validation passed in 1s
+```
+
+### **Impact on Development Workflow**
+
+#### **Benefits**
+
+- ✅ CI/CD configuration issues caught locally before push
+- ✅ Faster feedback loop for developers
+- ✅ Reduced CI/CD pipeline failures
+- ✅ Clear separation between secrets and templates
+- ✅ Consistent environment setup across team
+
+#### **Developer Experience**
+
+- **Fast path**: Configuration validation always runs (1-2s)
+- **Complete path**: Docker validation when available (30-60s)
+- **Graceful degradation**: Works in environments without Docker
+- **Clear feedback**: Specific error messages with remediation steps

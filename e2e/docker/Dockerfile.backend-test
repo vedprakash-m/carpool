@@ -2,7 +2,7 @@
 # This Dockerfile builds the shared package first, then the backend
 
 # Stage 1: Build shared package
-FROM node:20-alpine AS shared-builder
+FROM --platform=linux/amd64 node:20-alpine AS shared-builder
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ RUN npm ci --ignore-scripts
 RUN npm run build --workspace=shared
 
 # Stage 2: Build backend
-FROM node:20-alpine AS backend-builder
+FROM --platform=linux/amd64 node:20-alpine AS backend-builder
 
 WORKDIR /app
 
@@ -43,7 +43,7 @@ RUN npm run build --workspace=shared
 RUN cd backend && npm run build
 
 # Stage 3: Production runtime
-FROM node:20-alpine AS runtime
+FROM --platform=linux/amd64 node:20-alpine AS runtime
 
 WORKDIR /app
 
@@ -67,8 +67,8 @@ COPY --from=backend-builder /app/backend/local.settings.sample.json ./backend/lo
 RUN echo "Creating local.settings.json from sample template for containerized environment" && \
     cp ./backend/local.settings.sample.json ./backend/local.settings.json
 
-# Install only production dependencies
-RUN npm ci --only=production --ignore-scripts
+# Install dependencies including Azure Functions Core Tools
+RUN npm ci
 
 # Set working directory to backend
 WORKDIR /app/backend

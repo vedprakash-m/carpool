@@ -35,7 +35,14 @@
     "clean:validate": "npm run clean && npm run build && npm run type-check && npm run lint && npm run test",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev"
+    "dev:frontend": "cd frontend && npm run dev",
+    "validate:e2e-docker": "./scripts/validate-e2e-docker.sh",
+    "validate:config": "./scripts/validate-config.sh",
+    "validate:ci-cd": "./scripts/validate-config.sh && ./scripts/validate-e2e-docker.sh",
+    "e2e:start": "npm run validate:e2e-docker && cd e2e && npm run start:services",
+    "e2e:test": "cd e2e && npm run test:e2e",
+    "e2e:stop": "cd e2e && npm run stop:services",
+    "e2e:full": "npm run validate:e2e-docker && cd e2e && npm run run:full"
   },
   "dependencies": {},
   "devDependencies": {

@@ -11,7 +11,9 @@ import { apiClient } from '../lib/api-client';
 const msalConfig = {
   auth: {
     clientId: process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID || '',
-    authority: 'https://login.microsoftonline.com/vedid.onmicrosoft.com',
+    authority:
+      process.env.NEXT_PUBLIC_ENTRA_AUTHORITY ||
+      'https://login.microsoftonline.com/vedprakashmoutlook.onmicrosoft.com',
     redirectUri: typeof window !== 'undefined' ? window.location.origin : '',
   },
   cache: {
@@ -36,6 +38,7 @@ interface EntraAuthState {
 
 interface EntraAuthActions {
   initialize: () => Promise<void>;
+  handleAuthRedirect: () => Promise<void>;
   loginWithEntra: () => Promise<void>;
   loginWithLegacy: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -67,17 +70,144 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         return;
       }
 
+      console.log('Initializing MSAL...');
+      console.log('Current URL:', window.location.href);
+      console.log('URL hash:', window.location.hash);
+
       const msalInstance = new PublicClientApplication(msalConfig);
       await msalInstance.initialize();
+      console.log('MSAL initialized successfully');
 
       set({ msalInstance, isLoading: false });
 
-      // Check if user is already authenticated
-      await get().checkAuthStatus();
+      // Check if we're coming back from a redirect first
+      const isRedirectCallback =
+        window.location.hash.includes('code=') ||
+        window.location.hash.includes('access_token=') ||
+        window.location.hash.includes('error=');
+
+      if (isRedirectCallback) {
+        console.log('Detected redirect callback, processing...');
+        await get().handleAuthRedirect();
+      } else {
+        console.log(
+          'No redirect callback detected, checking existing auth status...'
+        );
+        await get().checkAuthStatus();
+      }
     } catch (error) {
       console.error('MSAL initialization failed:', error);
       set({
         error: 'Authentication service initialization failed',
+        isLoading: false,
+      });
+    }
+  },
+
+  handleAuthRedirect: async () => {
+    const { msalInstance } = get();
+    if (!msalInstance) {
+      console.error('MSAL instance not available');
+      return;
+    }
+
+    try {
+      set({ isLoading: true, error: null });
+
+      console.log('Handling auth redirect...');
+      const response = await msalInstance.handleRedirectPromise();
+      console.log('Redirect response:', response);
+
+      if (response && response.accessToken) {
+        console.log('Processing successful redirect response');
+        console.log('Access token length:', response.accessToken.length);
+
+        // Successful login redirect - exchange token with backend
+        const apiResponse = await apiClient.post('/auth-entra-unified', {
+          authProvider: 'entra',
+          accessToken: response.accessToken,
+        });
+
+        console.log('Backend auth response:', apiResponse);
+
+        if (apiResponse.success && apiResponse.data) {
+          const vedUser = (apiResponse.data as { user: VedUser }).user;
+
+          set({
+            vedUser,
+            account: response.account,
+            isAuthenticated: true,
+            authMethod: 'entra',
+            isLoading: false,
+          });
+
+          // Set token for API calls
+          apiClient.setToken(response.accessToken);
+
+          // Clear the URL hash to remove auth parameters
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+
+          // Redirect to dashboard after successful auth
+          console.log('Redirecting to dashboard...');
+          window.location.href = '/dashboard';
+          return;
+        } else {
+          console.error('Backend auth failed:', apiResponse);
+          set({
+            error: 'Authentication with backend failed',
+            isLoading: false,
+          });
+        }
+      } else if (response === null) {
+        console.log(
+          'No response from handleRedirectPromise - this might be normal'
+        );
+
+        // Check if there are auth parameters but no response
+        if (window.location.hash.includes('code=')) {
+          console.warn('Auth code detected but no MSAL response');
+
+          // Try a different approach - force process the hash
+          setTimeout(async () => {
+            try {
+              console.log('Retrying redirect handling...');
+              const retryResponse = await msalInstance.handleRedirectPromise();
+              if (retryResponse) {
+                console.log('Retry successful:', retryResponse);
+                await get().handleAuthRedirect();
+              } else {
+                console.error('Retry also returned null');
+                set({
+                  error: 'Failed to process authentication response',
+                  isLoading: false,
+                });
+              }
+            } catch (retryError) {
+              console.error('Retry failed:', retryError);
+              set({
+                error: 'Failed to process authentication response',
+                isLoading: false,
+              });
+            }
+          }, 500);
+        } else {
+          set({ isLoading: false });
+        }
+      } else {
+        console.log('Unexpected response format:', response);
+        set({
+          error: 'Unexpected authentication response',
+          isLoading: false,
+        });
+      }
+    } catch (redirectError) {
+      console.error('Error handling redirect:', redirectError);
+      set({
+        error: 'Failed to process authentication response',
         isLoading: false,
       });
     }

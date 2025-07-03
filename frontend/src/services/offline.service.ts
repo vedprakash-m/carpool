@@ -503,6 +503,49 @@ class OfflineService {
       await this.syncOfflineData();
     }
   }
+
+  // Static methods for test compatibility
+  static isOnline(): boolean {
+    return OfflineService.getInstance().getCapabilities().isOnline;
+  }
+
+  static getStoredData(key: string): any {
+    // Return a promise that resolves to cached data
+    return OfflineService.getInstance().getCachedResponse(key);
+  }
+
+  static async storeData(key: string, data: any): Promise<void> {
+    await OfflineService.getInstance().cacheResponse(key, data);
+  }
+
+  static async syncData(): Promise<void> {
+    await OfflineService.getInstance().forcSync();
+  }
+
+  static async clearStorage(): Promise<void> {
+    const instance = OfflineService.getInstance();
+    if (instance.db) {
+      const transaction = instance.db.transaction(
+        ['cache', 'offlineData'],
+        'readwrite'
+      );
+      const cacheStore = transaction.objectStore('cache');
+      const offlineStore = transaction.objectStore('offlineData');
+
+      await Promise.all([
+        new Promise<void>((resolve, reject) => {
+          const clearCache = cacheStore.clear();
+          clearCache.onsuccess = () => resolve();
+          clearCache.onerror = () => reject(clearCache.error);
+        }),
+        new Promise<void>((resolve, reject) => {
+          const clearOffline = offlineStore.clear();
+          clearOffline.onsuccess = () => resolve();
+          clearOffline.onerror = () => reject(clearOffline.error);
+        }),
+      ]);
+    }
+  }
 }
 
 /**
@@ -564,4 +607,5 @@ export function useOffline(): OfflineCapabilities & {
   };
 }
 
+export { OfflineService };
 export default OfflineService;

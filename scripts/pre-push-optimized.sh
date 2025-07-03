@@ -132,7 +132,34 @@ fi
 
 print_status "SUCCESS" "Security check completed"
 
-# 5. Skip build artifact checking to save time
+# 5. Configuration validation (CI/CD mirror)
+print_status "INFO" "Validating CI/CD configuration..."
+
+# Run the configuration validation script
+./scripts/validate-config.sh || {
+    print_status "ERROR" "Configuration validation failed - this would fail in CI/CD"
+    print_status "INFO" "Run './scripts/validate-config.sh' locally to debug"
+    exit 1
+}
+
+# 6. E2E Docker build validation (if Docker available)
+print_status "INFO" "Checking for E2E Docker validation..."
+
+# Check if Docker is available
+if command -v docker &> /dev/null && docker info &> /dev/null 2>&1; then
+    print_status "INFO" "Docker available - running E2E Docker validation..."
+    ./scripts/validate-e2e-docker.sh || {
+        print_status "ERROR" "E2E Docker validation failed - this would fail in CI/CD"
+        print_status "INFO" "Run './scripts/validate-e2e-docker.sh' locally to debug"
+        exit 1
+    }
+    print_status "SUCCESS" "E2E Docker validation passed"
+else
+    print_status "INFO" "Docker not available - skipped Docker build validation"
+    print_status "INFO" "Configuration validation covered essential CI/CD checks"
+fi
+
+# 7. Skip build artifact checking to save time
 print_status "INFO" "Skipping build artifact checking (CI will validate)"
 
 end_time=$(date +%s)

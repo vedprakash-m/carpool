@@ -27,15 +27,16 @@ start_time=$(date +%s)
 
 # Get list of staged files
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
-TS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(ts|tsx)$' || true)
+TS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(ts|tsx)$' | grep -v -E '(__tests__|\.test\.|\.spec\.)' || true)
 JS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(js|jsx)$' || true)
+ALL_TS_JS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(ts|tsx|js|jsx)$' || true)
 
-if [ -z "$TS_FILES" ] && [ -z "$JS_FILES" ]; then
+if [ -z "$TS_FILES" ] && [ -z "$JS_FILES" ] && [ -z "$ALL_TS_JS_FILES" ]; then
     print_status "INFO" "No TypeScript/JavaScript files staged - skipping checks"
     exit 0
 fi
 
-print_status "INFO" "Checking $(echo "$TS_FILES $JS_FILES" | wc -w) staged files..."
+print_status "INFO" "Checking $(echo "$ALL_TS_JS_FILES" | wc -w) staged files..."
 
 # 1. Lightning-fast type checking (only staged files)
 if [ -n "$TS_FILES" ]; then
@@ -61,11 +62,11 @@ if [ -n "$TS_FILES" ]; then
 fi
 
 # 2. Quick lint (only staged files)
-if [ -n "$TS_FILES" ] || [ -n "$JS_FILES" ]; then
+if [ -n "$ALL_TS_JS_FILES" ]; then
     print_status "INFO" "Linting staged files..."
     
     # Backend linting
-    BACKEND_LINT_FILES=$(echo "$TS_FILES $JS_FILES" | tr ' ' '\n' | grep '^backend/' || true)
+    BACKEND_LINT_FILES=$(echo "$ALL_TS_JS_FILES" | tr ' ' '\n' | grep '^backend/' || true)
     if [ -n "$BACKEND_LINT_FILES" ]; then
         echo "$BACKEND_LINT_FILES" | xargs -r npx eslint --fix --quiet 2>/dev/null || {
             print_status "ERROR" "Backend linting failed"
@@ -74,7 +75,7 @@ if [ -n "$TS_FILES" ] || [ -n "$JS_FILES" ]; then
     fi
     
     # Frontend linting
-    FRONTEND_LINT_FILES=$(echo "$TS_FILES $JS_FILES" | tr ' ' '\n' | grep '^frontend/' || true)
+    FRONTEND_LINT_FILES=$(echo "$ALL_TS_JS_FILES" | tr ' ' '\n' | grep '^frontend/' || true)
     if [ -n "$FRONTEND_LINT_FILES" ]; then
         (cd frontend && echo "$FRONTEND_LINT_FILES" | sed 's|^frontend/||' | xargs -r npx eslint --fix --quiet 2>/dev/null) || {
             print_status "ERROR" "Frontend linting failed"

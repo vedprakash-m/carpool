@@ -206,7 +206,7 @@ Cost-Optimized Two-Tier Architecture:
 │                     CAN BE DELETED FOR COST SAVINGS            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│ Azure Functions (carpool-func) ← → WhatsApp Business API       │
+│ Azure Functions (carpool-api) ← → WhatsApp Business API        │
 │           ↓                              ↓                     │
 │ Static Web App (carpool-web)        Parent Groups              │
 │           ↓                                                     │
@@ -1180,7 +1180,7 @@ e2e/specs/tesla-stem/
 
 - **Purpose**: Application runtime and business logic - can be deleted for cost savings
 - **Resources**:
-  - `carpool-func` (Function App) - Backend API and business logic
+  - `carpool-api` (Function App) - Backend API and business logic
   - `carpool-web` (Static Web App) - Frontend application and CDN
   - `carpool-insights` (Application Insights) - Monitoring and telemetry
 - **Monthly Cost**: ~$20 (when active, reduced due to shared communication services)
@@ -1217,7 +1217,7 @@ interface AzureInfrastructure {
   };
   computeResources: {
     resourceGroup: 'carpool-rg';
-    functionApp: 'carpool-func';
+    functionApp: 'carpool-api';
     staticWebApp: 'carpool-web';
     applicationInsights: 'carpool-insights';
     description: 'Can be deleted/recreated for cost savings during downtime';
@@ -1254,7 +1254,7 @@ interface DeploymentConfig {
 
 // Compute resources (can be deleted/recreated for cost savings):
 // az group create --name "carpool-rg" --location "West US 2"
-// az functionapp create --name "carpool-func" --resource-group "carpool-rg"
+// az functionapp create --name "carpool-api" --resource-group "carpool-rg"
 // az staticwebapp create --name "carpool-web" --resource-group "carpool-rg"
 
 // Shared services (existing, managed separately):
