@@ -293,7 +293,7 @@ describe('Login Page - UX Requirements Alignment', () => {
 
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole('button');
+      const submitButton = screen.getByTestId('submit-login-button');
       expect(submitButton).toHaveTextContent('Signing in...');
       expect(submitButton).toBeDisabled();
 
@@ -304,7 +304,7 @@ describe('Login Page - UX Requirements Alignment', () => {
     it('should show ready state for family login flow', () => {
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole('button');
+      const submitButton = screen.getByTestId('submit-login-button');
       expect(submitButton).toHaveTextContent('Sign in');
       expect(submitButton).not.toBeDisabled();
       expect(submitButton).not.toHaveAttribute('aria-disabled');
@@ -317,7 +317,7 @@ describe('Login Page - UX Requirements Alignment', () => {
       mockAuthStore.isLoading = false;
       const { rerender } = render(<LoginPage />);
 
-      let submitButton = screen.getByRole('button');
+      let submitButton = screen.getByTestId('submit-login-button');
       expect(submitButton).toHaveTextContent('Sign in');
       expect(submitButton).not.toBeDisabled();
 
@@ -325,7 +325,7 @@ describe('Login Page - UX Requirements Alignment', () => {
       mockAuthStore.isLoading = true;
       rerender(<LoginPage />);
 
-      submitButton = screen.getByRole('button');
+      submitButton = screen.getByTestId('submit-login-button');
       expect(submitButton).toHaveTextContent('Signing in...');
       expect(submitButton).toBeDisabled();
     });

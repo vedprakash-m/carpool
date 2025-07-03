@@ -98,7 +98,12 @@ describe('PlatformMonitoringDashboard', () => {
 
     render(<PlatformMonitoringDashboard />);
 
-    expect(screen.getAllByRole('generic')).toHaveLength(8);
+    // Check for the presence of loading skeleton elements
+    const loadingElements = document.querySelectorAll('.animate-pulse');
+    expect(loadingElements).toHaveLength(8);
+
+    // Should not show content yet
+    expect(screen.queryByText('Platform Monitoring')).not.toBeInTheDocument();
   });
 
   it('loads and displays platform metrics', async () => {
