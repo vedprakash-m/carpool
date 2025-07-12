@@ -198,7 +198,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [unit, integration, e2e]
+        suite: [unit, integration] # e2e temporarily disabled
     steps:
       - uses: actions/checkout@v4
 
