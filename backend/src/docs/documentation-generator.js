@@ -1,20 +1,20 @@
-"use strict";
+'use strict';
 /**
  * API Documentation Generator
  * Utilities for generating and serving API documentation
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, '__esModule', { value: true });
 exports.docsSpec = docsSpec;
 exports.docsSwagger = docsSwagger;
 exports.docsRedoc = docsRedoc;
 exports.docsIndex = docsIndex;
 exports.generateClientExamples = generateClientExamples;
-const openapi_spec_1 = require("./openapi-spec");
+const openapi_spec_1 = require('./openapi-spec');
 /**
  * Generate Swagger UI HTML for API documentation
  */
 function generateSwaggerUI() {
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -98,7 +98,7 @@ function generateSwaggerUI() {
  * Generate ReDoc HTML for alternative documentation view
  */
 function generateReDocUI() {
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -120,85 +120,88 @@ function generateReDocUI() {
  * Azure Function to serve OpenAPI specification
  */
 async function docsSpec(request, context) {
-    try {
-        return {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
-                'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
-            },
-            jsonBody: openapi_spec_1.openApiSpec
-        };
-    }
-    catch (error) {
-        context.error('Failed to serve OpenAPI spec', { error: error instanceof Error ? error.message : 'Unknown error' });
-        return {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-            jsonBody: {
-                success: false,
-                error: {
-                    message: 'Failed to load API specification',
-                    code: 'INTERNAL_ERROR'
-                }
-            }
-        };
-    }
+  try {
+    return {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+      },
+      jsonBody: openapi_spec_1.openApiSpec,
+    };
+  } catch (error) {
+    context.error('Failed to serve OpenAPI spec', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    return {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+      jsonBody: {
+        success: false,
+        error: {
+          message: 'Failed to load API specification',
+          code: 'INTERNAL_ERROR',
+        },
+      },
+    };
+  }
 }
 /**
  * Azure Function to serve Swagger UI
  */
 async function docsSwagger(request, context) {
-    try {
-        return {
-            status: 200,
-            headers: {
-                'Content-Type': 'text/html',
-                'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
-            },
-            body: generateSwaggerUI()
-        };
-    }
-    catch (error) {
-        context.error('Failed to serve Swagger UI', { error: error instanceof Error ? error.message : 'Unknown error' });
-        return {
-            status: 500,
-            headers: { 'Content-Type': 'text/html' },
-            body: '<h1>Failed to load documentation</h1>'
-        };
-    }
+  try {
+    return {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+      },
+      body: generateSwaggerUI(),
+    };
+  } catch (error) {
+    context.error('Failed to serve Swagger UI', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    return {
+      status: 500,
+      headers: { 'Content-Type': 'text/html' },
+      body: '<h1>Failed to load documentation</h1>',
+    };
+  }
 }
 /**
  * Azure Function to serve ReDoc UI
  */
 async function docsRedoc(request, context) {
-    try {
-        return {
-            status: 200,
-            headers: {
-                'Content-Type': 'text/html',
-                'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
-            },
-            body: generateReDocUI()
-        };
-    }
-    catch (error) {
-        context.error('Failed to serve ReDoc UI', { error: error instanceof Error ? error.message : 'Unknown error' });
-        return {
-            status: 500,
-            headers: { 'Content-Type': 'text/html' },
-            body: '<h1>Failed to load documentation</h1>'
-        };
-    }
+  try {
+    return {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+      },
+      body: generateReDocUI(),
+    };
+  } catch (error) {
+    context.error('Failed to serve ReDoc UI', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    return {
+      status: 500,
+      headers: { 'Content-Type': 'text/html' },
+      body: '<h1>Failed to load documentation</h1>',
+    };
+  }
 }
 /**
  * Azure Function to serve documentation index
  */
 async function docsIndex(request, context) {
-    const indexHTML = `
+  const indexHTML = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -289,7 +292,10 @@ async function docsIndex(request, context) {
     <div class="api-info">
       <h3>API Information</h3>
       <p><strong>Version:</strong> ${openapi_spec_1.openApiSpec.info.version}</p>
-      <p><strong>Base URL:</strong> ${openapi_spec_1.openApiSpec.servers[0]?.url || 'https://carpool-functions.azurewebsites.net/api'}</p>
+      <p><strong>Base URL:</strong> ${
+        openapi_spec_1.openApiSpec.servers[0]?.url ||
+        'https://carpool-functions.azurewebsites.net/api'
+      }</p>
       <p><strong>Authentication:</strong> JWT Bearer Token</p>
     </div>
 
@@ -318,8 +324,8 @@ async function docsIndex(request, context) {
 
     <div class="api-info">
       <h3>Quick Start</h3>
-      <p>1. Register for an account: <code>POST /auth/register</code></p>
-      <p>2. Login to get JWT token: <code>POST /auth/login</code></p>
+      <p>1. Register for an account: <code>POST /api/auth (action: register)</code></p>
+      <p>2. Login to get JWT token: <code>POST /api/auth (action: login)</code></p>
       <p>3. Include token in Authorization header: <code>Bearer &lt;token&gt;</code></p>
       <p>4. Start making API calls to manage trips and users</p>
     </div>
@@ -339,31 +345,32 @@ async function docsIndex(request, context) {
   </div>
 </body>
 </html>`;
-    try {
-        return {
-            status: 200,
-            headers: {
-                'Content-Type': 'text/html',
-                'Cache-Control': 'public, max-age=3600'
-            },
-            body: indexHTML
-        };
-    }
-    catch (error) {
-        context.error('Failed to serve docs index', { error: error instanceof Error ? error.message : 'Unknown error' });
-        return {
-            status: 500,
-            headers: { 'Content-Type': 'text/html' },
-            body: '<h1>Failed to load documentation</h1>'
-        };
-    }
+  try {
+    return {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'public, max-age=3600',
+      },
+      body: indexHTML,
+    };
+  } catch (error) {
+    context.error('Failed to serve docs index', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    return {
+      status: 500,
+      headers: { 'Content-Type': 'text/html' },
+      body: '<h1>Failed to load documentation</h1>',
+    };
+  }
 }
 /**
  * Generate API client code examples
  */
 function generateClientExamples() {
-    return {
-        javascript: `
+  return {
+    javascript: `
 // JavaScript/Node.js Example
 const axios = require('axios');
 
@@ -373,12 +380,13 @@ let authToken = null;
 // Login
 async function login(email, password) {
   try {
-    const response = await axios.post(\`\${API_BASE_URL}/auth/login\`, {
+    const response = await axios.post(\`\${API_BASE_URL}/api/auth\`, {
+      action: 'login',
       email,
       password
     });
     
-    authToken = response.data.data.token;
+    authToken = response.data.data.accessToken;
     return response.data.data.user;
   } catch (error) {
     console.error('Login failed:', error.response?.data || error.message);
@@ -446,7 +454,7 @@ async function example() {
     console.error('Example failed:', error);
   }
 }`,
-        python: `
+    python: `
 # Python Example
 import requests
 import json
@@ -459,14 +467,15 @@ def login(email, password):
     """Login and store auth token"""
     global auth_token
     
-    response = requests.post(f'{API_BASE_URL}/auth/login', json={
+    response = requests.post(f'{API_BASE_URL}/api/auth', json={
+        'action': 'login',
         'email': email,
         'password': password
     })
     
     if response.status_code == 200:
         data = response.json()
-        auth_token = data['data']['token']
+        auth_token = data['data']['accessToken']
         return data['data']['user']
     else:
         raise Exception(f"Login failed: {response.text}")
@@ -561,13 +570,14 @@ if __name__ == "__main__":
         
     except Exception as e:
         print(f"Error: {e}")`,
-        curl: `
+    curl: `
 # cURL Examples
 
 # 1. Login
-curl -X POST https://carpool-functions.azurewebsites.net/api/auth/login \\
+curl -X POST https://carpool-functions.azurewebsites.net/api/auth \\
   -H "Content-Type: application/json" \\
   -d '{
+    "action": "login",
     "email": "user@example.com",
     "password": "password123"
   }'
@@ -616,6 +626,6 @@ curl -X PUT https://carpool-functions.azurewebsites.net/api/users/profile \\
   }'
 
 # 7. Health check (no authentication required)
-curl -X GET https://carpool-functions.azurewebsites.net/api/health`
-    };
+curl -X GET https://carpool-functions.azurewebsites.net/api/health`,
+  };
 }

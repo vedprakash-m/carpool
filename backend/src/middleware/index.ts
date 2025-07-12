@@ -8,10 +8,20 @@ import {
 import { container } from '../container';
 import { ZodSchema } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { AuthService, JwtPayload } from '../services/auth.service';
+import { userDomainService } from '../services/domains/user-domain.service';
 import { UserRole } from '@carpool/shared';
 import { ILogger } from '../utils/logger';
 import { handleError, Errors } from '../utils/error-handler';
+
+// JWT Payload interface for middleware
+export interface JwtPayload {
+  userId: string;
+  email: string;
+  role: UserRole;
+  authProvider: 'legacy' | 'entra';
+  iat?: number;
+  exp?: number;
+}
 
 // Extend the Azure HttpRequest type using declaration merging
 // Use a different property name ('auth') to avoid conflict with the read-only 'user' property.
@@ -83,18 +93,32 @@ export const requestLogging: Middleware = async (request, context) => {
 
 // Middleware for authentication
 export const authenticate: Middleware = async (request, context) => {
-  const authService = container.resolve<AuthService>('AuthService');
   const logger = container.resolve<ILogger>('ILogger').child({ requestId: request.requestId });
 
   try {
     const authHeader = request.headers.get('authorization');
-    const token = authService.extractTokenFromHeader(authHeader || undefined);
 
-    if (!token) {
-      throw Errors.Unauthorized('Authorization token is required.');
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw Errors.Unauthorized(
+        'Authorization token is required. Expected "Bearer <token>" format.',
+      );
     }
 
-    const payload = authService.verifyAccessToken(token);
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const verifyResult = await userDomainService.verifyToken(token);
+
+    if (!verifyResult.success || !verifyResult.user) {
+      throw Errors.Unauthorized(verifyResult.message || 'Invalid or expired token.');
+    }
+
+    // Create JWT payload for middleware compatibility
+    const payload: JwtPayload = {
+      userId: verifyResult.user.id,
+      email: verifyResult.user.email,
+      role: verifyResult.user.role,
+      authProvider: verifyResult.user.authProvider,
+    };
+
     request.auth = payload;
 
     logger.debug('Authentication successful', { userId: payload.userId });

@@ -5,7 +5,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import { ApiResponse, PaginatedResponse, AuthResponse } from '@carpool/shared';
+import { ApiResponse, PaginatedResponse, AuthResult } from '@carpool/shared';
 import {
   ApiErrorHandler,
   TimeoutError,
@@ -22,9 +22,17 @@ const MOCK_USER = {
   firstName: 'Admin',
   lastName: 'User',
   role: 'parent' as const,
-  profilePicture: null,
+  authProvider: 'legacy' as const,
+  isActive: true,
+  emailVerified: true,
+  phoneVerified: true,
+  profilePictureUrl: undefined,
   phoneNumber: '+1234567890',
-  organizationId: 'mock-org-123',
+  emergencyContacts: [],
+  groupMemberships: [],
+  homeAddress: '123 Main St, City, State',
+  addressVerified: true,
+  isActiveDriver: true,
   preferences: {
     notifications: {
       email: true,
@@ -44,8 +52,12 @@ const MOCK_USER = {
     isDriver: true,
     smokingAllowed: false,
   },
+  loginAttempts: 0,
+  lastLoginAt: new Date(),
+  lastActivityAt: new Date(),
   createdAt: new Date(),
   updatedAt: new Date(),
+  permissions: ['user:read', 'user:update', 'trip:create', 'trip:join'],
 };
 
 export class ApiClient {
@@ -154,27 +166,30 @@ export class ApiClient {
   }
 
   // Mock authentication methods
-  private mockLogin(credentials: any): Promise<ApiResponse<AuthResponse>> {
+  private mockLogin(credentials: any): Promise<ApiResponse<AuthResult>> {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve({
           success: true,
           data: {
+            success: true,
             user: MOCK_USER,
-            token: 'mock-token-' + Date.now(),
+            accessToken: 'mock-token-' + Date.now(),
             refreshToken: 'mock-refresh-token-' + Date.now(),
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
           },
         });
       }, 500); // Simulate network delay
     });
   }
 
-  private mockRegister(userData: any): Promise<ApiResponse<AuthResponse>> {
+  private mockRegister(userData: any): Promise<ApiResponse<AuthResult>> {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve({
           success: true,
           data: {
+            success: true,
             user: {
               ...MOCK_USER,
               email: userData.email,
@@ -182,8 +197,9 @@ export class ApiClient {
               lastName: userData.lastName,
               role: userData.role,
             },
-            token: 'mock-token-' + Date.now(),
+            accessToken: 'mock-token-' + Date.now(),
             refreshToken: 'mock-refresh-token-' + Date.now(),
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
           },
         });
       }, 500);
@@ -261,26 +277,29 @@ export class ApiClient {
         throw new Error('No refresh token available');
       }
 
-      const response = await axios.post<ApiResponse<AuthResponse>>(
-        `${this.client.defaults.baseURL}/v1/auth/refresh-token`,
-        { refreshToken: this.refreshToken }
+      const response = await axios.post<ApiResponse<AuthResult>>(
+        `${this.client.defaults.baseURL}/api/auth`,
+        {
+          action: 'refresh',
+          refreshToken: this.refreshToken,
+        }
       );
 
       if (!response.data.success || !response.data.data) {
         throw new Error(response.data.error || 'Failed to refresh token');
       }
 
-      const { token, refreshToken } = response.data.data;
+      const { accessToken, refreshToken } = response.data.data;
 
       // Update tokens
-      this.token = token;
+      this.token = accessToken || null;
       if (refreshToken) {
         this.refreshToken = refreshToken;
       }
 
       // Save to localStorage
       if (typeof window !== 'undefined') {
-        localStorage.setItem('access_token', token);
+        localStorage.setItem('access_token', accessToken || '');
         if (refreshToken) {
           localStorage.setItem('refresh_token', refreshToken);
         }
@@ -288,13 +307,13 @@ export class ApiClient {
 
       // Process any queued requests
       this.requestsQueue.forEach(request => {
-        request.resolve(token);
+        request.resolve(accessToken || '');
       });
 
       this.requestsQueue = [];
       this.isRefreshing = false;
 
-      return token;
+      return accessToken || '';
     } catch (error) {
       // Clear tokens on refresh failure
       this.clearToken();
@@ -447,14 +466,14 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     // Check for mock mode and auth endpoints
     if (this.isMockMode) {
-      if (url === '/v1/auth/token' || url === '/auth/login-simple') {
+      if (url === '/api/auth' && data && data.action === 'login') {
         return this.mockLogin(data) as Promise<ApiResponse<T>>;
       }
-      if (url === '/v1/auth/register') {
+      if (url === '/api/auth' && data && data.action === 'register') {
         return this.mockRegister(data) as Promise<ApiResponse<T>>;
       }
       // For other endpoints in mock mode, return success
-      if (url.startsWith('/v1/auth/') || url.startsWith('/auth/')) {
+      if (url.startsWith('/api/auth')) {
         return Promise.resolve({
           success: true,
           data: {} as T,

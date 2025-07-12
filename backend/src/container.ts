@@ -3,7 +3,6 @@ import { container as tsyringeContainer, DependencyContainer } from 'tsyringe';
 import databaseService from './services/database.service';
 
 // Import your services and repositories here
-import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import { TripService } from './services/trip.service';
 import { FamilyService } from './services/family.service';
@@ -17,12 +16,10 @@ import { TripRepository } from './repositories/trip.repository';
 import { AzureLogger, ILogger } from './utils/logger';
 import { CreateTripUseCase } from './core/trips/usecases/CreateTripUseCase';
 import { TripPassengerUseCase } from './core/trips/usecases/TripPassengerUseCase';
-import { LoginUseCase } from './core/auth/usecases/LoginUseCase';
 import { NotificationService } from './services/notification.service';
 import { PreferenceRepository } from './repositories/preference.repository';
 
 export interface ServiceContainer extends DependencyContainer {
-  authService: AuthService;
   userService: UserService;
   tripService: TripService;
   familyService: FamilyService;
@@ -36,7 +33,6 @@ export interface ServiceContainer extends DependencyContainer {
   preferenceRepository: PreferenceRepository;
   createTripUseCase: CreateTripUseCase;
   tripPassengerUseCase: TripPassengerUseCase;
-  loginUseCase: LoginUseCase;
   notificationService: NotificationService;
   loggers: {
     system: ILogger;
@@ -50,9 +46,6 @@ export interface ServiceContainer extends DependencyContainer {
 
 export function createContainer(): ServiceContainer {
   // Register services and repositories
-  tsyringeContainer.register<AuthService>('AuthService', {
-    useClass: AuthService,
-  });
   tsyringeContainer.register<UserService>('UserService', {
     useClass: UserService,
   });
@@ -109,9 +102,6 @@ export function createContainer(): ServiceContainer {
   const serviceContainer = tsyringeContainer as ServiceContainer;
 
   // Add service getters
-  Object.defineProperty(serviceContainer, 'authService', {
-    get: () => tsyringeContainer.resolve<AuthService>('AuthService'),
-  });
   Object.defineProperty(serviceContainer, 'userService', {
     get: () => tsyringeContainer.resolve<UserService>('UserService'),
   });
@@ -145,9 +135,6 @@ export function createContainer(): ServiceContainer {
   Object.defineProperty(serviceContainer, 'preferenceRepository', {
     get: () => tsyringeContainer.resolve<PreferenceRepository>('PreferenceRepository'),
   });
-  Object.defineProperty(serviceContainer, 'loginUseCase', {
-    get: () => tsyringeContainer.resolve<LoginUseCase>('LoginUseCase'),
-  });
   Object.defineProperty(serviceContainer, 'notificationService', {
     get: () => tsyringeContainer.resolve<NotificationService>('NotificationService'),
   });
@@ -177,16 +164,9 @@ export function createContainer(): ServiceContainer {
     },
   });
 
-  tsyringeContainer.register<LoginUseCase>('LoginUseCase', {
-    useFactory: (c) => {
-      const authServiceInstance = c.resolve<AuthService>('AuthService');
-      const userRepoInstance = c.resolve<UserRepository>('UserRepository');
-      return new LoginUseCase(authServiceInstance, userRepoInstance);
-    },
-  });
-
-  return serviceContainer;
+  return serviceContainer as ServiceContainer;
 }
 
+// Create and export the container instance
 export const container = createContainer();
 export { DependencyContainer };

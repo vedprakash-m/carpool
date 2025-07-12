@@ -1,5 +1,39 @@
 import { DatabaseService, databaseService, User } from '../../services/database.service';
 import { configService } from '../../services/config.service';
+import { UserEntity } from '@carpool/shared';
+
+// Test fixture factory
+function createTestUserData(
+  overrides: Partial<Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt'>> = {},
+): Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt'> {
+  return {
+    email: 'test@example.com',
+    passwordHash: 'hashedPassword',
+    firstName: 'Test',
+    lastName: 'User',
+    role: 'parent',
+    authProvider: 'legacy',
+    isActive: true,
+    emailVerified: false,
+    phoneVerified: false,
+    emergencyContacts: [],
+    groupMemberships: [],
+    addressVerified: false,
+    isActiveDriver: false,
+    preferences: {
+      isDriver: false,
+      notifications: {
+        email: true,
+        sms: false,
+        tripReminders: true,
+        swapRequests: true,
+        scheduleChanges: true,
+      },
+    },
+    loginAttempts: 0,
+    ...overrides,
+  };
+}
 
 // Mock the Azure Cosmos SDK
 jest.mock('@azure/cosmos', () => ({
@@ -143,14 +177,9 @@ describe('DatabaseService', () => {
 
     describe('createUser', () => {
       it('should create a user in memory', async () => {
-        const userData = {
-          email: 'test@example.com',
+        const userData = createTestUserData({
           passwordHash: 'hashed-password',
-          firstName: 'Test',
-          lastName: 'User',
-          role: 'parent' as const,
-          isActive: true,
-        };
+        });
 
         const user = await databaseService.createUser(userData);
 
@@ -264,14 +293,9 @@ describe('DatabaseService', () => {
 
     describe('createUser', () => {
       it('should create user in Cosmos DB', async () => {
-        const userData = {
-          email: 'test@example.com',
+        const userData = createTestUserData({
           passwordHash: 'hashed-password',
-          firstName: 'Test',
-          lastName: 'User',
-          role: 'parent' as const,
-          isActive: true,
-        };
+        });
 
         const mockCreatedUser = { ...userData, id: 'generated-id' };
         mockContainer.items.create.mockResolvedValue({ resource: mockCreatedUser });
@@ -285,14 +309,9 @@ describe('DatabaseService', () => {
       it('should handle Cosmos DB creation errors', async () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-        const userData = {
-          email: 'test@example.com',
+        const userData = createTestUserData({
           passwordHash: 'hashed-password',
-          firstName: 'Test',
-          lastName: 'User',
-          role: 'parent' as const,
-          isActive: true,
-        };
+        });
 
         mockContainer.items.create.mockRejectedValue(new Error('Cosmos DB error'));
 

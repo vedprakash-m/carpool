@@ -27,7 +27,7 @@ async function generateScheduleHandler(
 
 export const main = compose(
   authenticate,
-  hasRole(['admin', 'group_admin']),
+  hasRole(['super_admin', 'group_admin']),
 )(generateScheduleHandler);
 
 app.http('admin-generate-schedule', {

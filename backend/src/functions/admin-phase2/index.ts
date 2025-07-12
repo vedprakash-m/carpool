@@ -15,7 +15,7 @@ async function adminPhase2Handler(
 ): Promise<HttpResponseInit> {
   try {
     const userRole = request.auth?.role;
-    if (userRole !== 'admin') {
+    if (userRole !== 'super_admin') {
       throw Errors.Forbidden('Admin role required');
     }
 

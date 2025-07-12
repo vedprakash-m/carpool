@@ -112,10 +112,10 @@ describe('useAuthStore', () => {
         await result.current.login(loginRequest);
       });
 
-      expect(mockApiClient.post).toHaveBeenCalledWith(
-        '/v1/auth/token',
-        loginRequest
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/api/auth', {
+        action: 'login',
+        ...loginRequest,
+      });
       expect(mockApiClient.setToken).toHaveBeenCalledWith(
         'mock-access-token',
         'mock-refresh-token'
@@ -235,10 +235,10 @@ describe('useAuthStore', () => {
         await result.current.register(registerRequest);
       });
 
-      expect(mockApiClient.post).toHaveBeenCalledWith(
-        '/v1/auth/register',
-        registerRequest
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/api/auth', {
+        action: 'register',
+        ...registerRequest,
+      });
       expect(result.current.user).toEqual(mockUser);
       expect(result.current.isAuthenticated).toBe(true);
     });

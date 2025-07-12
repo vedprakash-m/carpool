@@ -75,6 +75,10 @@ export const Errors = {
     new AppError(msg, 500, 'INTERNAL_ERROR', true, details),
   ValidationError: (msg: string, details?: any) =>
     new AppError(msg, 422, 'VALIDATION_ERROR', true, details),
+
+  // Additional error constants
+  INVALID_SCHOOL_ID: 'Invalid school ID provided',
+  INSUFFICIENT_PERMISSIONS: 'Insufficient permissions for this operation',
 };
 
 /**

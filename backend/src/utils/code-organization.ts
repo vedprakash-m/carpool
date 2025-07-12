@@ -265,7 +265,7 @@ class CodeOrganizationManager {
           // This would require a more sophisticated dependency graph analysis
           // For now, we'll check for obvious patterns
           const imports = content.match(/import.*from\s+['"]([^'"]+)['"]/g) || [];
-          const relativePaths = imports.filter((imp) => imp.includes('../'));
+          const relativePaths = imports.filter((imp: string) => imp.includes('../'));
 
           if (relativePaths.length > 5) {
             violations.push({

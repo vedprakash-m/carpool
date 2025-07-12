@@ -308,7 +308,9 @@ export async function docsIndex(
     <div class="api-info">
       <h3>API Information</h3>
       <p><strong>Version:</strong> ${openApiSpec.info.version}</p>
-      <p><strong>Base URL:</strong> ${openApiSpec.servers[0]?.url || 'https://carpool-functions.azurewebsites.net/api'}</p>
+      <p><strong>Base URL:</strong> ${
+        openApiSpec.servers[0]?.url || 'https://carpool-functions.azurewebsites.net/api'
+      }</p>
       <p><strong>Authentication:</strong> JWT Bearer Token</p>
     </div>
 
@@ -337,8 +339,8 @@ export async function docsIndex(
 
     <div class="api-info">
       <h3>Quick Start</h3>
-      <p>1. Register for an account: <code>POST /auth/register</code></p>
-      <p>2. Login to get JWT token: <code>POST /auth/login</code></p>
+      <p>1. Register for an account: <code>POST /api/auth (action: register)</code></p>
+      <p>2. Login to get JWT token: <code>POST /api/auth (action: login)</code></p>
       <p>3. Include token in Authorization header: <code>Bearer &lt;token&gt;</code></p>
       <p>4. Start making API calls to manage trips and users</p>
     </div>
@@ -396,12 +398,13 @@ let authToken = null;
 // Login
 async function login(email, password) {
   try {
-    const response = await axios.post(\`\${API_BASE_URL}/auth/login\`, {
+    const response = await axios.post(\`\${API_BASE_URL}/api/auth\`, {
+      action: 'login',
       email,
       password
     });
     
-    authToken = response.data.data.token;
+    authToken = response.data.data.accessToken;
     return response.data.data.user;
   } catch (error) {
     console.error('Login failed:', error.response?.data || error.message);
@@ -483,14 +486,15 @@ def login(email, password):
     """Login and store auth token"""
     global auth_token
     
-    response = requests.post(f'{API_BASE_URL}/auth/login', json={
+    response = requests.post(f'{API_BASE_URL}/api/auth', json={
+        'action': 'login',
         'email': email,
         'password': password
     })
     
     if response.status_code == 200:
         data = response.json()
-        auth_token = data['data']['token']
+        auth_token = data['data']['accessToken']
         return data['data']['user']
     else:
         raise Exception(f"Login failed: {response.text}")
@@ -590,9 +594,10 @@ if __name__ == "__main__":
 # cURL Examples
 
 # 1. Login
-curl -X POST https://carpool-functions.azurewebsites.net/api/auth/login \\
+curl -X POST https://carpool-functions.azurewebsites.net/api/auth \\
   -H "Content-Type: application/json" \\
   -d '{
+    "action": "login",
     "email": "user@example.com",
     "password": "password123"
   }'

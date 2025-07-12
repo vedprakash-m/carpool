@@ -5,13 +5,14 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["get", "post", "put", "delete", "options"],
-      "route": "v1/admin/groups/{groupId?}"
+      "methods": ["get", "post", "put", "delete"],
+      "route": "admin/groups/{groupId?}"
     },
     {
       "type": "http",
       "direction": "out",
       "name": "res"
     }
-  ]
+  ],
+  "scriptFile": "../dist/admin-carpool-groups/index.js"
 }

@@ -42,7 +42,7 @@ export class PreferenceRepository {
         { name: '@weekStartDate', value: weekStartDate },
       ],
     };
-    const { resources } = await this.container.items.query<WeeklyPreference>(query).fetchAll();
+    const { resources } = await this.container.items.query(query).fetchAll();
     return resources;
   }
 

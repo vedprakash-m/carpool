@@ -6,12 +6,14 @@
       "direction": "in",
       "name": "req",
       "methods": ["post", "options"],
-      "route": "v1/auth/register"
+      "route": "auth-register-unified"
     },
     {
       "type": "http",
       "direction": "out",
       "name": "res"
     }
-  ]
+  ],
+  "scriptFile": "../index.js",
+  "entryPoint": "authRegisterUnified"
 }

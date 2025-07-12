@@ -5,12 +5,14 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["get", "options"]
+      "methods": ["get", "options"],
+      "route": "admin/preferences/status"
     },
     {
       "type": "http",
       "direction": "out",
       "name": "res"
     }
-  ]
-} 
+  ],
+  "scriptFile": "../dist/admin-prefs-status/index.js"
+}

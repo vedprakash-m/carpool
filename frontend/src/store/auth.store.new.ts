@@ -93,10 +93,10 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const response = await apiClient.post<AuthResponse>(
-        '/v1/auth/register',
-        userData
-      );
+      const response = await apiClient.post<AuthResponse>('/api/auth', {
+        action: 'register',
+        ...userData,
+      });
 
       if (response.success && response.data) {
         const { user, token, refreshToken } = response.data;

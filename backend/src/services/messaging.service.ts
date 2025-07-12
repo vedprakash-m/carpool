@@ -149,7 +149,7 @@ export class MessagingService {
         chatId,
         senderId,
         senderName: `${sender.firstName} ${sender.lastName}`,
-        type: messageData.type || 'text',
+        type: messageData.type || ('text' as MessageType),
         content: messageData.content,
         metadata: messageData.metadata,
       };

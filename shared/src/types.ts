@@ -1,12 +1,5 @@
-// User types
-export type UserRole =
-  | 'super_admin'
-  | 'admin'
-  | 'group_admin'
-  | 'parent'
-  | 'child'
-  | 'student'
-  | 'trip_admin';
+// User types - Unified 4-role system
+export type UserRole = 'super_admin' | 'group_admin' | 'parent' | 'student';
 
 export interface RolePermissions {
   super_admin: {
@@ -1101,14 +1094,10 @@ export interface PhoneValidation {
 
 export interface AddressValidation {
   address: string;
-  coordinates?: { lat: number; lng: number };
-  geocodedLocation?: GeographicLocation;
-  distanceFromSchool?: number;
-  withinServiceArea: boolean;
   isValid: boolean;
-  status?: 'pending' | 'verified' | 'failed';
-  validationMessage?: string;
-  error?: string;
+  formattedAddress?: string;
+  coordinates?: GeographicLocation;
+  errors?: string[];
 }
 
 export interface RegistrationData {
@@ -1458,4 +1447,75 @@ export interface NotificationChannelResult {
     error?: string;
     timestamp: string;
   }>;
+}
+
+// Missing types for backward compatibility
+export interface NotificationEntity {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  status: 'pending' | 'sent' | 'delivered' | 'failed';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type NotificationStatus = 'pending' | 'sent' | 'delivered' | 'failed';
+
+export interface ScheduleEntity {
+  id: string;
+  groupId: string;
+  userId: string;
+  date: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PreferenceEntity {
+  id: string;
+  userId: string;
+  groupId: string;
+  preferences: any;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AddressValidation {
+  address: string;
+  isValid: boolean;
+  formattedAddress?: string;
+  coordinates?: GeographicLocation;
+  errors?: string[];
+}
+
+export interface TravelingParentSchedule {
+  userId: string;
+  isRegularTraveler: boolean;
+  travelPattern?: 'weekly' | 'monthly' | 'irregular';
+  needsMakeupOptions: boolean;
+  makeupCommitmentWeeks: number;
+}
+
+export interface MakeupOption {
+  id: string;
+  description: string;
+  available: boolean;
+}
+
+export interface EmailRequest {
+  to: string[];
+  subject: string;
+  body: string;
+  html?: string;
+  cc?: string[];
+  bcc?: string[];
+}
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  bodyTemplate: string;
+  htmlTemplate?: string;
 }

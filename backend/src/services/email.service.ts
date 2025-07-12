@@ -30,8 +30,10 @@ export class EmailService {
       maxPassengers: number;
     },
   ): Promise<void> {
-    const emailData: EmailRequest = {
+    const emailData: any = {
       to: [driverEmail],
+      subject: 'New Trip Created',
+      body: `A new trip has been created for ${tripDetails.destination}`,
       templateId: 'trip-created',
       variables: {
         driverName,
@@ -40,7 +42,7 @@ export class EmailService {
         destination: tripDetails.destination,
         maxPassengers: tripDetails.maxPassengers,
       },
-    };
+    } as any;
 
     await this.sendEmail(emailData);
   }
@@ -58,7 +60,7 @@ export class EmailService {
       destination: string;
     },
   ): Promise<void> {
-    const emailData: EmailRequest = {
+    const emailData: any = {
       to: [driverEmail],
       templateId: 'trip-joined',
       variables: {
@@ -86,7 +88,7 @@ export class EmailService {
       destination: string;
     },
   ): Promise<void> {
-    const emailData: EmailRequest = {
+    const emailData: any = {
       to: [passengerEmail],
       templateId: 'join-confirmation',
       variables: {
@@ -113,7 +115,7 @@ export class EmailService {
       driverName: string;
     },
   ): Promise<void> {
-    const emailData: EmailRequest = {
+    const emailData: any = {
       to: emails,
       templateId: 'trip-reminder',
       variables: {
@@ -139,7 +141,7 @@ export class EmailService {
       destination: string;
     },
   ): Promise<void> {
-    const emailData: EmailRequest = {
+    const emailData: any = {
       to: emails,
       templateId: 'trip-updated',
       variables: {
@@ -165,7 +167,7 @@ export class EmailService {
       reason?: string;
     },
   ): Promise<void> {
-    const emailData: EmailRequest = {
+    const emailData: any = {
       to: emails,
       templateId: 'trip-cancelled',
       variables: {
@@ -190,7 +192,7 @@ export class EmailService {
       resetToken: string;
     },
   ): Promise<void> {
-    const emailData: EmailRequest = {
+    const emailData: any = {
       to: [email],
       templateId: 'password-reset',
       variables: {
@@ -214,7 +216,7 @@ export class EmailService {
       lastName: string;
     },
   ): Promise<void> {
-    const emailData: EmailRequest = {
+    const emailData: any = {
       to: [email],
       templateId: 'welcome',
       variables: {
@@ -279,7 +281,7 @@ export class EmailService {
           '<p>Hi {{driverName}}, your trip to {{destination}} on {{tripDate}} at {{departureTime}} has been created.</p>',
         textContent:
           'Hi {{driverName}}, your trip to {{destination}} on {{tripDate}} at {{departureTime}} has been created.',
-        variables: ['driverName', 'destination', 'tripDate', 'departureTime', 'maxPassengers'],
+        bodyTemplate: "", variables: ['driverName', 'destination', 'tripDate', 'departureTime', 'maxPassengers'],
       },
       {
         id: 'trip-joined',
@@ -291,7 +293,7 @@ export class EmailService {
           '<p>Hi {{driverName}}, {{passengerName}} has joined your trip to {{destination}} on {{tripDate}}.</p>',
         textContent:
           'Hi {{driverName}}, {{passengerName}} has joined your trip to {{destination}} on {{tripDate}}.',
-        variables: ['driverName', 'passengerName', 'destination', 'tripDate'],
+        bodyTemplate: "", variables: ['driverName', 'passengerName', 'destination', 'tripDate'],
       },
       {
         id: 'join-confirmation',
@@ -303,7 +305,7 @@ export class EmailService {
           "<p>Hi {{passengerName}}, you've successfully joined {{driverName}}'s trip to {{destination}} on {{tripDate}} at {{departureTime}}.</p>",
         textContent:
           "Hi {{passengerName}}, you've successfully joined {{driverName}}'s trip to {{destination}} on {{tripDate}} at {{departureTime}}.",
-        variables: ['passengerName', 'driverName', 'destination', 'tripDate', 'departureTime'],
+        bodyTemplate: "", variables: ['passengerName', 'driverName', 'destination', 'tripDate', 'departureTime'],
       },
       {
         id: 'trip-reminder',
@@ -315,7 +317,7 @@ export class EmailService {
           "<p>Don't forget about your carpool trip to {{destination}} tomorrow at {{departureTime}} with {{driverName}}.</p>",
         textContent:
           "Don't forget about your carpool trip to {{destination}} tomorrow at {{departureTime}} with {{driverName}}.",
-        variables: ['destination', 'tripDate', 'departureTime', 'driverName'],
+        bodyTemplate: "", variables: ['destination', 'tripDate', 'departureTime', 'driverName'],
       },
       {
         id: 'trip-updated',
@@ -327,7 +329,7 @@ export class EmailService {
           '<p>{{driverName}} has updated the trip to {{destination}} on {{tripDate}}. Changes: {{changes}}.</p>',
         textContent:
           '{{driverName}} has updated the trip to {{destination}} on {{tripDate}}. Changes: {{changes}}.',
-        variables: ['driverName', 'destination', 'tripDate', 'changes'],
+        bodyTemplate: "", variables: ['driverName', 'destination', 'tripDate', 'changes'],
       },
       {
         id: 'trip-cancelled',
@@ -339,7 +341,7 @@ export class EmailService {
           '<p>Unfortunately, {{driverName}} has cancelled the trip to {{destination}} on {{tripDate}}. Reason: {{reason}}.</p>',
         textContent:
           'Unfortunately, {{driverName}} has cancelled the trip to {{destination}} on {{tripDate}}. Reason: {{reason}}.',
-        variables: ['driverName', 'destination', 'tripDate', 'reason'],
+        bodyTemplate: "", variables: ['driverName', 'destination', 'tripDate', 'reason'],
       },
     ];
   }

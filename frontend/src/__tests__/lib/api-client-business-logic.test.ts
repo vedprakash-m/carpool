@@ -76,8 +76,7 @@ describe('API Client - Carpool Business Logic', () => {
   describe('School Carpool Specific Endpoints', () => {
     it('should validate v1 API versioning for all endpoints', () => {
       const endpoints = [
-        '/v1/auth/token',
-        '/v1/auth/register',
+        '/api/auth',
         '/v1/trips/stats',
         '/v1/admin/generate-schedule',
         '/v1/parents/weekly-preferences',

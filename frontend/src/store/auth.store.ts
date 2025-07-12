@@ -4,9 +4,9 @@ import {
   User,
   LoginRequest,
   RegisterRequest,
-  AuthResponse,
   UpdateUserRequest,
 } from '../types/shared';
+import { AuthResult } from '@carpool/shared';
 import { apiClient } from '../lib/api-client';
 import {
   setTokens,
@@ -59,27 +59,31 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const response = await apiClient.post<AuthResponse>(
-        '/v1/auth/token',
-        credentials
-      );
+      const response = await apiClient.post<AuthResult>('/api/auth', {
+        action: 'login',
+        ...credentials,
+      });
 
       if (response.success && response.data) {
-        const { user, token, refreshToken } = response.data;
+        const { user, accessToken, refreshToken } = response.data;
 
         // Store tokens securely instead of localStorage
-        setTokens(token, refreshToken);
+        if (accessToken && refreshToken) {
+          setTokens(accessToken, refreshToken);
 
-        // Set token in API client with refresh token
-        apiClient.setToken(token, refreshToken);
+          // Set token in API client with refresh token
+          apiClient.setToken(accessToken, refreshToken);
 
-        set({
-          user,
-          token,
-          refreshToken,
-          isAuthenticated: true,
-          isLoading: false,
-        });
+          set({
+            user: user as any, // Type conversion for compatibility
+            token: accessToken,
+            refreshToken,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } else {
+          throw new Error('Invalid token response');
+        }
       } else {
         throw new Error(response.error || 'Login failed');
       }
@@ -93,27 +97,31 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const response = await apiClient.post<AuthResponse>(
-        '/v1/auth/register',
-        userData
-      );
+      const response = await apiClient.post<AuthResult>('/api/auth', {
+        action: 'register',
+        ...userData,
+      });
 
       if (response.success && response.data) {
-        const { user, token, refreshToken } = response.data;
+        const { user, accessToken, refreshToken } = response.data;
 
         // Store tokens securely instead of localStorage
-        setTokens(token, refreshToken);
+        if (accessToken && refreshToken) {
+          setTokens(accessToken, refreshToken);
 
-        // Set token in API client with refresh token
-        apiClient.setToken(token, refreshToken);
+          // Set token in API client with refresh token
+          apiClient.setToken(accessToken, refreshToken);
 
-        set({
-          user,
-          token,
-          refreshToken,
-          isAuthenticated: true,
-          isLoading: false,
-        });
+          set({
+            user: user as any, // Type conversion for compatibility
+            token: accessToken,
+            refreshToken,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } else {
+          throw new Error('Invalid token response');
+        }
       } else {
         throw new Error(response.error || 'Registration failed');
       }
@@ -124,6 +132,9 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   },
 
   logout: () => {
+    // Call the unified logout endpoint for proper server-side cleanup
+    apiClient.post('/api/auth', { action: 'logout' }).catch(console.error);
+
     // Clear tokens from secure storage instead of localStorage
     clearTokens();
     apiClient.clearToken();
@@ -229,7 +240,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ loading: true, error: null });
 
-      const response = await apiClient.put<boolean>('/v1/users/me/password', {
+      const response = await apiClient.post<boolean>('/api/auth', {
+        action: 'change-password',
         currentPassword,
         newPassword,
       });

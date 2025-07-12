@@ -19,5 +19,6 @@
       "direction": "out",
       "name": "res"
     }
-  ]
+  ],
+  "scriptFile": "../dist/admin-assignment-reminders/index.js"
 }
