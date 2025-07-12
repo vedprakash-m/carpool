@@ -14,7 +14,7 @@ COPY tsconfig.json ./
 COPY shared/ ./shared/
 
 # Install dependencies and build shared package
-RUN npm ci --ignore-scripts
+RUN npm ci
 RUN npm run build --workspace=shared
 
 # Stage 2: Build backend
@@ -34,7 +34,7 @@ COPY --from=shared-builder /app/shared/dist ./shared/dist
 COPY backend/ ./backend/
 
 # Install dependencies for the entire monorepo
-RUN npm ci --ignore-scripts
+RUN npm ci
 
 # Build shared package (in case it wasn't copied properly)
 RUN npm run build --workspace=shared

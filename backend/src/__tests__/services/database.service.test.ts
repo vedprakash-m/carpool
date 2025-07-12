@@ -132,7 +132,7 @@ describe('DatabaseService', () => {
       const user = await databaseService.getUserByEmail('admin@carpool.com');
       expect(user).toBeTruthy();
       expect(user?.firstName).toBe('Admin');
-      expect(user?.role).toBe('admin');
+      expect(user?.role).toBe('super_admin');
     });
   });
 

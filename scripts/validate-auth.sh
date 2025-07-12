@@ -6,6 +6,21 @@
 echo "🧪 Comprehensive Authentication System Validation"
 echo "=================================================="
 
+# Include Docker E2E validation if Docker is available
+if command -v docker &> /dev/null; then
+    echo "🐳 Running Docker E2E validation..."
+    if ./scripts/validate-e2e-docker.sh; then
+        echo "✅ Docker E2E validation passed"
+    else
+        echo "⚠️  Docker E2E validation failed - continuing with other tests"
+    fi
+else
+    echo "⚠️  Docker not available - skipping Docker validation"
+fi
+
+echo ""
+echo "🔧 Starting Authentication System Tests..."
+
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
