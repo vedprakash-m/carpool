@@ -98,6 +98,7 @@ export type {
   GenerateScheduleRequest,
   CreateChildRequest,
   UpdateChildRequest,
+  VedUser,
 } from './types';
 
 // Explicitly export types needed by backend services
