@@ -13,6 +13,31 @@
 
 **Carpool** is a comprehensive school carpool management platform designed for Tesla STEM High School and scalable to other educational institutions. The application enables parents to coordinate carpools, manage group memberships, schedule trips, and communicate efficiently while maintaining safety and administrative oversight.
 
+**Architecture**: Cost-optimized single environment deployment with innovative pause/resume capability via dual resource group strategy.
+
+## 🏗️ ARCHITECTURAL DECISIONS
+
+### **Decision 1: Cost-Optimized Single Environment**
+
+- **Single slot, single environment, single region deployment**
+- **Cost optimization over scalability** for educational use case
+- **East US region** for optimal cost-performance
+
+### **Decision 2: Dual Resource Group Strategy (Innovation)**
+
+- **carpool-db-rg**: Persistent resources (database, key vault, storage)
+- **carpool-rg**: Compute resources (functions, web app, insights)
+- **Pause Operation**: Delete carpool-rg → Save 60-80% operational costs
+- **Resume Operation**: Redeploy carpool-rg → Data persists, resume instantly
+- **Static Resource Names**: Enable idempotent deployments (carpool-db, carpool-kv, carpoolsa, etc.)
+
+### **Decision 3: Entra ID Integration**
+
+- **Existing Domain Reuse**: VedID.onmicrosoft.com
+- **Resource Group**: ved-id-rg (existing)
+- **Tenant ID**: VED
+- **Cost Benefit**: No additional identity infrastructure needed
+
 ## 🚧 CURRENT CLEANUP STATUS
 
 ### **Comprehensive Project Cleanup Progress**

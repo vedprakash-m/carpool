@@ -12,11 +12,14 @@ param appName string = 'carpool'
 ])
 param environmentName string = 'dev'
 
-@description('Azure Cosmos DB account name - Tech Spec naming')
+@description('Azure Cosmos DB account name - Static naming for idempotent deployment')
 param cosmosDbAccountName string = 'carpool-db'
 
-@description('Azure Storage Account name - Tech Spec naming')
+@description('Azure Storage Account name - Static naming for idempotent deployment')
 param storageAccountName string = 'carpoolsa'
+
+@description('Azure Key Vault name - Static naming for idempotent deployment')
+param keyVaultName string = 'carpool-kv'
 
 // Tags for all resources
 var tags = {

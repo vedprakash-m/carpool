@@ -295,27 +295,37 @@ Validate core carpool coordination workflows with **Tesla STEM High School famil
 - **Frontend**: Next.js 14 + TypeScript + Tailwind CSS + Zustand
 - **Backend**: Azure Functions v4 + Node.js 22 + TypeScript
 - **Database**: Azure Cosmos DB (NoSQL, serverless)
-- **Authentication**: Microsoft Entra ID (vedid.onmicrosoft.com domain)
-  - **Implementation**: MSAL integration with JWKS token validation
-  - **Standards**: Follows Vedprakash Domain Authentication Requirements
-  - **SSO**: Cross-domain single sign-on across all .vedprakash.net applications
+- **Authentication**: Microsoft Entra ID (VedID.onmicrosoft.com domain)
+  - **Implementation**: MSAL integration with unified JWT validation
+  - **Standards**: Follows existing VED tenant authentication
+  - **SSO**: Integration with existing ved-id-rg resource group
   - **User Object**: Standardized VedUser interface for consistency
-- **Infrastructure**: Azure Bicep (IaC), GitHub Actions (CI/CD)
+- **Infrastructure**: Azure Bicep (IaC), Cost-Optimized Dual Resource Group Strategy
 - **Testing**: Jest + Playwright + 88.67% backend coverage
+
+### **Cost-Optimized Architecture (Innovation)**
+
+- **Dual Resource Group Strategy**:
+  - **carpool-db-rg**: Persistent resources (database, key vault, storage)
+  - **carpool-rg**: Compute resources (functions, web app, insights)
+- **Pause/Resume Capability**: Delete compute resources during inactive periods
+- **Cost Savings**: 60-80% operational cost reduction during pauses
+- **Static Resource Names**: Idempotent deployments (carpool-db, carpool-kv, etc.)
+- **Single Environment**: Cost-effective single slot deployment
 
 ### **Scalability Design**
 
 - **Serverless Architecture**: Auto-scaling Azure Functions
-- **Cost-Optimized**: In-memory caching (Redis eliminated, $360-1200/year savings)
+- **Single Region**: East US for cost optimization
 - **Multi-Tenant Ready**: Database design supports multiple schools
-- **Geographic Distribution**: Ready for multi-region deployment
+- **Reuse Infrastructure**: Leverages existing VED Entra ID tenant
 
 ### **Security Framework**
 
-- **Enterprise Authentication**: Entra ID with SSO across Vedprakash domain
-  - **Domain**: vedid.onmicrosoft.com (shared identity provider)
-  - **Standards**: Vedprakash Domain Authentication Requirements compliance
-  - **Libraries**: @azure/msal-react (frontend), @azure/msal-node (backend)
+- **Enterprise Authentication**: Entra ID integration with existing VED tenant
+  - **Domain**: VedID.onmicrosoft.com (existing identity provider)
+  - **Tenant**: VED (existing)
+  - **Resource Group**: ved-id-rg (existing)
 - **Data Protection**: GDPR/COPPA compliant design
 - **Address Privacy**: Geocoding validation without device location sharing
 - **Input Validation**: Comprehensive Zod schemas, rate limiting

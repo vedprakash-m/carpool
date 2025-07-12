@@ -12,26 +12,26 @@ param appName string = 'carpool'
 ])
 param environmentName string = 'dev'
 
-@description('Azure Function App name')
-param functionAppName string = '${appName}-api'
+@description('Azure Function App name - Static naming for idempotent deployment')
+param functionAppName string = 'carpool-api'
 
-@description('Azure Static Web App name')
-param staticWebAppName string = '${appName}-web'
+@description('Azure Static Web App name - Static naming for idempotent deployment')
+param staticWebAppName string = 'carpool-web'
 
-@description('Azure Application Insights name')
-param appInsightsName string = '${appName}-insights'
+@description('Azure Application Insights name - Static naming for idempotent deployment')
+param appInsightsName string = 'carpool-insights'
 
-@description('Azure Key Vault name')
-param keyVaultName string = '${appName}-kv'
+@description('Azure Key Vault name - Static naming for idempotent deployment')
+param keyVaultName string = 'carpool-kv'
 
 // Database resource group and resource details (from database deployment)
 @description('Database resource group name')
-param databaseResourceGroup string = '${appName}-db-rg'
+param databaseResourceGroup string = 'carpool-db-rg'
 
-@description('Cosmos DB account name from database resource group - Tech Spec naming')
+@description('Cosmos DB account name from database resource group - Static naming')
 param cosmosDbAccountName string = 'carpool-db'
 
-@description('Storage Account name from database resource group - Tech Spec naming')
+@description('Storage Account name from database resource group - Static naming')
 param storageAccountName string = 'carpoolsa'
 
 // Tags for all resources

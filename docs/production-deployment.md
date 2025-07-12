@@ -1,8 +1,33 @@
-# Production Deployment Guide - Unified Authentication System
+# Production Deployment Guide - Cost-Optimized Architecture
 
 **Date**: July 12, 2025  
 **Status**: Production Ready  
-**Architecture**: Unified Authentication with Zero TypeScript Errors
+**Architecture**: Single Environment, Dual Resource Group, Cost-Optimized
+
+## 🏗️ Resource Architecture
+
+### Resource Group Organization
+
+- **carpool-db-rg**: Persistent resources (survives app pauses)
+  - Cosmos DB: `carpool-db`
+  - Key Vault: `carpool-kv`
+  - Storage Account: `carpoolsa`
+- **carpool-rg**: Compute resources (deleted during pauses)
+  - Function App: `carpool-api`
+  - Static Web App: `carpool-web`
+  - Application Insights: `carpool-insights`
+
+### Entra ID Configuration
+
+- **Resource Group**: `ved-id-rg` (existing)
+- **Tenant ID**: `VED`
+- **Domain**: `VedID.onmicrosoft.com`
+
+### Cost Management - Pause/Resume Innovation
+
+- **Pause**: Delete `carpool-rg` to eliminate compute costs
+- **Resume**: Redeploy `carpool-rg` - data persists in `carpool-db-rg`
+- **Benefit**: Save 60-80% operational costs during inactive periods
 
 ## 🎯 Pre-Deployment Checklist
 
@@ -39,10 +64,16 @@ JWT_AUDIENCE=carpool-users
 JWT_ALGORITHM=HS256
 
 # Database Configuration
-COSMOS_DB_ENDPOINT=<YOUR-COSMOS-DB-ENDPOINT>
-COSMOS_DB_KEY=<YOUR-COSMOS-DB-KEY>
+COSMOS_DB_ENDPOINT=https://carpool-db.documents.azure.com:443/
+COSMOS_DB_KEY=<FROM-CARPOOL-KV>
 COSMOS_DB_DATABASE_ID=carpool
 COSMOS_DB_NAME=carpool
+
+# Entra ID Integration (Existing Domain)
+AZURE_TENANT_ID=VED
+AZURE_CLIENT_ID=<FROM-VED-ID-RG>
+AZURE_CLIENT_SECRET=<FROM-CARPOOL-KV>
+AZURE_DOMAIN=VedID.onmicrosoft.com
 
 # Security Settings
 BCRYPT_ROUNDS=12
@@ -72,32 +103,50 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ## 🚀 Deployment Steps
 
-### Step 1: Environment Setup
+### Step 1: Deploy Persistent Resources (carpool-db-rg)
 
-1. **Set Production Environment Variables** in Azure Function App
-2. **Verify JWT Secrets** are different from sample values
-3. **Configure Application Insights** for monitoring
-4. **Set up Azure Key Vault** for secret management
+```bash
+# Create persistent resource group
+az group create --name carpool-db-rg --location eastus
 
-### Step 2: Database Preparation
+# Deploy database, storage, and key vault
+az deployment group create \
+  --resource-group carpool-db-rg \
+  --template-file infra/database.bicep
+```
 
-1. **Cosmos DB Setup**: Ensure database and containers are created
-2. **Data Migration**: Run any pending data migrations
-3. **Index Optimization**: Verify database indexes for performance
+### Step 2: Deploy Compute Resources (carpool-rg)
 
-### Step 3: Authentication System Deployment
+```bash
+# Create compute resource group
+az group create --name carpool-rg --location eastus
 
-1. **Deploy Unified Endpoint**: Deploy `/api/auth` function
-2. **Deploy Authentication Middleware**: Deploy auth middleware
-3. **Deploy Domain Services**: Deploy updated UserDomainService
-4. **Verify Endpoint**: Test unified authentication endpoint
+# Deploy function app, web app, and insights
+az deployment group create \
+  --resource-group carpool-rg \
+  --template-file infra/main-compute.bicep
+```
 
-### Step 4: Frontend Deployment
+### Step 3: Configure Entra ID Integration
 
-1. **Build Frontend**: Ensure frontend uses production API endpoints
-2. **Deploy Static Web App**: Deploy to Azure Static Web Apps
-3. **Configure Environment**: Set production API base URL
-4. **Test Authentication Flow**: Verify end-to-end authentication
+```bash
+# Set Entra ID configuration in Function App
+az functionapp config appsettings set \
+  --name carpool-api \
+  --resource-group carpool-rg \
+  --settings AZURE_TENANT_ID=VED
+```
+
+### Step 4: Deploy Application Code
+
+```bash
+# Deploy backend functions
+func azure functionapp publish carpool-api
+
+# Deploy frontend
+npm run build
+az staticwebapp deploy --name carpool-web --resource-group carpool-rg
+```
 
 ### Step 5: Legacy Endpoint Management
 
