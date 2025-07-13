@@ -45,7 +45,6 @@ var tags = {
 // Database resource references using direct resource IDs to avoid cross-RG issues
 var storageResourceId = resourceId(databaseResourceGroup, 'Microsoft.Storage/storageAccounts', storageAccountName)
 var cosmosResourceId = resourceId(databaseResourceGroup, 'Microsoft.DocumentDB/databaseAccounts', cosmosDbAccountName)
-var keyVaultResourceId = resourceId(databaseResourceGroup, 'Microsoft.KeyVault/vaults', keyVaultName)
 
 // Get storage account connection string once to avoid multiple API calls
 var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageResourceId, '2021-08-01').keys[0].value}'
@@ -83,10 +82,11 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
   scope: resourceGroup(databaseResourceGroup)
 }
 
-// Get Cosmos DB connection details once to avoid multiple API calls
-var cosmosConnectionString = listConnectionStrings(cosmosResourceId, '2021-10-15').connectionStrings[0].connectionString
-var cosmosPrimaryKey = listKeys(cosmosResourceId, '2021-10-15').primaryMasterKey
-var cosmosEndpoint = reference(cosmosResourceId, '2021-10-15').documentEndpoint
+// Reference existing Cosmos DB account to avoid multiple API calls
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existing = {
+  name: cosmosDbAccountName
+  scope: resourceGroup(databaseResourceGroup)
+}
 
 // Azure Function App
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
@@ -135,15 +135,15 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'COSMOS_DB_CONNECTION_STRING'
-          value: cosmosConnectionString
+          value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
         }
         {
           name: 'COSMOS_DB_ENDPOINT'
-          value: cosmosEndpoint
+          value: cosmosAccount.properties.documentEndpoint
         }
         {
           name: 'COSMOS_DB_KEY'
-          value: cosmosPrimaryKey
+          value: cosmosAccount.listKeys().primaryMasterKey
         }
         {
           name: 'ENVIRONMENT'
@@ -198,4 +198,4 @@ output storageAccountName string = storageAccountName
 output appInsightsName string = appInsights.name
 output keyVaultName string = keyVault.name
 output cosmosDbAccountName string = cosmosDbAccountName
-output cosmosDbEndpoint string = cosmosEndpoint
+output cosmosDbEndpoint string = cosmosAccount.properties.documentEndpoint
