@@ -42,12 +42,11 @@ var tags = {
   resourceType: 'compute'
 }
 
-// Database resource references using direct resource IDs to avoid cross-RG issues
-var storageResourceId = resourceId(databaseResourceGroup, 'Microsoft.Storage/storageAccounts', storageAccountName)
-var cosmosResourceId = resourceId(databaseResourceGroup, 'Microsoft.DocumentDB/databaseAccounts', cosmosDbAccountName)
-
-// Get storage account connection string once to avoid multiple API calls
-var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageResourceId, '2021-08-01').keys[0].value}'
+// Reference existing storage account to avoid multiple API calls
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
+  name: storageAccountName
+  scope: resourceGroup(databaseResourceGroup)
+}
 
 // Application Service Plan
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
@@ -103,11 +102,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: storageConnectionString
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: storageConnectionString
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
