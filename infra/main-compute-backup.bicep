@@ -42,6 +42,12 @@ var tags = {
   resourceType: 'compute'
 }
 
+// Reference existing storage account to avoid multiple API calls
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
+  name: storageAccountName
+  scope: resourceGroup(databaseResourceGroup)
+}
+
 // Application Service Plan
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: 'carpool-plan'
@@ -69,7 +75,26 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// Azure Function App - MINIMAL VERSION WITHOUT ARM API CALLS
+// Reference existing Key Vault moved to the database resource group
+resource keyVault 'Microsoft.KeyVault/vaults@2021-10-01' existing = {
+  name: keyVaultName
+  scope: resourceGroup(databaseResourceGroup)
+}
+
+// Reference existing Cosmos DB account to avoid multiple API calls
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existing = {
+  name: cosmosDbAccountName
+  scope: resourceGroup(databaseResourceGroup)
+}
+
+// Create storage connection string once to avoid duplicate listKeys() calls
+var storageConnectionStringValue = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+
+// Create cosmos variables once to avoid duplicate API calls
+var cosmosConnectionStringValue = cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+var cosmosPrimaryKeyValue = cosmosAccount.listKeys().primaryMasterKey
+
+// Azure Function App
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   name: functionAppName
   location: location
@@ -84,11 +109,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=PLACEHOLDER'
+          value: storageConnectionStringValue
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=PLACEHOLDER'
+          value: storageConnectionStringValue
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
@@ -116,15 +141,15 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'COSMOS_DB_CONNECTION_STRING'
-          value: 'AccountEndpoint=https://${cosmosDbAccountName}.documents.azure.com:443/;AccountKey=PLACEHOLDER;'
+          value: cosmosConnectionStringValue
         }
         {
           name: 'COSMOS_DB_ENDPOINT'
-          value: 'https://${cosmosDbAccountName}.documents.azure.com:443/'
+          value: cosmosAccount.properties.documentEndpoint
         }
         {
           name: 'COSMOS_DB_KEY'
-          value: 'PLACEHOLDER'
+          value: cosmosPrimaryKeyValue
         }
         {
           name: 'ENVIRONMENT'
@@ -177,6 +202,6 @@ output staticWebAppName string = staticWebApp.name
 output staticWebAppDefaultHostName string = staticWebApp.properties.defaultHostname
 output storageAccountName string = storageAccountName
 output appInsightsName string = appInsights.name
-output keyVaultName string = keyVaultName
+output keyVaultName string = keyVault.name
 output cosmosDbAccountName string = cosmosDbAccountName
-output cosmosDbEndpoint string = 'https://${cosmosDbAccountName}.documents.azure.com:443/'
+output cosmosDbEndpoint string = cosmosAccount.properties.documentEndpoint
