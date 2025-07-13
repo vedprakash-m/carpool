@@ -106,7 +106,6 @@ deploy_compute() {
             appName="$APP_NAME" \
             environmentName="$ENVIRONMENT" \
             location="$LOCATION" \
-            databaseResourceGroup="$DB_RESOURCE_GROUP" \
             keyVaultName="${APP_NAME}-kv-${ENVIRONMENT}" \
         --verbose
     
