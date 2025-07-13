@@ -24,10 +24,6 @@ param appInsightsName string = 'carpool-insights'
 @description('Azure Key Vault name - Static naming for idempotent deployment')
 param keyVaultName string = '${appName}-kv-${environmentName}'
 
-// Database resource group and resource details (from database deployment)
-@description('Database resource group name')
-param databaseResourceGroup string = 'carpool-db-rg'
-
 @description('Cosmos DB account name from database resource group - Static naming')
 param cosmosDbAccountName string = 'carpool-db'
 
@@ -66,6 +62,26 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     Request_Source: 'rest'
+  }
+}
+
+// Azure Static Web App (moved before Function App to avoid circular dependency)
+resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {
+  name: staticWebAppName
+  location: 'East US 2' // Static Web Apps are limited to certain regions
+  tags: tags
+  sku: {
+    name: 'Free'
+    tier: 'Free'
+  }
+  properties: {
+    repositoryUrl: 'https://github.com/vedprakash-m/carpool'
+    branch: 'main'
+    buildProperties: {
+      appLocation: '/frontend'
+      apiLocation: ''
+      outputLocation: 'out'
+    }
   }
 }
 
@@ -147,26 +163,6 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       }
     }
     httpsOnly: true
-  }
-}
-
-// Azure Static Web App
-resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {
-  name: staticWebAppName
-  location: 'East US 2' // Static Web Apps are limited to certain regions
-  tags: tags
-  sku: {
-    name: 'Free'
-    tier: 'Free'
-  }
-  properties: {
-    repositoryUrl: 'https://github.com/vedprakash-m/carpool'
-    branch: 'main'
-    buildProperties: {
-      appLocation: '/frontend'
-      apiLocation: ''
-      outputLocation: 'out'
-    }
   }
 }
 
