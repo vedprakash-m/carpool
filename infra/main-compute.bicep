@@ -87,11 +87,12 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existi
   scope: resourceGroup(databaseResourceGroup)
 }
 
-// Store API call results in variables to avoid multiple calls
-var storageAccountKey = storageAccount.listKeys().keys[0].value
-var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccountKey}'
-var cosmosConnectionString = cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
-var cosmosPrimaryKey = cosmosAccount.listKeys().primaryMasterKey
+// Create storage connection string once to avoid duplicate listKeys() calls
+var storageConnectionStringValue = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+
+// Create cosmos variables once to avoid duplicate API calls
+var cosmosConnectionStringValue = cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+var cosmosPrimaryKeyValue = cosmosAccount.listKeys().primaryMasterKey
 
 // Azure Function App
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
@@ -108,11 +109,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: storageConnectionString
+          value: storageConnectionStringValue
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: storageConnectionString
+          value: storageConnectionStringValue
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
@@ -140,7 +141,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'COSMOS_DB_CONNECTION_STRING'
-          value: cosmosConnectionString
+          value: cosmosConnectionStringValue
         }
         {
           name: 'COSMOS_DB_ENDPOINT'
@@ -148,7 +149,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'COSMOS_DB_KEY'
-          value: cosmosPrimaryKey
+          value: cosmosPrimaryKeyValue
         }
         {
           name: 'ENVIRONMENT'
