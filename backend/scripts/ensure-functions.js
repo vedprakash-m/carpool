@@ -1,36 +1,47 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-// List of essential functions that must be present
-const REQUIRED_FUNCTIONS = [
-  "hello",
-  "auth-login-legacy",
-  "auth-register-working", // Using working version
-  "trips-stats",
-  "users-me",
-  "admin-create-user",
-  "users-change-password",
-  // Phase 2 Functions
-  "admin-generate-schedule-simple",
-  "parents-weekly-preferences-simple",
-  // Remove conflicting database functions that cause route conflicts
-  // "auth-login-db",        // Conflicts with auth-login-legacy
-  // "trips-stats-db",       // Conflicts with trips-stats
-];
+// Import function registry (single source of truth)
+const {
+  getRequiredFunctions,
+  validateFunctionRegistry,
+} = require('../dist/config/functions.config.js');
 
-console.log("🔧 Ensuring all required functions are present...");
+console.log('🔧 Ensuring all required functions are present...');
 
-REQUIRED_FUNCTIONS.forEach((functionName) => {
+// Validate function registry first
+const validation = validateFunctionRegistry(__dirname + '/..');
+if (!validation.valid) {
+  console.error('❌ Function registry validation failed:');
+  validation.errors.forEach((error) => console.error(`   ${error}`));
+  process.exit(1);
+}
+
+if (validation.warnings.length > 0) {
+  console.warn('⚠️  Function registry warnings:');
+  validation.warnings.forEach((warning) => console.warn(`   ${warning}`));
+}
+
+// Get required functions from registry
+const requiredFunctions = getRequiredFunctions();
+console.log(`� Checking ${requiredFunctions.length} required functions...`);
+
+let hasErrors = false;
+
+requiredFunctions.forEach((funcDef) => {
+  const functionName = funcDef.name;
   const rootFunctionDir = functionName;
-  const srcFunctionDir = path.join("src", "functions", functionName);
+
+  // All functions in the registry are at the root level of the backend directory
+  const srcFunctionDir = funcDef.sourceDir;
 
   // Check if function already exists at root level
   if (
     fs.existsSync(rootFunctionDir) &&
-    fs.existsSync(path.join(rootFunctionDir, "index.js")) &&
-    fs.existsSync(path.join(rootFunctionDir, "function.json"))
+    fs.existsSync(path.join(rootFunctionDir, 'index.js')) &&
+    fs.existsSync(path.join(rootFunctionDir, 'function.json'))
   ) {
     console.log(`✅ ${functionName}: Already present`);
     return;
@@ -39,6 +50,7 @@ REQUIRED_FUNCTIONS.forEach((functionName) => {
   // Function missing or incomplete, try to create it from source
   if (!fs.existsSync(srcFunctionDir)) {
     console.log(`❌ ${functionName}: Source not found in ${srcFunctionDir}`);
+    hasErrors = true;
     return;
   }
 
@@ -49,8 +61,8 @@ REQUIRED_FUNCTIONS.forEach((functionName) => {
     }
 
     // Copy function.json
-    const srcFunctionJson = path.join(srcFunctionDir, "function.json");
-    const destFunctionJson = path.join(rootFunctionDir, "function.json");
+    const srcFunctionJson = path.join(srcFunctionDir, 'function.json');
+    const destFunctionJson = path.join(rootFunctionDir, 'function.json');
 
     if (fs.existsSync(srcFunctionJson)) {
       fs.copyFileSync(srcFunctionJson, destFunctionJson);
@@ -61,14 +73,9 @@ REQUIRED_FUNCTIONS.forEach((functionName) => {
     }
 
     // Try to copy index.js (either from source for JS functions or from dist for TS functions)
-    const srcIndexJs = path.join(srcFunctionDir, "index.js");
-    const distIndexJs = path.join(
-      "dist",
-      "functions",
-      functionName,
-      "index.js"
-    );
-    const destIndexJs = path.join(rootFunctionDir, "index.js");
+    const srcIndexJs = path.join(srcFunctionDir, 'index.js');
+    const distIndexJs = path.join('dist', 'functions', functionName, 'index.js');
+    const destIndexJs = path.join(rootFunctionDir, 'index.js');
 
     if (fs.existsSync(srcIndexJs)) {
       // JavaScript source exists, copy it
@@ -77,9 +84,7 @@ REQUIRED_FUNCTIONS.forEach((functionName) => {
     } else if (fs.existsSync(distIndexJs)) {
       // TypeScript compiled version exists, copy it
       fs.copyFileSync(distIndexJs, destIndexJs);
-      console.log(
-        `✅ ${functionName}: Copied index.js from compiled TypeScript`
-      );
+      console.log(`✅ ${functionName}: Copied index.js from compiled TypeScript`);
     } else {
       console.log(`❌ ${functionName}: No index.js found in source or dist`);
       return;
@@ -92,14 +97,13 @@ REQUIRED_FUNCTIONS.forEach((functionName) => {
 });
 
 // Final verification
-console.log("\n🔍 Final verification of required functions:");
+console.log('\n🔍 Final verification of required functions:');
 let allPresent = true;
 
-REQUIRED_FUNCTIONS.forEach((functionName) => {
-  const hasIndexJs = fs.existsSync(path.join(functionName, "index.js"));
-  const hasFunctionJson = fs.existsSync(
-    path.join(functionName, "function.json")
-  );
+requiredFunctions.forEach((funcDef) => {
+  const functionName = funcDef.name;
+  const hasIndexJs = fs.existsSync(path.join(functionName, 'index.js'));
+  const hasFunctionJson = fs.existsSync(path.join(functionName, 'function.json'));
 
   if (hasIndexJs && hasFunctionJson) {
     console.log(`✅ ${functionName}: Ready`);
@@ -109,10 +113,14 @@ REQUIRED_FUNCTIONS.forEach((functionName) => {
   }
 });
 
-if (allPresent) {
-  console.log("\n🎉 All required functions are present!");
+if (allPresent && !hasErrors) {
+  console.log('\n🎉 All required functions are present!');
   process.exit(0);
 } else {
-  console.log("\n💥 Some required functions are missing!");
+  console.log('\n💥 Some required functions are missing!');
+  console.log('\n🔧 To fix this issue:');
+  console.log('1. Check the function registry in src/config/functions.config.ts');
+  console.log('2. Either implement missing functions or mark them as not required');
+  console.log('3. Ensure function names match between registry and source directories');
   process.exit(1);
 }

@@ -1,43 +1,47 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-// List of essential functions to set up (traditional model only)
-const requiredFunctions = [
-  "hello",
-  "auth-login-legacy",
-  "auth-register-working", // Using working version instead of problematic auth-register-simple
-  "trips-stats",
-  "users-me",
-  "admin-create-user",
-  "users-change-password",
-  // Phase 2 Functions
-  "admin-generate-schedule-simple",
-  "parents-weekly-preferences-simple",
-  // Remove conflicting database functions that cause route conflicts
-  // "auth-login-db",        // Conflicts with auth-login-legacy
-  // "trips-stats-db",       // Conflicts with trips-stats
-  // "auth-register-simple", // Temporarily disabled due to dependency issues
-  "admin-schedule-templates", // NEW: Template management function
-  "admin-driver-selection", // NEW: Driver selection function
-  "admin-parent-assignments", // NEW: Parent assignment viewing function
-  "admin-swap-requests", // NEW: Complete swap request system
-  "admin-notifications", // NEW: Notification service for emails
-  "admin-assignment-reminders", // NEW: Automated assignment reminders
-];
+// Import function registry (single source of truth)
+// Note: This will work after TypeScript compilation
+function getFunctionsToSetup() {
+  try {
+    const { getImplementedFunctions } = require('../dist/config/functions.config.js');
+    return getImplementedFunctions();
+  } catch (error) {
+    // Fallback to legacy list if registry not available (during initial build)
+    console.log('ℹ️  Using fallback function list (registry not available yet)');
+    return [
+      { name: 'hello', sourceDir: 'hello' },
+      { name: 'auth-login-legacy', sourceDir: 'auth-login-legacy' },
+      { name: 'auth-register-working', sourceDir: 'auth-register-working' },
+      { name: 'trips-stats', sourceDir: 'trips-stats' },
+      { name: 'users-me', sourceDir: 'users-me' },
+      { name: 'users-change-password', sourceDir: 'users-change-password' },
+      { name: 'admin-generate-schedule-simple', sourceDir: 'admin-generate-schedule-simple' },
+      { name: 'parents-weekly-preferences-simple', sourceDir: 'parents-weekly-preferences-simple' },
+    ];
+  }
+}
 
-console.log("🔧 Setting up Azure Functions...");
+console.log('🔧 Setting up Azure Functions...');
 
-requiredFunctions.forEach((functionName) => {
-  const srcFunctionDir = path.join("src", "functions", functionName);
-  const distFunctionDir = path.join("dist", "functions", functionName);
+const implementedFunctions = getFunctionsToSetup();
+console.log(`📋 Setting up ${implementedFunctions.length} implemented functions...`);
+
+implementedFunctions.forEach((funcDef) => {
+  const functionName = funcDef.name;
+
+  // All functions in the registry are at the root level of the backend directory
+  const srcFunctionDir = funcDef.sourceDir;
+  const distFunctionDir = path.join('dist', 'functions', funcDef.sourceDir);
   const rootFunctionDir = functionName;
 
   // Check if function already exists at root level (for legacy functions)
   if (
-    fs.existsSync(path.join(rootFunctionDir, "index.js")) &&
-    fs.existsSync(path.join(rootFunctionDir, "function.json"))
+    fs.existsSync(path.join(rootFunctionDir, 'index.js')) &&
+    fs.existsSync(path.join(rootFunctionDir, 'function.json'))
   ) {
     console.log(`✅ ${functionName}: Already present at root level`);
     return;
@@ -45,7 +49,7 @@ requiredFunctions.forEach((functionName) => {
 
   // Check if source function exists in src/functions
   if (!fs.existsSync(srcFunctionDir)) {
-    console.log(`⚠️  Skipping ${functionName} - source not found`);
+    console.log(`⚠️  Skipping ${functionName} - source not found at ${srcFunctionDir}`);
     return;
   }
 
@@ -54,19 +58,17 @@ requiredFunctions.forEach((functionName) => {
     if (!fs.existsSync(rootFunctionDir)) {
       fs.mkdirSync(rootFunctionDir, { recursive: true });
     } else if (
-      fs.existsSync(path.join(rootFunctionDir, "index.js")) &&
-      !fs.existsSync(path.join("src", "functions", functionName, "index.js"))
+      fs.existsSync(path.join(rootFunctionDir, 'index.js')) &&
+      !fs.existsSync(path.join('src', 'functions', funcDef.sourceDir, 'index.js'))
     ) {
       // This is an existing JavaScript function, preserve it
-      console.log(
-        `📦 Preserving existing JavaScript function: ${functionName}`
-      );
+      console.log(`📦 Preserving existing JavaScript function: ${functionName}`);
       return;
     }
 
     // Copy function.json from source
-    const srcFunctionJson = path.join(srcFunctionDir, "function.json");
-    const destFunctionJson = path.join(rootFunctionDir, "function.json");
+    const srcFunctionJson = path.join(srcFunctionDir, 'function.json');
+    const destFunctionJson = path.join(rootFunctionDir, 'function.json');
 
     if (fs.existsSync(srcFunctionJson)) {
       fs.copyFileSync(srcFunctionJson, destFunctionJson);
@@ -77,36 +79,47 @@ requiredFunctions.forEach((functionName) => {
     }
 
     // Try to copy JavaScript file first (for legacy functions)
-    const srcIndexJs = path.join(srcFunctionDir, "index.js");
-    const distIndexJs = path.join(distFunctionDir, "index.js");
-    const destIndexJs = path.join(rootFunctionDir, "index.js");
+    const srcIndexJs = path.join(srcFunctionDir, 'index.js');
+    const destIndexJs = path.join(rootFunctionDir, 'index.js');
 
     if (fs.existsSync(srcIndexJs)) {
-      // Use source JavaScript file directly
       fs.copyFileSync(srcIndexJs, destIndexJs);
-      console.log(`✅ Copied index.js for ${functionName} (from source)`);
-    } else if (fs.existsSync(distIndexJs)) {
-      // Use compiled TypeScript file
-      fs.copyFileSync(distIndexJs, destIndexJs);
-      console.log(`✅ Copied index.js for ${functionName} (compiled)`);
+      console.log(`✅ Copied index.js for ${functionName}`);
     } else {
-      console.log(`❌ No index.js found for ${functionName}`);
+      // If no JavaScript source, look for compiled TypeScript
+      const distIndexJs = path.join(distFunctionDir, 'index.js');
+
+      if (fs.existsSync(distIndexJs)) {
+        fs.copyFileSync(distIndexJs, destIndexJs);
+        console.log(`✅ Copied compiled TypeScript for ${functionName}`);
+
+        // Also copy index.js.map if it exists
+        const distIndexMap = path.join(distFunctionDir, 'index.js.map');
+        const destIndexMap = path.join(rootFunctionDir, 'index.js.map');
+
+        if (fs.existsSync(distIndexMap)) {
+          fs.copyFileSync(distIndexMap, destIndexMap);
+        }
+      } else {
+        console.log(`❌ ${functionName}: No index.js found in source or dist`);
+        return;
+      }
     }
 
-    // Copy source map if it exists
-    const distIndexMap = path.join(distFunctionDir, "index.js.map");
-    const destIndexMap = path.join(rootFunctionDir, "index.js.map");
+    // Copy index.js.map if it exists (for compiled TypeScript debugging)
+    const srcIndexMap = path.join(distFunctionDir, 'index.js.map');
+    const destIndexMap = path.join(rootFunctionDir, 'index.js.map');
 
-    if (fs.existsSync(distIndexMap)) {
-      fs.copyFileSync(distIndexMap, destIndexMap);
+    if (fs.existsSync(srcIndexMap)) {
+      fs.copyFileSync(srcIndexMap, destIndexMap);
     }
   } catch (error) {
     console.error(`❌ Error setting up ${functionName}:`, error.message);
   }
 });
 
-console.log("✅ Azure Functions setup completed!");
-console.log(
-  "📋 Functions configured:",
-  requiredFunctions.filter((fn) => fs.existsSync(fn)).join(", ")
-);
+console.log('✅ Azure Functions setup completed!');
+const configuredFunctions = implementedFunctions
+  .filter((funcDef) => fs.existsSync(funcDef.name))
+  .map((funcDef) => funcDef.name);
+console.log(`📋 Functions configured: ${configuredFunctions.join(', ')}`);
