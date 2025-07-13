@@ -22,7 +22,7 @@ param staticWebAppName string = 'carpool-web'
 param appInsightsName string = 'carpool-insights'
 
 @description('Azure Key Vault name - Static naming for idempotent deployment')
-param keyVaultName string = 'carpool-kv'
+param keyVaultName string = '${appName}-kv-${environmentName}'
 
 // Database resource group and resource details (from database deployment)
 @description('Database resource group name')

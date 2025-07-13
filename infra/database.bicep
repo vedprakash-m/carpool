@@ -19,7 +19,7 @@ param cosmosDbAccountName string = 'carpool-db'
 param storageAccountName string = 'carpoolsa'
 
 @description('Azure Key Vault name - Static naming for idempotent deployment')
-param keyVaultName string = 'carpool-kv'
+param keyVaultName string = '${appName}-kv-${environmentName}'
 
 // Tags for all resources
 var tags = {
@@ -69,7 +69,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
 
 // Key Vault for secrets management (Tech Spec naming: carpool-kv)
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
-  name: 'carpool-kv'
+  name: keyVaultName
   location: location
   tags: tags
   properties: {

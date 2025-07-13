@@ -84,6 +84,7 @@ deploy_database() {
             appName="$APP_NAME" \
             environmentName="$ENVIRONMENT" \
             location="$LOCATION" \
+            keyVaultName="${APP_NAME}-kv-${ENVIRONMENT}" \
             skipContainerCreation="$skip_containers" \
         --verbose 2>&1; then
         error "Database deployment failed"
@@ -106,6 +107,7 @@ deploy_compute() {
             environmentName="$ENVIRONMENT" \
             location="$LOCATION" \
             databaseResourceGroup="$DB_RESOURCE_GROUP" \
+            keyVaultName="${APP_NAME}-kv-${ENVIRONMENT}" \
         --verbose
     
     success "Compute deployment completed"
