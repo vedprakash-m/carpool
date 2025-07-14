@@ -12,23 +12,14 @@ param appName string = 'carpool'
 ])
 param environmentName string = 'dev'
 
-@description('Azure Cosmos DB account name')
-param cosmosDbAccountName string = '${appName}-cosmos-${environmentName}'
-
-@description('Azure Function App name')
-param functionAppName string = '${appName}-api'
-
-@description('Azure Static Web App name')
-param staticWebAppName string = '${appName}-web'
-
-@description('Azure Application Insights name')
-param appInsightsName string = '${appName}-insights-${environmentName}'
-
-@description('Azure Storage Account name')
-param storageAccountName string = '${replace(appName, '-', '')}sa${environmentName}'
-
-@description('Database resource group name (for cross-RG references)')
-param databaseResourceGroup string = '${appName}-db-rg'
+// Resource names - consistent naming
+var functionAppName = '${appName}-api-${environmentName}'
+var staticWebAppName = '${appName}-web-${environmentName}'
+var appInsightsName = '${appName}-insights-${environmentName}'
+var keyVaultName = '${appName}-kv-${environmentName}-${substring(uniqueString(resourceGroup().id), 0, 6)}'
+var cosmosDbAccountName = '${appName}-db-${environmentName}'
+var storageAccountName = '${appName}sa${environmentName}'
+var hostingPlanName = '${appName}-plan-${environmentName}'
 
 // Tags for all resources
 var tags = {
@@ -37,14 +28,146 @@ var tags = {
   createdBy: 'Bicep'
 }
 
-// Reference to existing storage account in database resource group
-// Note: This template now supports both single-RG and multi-RG deployments
-resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
+// Storage Account for Azure Functions
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: storageAccountName
-  scope: resourceGroup(databaseResourceGroup)
+  location: location
+  tags: tags
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_LRS'
+  }
+  properties: {
+    minimumTlsVersion: 'TLS1_2'
+    supportsHttpsTrafficOnly: true
+    allowBlobPublicAccess: false
+  }
 }
 
-// Application Insights for monitoring
+// Cosmos DB Account
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2021-06-15' = {
+  name: cosmosDbAccountName
+  location: location
+  tags: tags
+  kind: 'GlobalDocumentDB'
+  properties: {
+    databaseAccountOfferType: 'Standard'
+    locations: [
+      {
+        locationName: location
+        failoverPriority: 0
+        isZoneRedundant: false
+      }
+    ]
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Session'
+    }
+    capabilities: [
+      {
+        name: 'EnableServerless'
+      }
+    ]
+  }
+}
+
+// Cosmos DB Database
+resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-06-15' = {
+  parent: cosmosDbAccount
+  name: 'carpool'
+  properties: {
+    resource: {
+      id: 'carpool'
+    }
+  }
+}
+
+// Cosmos DB Containers
+resource usersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-06-15' = {
+  parent: cosmosDbDatabase
+  name: 'users'
+  properties: {
+    resource: {
+      id: 'users'
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource tripsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-06-15' = {
+  parent: cosmosDbDatabase
+  name: 'trips'
+  properties: {
+    resource: {
+      id: 'trips'
+      partitionKey: {
+        paths: [
+          '/groupId'
+        ]
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource groupsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-06-15' = {
+  parent: cosmosDbDatabase
+  name: 'groups'
+  properties: {
+    resource: {
+      id: 'groups'
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource preferencesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-06-15' = {
+  parent: cosmosDbDatabase
+  name: 'preferences'
+  properties: {
+    resource: {
+      id: 'preferences'
+      partitionKey: {
+        paths: [
+          '/userId'
+        ]
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+// Key Vault
+resource keyVault 'Microsoft.KeyVault/vaults@2021-06-01-preview' = {
+  name: keyVaultName
+  location: location
+  tags: tags
+  properties: {
+    tenantId: subscription().tenantId
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    accessPolicies: []
+    enabledForDeployment: false
+    enabledForDiskEncryption: false
+    enabledForTemplateDeployment: true
+    enableSoftDelete: true
+    softDeleteRetentionInDays: 90
+    enableRbacAuthorization: true
+  }
+}
+
+// Application Insights
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightsName
   location: location
@@ -52,43 +175,46 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   kind: 'web'
   properties: {
     Application_Type: 'web'
-    WorkspaceResourceId: logWorkspace.id
-    publicNetworkAccessForIngestion: 'Enabled'
-    publicNetworkAccessForQuery: 'Enabled'
+    Request_Source: 'rest'
   }
 }
 
-// Log Analytics workspace for Application Insights
-resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
-  name: '${appName}-logs-${environmentName}'
-  location: location
-  tags: tags
-  properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-    retentionInDays: 30
-    features: {
-      enableLogAccessUsingOnlyResourcePermissions: true
-    }
-  }
-}
-
-// App Service Plan for Function App
-resource appServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: '${appName}-plan-${environmentName}'
+// App Service Plan for Functions
+resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
+  name: hostingPlanName
   location: location
   tags: tags
   sku: {
-    name: 'B1' // Basic plan for development
-    tier: 'Basic'
+    name: 'Y1'
+    tier: 'Dynamic'
+    size: 'Y1'
+    family: 'Y'
+    capacity: 0
+  }
+  properties: {}
+}
+
+// Azure Static Web App
+resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {
+  name: staticWebAppName
+  location: 'East US 2'
+  tags: tags
+  sku: {
+    name: 'Free'
+    tier: 'Free'
   }
   properties: {
-    reserved: true // Required for Linux
+    repositoryUrl: 'https://github.com/vedprakash-m/carpool'
+    branch: 'main'
+    buildProperties: {
+      appLocation: '/frontend'
+      apiLocation: ''
+      outputLocation: 'out'
+    }
   }
 }
 
-// Function App
+// Azure Function App
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   name: functionAppName
   location: location
@@ -98,7 +224,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
     type: 'SystemAssigned'
   }
   properties: {
-    serverFarmId: appServicePlan.id
+    serverFarmId: hostingPlan.id
     siteConfig: {
       appSettings: [
         {
@@ -106,125 +232,77 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
         }
         {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+        {
+          name: 'WEBSITE_CONTENTSHARE'
+          value: toLower(functionAppName)
+        }
+        {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: '~4'
+        }
+        {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~20'
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'node'
         }
         {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~22'
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: appInsights.properties.InstrumentationKey
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'COSMOS_DB_CONNECTION_STRING'
+          value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
+        }
+        {
+          name: 'COSMOS_DB_ENDPOINT'
+          value: cosmosDbAccount.properties.documentEndpoint
+        }
+        {
+          name: 'COSMOS_DB_KEY'
+          value: cosmosDbAccount.listKeys().primaryMasterKey
+        }
+        {
+          name: 'ENVIRONMENT'
+          value: environmentName
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1'
         }
-        {
-          name: 'COSMOS_DB_ENDPOINT'
-          value: cosmosAccountForConfig.properties.documentEndpoint
-        }
-        {
-          name: 'COSMOS_DB_KEY'
-          value: cosmosAccountForConfig.listKeys().primaryMasterKey
-        }
-        {
-          name: 'COSMOS_DB_DATABASE_ID'
-          value: 'carpool'
-        }
-        {
-          name: 'JWT_SECRET'
-          value: 'prod-jwt-secret-${uniqueString(resourceGroup().id)}'
-        }
-        {
-          name: 'JWT_REFRESH_SECRET'
-          value: 'prod-refresh-secret-${uniqueString(resourceGroup().id)}'
-        }
-        {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsights.properties.InstrumentationKey
-        }
-        {
-          name: 'APPINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
-        }
       ]
+      ftpsState: 'FtpsOnly'
+      minTlsVersion: '1.2'
+      http20Enabled: true
       cors: {
         allowedOrigins: [
+          'https://portal.azure.com'
           'https://${staticWebApp.properties.defaultHostname}'
-          'http://localhost:3000' // For local development
         ]
-        supportCredentials: true
+        supportCredentials: false
       }
-      ftpsState: 'Disabled'
-      minTlsVersion: '1.2'
-      nodeVersion: '~22'
     }
     httpsOnly: true
   }
 }
 
-// Reference to existing Cosmos DB for configuration (read-only)
-resource cosmosAccountForConfig 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existing = {
-  name: cosmosDbAccountName
-  scope: resourceGroup(databaseResourceGroup)
-}
-
-// Deploy Cosmos DB containers using module to avoid cross-scope issues
-module cosmosContainers 'modules/cosmos-containers.bicep' = {
-  name: 'cosmosContainers'
-  scope: resourceGroup(databaseResourceGroup)
-  params: {
-    cosmosDbAccountName: cosmosDbAccountName
-    throughput: 400
-  }
-}
-
-// Key Vault for secrets (without access policies initially)
-resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
-  name: '${appName}-kv-${environmentName}'
-  location: location
-  tags: tags
-  properties: {
-    sku: {
-      family: 'A'
-      name: 'standard'
-    }
-    tenantId: subscription().tenantId
-    accessPolicies: [] // Access policies will be added in second deployment
-    enabledForTemplateDeployment: true
-    enableRbacAuthorization: false
-    enableSoftDelete: true
-    softDeleteRetentionInDays: 7
-    enablePurgeProtection: false // Allow for easier development
-  }
-}
-
-// Output Key Vault name for second deployment phase
-output keyVaultName string = keyVault.name
-
-// Static Web App for the frontend
-resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {
-  name: staticWebAppName
-  location: location
-  tags: tags
-  sku: {
-    name: 'Standard'
-    tier: 'Standard'
-  }
-  properties: {
-    provider: 'GitHub'
-    stagingEnvironmentPolicy: 'Enabled'
-    allowConfigFileUpdates: true
-  }
-}
-
-// Output the endpoints for reference
-output functionAppEndpoint string = 'https://${functionApp.properties.defaultHostName}/api'
-output staticWebAppEndpoint string = 'https://${staticWebApp.properties.defaultHostname}'
-output cosmosDbEndpoint string = cosmosAccountForConfig.properties.documentEndpoint
-
-// Output resource names for CI/CD pipeline
+// Outputs
 output functionAppName string = functionApp.name
+output functionAppDefaultHostName string = functionApp.properties.defaultHostName
 output staticWebAppName string = staticWebApp.name
+output staticWebAppDefaultHostName string = staticWebApp.properties.defaultHostname
+output storageAccountName string = storageAccount.name
+output appInsightsName string = appInsights.name
+output keyVaultName string = keyVault.name
+output cosmosDbAccountName string = cosmosDbAccount.name
+output cosmosDbEndpoint string = cosmosDbAccount.properties.documentEndpoint
+output resourceGroupName string = resourceGroup().name
