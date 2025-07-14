@@ -442,8 +442,8 @@ jobs:
           fi
 
           # Build the frontend for Static Web Apps if artifacts don't exist
-          if [ ! -d ".next" ]; then
-            echo "Building frontend since .next directory not found..."
+          if [ ! -d "out" ] || [ ! -f "out/index.html" ]; then
+            echo "Building frontend since out directory or index.html not found..."
             npm run build:swa
           else
             echo "Using existing build artifacts..."
@@ -463,7 +463,7 @@ jobs:
           npx @azure/static-web-apps-cli deploy \
             --app-location . \
             --api-location ../backend \
-            --output-location .next \
+            --output-location out \
             --deployment-token "$DEPLOYMENT_TOKEN"
 
           echo "✅ Frontend deployed to Static Web Apps: $STATIC_WEB_APP_NAME" >> $GITHUB_STEP_SUMMARY
