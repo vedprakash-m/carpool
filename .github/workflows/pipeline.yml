@@ -400,10 +400,22 @@ jobs:
           ENVIRONMENT="$ENV_NAME" ./scripts/deploy-single-rg.sh
           echo "✅ Infrastructure deployed using single-RG approach for environment: $ENV_NAME" >> $GITHUB_STEP_SUMMARY
 
+      - name: Setup Node.js for deployment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies for deployment
+        run: npm ci --ignore-scripts
+
+      - name: Build shared package for deployment
+        run: npm run build --workspace=shared
+
       - name: Deploy backend functions
         run: |
           cd backend
-          
+
           # Map environment input to proper value (production -> prod)
           ENV_NAME="${{ inputs.environment || 'production' }}"
           if [ "$ENV_NAME" = "production" ]; then
@@ -411,7 +423,7 @@ jobs:
           elif [ "$ENV_NAME" = "staging" ]; then
             ENV_NAME="dev"
           fi
-          
+
           # Use the new naming convention from our template
           FUNCTION_APP_NAME="carpool-api-$ENV_NAME"
           func azure functionapp publish "$FUNCTION_APP_NAME" --typescript
@@ -421,15 +433,20 @@ jobs:
         run: |
           cd frontend
 
-          # Build the frontend first
-          npm run build:swa
-
           # Map environment input to proper value (production -> prod)
           ENV_NAME="${{ inputs.environment || 'production' }}"
           if [ "$ENV_NAME" = "production" ]; then
             ENV_NAME="prod"
           elif [ "$ENV_NAME" = "staging" ]; then
             ENV_NAME="dev"
+          fi
+
+          # Build the frontend for Static Web Apps if artifacts don't exist
+          if [ ! -d ".next" ]; then
+            echo "Building frontend since .next directory not found..."
+            npm run build:swa
+          else
+            echo "Using existing build artifacts..."
           fi
 
           # Deploy to Static Web Apps (using new naming convention)
