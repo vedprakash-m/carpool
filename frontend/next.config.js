@@ -38,12 +38,17 @@ const nextConfig = {
         ? 'https://carpool-api.azurewebsites.net/api'
         : 'http://localhost:7071/api'),
     NEXT_PUBLIC_ENV: process.env.NODE_ENV,
-    
+
     // Authentication configuration - explicitly include these
-    NEXT_PUBLIC_ENABLE_LEGACY_AUTH: process.env.NEXT_PUBLIC_ENABLE_LEGACY_AUTH || 'true',
-    NEXT_PUBLIC_ENABLE_ENTRA_AUTH: process.env.NEXT_PUBLIC_ENABLE_ENTRA_AUTH || 'true',
-    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'https://carpool.vedprakash.net',
-    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://carpool.vedprakash.net/api',
+    NEXT_PUBLIC_ENABLE_LEGACY_AUTH:
+      process.env.NEXT_PUBLIC_ENABLE_LEGACY_AUTH || 'true',
+    NEXT_PUBLIC_ENABLE_ENTRA_AUTH:
+      process.env.NEXT_PUBLIC_ENABLE_ENTRA_AUTH || 'true',
+    NEXT_PUBLIC_BASE_URL:
+      process.env.NEXT_PUBLIC_BASE_URL || 'https://carpool.vedprakash.net',
+    NEXT_PUBLIC_API_BASE_URL:
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      'https://carpool.vedprakash.net/api',
   },
 
   experimental: {
