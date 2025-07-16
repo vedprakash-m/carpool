@@ -447,6 +447,19 @@ jobs:
           # Build the frontend for Static Web Apps if artifacts don't exist
           if [ ! -d "out" ] || [ ! -f "out/index.html" ]; then
             echo "Building frontend since out directory or index.html not found..."
+            
+            # Set environment variables for Next.js static export build
+            export NEXT_PUBLIC_ENABLE_LEGACY_AUTH=true
+            export NEXT_PUBLIC_ENABLE_ENTRA_AUTH=true
+            export NEXT_PUBLIC_BASE_URL="https://carpool.vedprakash.net"
+            export NEXT_PUBLIC_API_BASE_URL="https://carpool.vedprakash.net/api"
+            
+            echo "Environment variables for build:"
+            echo "NEXT_PUBLIC_ENABLE_LEGACY_AUTH=$NEXT_PUBLIC_ENABLE_LEGACY_AUTH"
+            echo "NEXT_PUBLIC_ENABLE_ENTRA_AUTH=$NEXT_PUBLIC_ENABLE_ENTRA_AUTH"
+            echo "NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL"
+            echo "NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL"
+            
             npm run build:swa
           else
             echo "Using existing build artifacts..."
