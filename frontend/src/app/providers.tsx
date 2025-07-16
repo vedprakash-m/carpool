@@ -12,6 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const initializeEntra = useEntraAuthStore(state => state.initialize);
 
   useEffect(() => {
+    // Environment variables now configured in Azure Static Web Apps
     console.log('Providers useEffect running...');
     console.log(
       'ENABLE_LEGACY_AUTH:',
