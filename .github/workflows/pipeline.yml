@@ -456,6 +456,10 @@ jobs:
           STATIC_WEB_APP_NAME="carpool-web-$ENV_NAME"
           RESOURCE_GROUP_NAME="carpool-$ENV_NAME-rg"
 
+          echo "Deploying to Static Web App: $STATIC_WEB_APP_NAME"
+          echo "Resource Group: $RESOURCE_GROUP_NAME"
+          echo "Environment: $ENV_NAME"
+
           # Create temporary backend directory with only HTTP-triggered functions for SWA
           # Static Web Apps only support HTTP triggers, not timer triggers
           # Timer triggers are deployed separately to the standalone Function App above
@@ -487,17 +491,25 @@ jobs:
           fi
 
           # Get deployment token from Azure
+          echo "Getting deployment token for Static Web App: $STATIC_WEB_APP_NAME in resource group: $RESOURCE_GROUP_NAME"
           DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
             --name "$STATIC_WEB_APP_NAME" \
             --resource-group "$RESOURCE_GROUP_NAME" \
             --query "properties.apiKey" -o tsv)
+
+          if [ -z "$DEPLOYMENT_TOKEN" ] || [ "$DEPLOYMENT_TOKEN" = "null" ]; then
+            echo "❌ Failed to get deployment token for $STATIC_WEB_APP_NAME"
+            exit 1
+          fi
+          echo "✅ Successfully retrieved deployment token"
 
           # Deploy using SWA CLI with HTTP-only backend
           npx @azure/static-web-apps-cli deploy \
             --app-location . \
             --api-location ../backend-swa \
             --output-location out \
-            --deployment-token "$DEPLOYMENT_TOKEN"
+            --deployment-token "$DEPLOYMENT_TOKEN" \
+            --env production
 
           # Clean up temporary directory
           rm -rf ../backend-swa
