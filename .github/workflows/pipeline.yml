@@ -426,7 +426,7 @@ jobs:
 
           # Use the new naming convention from our template
           FUNCTION_APP_NAME="carpool-api-$ENV_NAME"
-          
+
           # Deploy ALL functions (including timer triggers) to standalone Function App
           # Timer triggers are NOT supported in Static Web Apps, so they go here
           func azure functionapp publish "$FUNCTION_APP_NAME" --typescript
@@ -462,17 +462,25 @@ jobs:
           mkdir -p ../backend-swa
           cp ../backend/host.json ../backend-swa/
           cp ../backend/package.json ../backend-swa/ 2>/dev/null || echo "No package.json in backend root"
-          
+
           # Copy only HTTP-triggered functions (exclude timer triggers)
+          # Functions with ANY timer trigger are excluded, even if they also have HTTP triggers
           find ../backend -name "function.json" -exec grep -l "httpTrigger" {} \; | while read -r func_json; do
+            # Skip functions that also contain timer triggers (not supported in SWA)
+            if grep -q "timerTrigger" "$func_json"; then
+              func_name=$(basename "$(dirname "$func_json")")
+              echo "Excluding mixed trigger function (has timerTrigger): $func_name"
+              continue
+            fi
+            
             func_dir=$(dirname "$func_json")
             func_name=$(basename "$func_dir")
             if [ "$func_name" != "backend" ]; then
-              echo "Including HTTP function: $func_name"
+              echo "Including HTTP-only function: $func_name"
               cp -r "$func_dir" "../backend-swa/"
             fi
           done
-          
+
           # Copy src directory if it exists (contains main functions)
           if [ -d "../backend/src" ]; then
             cp -r ../backend/src ../backend-swa/
@@ -490,7 +498,7 @@ jobs:
             --api-location ../backend-swa \
             --output-location out \
             --deployment-token "$DEPLOYMENT_TOKEN"
-          
+
           # Clean up temporary directory
           rm -rf ../backend-swa
 
