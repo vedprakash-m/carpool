@@ -13,7 +13,5 @@
       "direction": "out",
       "name": "res"
     }
-  ],
-  "scriptFile": "../dist/src/functions/auth-unified/index.js",
-  "entryPoint": "authUnified"
+  ]
 }
