@@ -45,6 +45,14 @@ export const FUNCTION_REGISTRY: FunctionDefinition[] = [
     phase: 'phase1',
   },
   {
+    name: 'auth-unified',
+    implemented: true,
+    sourceDir: 'src/functions/auth-unified', // TypeScript source in src/functions
+    description: 'Unified authentication endpoint (login, register, refresh)',
+    required: true,
+    phase: 'phase1',
+  },
+  {
     name: 'trips-stats',
     implemented: true,
     sourceDir: 'trips-stats', // Root level of backend directory
