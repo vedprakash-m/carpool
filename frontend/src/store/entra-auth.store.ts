@@ -122,8 +122,9 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         console.log('Processing successful redirect response');
         console.log('Access token length:', response.accessToken.length);
 
-        // Successful login redirect - exchange token with backend
-        const apiResponse = await apiClient.post('/auth-entra-unified', {
+        // Successful login redirect - exchange token with backend using unified auth endpoint
+        const apiResponse = await apiClient.post('/auth', {
+          action: 'entra-login',
           authProvider: 'entra',
           accessToken: response.accessToken,
         });
@@ -366,8 +367,9 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         });
 
         if (tokenResponse.accessToken) {
-          // Authenticate with backend using Entra token
-          const response = await apiClient.post('/auth-entra-unified', {
+          // Authenticate with backend using Entra token via unified auth endpoint
+          const response = await apiClient.post('/auth', {
+            action: 'entra-login',
             authProvider: 'entra',
             accessToken: tokenResponse.accessToken,
           });

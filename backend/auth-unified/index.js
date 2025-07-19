@@ -116,6 +116,10 @@ module.exports = function (context, req) {
         handleChangePassword(context, requestData);
         break;
 
+      case 'entra-login':
+        handleEntraLogin(context, requestData);
+        break;
+
       default:
         context.res = {
           status: 400,
@@ -426,6 +430,57 @@ function handleChangePassword(context, requestData) {
       success: true,
       message: 'Change password endpoint working - password validation logic to be implemented',
       action: 'change-password',
+    }),
+  };
+  context.done();
+}
+
+function handleEntraLogin(context, requestData) {
+  context.log('Processing Entra ID login request');
+
+  const { authProvider, accessToken } = requestData;
+
+  if (!accessToken) {
+    context.res = {
+      status: 400,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        success: false,
+        message: 'Access token is required for Entra authentication',
+      }),
+    };
+    context.done();
+    return;
+  }
+
+  // TODO: Validate the Microsoft access token and create user session
+  // For now, return a mock successful response
+  const mockUser = {
+    id: 'entra-user-123',
+    email: 'user@vedprakashmoutlook.onmicrosoft.com',
+    name: 'Entra User',
+    role: 'parent',
+    status: 'active'
+  };
+
+  context.res = {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      success: true,
+      message: 'Entra authentication successful',
+      data: {
+        user: mockUser,
+        token: 'mock-jwt-token',
+        refreshToken: 'mock-refresh-token'
+      },
+      action: 'entra-login',
     }),
   };
   context.done();

@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({ dest: 'public' });
+// Temporarily disable PWA to fix service worker issues with static export
+// const withPWA = require('next-pwa')({ dest: 'public' });
 
 const nextConfig = {
   // Basic configuration
@@ -50,9 +51,11 @@ const nextConfig = {
       process.env.NEXT_PUBLIC_API_BASE_URL ||
       'https://carpool.vedprakash.net/api',
     NEXT_PUBLIC_ENTRA_CLIENT_ID:
-      process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID || 'c5118183-d391-4a86-ad73-29162678a5f0',
+      process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID ||
+      'c5118183-d391-4a86-ad73-29162678a5f0',
     NEXT_PUBLIC_ENTRA_AUTHORITY:
-      process.env.NEXT_PUBLIC_ENTRA_AUTHORITY || 'https://login.microsoftonline.com/vedprakashmoutlook.onmicrosoft.com',
+      process.env.NEXT_PUBLIC_ENTRA_AUTHORITY ||
+      'https://login.microsoftonline.com/vedprakashmoutlook.onmicrosoft.com',
   },
 
   experimental: {
@@ -60,4 +63,5 @@ const nextConfig = {
   },
 };
 
-module.exports = withPWA(nextConfig);
+// Export without PWA wrapper for now
+module.exports = nextConfig;
