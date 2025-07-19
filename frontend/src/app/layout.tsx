@@ -5,7 +5,6 @@ import { Providers } from './providers';
 import { Toaster } from 'react-hot-toast';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { RBACProvider } from '@/contexts/RBACContext';
-import PWAInitializer from '@/components/PWAInitializer';
 import { SkipLink } from '@/components/ui/AccessibleComponents';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -15,7 +14,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: 'cover',
   themeColor: '#3b82f6',
 };
 
@@ -23,14 +21,6 @@ export const metadata: Metadata = {
   title: 'Carpool - Smart Carpool Management',
   description:
     'Efficient carpool management for schools and families with real-time coordination',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Carpool',
-  },
-  other: {
-    'mobile-web-app-capable': 'yes',
-  },
   icons: {
     icon: '/icon.svg',
     apple: '/icon.svg',
@@ -55,7 +45,6 @@ export default function RootLayout({
               <main id="main-content" tabIndex={-1}>
                 {children}
               </main>
-              <PWAInitializer />
               <Toaster
                 position="top-right"
                 toastOptions={{

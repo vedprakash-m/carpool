@@ -162,6 +162,7 @@ export function MobileNavigation({ className = '' }: MobileNavigationProps) {
           safe-area-bottom
           ${className}
         `}
+        aria-label="Mobile navigation"
       >
         {/* Connection Status Indicator */}
         {!connectionStatus.connected && (
@@ -189,7 +190,7 @@ export function MobileNavigation({ className = '' }: MobileNavigationProps) {
                   transition-all duration-200
                   ${
                     active
-                      ? 'text-blue-600'
+                      ? 'bg-primary-50 text-blue-600'
                       : 'text-gray-400 hover:text-gray-600'
                   }
                 `}

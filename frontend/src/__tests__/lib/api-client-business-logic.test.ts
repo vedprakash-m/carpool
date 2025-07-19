@@ -84,8 +84,12 @@ describe('API Client - Carpool Business Logic', () => {
       ];
 
       endpoints.forEach(endpoint => {
-        expect(endpoint).toContain('/v1/');
-        expect(endpoint).toMatch(/^\/v1\/[a-z]+/);
+        if (endpoint === '/api/auth') {
+          expect(endpoint).toBe('/api/auth');
+        } else {
+          expect(endpoint).toContain('/v1/');
+          expect(endpoint).toMatch(/^\/v1\/[a-z]+/);
+        }
       });
     });
 

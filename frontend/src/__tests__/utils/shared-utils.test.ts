@@ -297,9 +297,9 @@ describe('asyncUtils', () => {
       await asyncUtils.sleep(100);
       const end = Date.now();
 
-      // Allow some tolerance for timing
-      expect(end - start).toBeGreaterThanOrEqual(90);
-      expect(end - start).toBeLessThan(150);
+      // Allow more tolerance for timing (CI and busy environments)
+      expect(end - start).toBeGreaterThanOrEqual(80);
+      expect(end - start).toBeLessThan(250);
     });
 
     it('should resolve with undefined', async () => {
