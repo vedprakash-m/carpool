@@ -463,7 +463,7 @@ function handleEntraLogin(context, requestData) {
     email: 'user@vedprakashmoutlook.onmicrosoft.com',
     name: 'Entra User',
     role: 'parent',
-    status: 'active'
+    status: 'active',
   };
 
   context.res = {
@@ -478,7 +478,7 @@ function handleEntraLogin(context, requestData) {
       data: {
         user: mockUser,
         token: 'mock-jwt-token',
-        refreshToken: 'mock-refresh-token'
+        refreshToken: 'mock-refresh-token',
       },
       action: 'entra-login',
     }),
