@@ -49,6 +49,10 @@ const nextConfig = {
     NEXT_PUBLIC_API_BASE_URL:
       process.env.NEXT_PUBLIC_API_BASE_URL ||
       'https://carpool.vedprakash.net/api',
+    NEXT_PUBLIC_ENTRA_CLIENT_ID:
+      process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID || 'c5118183-d391-4a86-ad73-29162678a5f0',
+    NEXT_PUBLIC_ENTRA_AUTHORITY:
+      process.env.NEXT_PUBLIC_ENTRA_AUTHORITY || 'https://login.microsoftonline.com/vedprakashmoutlook.onmicrosoft.com',
   },
 
   experimental: {

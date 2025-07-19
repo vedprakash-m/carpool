@@ -11,8 +11,8 @@ module.exports = function (context, req) {
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS'
-        }
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        },
       };
       context.done();
       return;
@@ -48,7 +48,15 @@ module.exports = function (context, req) {
         body: JSON.stringify({
           success: false,
           message: 'Action parameter is required. Use ?action=login, ?action=register, etc.',
-          supportedActions: ['login', 'register', 'refresh', 'logout', 'forgot-password', 'reset-password', 'change-password']
+          supportedActions: [
+            'login',
+            'register',
+            'refresh',
+            'logout',
+            'forgot-password',
+            'reset-password',
+            'change-password',
+          ],
         }),
       };
       context.done();
@@ -118,7 +126,15 @@ module.exports = function (context, req) {
           body: JSON.stringify({
             success: false,
             message: `Unknown action: ${action}`,
-            supportedActions: ['login', 'register', 'refresh', 'logout', 'forgot-password', 'reset-password', 'change-password']
+            supportedActions: [
+              'login',
+              'register',
+              'refresh',
+              'logout',
+              'forgot-password',
+              'reset-password',
+              'change-password',
+            ],
           }),
         };
         context.done();
@@ -146,9 +162,9 @@ module.exports = function (context, req) {
 // Authentication action handlers (basic implementations for now)
 function handleLogin(context, requestData) {
   context.log('Processing login request');
-  
+
   const { email, password } = requestData;
-  
+
   if (!email || !password) {
     context.res = {
       status: 400,
@@ -184,9 +200,9 @@ function handleLogin(context, requestData) {
         user: {
           id: 'demo_user_id',
           email: email,
-          name: 'Demo User'
-        }
-      }
+          name: 'Demo User',
+        },
+      },
     }),
   };
   context.done();
@@ -194,9 +210,9 @@ function handleLogin(context, requestData) {
 
 function handleRegister(context, requestData) {
   context.log('Processing register request');
-  
+
   const { email, password, name } = requestData;
-  
+
   if (!email || !password || !name) {
     context.res = {
       status: 400,
@@ -233,9 +249,9 @@ function handleRegister(context, requestData) {
         user: {
           id: 'demo_user_id',
           email: email,
-          name: name
-        }
-      }
+          name: name,
+        },
+      },
     }),
   };
   context.done();
@@ -243,9 +259,9 @@ function handleRegister(context, requestData) {
 
 function handleRefresh(context, requestData) {
   context.log('Processing refresh request');
-  
+
   const { refreshToken } = requestData;
-  
+
   if (!refreshToken) {
     context.res = {
       status: 400,
@@ -275,8 +291,8 @@ function handleRefresh(context, requestData) {
       action: 'refresh',
       data: {
         token: 'new_demo_jwt_token',
-        refreshToken: 'new_demo_refresh_token'
-      }
+        refreshToken: 'new_demo_refresh_token',
+      },
     }),
   };
   context.done();
@@ -284,7 +300,7 @@ function handleRefresh(context, requestData) {
 
 function handleLogout(context, requestData) {
   context.log('Processing logout request');
-  
+
   // Basic implementation - TODO: invalidate tokens
   context.res = {
     status: 200,
@@ -295,7 +311,7 @@ function handleLogout(context, requestData) {
     body: JSON.stringify({
       success: true,
       message: 'Logout endpoint working - token invalidation logic to be implemented',
-      action: 'logout'
+      action: 'logout',
     }),
   };
   context.done();
@@ -303,9 +319,9 @@ function handleLogout(context, requestData) {
 
 function handleForgotPassword(context, requestData) {
   context.log('Processing forgot password request');
-  
+
   const { email } = requestData;
-  
+
   if (!email) {
     context.res = {
       status: 400,
@@ -334,8 +350,8 @@ function handleForgotPassword(context, requestData) {
       message: 'Forgot password endpoint working - email sending logic to be implemented',
       action: 'forgot-password',
       data: {
-        email: email
-      }
+        email: email,
+      },
     }),
   };
   context.done();
@@ -343,9 +359,9 @@ function handleForgotPassword(context, requestData) {
 
 function handleResetPassword(context, requestData) {
   context.log('Processing reset password request');
-  
+
   const { token, newPassword } = requestData;
-  
+
   if (!token || !newPassword) {
     context.res = {
       status: 400,
@@ -372,7 +388,7 @@ function handleResetPassword(context, requestData) {
     body: JSON.stringify({
       success: true,
       message: 'Reset password endpoint working - password update logic to be implemented',
-      action: 'reset-password'
+      action: 'reset-password',
     }),
   };
   context.done();
@@ -380,9 +396,9 @@ function handleResetPassword(context, requestData) {
 
 function handleChangePassword(context, requestData) {
   context.log('Processing change password request');
-  
+
   const { currentPassword, newPassword } = requestData;
-  
+
   if (!currentPassword || !newPassword) {
     context.res = {
       status: 400,
@@ -409,7 +425,7 @@ function handleChangePassword(context, requestData) {
     body: JSON.stringify({
       success: true,
       message: 'Change password endpoint working - password validation logic to be implemented',
-      action: 'change-password'
+      action: 'change-password',
     }),
   };
   context.done();
