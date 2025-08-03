@@ -107,7 +107,7 @@ export const authenticate: Middleware = async (request, context) => {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     const verifyResult = await userDomainService.verifyToken(token);
 
-    if (!verifyResult.success || !verifyResult.user) {
+    if (!verifyResult.valid || !verifyResult.user) {
       throw Errors.Unauthorized(verifyResult.message || 'Invalid or expired token.');
     }
 

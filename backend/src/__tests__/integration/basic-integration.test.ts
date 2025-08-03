@@ -19,7 +19,7 @@ describe('Basic Integration Coverage', () => {
 
     it('should handle basic authentication workflow', async () => {
       // Test with invalid input to exercise error handling paths
-      const result = await userDomainService.authenticateUser({ email: '', password: '' });
+      const result = await userDomainService.authenticateWithPassword('', '');
       expect(result.success).toBe(false);
       expect(result.message).toBeDefined();
     });
@@ -47,7 +47,7 @@ describe('Basic Integration Coverage', () => {
       const tokenResult = await userDomainService.verifyToken(mockToken);
 
       expect(tokenResult).toBeDefined();
-      expect(tokenResult.success).toBe(false);
+      expect(tokenResult.valid).toBe(false);
     });
   });
 
@@ -95,21 +95,18 @@ describe('Basic Integration Coverage', () => {
   describe('Core Business Logic', () => {
     it('should handle malformed input gracefully', async () => {
       // Test with empty credentials object
-      const result1 = await userDomainService.authenticateUser({ email: '', password: '' });
+      const result1 = await userDomainService.authenticateWithPassword('', '');
       expect(result1.success).toBe(false);
 
       // Test with undefined password
-      const result2 = await userDomainService.authenticateUser({
-        email: 'test@example.com',
-        password: undefined as any,
-      });
+      const result2 = await userDomainService.authenticateWithPassword(
+        'test@example.com',
+        undefined as any,
+      );
       expect(result2.success).toBe(false);
 
       // Test with invalid email format
-      const result3 = await userDomainService.authenticateUser({
-        email: 'invalid-email',
-        password: 'test123',
-      });
+      const result3 = await userDomainService.authenticateWithPassword('invalid-email', 'test123');
       expect(result3.success).toBe(false);
     });
 
@@ -118,10 +115,7 @@ describe('Basic Integration Coverage', () => {
       const promises = [];
       for (let i = 0; i < 5; i++) {
         promises.push(
-          userDomainService.authenticateUser({
-            email: 'test@example.com',
-            password: 'wrongpassword',
-          }),
+          userDomainService.authenticateWithPassword('test@example.com', 'wrongpassword'),
         );
       }
 
@@ -136,10 +130,10 @@ describe('Basic Integration Coverage', () => {
   describe('Authentication Operations', () => {
     it('should handle authentication requests', async () => {
       // Test authentication with invalid credentials
-      const result = await userDomainService.authenticateUser({
-        email: 'test@example.com',
-        password: 'wrongPassword',
-      });
+      const result = await userDomainService.authenticateWithPassword(
+        'test@example.com',
+        'wrongPassword',
+      );
 
       expect(result.success).toBe(false);
       expect(result.message).toBeDefined();

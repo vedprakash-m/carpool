@@ -49,7 +49,7 @@ export async function authenticateRequest(request: HttpRequest): Promise<AuthMid
     // Validate the token using our unified authentication service
     const validationResult = await userDomainService.verifyToken(token);
 
-    if (!validationResult.success || !validationResult.user) {
+    if (!validationResult.valid || !validationResult.user) {
       return {
         success: false,
         message: validationResult.message || 'Invalid token',

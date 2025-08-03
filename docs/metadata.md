@@ -9,6 +9,70 @@
 
 ---
 
+## 🔐 **Authentication and Authorization Remediation Plan**
+
+This is a three-phase plan to migrate the Carpool application to a secure, modern, and maintainable authentication system. The primary goal is to eliminate legacy code, fix critical security vulnerabilities, and fully adopt the new `AuthenticationService` without causing downtime.
+
+---
+
+### **Phase 1: Immediate Hardening and Stabilization (Timeline: 1-2 Sprints)**
+
+This phase focuses on patching the most critical security flaws without making major architectural changes. The application will remain fully functional.
+
+1.  **Implement Standard JWT Signature Validation:**
+    *   **Action:** Replace the current token verification logic in `userDomainService.verifyToken` with a standard, well-vetted library (e.g., `jose`).
+    *   **Details:** The validation logic **must** fetch the public keys from the Microsoft Entra ID JWKS endpoint (`https://login.microsoftonline.com/{tenant}/discovery/v2.0/keys`) to verify the signature of the JWT. This is a non-negotiable security fix.
+    *   **Impact:** This will prevent any unsigned or incorrectly signed tokens from being accepted, closing a critical vulnerability.
+
+2.  **Introduce Token Blacklisting for Logout:**
+    *   **Action:** Implement a token blacklisting mechanism.
+    *   **Details:** Use a fast, in-memory database like Redis. When the `/api/auth?action=logout` endpoint is called, add the token's unique identifier (`jti` claim) to the Redis cache with an expiration equal to the token's remaining lifetime.
+    *   **Impact:** The `authenticate` middleware will be updated to check this blacklist on every request, ensuring that logged-out tokens cannot be reused.
+
+3.  **Enforce Strict Type Safety on `request.auth`:**
+    *   **Action:** Define a non-optional, strictly-typed `AuthenticatedUser` interface.
+    *   **Details:** This interface will represent the user object attached to the request by the `authenticate` middleware. All downstream handlers and middleware will use this type.
+    *   **Impact:** This improves code quality, prevents runtime errors, and makes the authorization logic more robust.
+
+---
+
+### **Phase 2: Incremental Refactoring and Migration (Timeline: 2-4 Sprints)**
+
+This phase involves methodically migrating all authentication logic from the legacy `user-domain.service.ts` to the new `AuthenticationService`. The migration will happen one function at a time to ensure stability.
+
+1.  **Migrate Login and Refresh Logic:**
+    *   **Action:** Refactor the `handleLogin` and `handleRefresh` functions in the `auth-unified` endpoint to call the `AuthenticationService` directly, completely bypassing the `user-domain.service.ts`.
+    *   **Details:** This is the first step in phasing out the legacy service.
+
+2.  **Implement Refresh Token Rotation:**
+    *   **Action:** Enhance the new `AuthenticationService` to implement refresh token rotation.
+    *   **Details:** When a refresh token is used, it must be invalidated immediately, and a new refresh token should be issued along with the new access token. This prevents a compromised refresh token from being used multiple times.
+    *   **Impact:** This significantly improves the security of long-lived sessions.
+
+3.  **Migrate User Registration and Password Management:**
+    *   **Action:** Migrate the `register`, `forgot-password`, `reset-password`, and `change-password` functionalities from `user-domain.service.ts` to `AuthenticationService`.
+    *   **Details:** This will involve moving password hashing and comparison logic into the new service, ensuring that all cryptographic operations are centralized.
+
+---
+
+### **Phase 3: Deprecation and Final Cleanup (Timeline: 1 Sprint)**
+
+This final phase removes all legacy code and finalizes the new architecture.
+
+1.  **Deprecate and Remove Legacy Auth Methods:**
+    *   **Action:** Once all authentication-related calls have been migrated to the `AuthenticationService`, remove the now-unused auth methods from `user-domain.service.ts`.
+    *   **Details:** The `user-domain.service.ts` should be left with only user profile and domain logic responsibilities, not authentication.
+
+2.  **Remove Obsolete Code and Types:**
+    *   **Action:** Delete the backward-compatibility `AuthResult` type and any other legacy types. Delete old, unused Azure Functions related to the previous authentication system (e.g., `auth-login-simple`).
+    *   **Impact:** This cleans up the codebase, reduces complexity, and makes the system easier for new developers to understand.
+
+3.  **Update All Documentation:**
+    *   **Action:** Update the `README.md`, API specifications, and any other relevant documentation to reflect the new, secure authentication architecture.
+    *   **Details:** This ensures that the documentation accurately represents the current state of the codebase.
+
+---
+
 ## 🔐 Authentication Flow QA (July 19, 2025)
 
 **Objective**: Test full login, registration, and logout flows for both legacy and Microsoft authentication. Confirm user session persistence and error handling.
@@ -876,6 +940,7 @@ The system has strong **local development** foundation but needs **CI/CD pipelin
    - Verify all required modules and dependencies are available in Azure runtime
 
 3. **Environment Compatibility**:
+
    - Ensure Node.js version compatibility between local and Azure runtime
    - Verify all npm packages available in Azure Functions environment
    - Check for any Azure Functions v3 vs v4 compatibility issues
@@ -895,6 +960,7 @@ The system has strong **local development** foundation but needs **CI/CD pipelin
    - Ensure proper error handling and user feedback
 
 3. **End-to-End Authentication Flow**:
+
    - Complete user registration → login → protected resource access flow
    - Test password reset and change password functionality
    - Validate session management and token refresh
@@ -908,6 +974,7 @@ The system has strong **local development** foundation but needs **CI/CD pipelin
    - Test with production domain configuration
 
 2. **Documentation and Handoff**:
+
    - Update metadata with final authentication system status
    - Create deployment validation checklist
    - Prepare system for team handoff or future development

@@ -19,7 +19,7 @@ async function loginHandler(
 
     const authResult = await loginUseCase.execute(email, password);
 
-    if (!authResult.success || !authResult.user || !authResult.token) {
+    if (!authResult.success || !authResult.user || !authResult.accessToken) {
       return {
         status: 401,
         jsonBody: {
@@ -37,7 +37,7 @@ async function loginHandler(
         message: 'Login successful',
         data: {
           user: authResult.user,
-          accessToken: authResult.token,
+          accessToken: authResult.accessToken,
           refreshToken: authResult.refreshToken,
         },
       },

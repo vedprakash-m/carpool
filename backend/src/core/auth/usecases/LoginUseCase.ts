@@ -6,6 +6,6 @@ export class LoginUseCase {
 
   async execute(email: string, password: string) {
     // Use unified user domain service for authentication
-    return await userDomainService.authenticateUser({ email, password });
+    return await userDomainService.authenticateWithPassword(email, password);
   }
 }

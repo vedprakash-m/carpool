@@ -6,6 +6,7 @@
  */
 
 import * as jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 import { UserEntity } from '@carpool/shared';
 import {
   IJWTService,
@@ -20,9 +21,14 @@ import {
 
 export class JWTService implements IJWTService {
   private readonly config: JWTConfig;
+  private readonly jwksClient: jwksClient.JwksClient;
 
   constructor(config?: Partial<JWTConfig>) {
     this.config = { ...getJWTConfig(), ...config };
+    // Note: JWKS client would need additional configuration for Entra ID integration
+    this.jwksClient = jwksClient({
+      jwksUri: `https://login.microsoftonline.com/common/discovery/v2.0/keys`,
+    });
   }
 
   /**
@@ -81,18 +87,26 @@ export class JWTService implements IJWTService {
    * Validate access token and return payload
    */
   async validateAccessToken(token: string): Promise<JWTPayload> {
-    const options = createVerifyOptions(this.config, TokenType.ACCESS);
+    const decodedToken = jwt.decode(token, { complete: true });
+    if (!decodedToken) {
+      throw new Error('Invalid token');
+    }
 
-    try {
-      const payload = jwt.verify(token, options.secret, {
-        issuer: options.issuer,
-        audience: options.audience,
-        algorithms: options.algorithms,
+    // Entra ID token validation
+    if (
+      typeof decodedToken.payload === 'object' &&
+      decodedToken.payload.iss &&
+      typeof decodedToken.payload.iss === 'string' &&
+      decodedToken.payload.iss.includes('microsoftonline')
+    ) {
+      const key = await this.jwksClient.getSigningKey(decodedToken.header.kid);
+      const signingKey = key.getPublicKey();
+
+      const payload = jwt.verify(token, signingKey, {
+        algorithms: ['RS256'],
+        issuer: this.config.issuer,
+        audience: this.config.audience,
       }) as StandardJWTPayload;
-
-      if (payload.type !== TokenType.ACCESS) {
-        throw new Error('Invalid token type');
-      }
 
       return {
         sub: payload.sub,
@@ -105,10 +119,37 @@ export class JWTService implements IJWTService {
         iss: payload.iss,
         aud: payload.aud,
       };
-    } catch (error) {
-      throw new Error(
-        `Token validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+    } else {
+      // Legacy token validation
+      const options = createVerifyOptions(this.config, TokenType.ACCESS);
+
+      try {
+        const payload = jwt.verify(token, options.secret, {
+          issuer: options.issuer,
+          audience: options.audience,
+          algorithms: options.algorithms,
+        }) as StandardJWTPayload;
+
+        if (payload.type !== TokenType.ACCESS) {
+          throw new Error('Invalid token type');
+        }
+
+        return {
+          sub: payload.sub,
+          email: payload.email,
+          role: payload.role as any,
+          permissions: payload.permissions,
+          authProvider: payload.authProvider as any,
+          iat: payload.iat,
+          exp: payload.exp,
+          iss: payload.iss,
+          aud: payload.aud,
+        };
+      } catch (error) {
+        throw new Error(
+          `Token validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
     }
   }
 

@@ -20,10 +20,13 @@ import {
   UserEntity,
   UserRole,
   AuthProvider,
+  CreateUserRequest,
 } from '@carpool/shared';
 import { JWTService } from './jwt.service';
 import { DatabaseService } from '../database.service';
+import { tokenBlacklist } from './token-blacklist';
 import { ILogger } from '../../utils/logger';
+import jwt from 'jsonwebtoken';
 
 /**
  * Password Validator Implementation
@@ -107,7 +110,13 @@ export class AuthenticationService implements IAuthenticationService {
   /**
    * Validate access token
    */
-  async validateToken(token: string): Promise<TokenValidationResult> {
+  async validateAccessToken(token: string): Promise<TokenValidationResult> {
+    if (tokenBlacklist.has(token)) {
+      return {
+        valid: false,
+        message: 'Token has been revoked',
+      };
+    }
     try {
       const payload = await this.jwtService.validateAccessToken(token);
 
@@ -125,6 +134,33 @@ export class AuthenticationService implements IAuthenticationService {
       return {
         valid: true,
         user: authUser,
+        payload,
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        message: error instanceof Error ? error.message : 'Token validation failed',
+      };
+    }
+  }
+
+  /**
+   * Validate JWT token
+   */
+  async validateToken(token: string): Promise<TokenValidationResult> {
+    try {
+      const payload = await this.jwtService.validateAccessToken(token);
+
+      // Check if token is blacklisted
+      if (tokenBlacklist.has(token)) {
+        return {
+          valid: false,
+          message: 'Token has been revoked',
+        };
+      }
+
+      return {
+        valid: true,
         payload,
       };
     } catch (error) {
@@ -174,8 +210,13 @@ export class AuthenticationService implements IAuthenticationService {
    * Revoke token (logout)
    */
   async revokeToken(token: string): Promise<void> {
-    // For now, we'll just log the revocation
-    // In a full implementation, we'd add the token to a blacklist
+    const decodedToken = jwt.decode(token);
+    if (decodedToken && typeof decodedToken === 'object' && decodedToken.exp) {
+      const expiry = decodedToken.exp - Math.floor(Date.now() / 1000);
+      if (expiry > 0) {
+        tokenBlacklist.add(token, expiry);
+      }
+    }
     this.logger.info('Token revoked', { token: token.substring(0, 10) + '...' });
   }
 
@@ -189,6 +230,38 @@ export class AuthenticationService implements IAuthenticationService {
     }
 
     return (this.jwtService as JWTService).generatePasswordResetToken(user);
+  }
+
+  async requestPasswordReset(
+    email: string,
+  ): Promise<{ success: boolean; message?: string; error?: string; resetToken?: string }> {
+    try {
+      const user = await this.databaseService.getUserByEmail(email);
+      if (!user) {
+        // Return success even if user not found (security best practice)
+        return {
+          success: true,
+          message: 'If the email exists, a reset link has been sent',
+        };
+      }
+
+      // Generate reset token
+      const resetToken = await this.generatePasswordResetToken(email);
+
+      // TODO: Send email with reset link
+
+      return {
+        success: true,
+        message: 'Password reset token generated',
+        resetToken,
+      };
+    } catch (error) {
+      this.logger.error('Error requesting password reset:', error);
+      return {
+        success: false,
+        error: 'Failed to process password reset request',
+      };
+    }
   }
 
   /**
@@ -221,7 +294,7 @@ export class AuthenticationService implements IAuthenticationService {
       }
 
       const hashedPassword = await this.passwordValidator.hashPassword(newPassword);
-      await this.databaseService.updateUser(user.email, { passwordHash: hashedPassword });
+      await this.databaseService.updateUser(user.id, { passwordHash: hashedPassword });
 
       return {
         success: true,
@@ -247,6 +320,117 @@ export class AuthenticationService implements IAuthenticationService {
    */
   async verifyPassword(password: string, hash: string): Promise<boolean> {
     return this.passwordValidator.verifyPassword(password, hash);
+  }
+
+  async registerUser(request: CreateUserRequest): Promise<AuthResult> {
+    try {
+      // Hash password if provided
+      let passwordHash: string | undefined;
+      if (request.password) {
+        const passwordValidation = this.passwordValidator.validatePasswordStrength(
+          request.password,
+        );
+        if (!passwordValidation.valid) {
+          return {
+            success: false,
+            message: passwordValidation.message || 'Invalid password',
+          };
+        }
+        passwordHash = await this.passwordValidator.hashPassword(request.password);
+      }
+
+      // Create user entity
+      const userEntity: Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt'> = {
+        email: request.email,
+        firstName: request.firstName,
+        lastName: request.lastName,
+        role: request.role,
+        authProvider: request.password ? 'legacy' : 'entra',
+        passwordHash,
+        isActive: true,
+        emailVerified: false,
+        phoneVerified: false,
+        emergencyContacts: [],
+        familyId: undefined,
+        groupMemberships: [],
+        addressVerified: false,
+        phoneNumber: request.phoneNumber,
+        homeAddress: request.homeAddress,
+        isActiveDriver: request.isActiveDriver || false,
+        preferences: {
+          isDriver: request.isActiveDriver || false,
+          notifications: {
+            email: true,
+            sms: false,
+            tripReminders: true,
+            swapRequests: true,
+            scheduleChanges: true,
+          },
+        },
+        loginAttempts: 0,
+      };
+
+      // Create user in database
+      const newUser = await this.databaseService.createUser(userEntity);
+
+      // Generate tokens
+      const accessToken = this.jwtService.generateAccessToken(newUser);
+      const refreshToken = this.jwtService.generateRefreshToken(newUser);
+
+      return {
+        success: true,
+        user: this.mapToAuthUserResponse(newUser),
+        accessToken,
+        refreshToken,
+        message: 'User registered successfully',
+      };
+    } catch (error) {
+      this.logger.error('User registration error:', error);
+      return {
+        success: false,
+        message: 'User registration failed. Please try again.',
+      };
+    }
+  }
+
+  async changePassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      // Get user
+      const user = await this.databaseService.getUserById(userId);
+      if (!user) {
+        return { success: false, error: 'User not found' };
+      }
+
+      // Verify old password
+      const isOldPasswordValid = await this.verifyPassword(oldPassword, user.passwordHash || '');
+      if (!isOldPasswordValid) {
+        return { success: false, error: 'Invalid current password' };
+      }
+
+      // Hash new password
+      const newPasswordHash = await this.hashPassword(newPassword);
+
+      // Update user's password
+      await this.databaseService.updateUser(userId, {
+        passwordHash: newPasswordHash,
+        updatedAt: new Date(),
+      });
+
+      return {
+        success: true,
+        message: 'Password changed successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error changing password:', error);
+      return {
+        success: false,
+        error: 'Failed to change password',
+      };
+    }
   }
 
   /**
@@ -328,7 +512,54 @@ export class AuthenticationService implements IAuthenticationService {
       };
     }
 
-    return this.refreshToken(credentials.token);
+    return this.rotateRefreshToken(credentials.token);
+  }
+
+  private usedRefreshTokens: Set<string> = new Set();
+
+  /**
+   * Authenticate with refresh token
+   */
+  private async rotateRefreshToken(token: string): Promise<AuthResult> {
+    if (this.usedRefreshTokens.has(token)) {
+      return {
+        success: false,
+        message: 'Refresh token has already been used',
+      };
+    }
+
+    try {
+      const payload = await this.jwtService.validateRefreshToken(token);
+
+      // Get fresh user data
+      const user = await this.databaseService.getUserByEmail(payload.email);
+      if (!user || !user.isActive) {
+        return {
+          success: false,
+          message: 'User not found or account deactivated',
+        };
+      }
+
+      // Add the used token to the blacklist
+      this.usedRefreshTokens.add(token);
+
+      // Generate new tokens
+      const accessToken = this.jwtService.generateAccessToken(user);
+      const newRefreshToken = this.jwtService.generateRefreshToken(user);
+
+      return {
+        success: true,
+        user: this.mapToAuthUserResponse(user),
+        accessToken,
+        refreshToken: newRefreshToken,
+        message: 'Token refreshed successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Invalid or expired refresh token',
+      };
+    }
   }
 
   /**

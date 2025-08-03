@@ -1,9 +1,14 @@
 import { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { userDomainService } from '../../services/domains/user-domain.service';
-import { CreateUserRequest } from '@carpool/shared';
-
-// Use the domain service's AuthResult type for now
-type AuthResult = import('../../services/domains/user-domain.service').AuthResult;
+import { authenticationService } from '../../services/auth/authentication.service';
+import {
+  CreateUserRequest,
+  AuthCredentials,
+  AuthResult,
+  AuthUserResponse,
+  AuthenticatedUser,
+} from '@carpool/shared';
+import jwt from 'jsonwebtoken';
 
 /**
  * UNIFIED AUTHENTICATION ENDPOINT
@@ -159,10 +164,12 @@ async function handleLogin(body: any, context: InvocationContext): Promise<AuthR
     };
   }
 
-  return await userDomainService.authenticateUser({
+  const credentials: AuthCredentials = {
+    type: 'password',
     email: body.email,
     password: body.password,
-  });
+  };
+  return await authenticationService.authenticate(credentials);
 }
 
 /**
@@ -189,7 +196,7 @@ async function handleRegister(body: any, context: InvocationContext): Promise<Au
     password: body.password,
   };
 
-  return await userDomainService.registerUser(createUserRequest);
+  return await authenticationService.registerUser(createUserRequest);
 }
 
 /**
@@ -205,7 +212,8 @@ async function handleRefresh(body: any, context: InvocationContext): Promise<Aut
     };
   }
 
-  return await userDomainService.refreshToken(body.refreshToken);
+  const credentials: AuthCredentials = { type: 'refresh_token', token: body.refreshToken };
+  return await authenticationService.authenticate(credentials);
 }
 
 /**
@@ -242,7 +250,7 @@ async function handleForgotPassword(body: any, context: InvocationContext): Prom
     };
   }
 
-  return await userDomainService.requestPasswordReset(body.email);
+  return await authenticationService.requestPasswordReset(body.email);
 }
 
 /**
@@ -258,7 +266,7 @@ async function handleResetPassword(body: any, context: InvocationContext): Promi
     };
   }
 
-  return await userDomainService.resetPassword(body.token, body.newPassword);
+  return await authenticationService.resetPassword(body.token, body.newPassword);
 }
 
 /**
@@ -291,7 +299,12 @@ async function handleChangePassword(
   // This could be improved with proper middleware
   try {
     const token = authHeader.replace('Bearer ', '');
-    return await userDomainService.changePassword(token, body.currentPassword, body.newPassword);
+    const decodedToken = jwt.decode(token) as any;
+    return await authenticationService.changePassword(
+      decodedToken.sub,
+      body.currentPassword,
+      body.newPassword,
+    );
   } catch (error) {
     return {
       success: false,

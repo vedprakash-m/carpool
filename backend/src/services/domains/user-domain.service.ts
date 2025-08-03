@@ -5,12 +5,19 @@
  * instead of managing authentication logic directly.
  */
 
-import { UserEntity, CreateUserRequest, AuthenticatedUser } from '@carpool/shared';
+import {
+  UserEntity,
+  CreateUserRequest,
+  AuthenticatedUser,
+  AuthResult,
+  AuthCredentials,
+  AuthUserResponse,
+  TokenValidationResult,
+} from '@carpool/shared';
 import { UserRole } from '@carpool/shared/dist/entities/user.entity';
 import { databaseService } from '../database.service';
 import { configService } from '../config.service';
 import { AuthenticationService } from '../auth/authentication.service';
-import { AuthCredentials, AuthResult as NewAuthResult, AuthUserResponse } from '@carpool/shared';
 
 // VedUser interface from Entra ID
 export interface VedUser {
@@ -19,15 +26,6 @@ export interface VedUser {
   name: string;
   firstName?: string;
   lastName?: string;
-}
-
-// Authentication result (backward compatibility)
-export interface AuthResult {
-  success: boolean;
-  user?: AuthenticatedUser;
-  token?: string;
-  refreshToken?: string;
-  message?: string;
 }
 
 // Login credentials
@@ -63,175 +61,6 @@ export class UserDomainService {
       UserDomainService.instance = new UserDomainService();
     }
     return UserDomainService.instance;
-  }
-
-  /**
-   * UNIFIED AUTHENTICATION METHOD
-   * Now delegates to the new AuthenticationService
-   */
-  async authenticateUser(credentials: LoginCredentials | string): Promise<AuthResult> {
-    try {
-      let authCredentials: AuthCredentials;
-
-      // If string, it's an Entra ID token
-      if (typeof credentials === 'string') {
-        authCredentials = {
-          type: 'entra_token',
-          token: credentials,
-        };
-      } else {
-        // Otherwise, it's legacy email/password
-        authCredentials = {
-          type: 'password',
-          email: credentials.email,
-          password: credentials.password,
-        };
-      }
-
-      const authResult = await this.authService.authenticate(authCredentials);
-
-      // Convert to legacy format for backward compatibility
-      return {
-        success: authResult.success,
-        user: authResult.user ? this.authUserToAuthenticatedUser(authResult.user) : undefined,
-        token: authResult.accessToken,
-        refreshToken: authResult.refreshToken,
-        message: authResult.message,
-      };
-    } catch (error) {
-      console.error('Authentication error:', error);
-      return {
-        success: false,
-        message: 'Authentication failed. Please try again.',
-      };
-    }
-  }
-
-  /**
-   * Convert AuthUserResponse to AuthenticatedUser for backward compatibility
-   */
-  private authUserToAuthenticatedUser(authUser: AuthUserResponse): AuthenticatedUser {
-    return {
-      id: authUser.id,
-      email: authUser.email,
-      firstName: authUser.firstName,
-      lastName: authUser.lastName,
-      role: authUser.role,
-      authProvider: authUser.authProvider,
-      isActive: authUser.isActive,
-    };
-  }
-
-  /**
-   * Refresh token using new AuthenticationService
-   */
-  async refreshToken(refreshToken: string): Promise<AuthResult> {
-    try {
-      const authCredentials: AuthCredentials = {
-        type: 'refresh_token',
-        token: refreshToken,
-      };
-
-      const authResult = await this.authService.authenticate(authCredentials);
-
-      return {
-        success: authResult.success,
-        user: authResult.user ? this.authUserToAuthenticatedUser(authResult.user) : undefined,
-        token: authResult.accessToken,
-        refreshToken: authResult.refreshToken,
-        message: authResult.message,
-      };
-    } catch (error) {
-      console.error('Token refresh error:', error);
-      return {
-        success: false,
-        message: 'Token refresh failed. Please login again.',
-      };
-    }
-  }
-
-  /**
-   * Verify token using new AuthenticationService
-   */
-  async verifyToken(token: string): Promise<AuthResult> {
-    try {
-      const validationResult = await this.authService.validateToken(token);
-
-      return {
-        success: validationResult.valid,
-        user: validationResult.user
-          ? this.authUserToAuthenticatedUser(validationResult.user)
-          : undefined,
-        token: validationResult.valid ? token : undefined,
-        message: validationResult.message,
-      };
-    } catch (error) {
-      console.error('Token verification error:', error);
-      return {
-        success: false,
-        message: 'Token verification failed.',
-      };
-    }
-  }
-
-  /**
-   * REGISTER USER - Create new user directly through database service
-   */
-  async registerUser(request: CreateUserRequest): Promise<AuthResult> {
-    try {
-      // Hash password if provided
-      let passwordHash: string | undefined;
-      if (request.password) {
-        const bcrypt = await import('bcrypt');
-        passwordHash = await bcrypt.hash(request.password, 12);
-      }
-
-      // Create user entity
-      const userEntity: Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt'> = {
-        email: request.email,
-        firstName: request.firstName,
-        lastName: request.lastName,
-        role: request.role,
-        authProvider: request.password ? 'legacy' : 'entra',
-        passwordHash,
-        isActive: true,
-        emailVerified: false,
-        phoneVerified: false,
-        emergencyContacts: [],
-        familyId: undefined,
-        groupMemberships: [],
-        addressVerified: false,
-        phoneNumber: request.phoneNumber,
-        homeAddress: request.homeAddress,
-        isActiveDriver: request.isActiveDriver || false,
-        preferences: {
-          isDriver: request.isActiveDriver || false,
-          notifications: {
-            email: true,
-            sms: false,
-            tripReminders: true,
-            swapRequests: true,
-            scheduleChanges: true,
-          },
-        },
-        loginAttempts: 0,
-      };
-
-      // Create user in database
-      const newUser = await databaseService.createUser(userEntity);
-
-      return {
-        success: true,
-        user: this.toAuthenticatedUser(newUser),
-        message: 'User registered successfully',
-      };
-    } catch (error) {
-      console.error('User registration error:', error);
-      return {
-        success: false,
-        message: 'User registration failed. Please try again.',
-      };
-    }
   }
 
   /**
@@ -331,127 +160,74 @@ export class UserDomainService {
   }
 
   /**
-   * Password reset - Request password reset link
+   * Authenticate user credentials
+   */
+  async authenticateUser(credentials: AuthCredentials): Promise<AuthResult> {
+    return this.authService.authenticate(credentials);
+  }
+
+  /**
+   * Helper method for password authentication
+   */
+  async authenticateWithPassword(email: string, password: string): Promise<AuthResult> {
+    return this.authService.authenticate({
+      type: 'password',
+      email,
+      password,
+    });
+  }
+
+  /**
+   * Register new user
+   */
+  async registerUser(userData: CreateUserRequest): Promise<AuthResult> {
+    return this.authService.registerUser(userData);
+  }
+
+  /**
+   * Verify JWT token
+   */
+  async verifyToken(token: string): Promise<TokenValidationResult> {
+    return this.authService.validateToken(token);
+  }
+
+  /**
+   * Refresh authentication token
+   */
+  async refreshToken(refreshToken: string): Promise<AuthResult> {
+    return this.authService.refreshToken(refreshToken);
+  }
+
+  /**
+   * Request password reset
    */
   async requestPasswordReset(
     email: string,
-  ): Promise<{ success: boolean; message?: string; error?: string; resetToken?: string }> {
+  ): Promise<{ success: boolean; message: string; resetToken?: string }> {
     try {
-      const user = await this.getUserByEmail(email);
-      if (!user) {
-        // Return success even if user not found (security best practice)
-        return {
-          success: true,
-          message: 'If the email exists, a reset link has been sent',
-        };
-      }
-
-      // Generate reset token using authentication service
       const resetToken = await this.authService.generatePasswordResetToken(email);
-
-      // Store reset token with expiration (implement in database)
-      // For now, we'll delegate to the authentication service
+      // In a real implementation, you'd send an email with the reset token
       return {
         success: true,
-        message: 'Password reset token generated',
+        message: 'Password reset token generated successfully',
         resetToken,
       };
     } catch (error) {
-      this.logger.error('Error requesting password reset:', error);
       return {
         success: false,
-        error: 'Failed to process password reset request',
+        message: 'Failed to generate password reset token',
       };
     }
   }
 
   /**
-   * Password reset - Reset password using token
+   * Reset password with token
    */
   async resetPassword(
     token: string,
     newPassword: string,
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
-    try {
-      // Use AuthenticationService's resetPassword method
-      const result = await this.authService.resetPassword(token, newPassword);
-      return {
-        success: result.success,
-        message: result.message,
-        error: result.success ? undefined : result.message,
-      };
-    } catch (error) {
-      this.logger.error('Error resetting password:', error);
-      return {
-        success: false,
-        error: 'Invalid or expired reset token',
-      };
-    }
-  }
-
-  /**
-   * Change user password
-   */
-  async changePassword(
-    userId: string,
-    oldPassword: string,
-    newPassword: string,
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
-    try {
-      // Get user
-      const user = await this.getUserById(userId);
-      if (!user) {
-        return { success: false, error: 'User not found' };
-      }
-
-      // Verify old password
-      const isOldPasswordValid = await this.authService.verifyPassword(
-        oldPassword,
-        user.passwordHash || '',
-      );
-      if (!isOldPasswordValid) {
-        return { success: false, error: 'Invalid current password' };
-      }
-
-      // Hash new password
-      const newPasswordHash = await this.authService.hashPassword(newPassword);
-
-      // Update user's password
-      const updatedUser = await this.databaseService.updateUser(userId, {
-        passwordHash: newPasswordHash,
-        updatedAt: new Date(),
-      });
-
-      if (!updatedUser) {
-        return { success: false, error: 'Failed to update password' };
-      }
-
-      return {
-        success: true,
-        message: 'Password changed successfully',
-      };
-    } catch (error) {
-      this.logger.error('Error changing password:', error);
-      return {
-        success: false,
-        error: 'Failed to change password',
-      };
-    }
-  }
-
-  /**
-   * Convert UserEntity to AuthenticatedUser (for backward compatibility)
-   */
-  private toAuthenticatedUser(user: UserEntity): AuthenticatedUser {
-    return {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      authProvider: user.authProvider,
-      isActive: user.isActive,
-    };
+  ): Promise<{ success: boolean; message: string }> {
+    return this.authService.resetPassword(token, newPassword);
   }
 }
 

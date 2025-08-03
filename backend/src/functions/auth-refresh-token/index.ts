@@ -29,7 +29,7 @@ async function refreshTokenHandler(
           success: true,
           message: 'Token refreshed successfully',
           data: {
-            accessToken: result.token,
+            accessToken: result.accessToken,
             refreshToken: result.refreshToken || refreshToken, // Return new or original refresh token
             user: result.user,
           },

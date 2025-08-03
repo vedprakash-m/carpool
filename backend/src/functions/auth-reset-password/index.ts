@@ -36,7 +36,7 @@ async function resetPasswordHandler(
         status: 400,
         jsonBody: {
           success: false,
-          error: result.error || 'Failed to reset password',
+          error: result.message || 'Failed to reset password',
         },
       };
     }
