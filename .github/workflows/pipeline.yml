@@ -1,4 +1,4 @@
-name: 🚀 Carpool CI/CD Pipeline
+name: 🚀 Carpool CI/CD
 
 on:
   push:
@@ -12,647 +12,202 @@ on:
       - 'package*.json'
   pull_request:
     branches: [main]
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'shared/**'
-      - 'infra/**'
-      - '.github/workflows/**'
-      - 'package*.json'
-  schedule:
-    # Daily maintenance at 2 AM UTC
-    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
-      stage:
-        description: 'Pipeline stage to run'
-        required: false
-        default: 'full'
-        type: choice
-        options:
-          - 'full'
-          - 'validate-only'
-          - 'test-only'
-          - 'deploy-only'
-          - 'maintenance-only'
-          - 'rollback'
       environment:
         description: 'Target environment'
         required: false
         default: 'production'
-        type: choice
-        options:
-          - 'production'
-          - 'staging'
-      force_deploy:
-        description: 'Force deployment (skip change detection)'
-        required: false
-        default: false
-        type: boolean
-      rollback_version:
-        description: 'Version to rollback to (for rollback stage)'
-        required: false
-        type: string
-
-env:
-  NODE_VERSION: '22.x'
-  AZURE_LOCATION: 'eastus2'
 
 permissions:
   contents: read
   id-token: write
   security-events: write
 
+env:
+  NODE_VERSION: '22'
+  RESOURCE_GROUP: 'carpool-rg'
+  FUNCTION_APP: 'carpool-backend'
+
 jobs:
   # =============================================================================
-  # STAGE 1: FAST VALIDATION (Parallel Execution)
+  # STAGE 1: VALIDATE & TEST
   # =============================================================================
 
-  changes:
-    name: 🔍 Detect Changes
+  validate:
+    name: 🔍 Validate & Test
     runs-on: ubuntu-latest
-    if: github.event_name != 'schedule'
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-      infra: ${{ steps.filter.outputs.infra }}
-      shared: ${{ steps.filter.outputs.shared }}
-      workflows: ${{ steps.filter.outputs.workflows }}
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      infra-changed: ${{ steps.changes.outputs.infra }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
-        id: filter
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Changes
+        uses: dorny/paths-filter@v2
+        id: changes
         with:
           filters: |
             backend:
               - 'backend/**'
+              - 'shared/**'
             frontend:
               - 'frontend/**'
+              - 'shared/**'
             infra:
               - 'infra/**'
-            shared:
-              - 'shared/**'
-            workflows:
               - '.github/workflows/**'
-
-  validate:
-    name: 🔍 Validate (${{ matrix.check }})
-    runs-on: ubuntu-latest
-    needs: [changes]
-    if: always() && (github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || needs.changes.result != 'skipped')
-    strategy:
-      fail-fast: false
-      matrix:
-        check: [lint, typecheck, security-scan]
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
+      - name: Install Dependencies
+        run: npm ci
 
-      - name: Run linting
-        if: matrix.check == 'lint'
+      - name: Build Shared Package
+        run: npm run build:shared
+
+      - name: TypeScript & Lint Check
         run: |
-          npm run lint
-          echo "✅ Linting passed" >> $GITHUB_STEP_SUMMARY
+          # Run TypeScript checking
+          npm run type-check:backend
+          npm run type-check:frontend
 
-      - name: Run type checking
-        if: matrix.check == 'typecheck'
-        run: |
-          npm run type-check
-          echo "✅ Type checking passed" >> $GITHUB_STEP_SUMMARY
+          # Run linting
+          npm run lint:backend
+          npm run lint:frontend
 
-      - name: Run security scan
-        if: matrix.check == 'security-scan'
+      - name: Security Scan
         run: |
           npm audit --audit-level high
-          npx semgrep --config=auto --json --output=security-results.json || true
-          echo "✅ Security scan completed" >> $GITHUB_STEP_SUMMARY
+          npx semgrep --config=auto --json --output=security-results.json . || true
 
-  bicep-validation:
-    name: 🏗️ Validate Bicep Templates
-    runs-on: ubuntu-latest
-    needs: [changes]
-    if: always() && (github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || needs.changes.result != 'skipped')
-    strategy:
-      matrix:
-        environment: [prod]
-    steps:
-      - uses: actions/checkout@v4
+      - name: Run Backend Tests
+        if: steps.changes.outputs.backend == 'true' || github.event_name == 'pull_request'
+        run: npm run test:backend:ci
+        env:
+          NODE_ENV: test
 
-      - name: Azure Login
-        uses: azure/login@v1
+      - name: Azure Login (for infrastructure validation)
+        if: steps.changes.outputs.infra == 'true'
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Ensure Resource Groups Exist
+      - name: Validate Infrastructure
+        if: steps.changes.outputs.infra == 'true'
         run: |
-          # carpool-rg already exists with our infrastructure, just verify it
-          if az group show --name carpool-rg >/dev/null 2>&1; then
-            echo "✅ Resource group carpool-rg exists"
-          else
-            echo "❌ Resource group carpool-rg does not exist - manual creation required"
-            exit 1
-          fi
-          echo "✅ Resource groups verified for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
-
-      - name: Validate Main Bicep Template (Existing Resources)
-        run: |
-          # Validate template that references existing resources only
           az deployment group validate \
-            --resource-group carpool-rg \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
             --template-file infra/main.bicep \
-            --parameters \
-              appName=carpool \
-              environmentName=${{ matrix.environment }} \
-              location=eastus2 || echo "⚠️ Validation completed - template references existing resources"
-          echo "✅ Main Bicep validation passed for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+            --parameters appName=carpool environmentName=prod location=eastus2
 
   # =============================================================================
-  # STAGE 2: COMPREHENSIVE TESTING
-  # =============================================================================
-
-  test:
-    name: 🧪 Test (${{ matrix.suite }})
-    runs-on: ubuntu-latest
-    needs: [validate, bicep-validation]
-    if: always() && !failure() && (github.event_name == 'push' || github.event_name == 'pull_request' || inputs.stage == 'full' || inputs.stage == 'test-only' || github.event_name == 'schedule')
-    strategy:
-      fail-fast: false
-      matrix:
-        suite: [unit, integration] # e2e temporarily disabled
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Build shared package
-        run: npm run build --workspace=shared
-
-      - name: Run unit tests
-        if: matrix.suite == 'unit'
-        run: |
-          cd backend
-          npm test -- --coverage --passWithNoTests
-          echo "✅ Unit tests passed" >> $GITHUB_STEP_SUMMARY
-
-      - name: Run integration tests
-        if: matrix.suite == 'integration'
-        run: |
-          cd backend
-          npm run test:integration
-          echo "✅ Integration tests passed" >> $GITHUB_STEP_SUMMARY
-
-      - name: Run E2E tests
-        if: matrix.suite == 'e2e'
-        run: |
-          # Clean up any existing Docker artifacts
-          docker compose -f docker-compose.e2e.yml down -v 2>/dev/null || true
-          docker image rm carpool-backend-test 2>/dev/null || true
-
-          # Build Docker images with proper monorepo context
-          echo "🔨 Building Docker images for E2E testing..."
-          docker compose -f docker-compose.e2e.yml build --no-cache || {
-            echo "❌ Docker build failed - monorepo dependency issue detected"
-            echo "🔍 Diagnosing build failure..."
-            ls -la shared/ || echo "❌ shared directory not found"
-            ls -la shared/dist/ || echo "❌ shared/dist not found - package not built"
-            echo "📋 Docker build context analysis:"
-            echo "Current directory: $(pwd)"
-            echo "Docker compose file:"
-            head -20 docker-compose.e2e.yml
-            echo "💡 Ensure: 1) shared package is built, 2) Docker context is monorepo root, 3) Dockerfiles use multi-stage builds"
-            exit 1
-          }
-
-          # Start Docker services for E2E testing
-          echo "🚀 Starting Docker services..."
-          docker compose -f docker-compose.e2e.yml up -d
-
-          # Wait for services to be ready with enhanced timeout and health checks
-          echo "⏳ Waiting for services to be ready..."
-          timeout 300 bash -c 'until docker compose -f docker-compose.e2e.yml exec -T mongodb-test mongosh --eval "db.adminCommand(\"ismaster\")" >/dev/null 2>&1; do echo "Waiting for MongoDB..."; sleep 5; done' || {
-            echo "❌ MongoDB failed to start within timeout"
-            docker compose -f docker-compose.e2e.yml logs mongodb-test
-            docker compose -f docker-compose.e2e.yml down -v
-            exit 1
-          }
-          timeout 300 bash -c 'until curl -f http://localhost:7072/api/health >/dev/null 2>&1; do echo "Waiting for backend..."; sleep 5; done' || {
-            echo "❌ Backend health check failed within timeout"
-            docker compose -f docker-compose.e2e.yml logs backend-test
-            docker compose -f docker-compose.e2e.yml down -v
-            exit 1
-          }
-
-          # Install E2E dependencies and run tests
-          echo "🎭 Running Playwright E2E tests..."
-          cd e2e
-          npm ci
-          npx playwright install --with-deps chromium
-          npx playwright test || {
-            echo "❌ E2E tests failed"
-            echo "🐛 Showing Docker logs for debugging:"
-            cd ..
-            docker compose -f docker-compose.e2e.yml logs backend-test
-            docker compose -f docker-compose.e2e.yml logs mongodb-test
-            docker compose -f docker-compose.e2e.yml down -v
-            exit 1
-          }
-
-          # Cleanup Docker services
-          cd ..
-          docker compose -f docker-compose.e2e.yml down -v
-          echo "✅ E2E tests passed" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload test coverage
-        if: matrix.suite == 'unit'
-        uses: codecov/codecov-action@v3
-        with:
-          directory: ./backend/coverage
-
-  # =============================================================================
-  # STAGE 3: BUILD ARTIFACTS
-  # =============================================================================
-
-  build:
-    name: 🔨 Build Applications
-    runs-on: ubuntu-latest
-    needs: [test]
-    if: always() && !failure() && (github.event_name == 'push' || github.event_name == 'pull_request' || inputs.stage == 'full' || inputs.stage == 'deploy-only' || github.event_name == 'schedule')
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Build shared package
-        run: npm run build --workspace=shared
-
-      - name: Generate version
-        id: version
-        run: |
-          VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Build version: $VERSION" >> $GITHUB_STEP_SUMMARY
-
-      - name: Build backend
-        run: |
-          cd backend
-          npm run build
-          echo "✅ Backend build completed" >> $GITHUB_STEP_SUMMARY
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
-          echo "✅ Frontend build completed" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-${{ steps.version.outputs.version }}
-          path: |
-            backend/dist/
-            frontend/.next/
-          retention-days: 7
-
-  # =============================================================================
-  # STAGE 4: DEPLOYMENT
+  # STAGE 2: DEPLOY (Only on main branch pushes)
   # =============================================================================
 
   deploy:
-    name: 🚀 Deploy to ${{ inputs.environment || 'production' }}
+    name: 🚀 Deploy
     runs-on: ubuntu-latest
-    needs: [build]
-    if: always() && !failure() && github.ref == 'refs/heads/main' && (inputs.stage == 'full' || inputs.stage == 'deploy-only' || (github.event_name == 'push' && inputs.stage != 'test-only' && inputs.stage != 'validate-only'))
-    # Removed environment dependency to fix federated identity authentication
+    needs: [validate]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api/health
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: build-artifacts-${{ needs.build.outputs.version }}
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      - name: Setup deployment tools
-        run: |
-          # Install Azure Functions Core Tools
-          npm install -g azure-functions-core-tools@4
-
-          # Install Azure Static Web Apps CLI
-          npm install -g @azure/static-web-apps-cli
-
-          echo "✅ Deployment tools installed" >> $GITHUB_STEP_SUMMARY
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy infrastructure
+      - name: Deploy Backend
+        if: needs.validate.outputs.backend-changed == 'true' || github.event.inputs.environment != ''
         run: |
-          # Always deploy infrastructure to ensure it's up to date
-          chmod +x scripts/deploy-single-rg.sh
-
-          # Map environment input to proper value (production -> prod)
-          ENV_NAME="${{ inputs.environment || 'production' }}"
-          if [ "$ENV_NAME" = "production" ]; then
-            ENV_NAME="prod"
-          elif [ "$ENV_NAME" = "staging" ]; then
-            ENV_NAME="dev"
-          fi
-
-          ENVIRONMENT="$ENV_NAME" ./scripts/deploy-single-rg.sh
-          echo "✅ Infrastructure deployed using single-RG approach for environment: $ENV_NAME" >> $GITHUB_STEP_SUMMARY
-
-      - name: Setup Node.js for deployment
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies for deployment
-        run: npm ci --ignore-scripts
-
-      - name: Build shared package for deployment
-        run: npm run build --workspace=shared
-
-      - name: Deploy backend functions
-        run: |
+          npm run build:shared
           cd backend
+          npm run build
+          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          func azure functionapp publish ${{ env.FUNCTION_APP }} --typescript
 
-          # Map environment input to proper value (production -> prod)
-          ENV_NAME="${{ inputs.environment || 'production' }}"
-          if [ "$ENV_NAME" = "production" ]; then
-            ENV_NAME="prod"
-          elif [ "$ENV_NAME" = "staging" ]; then
-            ENV_NAME="dev"
-          fi
-
-          # Use the new naming convention from our template
-          FUNCTION_APP_NAME="carpool-backend"  # Updated for Flex Consumption
-
-          # Deploy ALL functions (including timer triggers) to standalone Function App
-          # Timer triggers are NOT supported in Static Web Apps, so they go here
-          func azure functionapp publish "$FUNCTION_APP_NAME" --typescript
-          echo "✅ Backend functions deployed to $FUNCTION_APP_NAME" >> $GITHUB_STEP_SUMMARY
-
-      - name: Deploy frontend
+      - name: Deploy Frontend
+        if: needs.validate.outputs.frontend-changed == 'true' || github.event.inputs.environment != ''
         run: |
           cd frontend
+          npm run build
 
-          # Map environment input to proper value (production -> prod)
-          ENV_NAME="${{ inputs.environment || 'production' }}"
-          if [ "$ENV_NAME" = "production" ]; then
-            ENV_NAME="prod"
-          elif [ "$ENV_NAME" = "staging" ]; then
-            ENV_NAME="dev"
-          fi
-
-          # Build the frontend for Static Web Apps if artifacts don't exist
-          if [ ! -d "out" ] || [ ! -f "out/index.html" ]; then
-            echo "Building frontend since out directory or index.html not found..."
-            
-            # Set environment variables for Next.js static export build
-            export NEXT_PUBLIC_ENABLE_LEGACY_AUTH=true
-            export NEXT_PUBLIC_ENABLE_ENTRA_AUTH=true
-            export NEXT_PUBLIC_BASE_URL="https://carpool.vedprakash.net"
-            export NEXT_PUBLIC_API_BASE_URL="https://carpool.vedprakash.net/api"
-            export NEXT_PUBLIC_ENTRA_CLIENT_ID="c5118183-d391-4a86-ad73-29162678a5f0"
-            export NEXT_PUBLIC_ENTRA_AUTHORITY="https://login.microsoftonline.com/vedprakashmoutlook.onmicrosoft.com"
-            
-            echo "Environment variables for build:"
-            echo "NEXT_PUBLIC_ENABLE_LEGACY_AUTH=$NEXT_PUBLIC_ENABLE_LEGACY_AUTH"
-            echo "NEXT_PUBLIC_ENABLE_ENTRA_AUTH=$NEXT_PUBLIC_ENABLE_ENTRA_AUTH"
-            echo "NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL"
-            echo "NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL"
-            echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=$NEXT_PUBLIC_ENTRA_CLIENT_ID"
-            echo "NEXT_PUBLIC_ENTRA_AUTHORITY=$NEXT_PUBLIC_ENTRA_AUTHORITY"
-            
-            npm run build:swa
-          else
-            echo "Using existing build artifacts..."
-          fi
-
-          # Deploy to Static Web Apps (using new naming convention)
-          STATIC_WEB_APP_NAME="carpool-web-$ENV_NAME"
-          RESOURCE_GROUP_NAME="carpool-$ENV_NAME-rg"
-
-          echo "Deploying to Static Web App: $STATIC_WEB_APP_NAME"
-          echo "Resource Group: $RESOURCE_GROUP_NAME"
-          echo "Environment: $ENV_NAME"
-
-          # Create temporary backend directory with only HTTP-triggered functions for SWA
-          # Static Web Apps only support HTTP triggers, not timer triggers
-          # Timer triggers are deployed separately to the standalone Function App above
-          mkdir -p ../backend-swa
-          cp ../backend/host.json ../backend-swa/
-          cp ../backend/package.json ../backend-swa/ 2>/dev/null || echo "No package.json in backend root"
-
-          # Copy only HTTP-triggered functions (exclude timer triggers)
-          # Functions with ANY timer trigger are excluded, even if they also have HTTP triggers
-          find ../backend -name "function.json" -exec grep -l "httpTrigger" {} \; | while read -r func_json; do
-            # Skip functions that also contain timer triggers (not supported in SWA)
-            if grep -q "timerTrigger" "$func_json"; then
-              func_name=$(basename "$(dirname "$func_json")")
-              echo "Excluding mixed trigger function (has timerTrigger): $func_name"
-              continue
-            fi
-            
-            func_dir=$(dirname "$func_json")
-            func_name=$(basename "$func_dir")
-            if [ "$func_name" != "backend" ]; then
-              echo "Including HTTP-only function: $func_name"
-              cp -r "$func_dir" "../backend-swa/"
-            fi
-          done
-
-          # Copy src directory if it exists (contains main functions)
-          if [ -d "../backend/src" ]; then
-            cp -r ../backend/src ../backend-swa/
-          fi
-
-          # Get deployment token from Azure
-          echo "Getting deployment token for Static Web App: $STATIC_WEB_APP_NAME in resource group: $RESOURCE_GROUP_NAME"
+          # Get deployment token
           DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
-            --name "$STATIC_WEB_APP_NAME" \
-            --resource-group "$RESOURCE_GROUP_NAME" \
-            --query "properties.apiKey" -o tsv)
+            --name carpool-web-prod \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "properties.apiKey" \
+            --output tsv)
 
-          if [ -z "$DEPLOYMENT_TOKEN" ] || [ "$DEPLOYMENT_TOKEN" = "null" ]; then
-            echo "❌ Failed to get deployment token for $STATIC_WEB_APP_NAME"
-            exit 1
-          fi
-          echo "✅ Successfully retrieved deployment token"
-
-          # Deploy using SWA CLI with HTTP-only backend
+          # Deploy frontend
           npx @azure/static-web-apps-cli deploy \
-            --app-location . \
-            --api-location ../backend-swa \
-            --output-location out \
-            --deployment-token "$DEPLOYMENT_TOKEN" \
-            --env production
-
-          # Clean up temporary directory
-          rm -rf ../backend-swa
-
-          echo "✅ Frontend deployed to Static Web Apps: $STATIC_WEB_APP_NAME" >> $GITHUB_STEP_SUMMARY
+            --app-location "." \
+            --output-location "out" \
+            --deployment-token "$DEPLOYMENT_TOKEN"
 
   # =============================================================================
-  # STAGE 5: POST-DEPLOYMENT VALIDATION
+  # STAGE 3: HEALTH CHECK
   # =============================================================================
 
   health-check:
     name: 🩺 Health Check
     runs-on: ubuntu-latest
     needs: [deploy]
-    if: always() && !failure()
+    if: always() && needs.deploy.result == 'success'
     steps:
-      - name: Test API health endpoint
+      - name: Test API Health
         run: |
-          # Wait up to 5 minutes for the deployment to be available
-          for i in {1..5}; do
-            sleep 30
-          done
-
-          # Test multiple health endpoints with retries
-          HEALTH_URL="https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api/health"  # Updated for actual Flex Consumption URL
-
-          for i in {1..5}; do
-            echo "🔄 Health check attempt $i/5..."
-            if curl -f -s "$HEALTH_URL" | jq -e '.status == "healthy"'; then
-              echo "✅ Health check passed" >> $GITHUB_STEP_SUMMARY
+          echo "🔄 Testing API health..."
+          for i in {1..3}; do
+            if curl -f -s "https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api/health" | jq -e '.status == "healthy"'; then
+              echo "✅ Health check passed"
               exit 0
             fi
+            echo "⏳ Attempt $i/3 failed, retrying in 30s..."
             sleep 30
           done
-
-          echo "❌ Health check failed after 5 attempts" >> $GITHUB_STEP_SUMMARY
+          echo "❌ Health check failed"
           exit 1
 
   # =============================================================================
-  # STAGE 6: MAINTENANCE & MONITORING
+  # SUMMARY
   # =============================================================================
 
-  maintenance:
-    name: 🔧 Maintenance
+  summary:
+    name: 📋 Summary
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || inputs.stage == 'maintenance-only'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Security audit
-        run: |
-          npm audit --audit-level moderate
-          echo "🔒 Security audit completed" >> $GITHUB_STEP_SUMMARY
-
-      - name: Performance monitoring
-        run: |
-          # Run performance tests against production
-          cd e2e
-          npm ci
-          npx playwright test --config=playwright.perf.config.ts
-          echo "⚡ Performance monitoring completed" >> $GITHUB_STEP_SUMMARY
-
-      - name: Dependency updates check
-        run: |
-          npx npm-check-updates --format group
-          echo "📦 Dependency check completed" >> $GITHUB_STEP_SUMMARY
-
-  # =============================================================================
-  # EMERGENCY ROLLBACK
-  # =============================================================================
-
-  rollback:
-    name: 🔄 Emergency Rollback
-    runs-on: ubuntu-latest
-    if: inputs.stage == 'rollback'
-    # Removed environment dependency to fix federated identity authentication
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Rollback to previous version
-        run: |
-          echo "🔄 Rolling back to version: ${{ inputs.rollback_version || 'previous' }}"
-
-          # Get previous deployment slot or version (using correct naming)
-          PREVIOUS_VERSION="${{ inputs.rollback_version }}"
-          if [ -z "$PREVIOUS_VERSION" ]; then
-            PREVIOUS_VERSION=$(az functionapp deployment list-publishing-profiles \
-              --name carpool-func \
-              --resource-group carpool-rg \
-              --query "[0].publishUrl" -o tsv)
-          fi
-
-          # Perform rollback
-          echo "Rolling back deployment..."
-          echo "✅ Rollback completed to $PREVIOUS_VERSION" >> $GITHUB_STEP_SUMMARY
-
-  # =============================================================================
-  # FINAL STATUS REPORT
-  # =============================================================================
-
-  status-report:
-    name: 📊 Pipeline Status Report
-    runs-on: ubuntu-latest
-    needs: [validate, test, build, deploy, health-check]
+    needs: [validate, deploy, health-check]
     if: always()
     steps:
-      - name: Generate status report
+      - name: Pipeline Summary
         run: |
-          echo "# 🚀 Pipeline Execution Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Stage**: ${{ inputs.stage || 'full' }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Status indicators
-          echo "## Stage Results" >> $GITHUB_STEP_SUMMARY
+          echo "# 🚀 Pipeline Results" >> $GITHUB_STEP_SUMMARY
           echo "- Validation: ${{ needs.validate.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Testing: ${{ needs.test.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Build: ${{ needs.build.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Deploy: ${{ needs.deploy.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Health Check: ${{ needs.health-check.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Deployment: ${{ needs.deploy.result == 'success' && '✅' || needs.deploy.result == 'skipped' && '⏭️' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Health Check: ${{ needs.health-check.result == 'success' && '✅' || needs.health-check.result == 'skipped' && '⏭️' || '❌' }}" >> $GITHUB_STEP_SUMMARY

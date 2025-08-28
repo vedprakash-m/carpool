@@ -1,0 +1,62 @@
+# Gitleaks configuration for Carpool project
+# This file defines rules for detecting secrets in git repos
+
+title = "Carpool Secrets Detection"
+
+[extend]
+# Use default gitleaks rules
+useDefault = true
+
+[[rules]]
+id = "azure-client-secret"
+description = "Azure Client Secret"
+regex = '''['\"]?[a-zA-Z0-9~._-]{34,}['\"]?'''
+path = '''\.env|\.config|config\.'''
+keywords = ["client_secret", "clientSecret", "AZURE_CLIENT_SECRET"]
+
+[[rules]]
+id = "azure-connection-string"  
+description = "Azure Connection String"
+regex = '''DefaultEndpointsProtocol=https;AccountName=[a-zA-Z0-9]+;AccountKey=[a-zA-Z0-9+/]+=*;EndpointSuffix=core\.windows\.net'''
+
+[[rules]]
+id = "cosmos-db-key"
+description = "Cosmos DB Primary/Secondary Key"
+regex = '''[a-zA-Z0-9+/]{88}=='''
+keywords = ["cosmosdb", "documentdb", "primary", "secondary"]
+
+[[rules]]
+id = "jwt-secret"
+description = "JWT Secret Key"
+regex = '''['\"]?[a-zA-Z0-9+/=]{32,}['\"]?'''
+keywords = ["jwt", "JWT_SECRET", "jwtSecret"]
+
+[[rules]]
+id = "database-url"
+description = "Database Connection URL with credentials"
+regex = '''[a-zA-Z][a-zA-Z0-9+.-]*://[a-zA-Z0-9._-]+:[a-zA-Z0-9._%-]+@[a-zA-Z0-9._-]+'''
+
+# Allowlist for false positives
+[allowlist]
+description = "Test fixtures and examples"
+paths = [
+    '''test/.*''',
+    '''tests/.*''',
+    '''spec/.*''',
+    '''__tests__/.*''',
+    '''\.test\.''',
+    '''\.spec\.''',
+    '''example.*''',
+    '''sample.*''',
+    '''mock.*''',
+    '''fixture.*'''
+]
+regexes = [
+    '''(?i)example''',
+    '''(?i)sample''',
+    '''(?i)placeholder''',
+    '''(?i)your[_-]?key[_-]?here''',
+    '''(?i)replace[_-]?with''',
+    '''(?i)dummy''',
+    '''(?i)fake'''
+]
