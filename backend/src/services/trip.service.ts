@@ -11,24 +11,35 @@ import { v4 as uuidv4 } from 'uuid';
 import { EmailService } from './email.service';
 import { TripRepository } from '../repositories/trip.repository';
 import { UserRepository } from '../repositories/user.repository';
+import { DatabaseService } from './database.service';
 import { Errors } from '../utils/error-handler';
 import { ILogger } from '../utils/logger';
 
 export class TripService {
   // Static methods for backward compatibility
   static async getTripById(tripId: string): Promise<Trip | null> {
-    const { containers } = await import('../config/database');
-    const tripRepository = new TripRepository(containers.trips);
-    const userRepository = new UserRepository(containers.users);
+    const dbService = DatabaseService.getInstance();
+    const tripsContainer = dbService.getContainer('trips');
+    const usersContainer = dbService.getContainer('users');
+    if (!tripsContainer || !usersContainer) {
+      throw new Error('Database not available');
+    }
+    const tripRepository = new TripRepository(tripsContainer);
+    const userRepository = new UserRepository(usersContainer);
     const emailService = new EmailService();
     const tripService = new TripService(tripRepository, userRepository, emailService);
     return tripService.getTripById(tripId);
   }
 
   static async updateTrip(tripId: string, updates: any): Promise<Trip | null> {
-    const { containers } = await import('../config/database');
-    const tripRepository = new TripRepository(containers.trips);
-    const userRepository = new UserRepository(containers.users);
+    const dbService = DatabaseService.getInstance();
+    const tripsContainer = dbService.getContainer('trips');
+    const usersContainer = dbService.getContainer('users');
+    if (!tripsContainer || !usersContainer) {
+      throw new Error('Database not available');
+    }
+    const tripRepository = new TripRepository(tripsContainer);
+    const userRepository = new UserRepository(usersContainer);
     const emailService = new EmailService();
     const tripService = new TripService(tripRepository, userRepository, emailService);
     return tripService.updateTrip(tripId, updates);

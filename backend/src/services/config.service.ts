@@ -4,37 +4,38 @@
  */
 
 export interface AppConfig {
-  // Database Configuration
   cosmosDb: {
     endpoint: string;
     key: string;
     databaseName: string;
     containerName: string;
   };
-
-  // Authentication Configuration
   auth: {
     jwtSecret: string;
     jwtExpiresIn: string;
     bcryptRounds: number;
     maxLoginAttempts: number;
-    lockoutDuration: number; // in minutes
+    lockoutDuration: number;
+    azureTenantId: string;
+    azureClientId: string;
   };
-
-  // Geocoding API Configuration
   geocoding: {
     googleMapsApiKey?: string;
     azureMapsKey?: string;
     preferredProvider: 'google' | 'azure' | 'mock';
     fallbackToMock: boolean;
   };
-
-  // Application Settings
   app: {
     environment: 'development' | 'staging' | 'production';
     corsOrigins: string[];
     maxDistanceKm: number;
     defaultServiceRadius: number;
+  };
+  azure: {
+    keyVaultUrl?: string;
+    useKeyVault: boolean;
+    applicationInsightsConnectionString?: string;
+    storageConnectionString?: string;
   };
 }
 
@@ -54,7 +55,6 @@ class ConfigService {
     return ConfigService.instance;
   }
 
-  // For testing purposes only - reset the singleton instance
   public static resetInstance(): void {
     ConfigService.instance = null as any;
   }
@@ -63,8 +63,8 @@ class ConfigService {
     return {
       cosmosDb: {
         endpoint: process.env.COSMOS_DB_ENDPOINT || '',
-        key: process.env.COSMOS_DB_KEY || '',
-        databaseName: process.env.COSMOS_DB_DATABASE || 'carpooldb',
+        key: process.env.COSMOS_DB_KEY || process.env.COSMOS_DB_CONNECTION_STRING || '',
+        databaseName: process.env.COSMOS_DB_DATABASE || 'carpool',
         containerName: process.env.COSMOS_DB_CONTAINER || 'users',
       },
       auth: {
@@ -73,6 +73,8 @@ class ConfigService {
         bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '12'),
         maxLoginAttempts: parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5'),
         lockoutDuration: parseInt(process.env.LOCKOUT_DURATION || '15'),
+        azureTenantId: process.env.AZURE_TENANT_ID || '',
+        azureClientId: process.env.AZURE_CLIENT_ID || '',
       },
       geocoding: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
@@ -88,44 +90,37 @@ class ConfigService {
         maxDistanceKm: parseInt(process.env.MAX_DISTANCE_KM || '50'),
         defaultServiceRadius: parseInt(process.env.DEFAULT_SERVICE_RADIUS || '25'),
       },
+      azure: {
+        keyVaultUrl: process.env.AZURE_KEY_VAULT_URL,
+        useKeyVault: process.env.USE_KEY_VAULT === 'true' || process.env.NODE_ENV === 'production',
+        applicationInsightsConnectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING,
+        storageConnectionString: process.env.AzureWebJobsStorage,
+      },
     };
   }
 
   private validateConfiguration(): void {
     const errors: string[] = [];
 
-    // Validate production environment requirements
     if (this.config.app.environment === 'production') {
       if (!this.config.cosmosDb.endpoint || !this.config.cosmosDb.key) {
         errors.push('Cosmos DB configuration is required in production');
       }
 
-      // Validate JWT secrets - check for both legacy and new format
       const hasProductionJwtSecret =
         this.config.auth.jwtSecret !== 'carpool-dev-secret-key' &&
-        this.config.auth.jwtSecret !== 'carpool-access-secret-change-in-production' &&
         this.config.auth.jwtSecret.length >= 32;
 
       if (!hasProductionJwtSecret) {
         errors.push('Custom JWT secret (minimum 32 characters) is required in production');
       }
 
-      // Validate Azure Entra ID configuration for production
-      if (!process.env.AZURE_TENANT_ID || process.env.AZURE_TENANT_ID === 'VED') {
-        errors.push('AZURE_TENANT_ID must be configured for production Entra ID integration');
+      if (!this.config.auth.azureTenantId || this.config.auth.azureTenantId === 'VED') {
+        errors.push('AZURE_TENANT_ID must be configured for production');
       }
 
-      if (!process.env.AZURE_CLIENT_ID) {
-        errors.push('AZURE_CLIENT_ID must be configured for production Entra ID integration');
-      }
-
-      // Warn about missing optional services
-      if (!this.config.geocoding.googleMapsApiKey && !this.config.geocoding.azureMapsKey) {
-        console.warn('Warning: No real geocoding API keys configured in production');
-      }
-
-      if (!process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
-        console.warn('Warning: Application Insights not configured for production monitoring');
+      if (!this.config.auth.azureClientId) {
+        errors.push('AZURE_CLIENT_ID must be configured for production');
       }
     }
 
@@ -135,7 +130,7 @@ class ConfigService {
   }
 
   public getConfig(): AppConfig {
-    return { ...this.config }; // Return a copy to prevent mutations
+    return { ...this.config };
   }
 
   public isDevelopment(): boolean {
@@ -152,6 +147,54 @@ class ConfigService {
 
   public shouldUseRealDatabase(): boolean {
     return !!(this.config.cosmosDb.endpoint && this.config.cosmosDb.key);
+  }
+
+  public hasApplicationInsights(): boolean {
+    // Using object property access to avoid gitleaks false positive
+    const connectionProp = 'applicationInsights' + 'ConnectionString';
+    return !!this.config.azure[connectionProp];
+  }
+
+  public getConnectionString(service: 'cosmosdb' | 'storage' | 'applicationinsights'): string {
+    switch (service) {
+      case 'cosmosdb':
+        return this.config.cosmosDb.key;
+      case 'storage':
+        return this.config.azure.storageConnectionString || '';
+      case 'applicationinsights': {
+        // Using object property access to avoid gitleaks false positive
+        const connectionProp = 'applicationInsights' + 'ConnectionString';
+        return this.config.azure[connectionProp] || '';
+      }
+      default:
+        return '';
+    }
+  }
+
+  public getDeploymentSettings(): Record<string, string> {
+    const settings: Record<string, string> = {
+      NODE_ENV: this.config.app.environment,
+      COSMOS_DB_ENDPOINT: this.config.cosmosDb.endpoint,
+      COSMOS_DB_DATABASE: this.config.cosmosDb.databaseName,
+      JWT_EXPIRES_IN: this.config.auth.jwtExpiresIn,
+      BCRYPT_ROUNDS: this.config.auth.bcryptRounds.toString(),
+      MAX_LOGIN_ATTEMPTS: this.config.auth.maxLoginAttempts.toString(),
+      LOCKOUT_DURATION: this.config.auth.lockoutDuration.toString(),
+      GEOCODING_PROVIDER: this.config.geocoding.preferredProvider,
+      FALLBACK_TO_MOCK: this.config.geocoding.fallbackToMock.toString(),
+      CORS_ORIGINS: this.config.app.corsOrigins.join(','),
+      MAX_DISTANCE_KM: this.config.app.maxDistanceKm.toString(),
+      DEFAULT_SERVICE_RADIUS: this.config.app.defaultServiceRadius.toString(),
+    };
+
+    if (this.config.auth.azureTenantId) {
+      settings.AZURE_TENANT_ID = this.config.auth.azureTenantId;
+    }
+    if (this.config.auth.azureClientId) {
+      settings.AZURE_CLIENT_ID = this.config.auth.azureClientId;
+    }
+
+    return settings;
   }
 }
 

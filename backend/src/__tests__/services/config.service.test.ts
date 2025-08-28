@@ -234,31 +234,21 @@ describe('ConfigService', () => {
       expect(() => {
         configInstance = ConfigService.getInstance();
       }).toThrow(
-        'Configuration validation failed: Cosmos DB configuration is required in production, Custom JWT secret (minimum 32 characters) is required in production, AZURE_TENANT_ID must be configured for production Entra ID integration, AZURE_CLIENT_ID must be configured for production Entra ID integration',
+        'Configuration validation failed: Cosmos DB configuration is required in production, Custom JWT secret (minimum 32 characters) is required in production, AZURE_TENANT_ID must be configured for production, AZURE_CLIENT_ID must be configured for production',
       );
     });
 
-    it('should warn about missing geocoding keys in production but not fail', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
+    it('should not fail validation with complete production config', () => {
       process.env.NODE_ENV = 'production';
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
       process.env.JWT_SECRET = 'custom-production-secret-that-is-long-enough-for-security';
       process.env.AZURE_TENANT_ID = 'test-tenant-id';
       process.env.AZURE_CLIENT_ID = 'test-client-id';
-      process.env.APPLICATIONINSIGHTS_CONNECTION_STRING = 'test-app-insights';
-      delete process.env.GOOGLE_MAPS_API_KEY;
 
       expect(() => {
         configInstance = ConfigService.getInstance();
       }).not.toThrow();
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Warning: No real geocoding API keys configured in production',
-      );
-
-      consoleSpy.mockRestore();
     });
   });
 

@@ -1,6 +1,6 @@
 /**
- * Database Service for Carpool Application
- * Provides unified interface for Cosmos DB and in-memory storage
+ * Unified Database Service for Carpool Application
+ * Consolidates Cosmos DB and in-memory storage with container management
  * Updated to use unified UserEntity from shared/entities
  */
 
@@ -19,11 +19,26 @@ export interface LoginAttempt {
   lastAttempt: Date;
 }
 
+// Container names for unified database management
+const CONTAINER_NAMES = {
+  users: 'users',
+  trips: 'trips',
+  schedules: 'schedules',
+  swapRequests: 'swapRequests',
+  emailTemplates: 'email-templates',
+  messages: 'messages',
+  chats: 'chats',
+  chatParticipants: 'chatParticipants',
+  notifications: 'notifications',
+  weeklyPreferences: 'weeklyPreferences',
+  groups: 'groups',
+} as const;
+
 export class DatabaseService {
   private static instance: DatabaseService;
   private cosmosClient?: CosmosClient;
   private database?: Database;
-  private container?: Container;
+  private containers: Map<string, Container> = new Map();
   private inMemoryUsers: Map<string, User> = new Map();
   private loginAttempts: Map<string, LoginAttempt> = new Map();
   private useRealDatabase: boolean;
@@ -58,21 +73,14 @@ export class DatabaseService {
         key: config.cosmosDb.key,
       });
 
-      // Ensure database and container exist
+      // Ensure database exists
       const { database } = await this.cosmosClient.databases.createIfNotExists({
         id: config.cosmosDb.databaseName,
       });
       this.database = database;
 
-      // Create primary container for users (unified across all repositories)
-      const { container } = await this.database.containers.createIfNotExists({
-        id: config.cosmosDb.containerName,
-        partitionKey: '/email',
-      });
-      this.container = container;
-
-      // Create additional containers for different entity types
-      await this.initializeAdditionalContainers();
+      // Initialize all containers
+      await this.initializeAllContainers();
 
       console.log('Cosmos DB initialized successfully with unified configuration');
     } catch (error) {
@@ -81,6 +89,35 @@ export class DatabaseService {
       this.useRealDatabase = false;
       this.initializeInMemoryStorage();
     }
+  }
+
+  private async initializeAllContainers(): Promise<void> {
+    if (!this.database) return;
+
+    // Create all containers
+    const containerConfigs = [
+      { id: CONTAINER_NAMES.users, partitionKey: '/email' },
+      { id: CONTAINER_NAMES.groups, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.trips, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.schedules, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.swapRequests, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.emailTemplates, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.messages, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.chats, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.chatParticipants, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.notifications, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.weeklyPreferences, partitionKey: '/id' },
+    ];
+
+    for (const containerConfig of containerConfigs) {
+      const { container } = await this.database.containers.createIfNotExists(containerConfig);
+      this.containers.set(containerConfig.id, container);
+    }
+  }
+
+  // Backward compatibility - get users container
+  public get container(): Container | undefined {
+    return this.getContainer('users');
   }
 
   /**
@@ -638,10 +675,22 @@ export class DatabaseService {
    * Get container by name for specific entity types
    */
   public getContainer(containerName: string): Container | undefined {
-    if (!this.useRealDatabase || !this.database) {
+    if (!this.useRealDatabase) {
       return undefined;
     }
-    return this.database.container(containerName);
+
+    // Use containers map first, fallback to database.container for backward compatibility
+    const container = this.containers.get(containerName);
+    if (container) {
+      return container;
+    }
+
+    // Fallback for any containers not in the map
+    if (this.database) {
+      return this.database.container(containerName);
+    }
+
+    return undefined;
   }
 
   /**

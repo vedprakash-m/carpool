@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { containers } from '../config/database';
+import { DatabaseService } from '../services/database.service';
 import { MessagingService } from '../services/messaging.service';
 import {
   MessageRepository,
@@ -44,11 +44,14 @@ export async function messagesSend(
     }
 
     // Initialize repositories and service
-    const messageRepository = new MessageRepository(containers.messages);
-    const chatRepository = new ChatRepository(containers.chats);
-    const participantRepository = new ChatParticipantRepository(containers.chatParticipants);
-    const userRepository = new UserRepository(containers.users);
-    const tripRepository = new TripRepository(containers.trips);
+    const dbService = DatabaseService.getInstance();
+    const messageRepository = new MessageRepository(dbService.getContainer('messages')!);
+    const chatRepository = new ChatRepository(dbService.getContainer('chats')!);
+    const participantRepository = new ChatParticipantRepository(
+      dbService.getContainer('chatParticipants')!,
+    );
+    const userRepository = new UserRepository(dbService.getContainer('users')!);
+    const tripRepository = new TripRepository(dbService.getContainer('trips')!);
 
     const messagingService = new MessagingService(
       messageRepository,

@@ -1,4 +1,4 @@
-import { initializeDatabase } from './config/database';
+import { DatabaseService } from './services/database.service';
 import { container } from './container';
 import { initializeMonitoring } from './utils/monitoring';
 import { initializeTelemetry } from './utils/telemetry';
@@ -22,8 +22,9 @@ export async function initializeApp(): Promise<void> {
 
     // Initialize database (non-critical for startup)
     try {
-      await initializeDatabase();
-      console.log('Database initialized successfully');
+      // Initialize unified database service
+      const dbService = DatabaseService.getInstance();
+      console.log('Database service initialized successfully');
       container.loggers.system.info('Application initialized successfully');
     } catch (error) {
       console.warn(

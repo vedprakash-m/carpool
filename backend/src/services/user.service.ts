@@ -1,6 +1,7 @@
 import { User, UserPreferences, ApiResponse } from '@carpool/shared';
 import { v4 as uuidv4 } from 'uuid';
 import { UserRepository } from '../repositories/user.repository';
+import { DatabaseService } from './database.service';
 import { Errors } from '../utils/error-handler';
 import { ILogger } from '../utils/logger';
 
@@ -8,25 +9,30 @@ export class UserService {
   // Static methods for backward compatibility
   static async getUserByEmail(email: string): Promise<(User & { passwordHash: string }) | null> {
     // Create a temporary instance for static calls
-    const { containers } = await import('../config/database');
-    const userRepository = new UserRepository(containers.users);
+    const dbService = DatabaseService.getInstance();
+    const usersContainer = dbService.getContainer('users');
+    if (!usersContainer) {
+      throw new Error('Database not available');
+    }
+    const userRepository = new UserRepository(usersContainer);
     const userService = new UserService(userRepository);
     return userService.getUserByEmail(email);
   }
 
   static async createUser(userData: any): Promise<User> {
-    const { containers } = await import('../config/database');
-    const userRepository = new UserRepository(containers.users);
+    const dbService = DatabaseService.getInstance();
+    const usersContainer = dbService.getContainer('users');
+    if (!usersContainer) {
+      throw new Error('Database not available');
+    }
+    const userRepository = new UserRepository(usersContainer);
     const userService = new UserService(userRepository);
     return userService.createUser(userData);
   }
 
   private logger: ILogger;
 
-  constructor(
-    private userRepository: UserRepository,
-    logger?: ILogger,
-  ) {
+  constructor(private userRepository: UserRepository, logger?: ILogger) {
     // Use provided logger or create a simple implementation
     this.logger = logger || {
       debug: (message: string, data?: any) => console.debug(message, data),
