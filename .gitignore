@@ -342,6 +342,11 @@ terraform.tfstate*
 # PROJECT SPECIFIC - TEMPORARY & DEVELOPMENT FILES
 # ============================================================================
 
+# Archive folder - contains moved temporary files and logs
+.archive/
+.archive/**
+**/.archive/
+
 # Temporary function fixes and test folders
 temp_function_fix/
 temp_*/
