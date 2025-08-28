@@ -9,12 +9,12 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Azure Functions](https://img.shields.io/badge/Azure%20Functions-v4-0062AD?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/en-us/services/functions/)
-[![Test Coverage](https://img.shields.io/badge/Coverage-87.74%25-green?style=flat-square&logo=jest)](./backend/coverage/)
+[![Test Coverage](https://img.shields.io/badge/Backend-67.53%25-yellow?style=flat-square&logo=jest)](./backend/coverage/) [![Frontend Coverage](https://img.shields.io/badge/Frontend-33.11%25-orange?style=flat-square&logo=jest)](./frontend/coverage/)
 [![License](https://img.shields.io/badge/License-AGPL%20v3-blue?style=flat-square)](LICENSE)
 
-[![Production Status](https://img.shields.io/badge/Status-Production%20Deployed-success?style=flat-square&logo=check)](./docs/metadata.md)
+[![Production Status](https://img.shields.io/badge/Status-Beta%20Ready-success?style=flat-square&logo=check)](./docs/metadata.md)
 [![Security](https://img.shields.io/badge/Security-Enterprise%20Grade-brightgreen?style=flat-square&logo=shield)](./docs/metadata.md)
-[![Tesla STEM](https://img.shields.io/badge/Live%20at-Tesla%20STEM%20HS-orange?style=flat-square&logo=school)](./docs/metadata.md)
+[![Tesla STEM](https://img.shields.io/badge/Beta%20Launch-September%202025-orange?style=flat-square&logo=school)](./docs/metadata.md)
 
 [📚 Documentation](docs/) • [🔧 Developer Guide](#-quick-start-for-developers) • [🚀 Live Platform](docs/metadata.md)
 
@@ -24,7 +24,7 @@
 
 ## 🌟 **Revolutionizing School Transportation**
 
-Carpool is a comprehensive, cloud-native platform that transforms how school families coordinate safe, reliable transportation. Currently operational at **Tesla STEM High School** and ready for nationwide deployment.
+Carpool is a comprehensive, cloud-native platform that transforms how school families coordinate safe, reliable transportation. Currently in **beta development** for **Tesla STEM High School** with a **September 2025 target launch**.
 
 <table>
 <tr>
@@ -52,7 +52,7 @@ Carpool is a comprehensive, cloud-native platform that transforms how school fam
 
 ### 💻 **For Developers**
 
-- **Production-Ready** with 87.74% test coverage and Azure deployment
+- **Beta Quality** with 67.53% backend and 33.11% frontend test coverage
 - **Cost-Optimized** architecture with 70% savings during inactive periods
 - **Type-Safe** end-to-end with shared TypeScript across all layers
 - **Scalable** serverless design supporting unlimited schools
@@ -190,9 +190,10 @@ carpool/
 
 ### **Test Coverage Excellence**
 
-- **Total Tests**: 681 passing out of 696 total tests (97.8% pass rate)
-- **Backend Coverage**: 87.74% statements, 82.9% branches
-- **Frontend Tests**: 340 passing out of 419 total (81.1% pass rate)
+- **Backend Tests**: 634 passing out of 649 total tests (97.7% pass rate)
+- **Backend Coverage**: 67.53% statements, 62.83% branches
+- **Frontend Tests**: 392 passing out of 452 total (86.7% pass rate)
+- **Frontend Coverage**: 33.11% statements, 59.25% branches
 - **Test Categories**: Unit, Integration, E2E, Security, Performance
 - **Execution Time**: Under 30 seconds for complete backend suite
 
@@ -200,7 +201,8 @@ carpool/
 
 ```bash
 # Testing
-npm test                  # All backend tests (681 passing)
+npm test                  # Backend tests (634 passing)
+npm run test:frontend     # Frontend tests (392 passing)
 npm run test:e2e         # End-to-end browser tests
 npm run test:integration # Integration tests only
 
@@ -220,13 +222,13 @@ npm audit --audit-level high  # Dependency audit
 
 ### **Live Platform**
 
-**Production Deployed and Operational:**
+**Beta Development and Testing:**
 
 - **Backend API**: https://carpool-api.azurewebsites.net/
 - **Frontend App**: https://ambitious-water-0b278f20f-preview.eastus2.2.azurestaticapps.net
 - **Health Endpoint**: https://carpool-api.azurewebsites.net/api/health
 - **Current Status**: All 23+ Azure Functions deployed and operational
-- **Target Beta**: Tesla STEM High School (August 2025 launch)
+- **Target Beta**: Tesla STEM High School (September 2025 launch)
 
 ### **Deployment Architecture**
 
@@ -290,29 +292,29 @@ npm audit --audit-level high  # Dependency audit
 
 ## 🎯 **Production Status**
 
-### ✅ **Operational Excellence**
+### ✅ **Beta Quality Achieved**
 
-- **Production Deployed**: Backend API and frontend operational
-- **Test Coverage**: 87.74% backend, 81.1% frontend with 1000+ tests
+- **Backend Deployed**: All 23 Azure Functions operational and tested
+- **Test Coverage**: 67.53% backend, 33.11% frontend with 1000+ total tests
 - **Performance**: <150ms API response target achieved
 - **Security**: GDPR/COPPA compliant with Microsoft Entra ID integration
 - **Monitoring**: 24/7 automated health monitoring with Azure Application Insights
-- **Phase Status**: Phase 1 Complete ✅ | Phase 2 Frontend Stabilization in Progress
+- **Phase Status**: Core Features Complete ✅ | Beta Testing Phase in Progress
 
 ### 🏆 **Key Achievements**
 
 - **100% Backend Migration**: All 23 Azure Functions migrated to TypeScript with domain services
-- **Enterprise Quality**: Comprehensive testing and code quality standards with zero compilation errors
+- **Beta Quality**: Comprehensive testing and code quality standards with zero compilation errors
 - **Cost Optimized**: 70% savings through intelligent dual-tier architecture design
 - **Developer Experience**: 5-minute local setup with automated validation pipelines
-- **Production Ready**: All core backend functionality deployed and operational
+- **Beta Ready**: All core backend functionality deployed and operational
 
-### 🚀 **Expansion Ready**
+### 🚀 **Beta Expansion Ready**
 
 - **Multi-School Architecture**: Platform ready for unlimited school deployment
 - **Standardized Onboarding**: Automated setup for new schools
 - **Integration Options**: APIs for school information system connectivity
-- **Mobile App Ready**: PWA foundation for native mobile applications
+- **Mobile App Foundation**: PWA ready for native mobile applications
 
 ---
 
@@ -347,9 +349,9 @@ Native-like mobile experience with offline capabilities, background sync, and to
 
 ### **Community**
 
-- **Target Deployment**: Tesla STEM High School, Redmond, WA (August 2025)
-- **Current Status**: Backend production ready, frontend stabilization in progress
-- **School Inquiries**: Contact for deployment at your school
+- **Target Deployment**: Tesla STEM High School, Redmond, WA (September 2025)
+- **Current Status**: Backend production ready, frontend beta testing in progress
+- **School Inquiries**: Contact for beta deployment at your school
 - **Developer Community**: Contributors welcome - see [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 ---
