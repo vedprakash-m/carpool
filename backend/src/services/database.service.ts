@@ -47,6 +47,12 @@ export class DatabaseService {
   private async initializeCosmosDB(): Promise<void> {
     try {
       const config = configService.getConfig();
+
+      // Validate configuration before attempting connection
+      if (!config.cosmosDb.endpoint || !config.cosmosDb.key) {
+        throw new Error('Cosmos DB endpoint and key are required');
+      }
+
       this.cosmosClient = new CosmosClient({
         endpoint: config.cosmosDb.endpoint,
         key: config.cosmosDb.key,
@@ -58,18 +64,50 @@ export class DatabaseService {
       });
       this.database = database;
 
+      // Create primary container for users (unified across all repositories)
       const { container } = await this.database.containers.createIfNotExists({
         id: config.cosmosDb.containerName,
         partitionKey: '/email',
       });
       this.container = container;
 
-      console.log('Cosmos DB initialized successfully');
+      // Create additional containers for different entity types
+      await this.initializeAdditionalContainers();
+
+      console.log('Cosmos DB initialized successfully with unified configuration');
     } catch (error) {
       console.error('Failed to initialize Cosmos DB:', error);
       console.log('Falling back to in-memory storage');
       this.useRealDatabase = false;
       this.initializeInMemoryStorage();
+    }
+  }
+
+  /**
+   * Initialize additional containers for different entity types
+   */
+  private async initializeAdditionalContainers(): Promise<void> {
+    if (!this.database) return;
+
+    const containerConfigs = [
+      { id: 'trips', partitionKey: '/driverId' },
+      { id: 'schedules', partitionKey: '/userId' },
+      { id: 'swapRequests', partitionKey: '/requesterId' },
+      { id: 'groups', partitionKey: '/id' },
+      { id: 'notifications', partitionKey: '/userId' },
+      { id: 'messages', partitionKey: '/groupId' },
+      { id: 'weeklyPreferences', partitionKey: '/userId' },
+    ];
+
+    for (const config of containerConfigs) {
+      try {
+        await this.database.containers.createIfNotExists({
+          id: config.id,
+          partitionKey: config.partitionKey,
+        });
+      } catch (error) {
+        console.warn(`Warning: Could not create container ${config.id}:`, error);
+      }
     }
   }
 
@@ -594,6 +632,32 @@ export class DatabaseService {
   // ADD BELOW: public accessor for the default Cosmos container so repositories can resolve it safely
   public getDefaultContainer(): Container | undefined {
     return this.container;
+  }
+
+  /**
+   * Get container by name for specific entity types
+   */
+  public getContainer(containerName: string): Container | undefined {
+    if (!this.useRealDatabase || !this.database) {
+      return undefined;
+    }
+    return this.database.container(containerName);
+  }
+
+  /**
+   * Get all available container names
+   */
+  public getAvailableContainers(): string[] {
+    return [
+      'users',
+      'trips',
+      'schedules',
+      'swapRequests',
+      'groups',
+      'notifications',
+      'messages',
+      'weeklyPreferences',
+    ];
   }
 }
 

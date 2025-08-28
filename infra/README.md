@@ -34,14 +34,15 @@ This directory contains the Azure Bicep templates for Carpool infrastructure dep
 - **Benefits**: Isolation, cross-region deployment, better resource management
 - **Usage**: `./scripts/deploy-storage.sh deploy --resource-group carpool-storage-rg --location eastus2`
 
-### 🔄 **Legacy Template (Backup/Rollback)**
+### 🔄 **Single Resource Group Template (Recommended)**
 
-#### `main.bicep` - Single Resource Group Template
+#### `main.bicep` - Consolidated Single Resource Group Template
 
-- **Purpose**: Deploy all resources to single resource group (legacy approach)
+- **Purpose**: Deploy all resources to single resource group for simplicity
 - **Target Resource Group**: `carpool-rg`
 - **Resources**: All Carpool resources in one resource group
-- **Status**: Maintained for rollback scenarios
+- **Function App**: `carpool-backend` (Flex Consumption, Node.js 22 LTS, 2048 MB)
+- **Status**: **Primary deployment method**
 - **Parameters**: `main.parameters.json`
 - **Usage**: `az deployment group create --resource-group carpool-rg --template-file main.bicep --parameters @main.parameters.json`
 

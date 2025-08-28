@@ -17,19 +17,32 @@ export interface JWTConfig {
 
 /**
  * Default JWT Configuration
- * Uses environment variables with secure defaults
+ * Uses environment variables with secure defaults for production
  */
 export const getJWTConfig = (): JWTConfig => {
+  // Use proper production secrets or generate secure ones
+  const accessSecret =
+    process.env.JWT_ACCESS_SECRET ||
+    process.env.JWT_SECRET ||
+    'carpool-access-secret-change-in-production';
+
+  const refreshSecret =
+    process.env.JWT_REFRESH_SECRET || 'carpool-refresh-secret-change-in-production';
+
+  // For Entra ID integration
+  const entraIssuer = `https://login.microsoftonline.com/${
+    process.env.AZURE_TENANT_ID || 'vedprakashmoutlook.onmicrosoft.com'
+  }/v2.0`;
+  const entraAudience = process.env.AZURE_CLIENT_ID || 'c5118183-d391-4a86-ad73-29162678a5f0';
+
   return {
-    accessTokenSecret:
-      process.env.JWT_ACCESS_SECRET || 'carpool-access-secret-change-in-production',
-    refreshTokenSecret:
-      process.env.JWT_REFRESH_SECRET || 'carpool-refresh-secret-change-in-production',
+    accessTokenSecret: accessSecret,
+    refreshTokenSecret: refreshSecret,
     accessTokenExpiry: process.env.JWT_ACCESS_EXPIRY || '1h',
     refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
-    issuer: process.env.JWT_ISSUER || 'carpool-app',
-    audience: process.env.JWT_AUDIENCE || 'carpool-users',
-    algorithm: (process.env.JWT_ALGORITHM as 'HS256' | 'RS256') || 'HS256',
+    issuer: process.env.JWT_ISSUER || entraIssuer,
+    audience: process.env.JWT_AUDIENCE || entraAudience,
+    algorithm: (process.env.JWT_ALGORITHM as 'HS256' | 'RS256') || 'RS256',
   };
 };
 

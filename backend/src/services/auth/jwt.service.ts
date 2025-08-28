@@ -26,8 +26,8 @@ export class JWTService implements IJWTService {
   constructor(config?: Partial<JWTConfig>) {
     this.config = { ...getJWTConfig(), ...config };
 
-    // Configure JWKS client for specific tenant
-    const tenantId = process.env.AZURE_TENANT_ID || 'VED';
+    // Configure JWKS client for Microsoft Entra ID
+    const tenantId = process.env.AZURE_TENANT_ID || 'vedprakashmoutlook.onmicrosoft.com';
     const jwksUri = `https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`;
 
     this.jwksClient = jwksClient({
@@ -36,7 +36,9 @@ export class JWTService implements IJWTService {
       timeout: 30000, // Defaults to 30s
       cache: true, // Cache keys for 10 minutes by default
       rateLimit: true,
-      jwksRequestsPerMinute: 5, // Default: 5
+      jwksRequestsPerMinute: 10, // Increase for production
+      cacheMaxEntries: 5, // Cache up to 5 keys
+      cacheMaxAge: 10 * 60 * 1000, // 10 minutes
     });
   }
 
@@ -44,7 +46,7 @@ export class JWTService implements IJWTService {
    * Generate access token for authenticated user
    */
   generateAccessToken(user: UserEntity): string {
-    const payload: StandardJWTPayload = {
+    const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
@@ -52,9 +54,7 @@ export class JWTService implements IJWTService {
       authProvider: user.authProvider,
       type: TokenType.ACCESS,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + this.parseExpiry(this.config.accessTokenExpiry),
-      iss: this.config.issuer,
-      aud: this.config.audience,
+      // Don't set iss, aud, or exp here - let JWT library handle them
       familyId: user.familyId,
       groupMemberships: user.groupMemberships?.map((m) => m.groupId) || [],
     };
@@ -71,7 +71,7 @@ export class JWTService implements IJWTService {
    * Generate refresh token for authenticated user
    */
   generateRefreshToken(user: UserEntity): string {
-    const payload: StandardJWTPayload = {
+    const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
@@ -79,9 +79,7 @@ export class JWTService implements IJWTService {
       authProvider: user.authProvider,
       type: TokenType.REFRESH,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + this.parseExpiry(this.config.refreshTokenExpiry),
-      iss: this.config.issuer,
-      aud: this.config.audience,
+      // Don't set iss, aud, or exp here - let JWT library handle them
     };
 
     const options = createSignOptions(this.config, TokenType.REFRESH);
@@ -108,28 +106,40 @@ export class JWTService implements IJWTService {
       typeof decodedToken.payload.iss === 'string' &&
       decodedToken.payload.iss.includes('microsoftonline')
     ) {
-      const key = await this.jwksClient.getSigningKey(decodedToken.header.kid);
-      const signingKey = key.getPublicKey();
+      try {
+        const key = await this.jwksClient.getSigningKey(decodedToken.header.kid);
+        const signingKey = key.getPublicKey();
 
-      const payload = jwt.verify(token, signingKey, {
-        algorithms: ['RS256'],
-        issuer: this.config.issuer,
-        audience: this.config.audience,
-      }) as StandardJWTPayload;
+        // Validate Entra ID specific configuration
+        const expectedIssuer = `https://login.microsoftonline.com/${
+          process.env.AZURE_TENANT_ID || 'vedprakashmoutlook.onmicrosoft.com'
+        }/v2.0`;
+        const expectedAudience =
+          process.env.AZURE_CLIENT_ID || 'c5118183-d391-4a86-ad73-29162678a5f0';
 
-      return {
-        sub: payload.sub,
-        email: payload.email,
-        role: payload.role as any,
-        permissions: payload.permissions,
-        authProvider: payload.authProvider as any,
-        iat: payload.iat,
-        exp: payload.exp,
-        iss: payload.iss,
-        aud: payload.aud,
-      };
+        const payload = jwt.verify(token, signingKey, {
+          algorithms: ['RS256'],
+          issuer: expectedIssuer,
+          audience: expectedAudience,
+        }) as StandardJWTPayload;
+
+        return {
+          sub: payload.sub,
+          email: payload.email,
+          role: payload.role as any,
+          permissions: payload.permissions,
+          authProvider: 'entra' as any,
+          iat: payload.iat,
+          exp: payload.exp,
+          iss: payload.iss,
+          aud: payload.aud,
+        };
+      } catch (error) {
+        console.error('Entra ID token validation failed:', error);
+        throw new Error(`Entra ID token validation failed: ${error.message}`);
+      }
     } else {
-      // Legacy token validation
+      // Legacy token validation for internal JWT tokens
       const options = createVerifyOptions(this.config, TokenType.ACCESS);
 
       try {
@@ -148,16 +158,15 @@ export class JWTService implements IJWTService {
           email: payload.email,
           role: payload.role as any,
           permissions: payload.permissions,
-          authProvider: payload.authProvider as any,
+          authProvider: 'internal' as any,
           iat: payload.iat,
           exp: payload.exp,
           iss: payload.iss,
           aud: payload.aud,
         };
       } catch (error) {
-        throw new Error(
-          `Token validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
+        console.error('Internal token validation failed:', error);
+        throw new Error(`Token validation failed: ${error.message}`);
       }
     }
   }

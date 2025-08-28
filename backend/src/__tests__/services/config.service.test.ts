@@ -102,7 +102,8 @@ describe('ConfigService', () => {
       process.env.COSMOS_DB_KEY = 'test-key';
       process.env.COSMOS_DB_DATABASE = 'testdb';
       process.env.COSMOS_DB_CONTAINER = 'testcontainer';
-      process.env.JWT_SECRET = 'custom-secret';
+      process.env.JWT_SECRET =
+        'custom-secret-that-is-long-enough-for-production-security-requirements';
       process.env.JWT_EXPIRES_IN = '1h';
       process.env.BCRYPT_ROUNDS = '10';
       process.env.MAX_LOGIN_ATTEMPTS = '3';
@@ -115,6 +116,9 @@ describe('ConfigService', () => {
       process.env.CORS_ORIGINS = 'http://localhost:3000,https://example.com';
       process.env.MAX_DISTANCE_KM = '100';
       process.env.DEFAULT_SERVICE_RADIUS = '50';
+      process.env.AZURE_TENANT_ID = 'test-tenant-id';
+      process.env.AZURE_CLIENT_ID = 'test-client-id';
+      process.env.APPLICATIONINSIGHTS_CONNECTION_STRING = 'test-app-insights';
 
       configInstance = ConfigService.getInstance();
       const config = configInstance.getConfig();
@@ -123,7 +127,9 @@ describe('ConfigService', () => {
       expect(config.cosmosDb.key).toBe('test-key');
       expect(config.cosmosDb.databaseName).toBe('testdb');
       expect(config.cosmosDb.containerName).toBe('testcontainer');
-      expect(config.auth.jwtSecret).toBe('custom-secret');
+      expect(config.auth.jwtSecret).toBe(
+        'custom-secret-that-is-long-enough-for-production-security-requirements',
+      );
       expect(config.auth.jwtExpiresIn).toBe('1h');
       expect(config.auth.bcryptRounds).toBe(10);
       expect(config.auth.maxLoginAttempts).toBe(3);
@@ -178,8 +184,11 @@ describe('ConfigService', () => {
       process.env.NODE_ENV = 'production';
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
-      process.env.JWT_SECRET = 'custom-production-secret';
+      process.env.JWT_SECRET = 'custom-production-secret-that-is-long-enough-for-secure-usage';
+      process.env.AZURE_TENANT_ID = 'test-tenant-id';
+      process.env.AZURE_CLIENT_ID = 'test-client-id';
       process.env.GOOGLE_MAPS_API_KEY = 'google-key';
+      process.env.APPLICATIONINSIGHTS_CONNECTION_STRING = 'test-app-insights';
 
       expect(() => {
         configInstance = ConfigService.getInstance();
@@ -204,10 +213,14 @@ describe('ConfigService', () => {
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
       process.env.JWT_SECRET = 'carpool-dev-secret-key';
+      process.env.AZURE_TENANT_ID = 'test-tenant-id';
+      process.env.AZURE_CLIENT_ID = 'test-client-id';
 
       expect(() => {
         configInstance = ConfigService.getInstance();
-      }).toThrow('Configuration validation failed: Custom JWT secret is required in production');
+      }).toThrow(
+        'Configuration validation failed: Custom JWT secret (minimum 32 characters) is required in production',
+      );
     });
 
     it('should fail validation in production with multiple errors', () => {
@@ -215,11 +228,13 @@ describe('ConfigService', () => {
       process.env.COSMOS_DB_ENDPOINT = '';
       process.env.COSMOS_DB_KEY = '';
       process.env.JWT_SECRET = 'carpool-dev-secret-key';
+      delete process.env.AZURE_TENANT_ID;
+      delete process.env.AZURE_CLIENT_ID;
 
       expect(() => {
         configInstance = ConfigService.getInstance();
       }).toThrow(
-        'Configuration validation failed: Cosmos DB configuration is required in production, Custom JWT secret is required in production',
+        'Configuration validation failed: Cosmos DB configuration is required in production, Custom JWT secret (minimum 32 characters) is required in production, AZURE_TENANT_ID must be configured for production Entra ID integration, AZURE_CLIENT_ID must be configured for production Entra ID integration',
       );
     });
 
@@ -229,7 +244,10 @@ describe('ConfigService', () => {
       process.env.NODE_ENV = 'production';
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
-      process.env.JWT_SECRET = 'custom-production-secret';
+      process.env.JWT_SECRET = 'custom-production-secret-that-is-long-enough-for-security';
+      process.env.AZURE_TENANT_ID = 'test-tenant-id';
+      process.env.AZURE_CLIENT_ID = 'test-client-id';
+      process.env.APPLICATIONINSIGHTS_CONNECTION_STRING = 'test-app-insights';
       delete process.env.GOOGLE_MAPS_API_KEY;
 
       expect(() => {
@@ -278,7 +296,10 @@ describe('ConfigService', () => {
       process.env.NODE_ENV = 'production';
       process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
       process.env.COSMOS_DB_KEY = 'test-key';
-      process.env.JWT_SECRET = 'custom-production-secret';
+      process.env.JWT_SECRET = 'custom-production-secret-that-is-long-enough-for-security';
+      process.env.AZURE_TENANT_ID = 'test-tenant-id';
+      process.env.AZURE_CLIENT_ID = 'test-client-id';
+      process.env.APPLICATIONINSIGHTS_CONNECTION_STRING = 'test-app-insights';
 
       configInstance = ConfigService.getInstance();
 

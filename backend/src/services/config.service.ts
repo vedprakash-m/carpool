@@ -100,12 +100,32 @@ class ConfigService {
         errors.push('Cosmos DB configuration is required in production');
       }
 
-      if (this.config.auth.jwtSecret === 'carpool-dev-secret-key') {
-        errors.push('Custom JWT secret is required in production');
+      // Validate JWT secrets - check for both legacy and new format
+      const hasProductionJwtSecret =
+        this.config.auth.jwtSecret !== 'carpool-dev-secret-key' &&
+        this.config.auth.jwtSecret !== 'carpool-access-secret-change-in-production' &&
+        this.config.auth.jwtSecret.length >= 32;
+
+      if (!hasProductionJwtSecret) {
+        errors.push('Custom JWT secret (minimum 32 characters) is required in production');
       }
 
+      // Validate Azure Entra ID configuration for production
+      if (!process.env.AZURE_TENANT_ID || process.env.AZURE_TENANT_ID === 'VED') {
+        errors.push('AZURE_TENANT_ID must be configured for production Entra ID integration');
+      }
+
+      if (!process.env.AZURE_CLIENT_ID) {
+        errors.push('AZURE_CLIENT_ID must be configured for production Entra ID integration');
+      }
+
+      // Warn about missing optional services
       if (!this.config.geocoding.googleMapsApiKey && !this.config.geocoding.azureMapsKey) {
         console.warn('Warning: No real geocoding API keys configured in production');
+      }
+
+      if (!process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+        console.warn('Warning: Application Insights not configured for production monitoring');
       }
     }
 

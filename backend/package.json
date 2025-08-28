@@ -12,8 +12,8 @@
     "dev": "tsc --watch",
     "start": "func start",
     "deploy": "npm run build && func azure functionapp publish",
-    "deploy:prod": "npm run build && func azure functionapp publish carpool-api-prod --typescript",
-    "deploy:dev": "npm run build && func azure functionapp publish carpool-api-dev --typescript",
+    "deploy:prod": "npm run build && func azure functionapp publish carpool-backend --typescript",
+    "deploy:dev": "npm run build && func azure functionapp publish carpool-backend --typescript",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -29,7 +29,7 @@
     "clean": "rimraf dist",
     "setup-functions": "node scripts/setup-functions.js",
     "ensure-functions": "node scripts/ensure-functions.js",
-    "deploy:azure": "func azure functionapp publish carpool-api-manual --typescript"
+    "deploy:azure": "func azure functionapp publish carpool-backend --typescript"
   },
   "dependencies": {
     "@azure/communication-email": "^1.0.0",
