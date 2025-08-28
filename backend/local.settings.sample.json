@@ -7,6 +7,8 @@
     "AZURE_LOCATION": "eastus",
     "AZURE_KEY_VAULT_NAME": "carpool-kv",
     "AZURE_TENANT_ID": "VED",
+    "AZURE_CLIENT_ID": "",
+    "AZURE_CLIENT_SECRET": "",
     "AZURE_DOMAIN": "VedID.onmicrosoft.com",
     "FUNCTIONS_WORKER_RUNTIME": "node",
     "FUNCTIONS_EXTENSION_VERSION": "~4",

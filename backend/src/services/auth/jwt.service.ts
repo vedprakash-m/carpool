@@ -25,9 +25,18 @@ export class JWTService implements IJWTService {
 
   constructor(config?: Partial<JWTConfig>) {
     this.config = { ...getJWTConfig(), ...config };
-    // Note: JWKS client would need additional configuration for Entra ID integration
+
+    // Configure JWKS client for specific tenant
+    const tenantId = process.env.AZURE_TENANT_ID || 'VED';
+    const jwksUri = `https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`;
+
     this.jwksClient = jwksClient({
-      jwksUri: `https://login.microsoftonline.com/common/discovery/v2.0/keys`,
+      jwksUri,
+      requestHeaders: {}, // Optional
+      timeout: 30000, // Defaults to 30s
+      cache: true, // Cache keys for 10 minutes by default
+      rateLimit: true,
+      jwksRequestsPerMinute: 5, // Default: 5
     });
   }
 
