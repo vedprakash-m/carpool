@@ -3,6 +3,20 @@
 
 echo "🔍 Running pre-commit validation..."
 
+# SECURITY: Check for secrets first
+echo "🔒 Checking for secrets with gitleaks..."
+if command -v gitleaks &> /dev/null; then
+    if ! gitleaks protect --staged --verbose; then
+        echo "❌ SECRETS DETECTED! Commit blocked."
+        echo "ℹ️  Remove secrets and use environment variables instead"
+        echo "ℹ️  To bypass (not recommended): git commit --no-verify"
+        exit 1
+    fi
+    echo "✅ No secrets detected"
+else
+    echo "⚠️  gitleaks not found - install with: brew install gitleaks"
+fi
+
 # Quick lint and type check only for pre-commit
 echo "🚀 Running fast pre-commit checks..."
 ./scripts/pre-commit-fast.sh || {

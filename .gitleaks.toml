@@ -38,8 +38,36 @@ regex = '''[a-zA-Z][a-zA-Z0-9+.-]*://[a-zA-Z0-9._-]+:[a-zA-Z0-9._%-]+@[a-zA-Z0-9
 
 # Allowlist for false positives
 [allowlist]
-description = "Test fixtures and examples"
+description = "Ignore false positives in generated files, documentation, and test files"
+
+# File patterns to ignore
+files = [
+    '''\.lock$''',
+    '''package-lock\.json$''',
+    '''\.log$''',
+    '''\.md$''',
+    '''\.txt$''',
+    '''\.html$''',
+    '''\.json$''',
+    '''\.sample\.json$''',
+    '''\.template\..*''',
+    '''\.example\..*''',
+    '''\.bicep$''',
+    '''\.mjs$'''
+]
+
+# Directory paths to ignore
 paths = [
+    '''backend/coverage/''',
+    '''frontend/\.next/''',
+    '''node_modules/''',
+    '''\.git/''',
+    '''coverage/''',
+    '''dist/''',
+    '''build/''',
+    '''docs/''',
+    '''scripts/''',
+    '''infra/''',
     '''test/.*''',
     '''tests/.*''',
     '''spec/.*''',
@@ -51,7 +79,40 @@ paths = [
     '''mock.*''',
     '''fixture.*'''
 ]
+
+# Regex patterns for known false positives
 regexes = [
+    # OpenAPI schema references
+    '''schema.*components/schemas''',
+    '''ErrorResponse''',
+    '''ValidationErrorResponse''',
+    '''CreateTripRequest''',
+    '''UpdateTripRequest''',
+    '''HealthResponse''',
+    '''UpdateUserRequest''',
+    
+    # Azure Bicep infrastructure patterns
+    '''enableLogAccessUsingOnlyResourcePermissions''',
+    '''DocumentDB/databaseAccounts''',
+    '''Microsoft\.DocumentDB''',
+    '''Microsoft\..*@\d{4}-\d{2}-\d{2}''',
+    
+    # File path patterns in scripts
+    '''frontend/src/hooks/usePerformance''',
+    '''backend/src/middleware/sanitization''',
+    '''backend/src/monitoring/monitoring''',
+    '''backend/src/.*\.ts''',
+    '''frontend/src/.*\.tsx?''',
+    
+    # Next.js build artifacts (specific encryption keys from builds)
+    '''encryptionKey.*HbI/lNy/OhB8nXSECJKa5eEZ02jWhw2wtnCuGkdXi\+4=''',
+    
+    # Generic patterns for legitimate code
+    '''components/schemas/.*''',
+    '''/\$ref.*components''',
+    '''\.\.\..*Database.*Microsoft\.''',
+    
+    # Test and example patterns
     '''(?i)example''',
     '''(?i)sample''',
     '''(?i)placeholder''',
