@@ -339,8 +339,20 @@ terraform.tfstate*
 .vagrant/
 
 # ============================================================================
-# PROJECT SPECIFIC
+# PROJECT SPECIFIC - TEMPORARY & DEVELOPMENT FILES
 # ============================================================================
+
+# Temporary function fixes and test folders
+temp_function_fix/
+temp_*/
+*_temp/
+*_fix/
+fix_*/
+
+# Azure deployment logs and runtime files
+LogFiles/
+*/LogFiles/
+**/LogFiles/
 
 # Build outputs
 build/
@@ -354,3 +366,15 @@ playwright-report/
 
 # Package manager files
 package-lock.json.backup
+
+# Development artifacts and temporary files
+*.zip
+*.tar
+*.tar.gz
+*.log
+!*.example.log
+!docs/**/*.log
+deployments/*/log.log
+secrets
+.secrets
+secret.txt
