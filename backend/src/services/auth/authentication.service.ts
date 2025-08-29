@@ -24,9 +24,28 @@ import {
 } from '@carpool/shared';
 import { JWTService } from './jwt.service';
 import { DatabaseService } from '../database.service';
-import { tokenBlacklist } from './token-blacklist';
 import { ILogger } from '../../utils/logger';
 import * as jwt from 'jsonwebtoken';
+
+/**
+ * Simple token blacklist implementation
+ */
+class TokenBlacklist {
+  private readonly blacklist: Set<string> = new Set();
+
+  add(token: string, expiry: number): void {
+    this.blacklist.add(token);
+    setTimeout(() => {
+      this.blacklist.delete(token);
+    }, expiry * 1000);
+  }
+
+  has(token: string): boolean {
+    return this.blacklist.has(token);
+  }
+}
+
+const tokenBlacklist = new TokenBlacklist();
 
 /**
  * Password Validator Implementation
