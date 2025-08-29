@@ -6,7 +6,7 @@
  */
 
 import * as jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
+import jwksClient = require('jwks-rsa');
 import { UserEntity } from '@carpool/shared';
 import {
   IJWTService,

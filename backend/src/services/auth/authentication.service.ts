@@ -26,7 +26,7 @@ import { JWTService } from './jwt.service';
 import { DatabaseService } from '../database.service';
 import { tokenBlacklist } from './token-blacklist';
 import { ILogger } from '../../utils/logger';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 
 /**
  * Password Validator Implementation
