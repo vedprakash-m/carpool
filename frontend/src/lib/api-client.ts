@@ -585,19 +585,19 @@ export class ApiClient {
 }
 
 // Create singleton instance
-// Always use production backend API for now since local backend setup is complex
+// Use relative URLs for Azure Static Web Apps proxy support
 const getApiUrl = () => {
-  // For now, always use production API to avoid local setup complexity
-  return 'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api';
+  // In production (Azure Static Web Apps), use relative URL that gets proxied
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname.includes('azurestaticapps.net') ||
+      window.location.hostname.includes('carpool.vedprakash.net'))
+  ) {
+    return '/api';
+  }
 
-  // Future: Enable local development when needed
-  // if (
-  //   typeof window !== "undefined" &&
-  //   window.location.hostname.includes("azurestaticapps.net")
-  // ) {
-  //   return "https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api";
-  // }
-  // return process.env.NEXT_PUBLIC_API_URL || "http://localhost:7071/api";
+  // For local development, use direct backend URL
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7071/api';
 };
 
 export const apiClient = new ApiClient(getApiUrl());
