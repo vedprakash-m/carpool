@@ -587,17 +587,26 @@ export class ApiClient {
 // Create singleton instance
 // Use relative URLs for Azure Static Web Apps proxy support
 const getApiUrl = () => {
+  console.log(
+    'getApiUrl called, hostname:',
+    typeof window !== 'undefined' ? window.location.hostname : 'server'
+  );
+
   // In production (Azure Static Web Apps), use relative URL that gets proxied
   if (
     typeof window !== 'undefined' &&
     (window.location.hostname.includes('azurestaticapps.net') ||
       window.location.hostname.includes('carpool.vedprakash.net'))
   ) {
+    console.log('Using relative API URL for production: /api');
     return '/api';
   }
 
   // For local development, use direct backend URL
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7071/api';
+  const devUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7071/api';
+  console.log('Using development API URL:', devUrl);
+  return devUrl;
 };
 
 export const apiClient = new ApiClient(getApiUrl());
