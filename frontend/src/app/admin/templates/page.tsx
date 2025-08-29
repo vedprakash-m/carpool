@@ -136,7 +136,7 @@ export default function AdminTemplatesPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          'https://carpool-api-prod.azurewebsites.net/api'
+          'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
         }/v1/admin/schedule-templates`,
         {
           method: 'GET',
@@ -175,11 +175,11 @@ export default function AdminTemplatesPage() {
       const url = editingTemplate
         ? `${
             process.env.NEXT_PUBLIC_API_URL ||
-            'https://carpool-api-prod.azurewebsites.net/api'
+            'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
           }/v1/admin/schedule-templates/${editingTemplate.id}`
         : `${
             process.env.NEXT_PUBLIC_API_URL ||
-            'https://carpool-api-prod.azurewebsites.net/api'
+            'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
           }/v1/admin/schedule-templates`;
 
       const response = await fetch(url, {
@@ -226,7 +226,7 @@ export default function AdminTemplatesPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          'https://carpool-api-prod.azurewebsites.net/api'
+          'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
         }/v1/admin/schedule-templates/${templateId}`,
         {
           method: 'DELETE',

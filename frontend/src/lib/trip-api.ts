@@ -151,7 +151,7 @@ class TripApiService {
       // TEMPORARY CORS WORKAROUND: Use simple fetch without custom headers
       // to bypass CORS preflight issues
       const response = await fetch(
-        'https://carpool-api-prod.azurewebsites.net/api/v1/trips/stats'
+        'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api/v1/trips/stats'
       );
 
       if (!response.ok) {

@@ -10,7 +10,9 @@ export default function TestPage() {
     setMounted(true);
 
     // Test simple fetch
-    fetch('https://carpool-api-prod.azurewebsites.net/api/trips/stats')
+    fetch(
+      'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api/trips/stats'
+    )
       .then(res => res.json())
       .then(data => {
         setApiTest(`API Success: ${JSON.stringify(data)}`);

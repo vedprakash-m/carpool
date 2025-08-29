@@ -22,12 +22,15 @@ export default function SimpleDashboard() {
     }
 
     // Test API directly
-    fetch('https://carpool-api-prod.azurewebsites.net/api/trips/stats', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    fetch(
+      'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api/trips/stats',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
       .then(async res => {
         const text = await res.text();
         setApiTestResult(`Status: ${res.status}, Response: ${text}`);

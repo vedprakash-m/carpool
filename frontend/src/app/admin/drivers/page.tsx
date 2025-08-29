@@ -135,7 +135,7 @@ export default function AdminDriversPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          'https://carpool-api-prod.azurewebsites.net/api'
+          'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
         }/v1/admin/driver-designations`,
         {
           method: 'GET',
@@ -176,7 +176,7 @@ export default function AdminDriversPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          'https://carpool-api-prod.azurewebsites.net/api'
+          'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
         }/v1/admin/driver-designations/${weekStartDate}`,
         {
           method: 'GET',
@@ -228,7 +228,7 @@ export default function AdminDriversPage() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
-          'https://carpool-api-prod.azurewebsites.net/api'
+          'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
         }/v1/admin/driver-designations`,
         {
           method: 'POST',
