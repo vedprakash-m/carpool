@@ -56,6 +56,7 @@ interface EntraAuthActions {
   acquireTokenSilently: () => Promise<string | null>;
   checkAuthStatus: () => Promise<void>;
   clearError: () => void;
+  clearInteractionState: () => void;
 }
 
 type EntraAuthStore = EntraAuthState & EntraAuthActions;
@@ -89,7 +90,21 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
       await msalInstance.initialize();
       console.log('MSAL initialized successfully');
 
-      set({ msalInstance, isLoading: false });
+      set({ msalInstance });
+
+      // Clear any previous interaction state on fresh page loads
+      try {
+        // This is safe to call - it clears any stuck interaction state
+        const accounts = msalInstance.getAllAccounts();
+        console.log('Found accounts:', accounts.length);
+
+        if (accounts.length > 0) {
+          msalInstance.setActiveAccount(accounts[0]);
+          console.log('Set active account:', accounts[0].username);
+        }
+      } catch (clearError) {
+        console.warn('Could not clear interaction state:', clearError);
+      }
 
       // Check if we're coming back from a redirect first
       const isRedirectCallback =
@@ -106,6 +121,8 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         );
         await get().checkAuthStatus();
       }
+
+      set({ isLoading: false });
     } catch (error) {
       console.error('MSAL initialization failed:', error);
       set({
@@ -234,13 +251,66 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
+      // Check if interaction is already in progress
+      const inProgress =
+        msalInstance.getActiveAccount() !== null &&
+        msalInstance.getAllAccounts().length > 0;
+
+      if (inProgress) {
+        console.log(
+          'Authentication interaction already in progress, skipping...'
+        );
+        set({ isLoading: false });
+        return;
+      }
+
+      // Check if there's an ongoing interaction
+      const activeAccount = msalInstance.getActiveAccount();
+      if (activeAccount) {
+        console.log('Active account found, redirecting to dashboard...');
+        set({
+          account: activeAccount,
+          isAuthenticated: true,
+          authMethod: 'entra',
+          isLoading: false,
+        });
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      console.log('Starting new authentication flow...');
+
       // Perform interactive login
-      const loginResponse = await msalInstance.loginRedirect(loginRequest);
+      await msalInstance.loginRedirect(loginRequest);
 
       // The redirect will reload the page, so this won't execute
       // The auth status will be checked on page load via checkAuthStatus
-    } catch (error) {
+    } catch (error: any) {
       console.error('Entra login failed:', error);
+
+      // Handle specific MSAL errors
+      if (error?.errorCode === 'interaction_in_progress') {
+        console.log(
+          'Interaction already in progress, clearing state and retrying...'
+        );
+        get().clearInteractionState();
+
+        // Try again after a short delay
+        setTimeout(async () => {
+          try {
+            await msalInstance.loginRedirect(loginRequest);
+          } catch (retryError: any) {
+            console.error('Retry login failed:', retryError);
+            set({
+              error:
+                'Microsoft sign-in failed. Please refresh the page and try again.',
+              isLoading: false,
+            });
+          }
+        }, 1000);
+        return;
+      }
+
       set({
         error: 'Microsoft sign-in failed. Please try again.',
         isLoading: false,
@@ -557,6 +627,23 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  clearInteractionState: () => {
+    const { msalInstance } = get();
+    if (msalInstance) {
+      try {
+        // Clear any stuck interaction state
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) {
+          msalInstance.setActiveAccount(accounts[0]);
+        }
+        console.log('Interaction state cleared successfully');
+      } catch (error) {
+        console.warn('Could not clear interaction state:', error);
+      }
+    }
+    set({ isLoading: false, error: null });
   },
 }));
 

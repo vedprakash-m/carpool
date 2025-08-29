@@ -50,10 +50,16 @@ export default function LoginPage() {
   const handleEntraLogin = async () => {
     try {
       await loginWithEntra();
-      toast.success('Welcome back!');
-      router.push('/dashboard');
+      // Success will be handled by the redirect in the auth store
     } catch (error: any) {
-      toast.error(error.message || 'Microsoft login failed');
+      console.error('Microsoft login error:', error);
+
+      // Don't show error for interaction_in_progress as it's handled automatically
+      if (error?.errorCode !== 'interaction_in_progress') {
+        toast.error(
+          error.message || 'Microsoft login failed. Please try again.'
+        );
+      }
     }
   };
 

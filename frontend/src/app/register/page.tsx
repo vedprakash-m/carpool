@@ -199,10 +199,16 @@ export default function RegisterPage() {
   const handleEntraSignup = async () => {
     try {
       await loginWithEntra();
-      toast.success('Welcome to Carpool!');
-      router.push('/dashboard');
+      // Success will be handled by the redirect in the auth store
     } catch (error: any) {
-      toast.error(error.message || 'Microsoft signup failed');
+      console.error('Microsoft signup error:', error);
+
+      // Don't show error for interaction_in_progress as it's handled automatically
+      if (error?.errorCode !== 'interaction_in_progress') {
+        toast.error(
+          error.message || 'Microsoft signup failed. Please try again.'
+        );
+      }
     }
   };
 
