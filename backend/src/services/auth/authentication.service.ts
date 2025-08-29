@@ -6,6 +6,8 @@
  * - SecureAuthService (singleton)
  * - UnifiedAuthService (static)
  * - EntraAuthService (hybrid)
+ *
+ * Updated: Azure OIDC authentication now properly configured for CI/CD
  */
 
 import * as bcrypt from 'bcrypt';
