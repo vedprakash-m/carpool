@@ -7,18 +7,29 @@ import {
 import { VedUser } from '@carpool/shared';
 import { apiClient } from '../lib/api-client';
 
-// MSAL Configuration following Apps_Auth_Requirement.md
+// MSAL Configuration following Apps_Auth_Requirement.md - CORRECTED
 const msalConfig = {
   auth: {
-    clientId: process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID || '',
+    clientId:
+      process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID ||
+      process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID ||
+      '',
     authority:
+      process.env.NEXT_PUBLIC_AZURE_AD_AUTHORITY ||
       process.env.NEXT_PUBLIC_ENTRA_AUTHORITY ||
-      'https://login.microsoftonline.com/vedprakashmoutlook.onmicrosoft.com',
-    redirectUri: typeof window !== 'undefined' ? window.location.origin : '',
+      'https://login.microsoftonline.com/vedid.onmicrosoft.com',
+    redirectUri:
+      process.env.NEXT_PUBLIC_REDIRECT_URI ||
+      (typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback`
+        : ''),
+    postLogoutRedirectUri:
+      process.env.NEXT_PUBLIC_APP_BASE_URL ||
+      (typeof window !== 'undefined' ? window.location.origin : ''),
   },
   cache: {
-    cacheLocation: 'sessionStorage' as const,
-    storeAuthStateInCookie: false,
+    cacheLocation: 'localStorage' as const, // CRITICAL FIX: Changed from sessionStorage to localStorage for SSO
+    storeAuthStateInCookie: true, // CRITICAL FIX: Required for Safari and cross-domain
   },
 };
 
@@ -299,12 +310,38 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
     try {
       set({ isLoading: true });
 
+      // PHASE 3 ENHANCEMENT: Domain-wide logout with proper cleanup
       if (authMethod === 'entra' && msalInstance) {
-        // MSAL logout
-        await msalInstance.logoutRedirect();
+        // Clear MSAL cache completely
+        await msalInstance.clearCache();
+
+        // MSAL logout with domain-wide cleanup
+        const logoutRequest = {
+          postLogoutRedirectUri:
+            process.env.NEXT_PUBLIC_APP_BASE_URL || window.location.origin,
+        };
+
+        await msalInstance.logoutRedirect(logoutRequest);
       } else {
         // Legacy logout
         apiClient.clearToken();
+      }
+
+      // Clear domain-wide authentication state
+      try {
+        // Clear localStorage for domain-wide SSO
+        localStorage.removeItem('msal.interaction.status');
+        localStorage.removeItem('msal.request.state');
+
+        // Clear any domain cookies if present
+        if (typeof document !== 'undefined') {
+          document.cookie =
+            'auth_token=; Domain=.vedprakash.net; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          document.cookie =
+            'refresh_token=; Domain=.vedprakash.net; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        }
+      } catch (cleanupError) {
+        console.warn('Cleanup warning (non-blocking):', cleanupError);
       }
 
       set({
@@ -313,90 +350,198 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         isAuthenticated: false,
         authMethod: null,
         isLoading: false,
+        error: null,
       });
     } catch (error) {
       console.error('Logout failed:', error);
-      set({ isLoading: false });
+      set({
+        isLoading: false,
+        error: 'Logout failed. Please try refreshing the page.',
+      });
     }
   },
 
   acquireTokenSilently: async (): Promise<string | null> => {
     const { msalInstance, account } = get();
     if (!msalInstance || !account) {
+      console.warn(
+        'acquireTokenSilently: MSAL instance or account not available'
+      );
       return null;
     }
 
     try {
+      console.log('Attempting silent token acquisition...');
       const response = await msalInstance.acquireTokenSilent({
         ...loginRequest,
         account,
+        forceRefresh: false, // Allow cache usage
       });
-      return response.accessToken;
+
+      console.log('Silent token acquisition successful');
+
+      // PHASE 4 ENHANCEMENT: Validate token before returning
+      if (response.accessToken) {
+        // Set token for immediate use
+        apiClient.setToken(response.accessToken);
+        return response.accessToken;
+      } else {
+        console.warn('Token response missing access token');
+        return null;
+      }
     } catch (error) {
+      console.error('Silent token acquisition failed:', error);
+
       if (error instanceof InteractionRequiredAuthError) {
-        // Require user interaction to get token
+        // PHASE 4 ENHANCEMENT: Graceful fallback for interaction required
+        console.log(
+          'Interaction required for token refresh - redirecting to login'
+        );
+
         try {
+          // Set loading state during redirect
+          set({ isLoading: true, error: null });
+
           await msalInstance.acquireTokenRedirect({
             ...loginRequest,
             account,
           });
+
+          // This won't execute due to redirect, but good practice
+          return null;
         } catch (redirectError) {
           console.error('Token acquisition redirect failed:', redirectError);
+          set({
+            error: 'Authentication session expired. Please sign in again.',
+            isLoading: false,
+            isAuthenticated: false,
+          });
+          return null;
         }
+      } else {
+        // Other types of errors
+        console.error('Non-interaction token error:', error);
+        set({
+          error: 'Token refresh failed. Please try signing in again.',
+        });
+        return null;
       }
-      return null;
     }
   },
 
   checkAuthStatus: async () => {
     const { msalInstance } = get();
     if (!msalInstance) {
+      console.warn('checkAuthStatus: MSAL instance not available');
       return;
     }
 
     try {
+      console.log('Checking authentication status...');
       const accounts = msalInstance.getAllAccounts();
+      console.log(`Found ${accounts.length} accounts`);
 
       if (accounts.length > 0) {
         const account = accounts[0];
+        console.log('Active account found:', account.username);
 
-        // Try to get access token silently
-        const tokenResponse = await msalInstance.acquireTokenSilent({
-          ...loginRequest,
-          account,
-        });
-
-        if (tokenResponse.accessToken) {
-          // Authenticate with backend using Entra token via unified auth endpoint
-          const response = await apiClient.post('/auth', {
-            action: 'entra-login',
-            authProvider: 'entra',
-            accessToken: tokenResponse.accessToken,
+        try {
+          // PHASE 4 ENHANCEMENT: Try to get access token silently with better error handling
+          const tokenResponse = await msalInstance.acquireTokenSilent({
+            ...loginRequest,
+            account,
+            forceRefresh: false,
           });
 
-          if (response.success && response.data) {
-            const vedUser = (response.data as { user: VedUser }).user;
+          if (tokenResponse.accessToken) {
+            console.log('Valid token acquired, authenticating with backend...');
 
+            // PHASE 4 ENHANCEMENT: Enhanced backend authentication with retry logic
+            let authAttempts = 0;
+            const maxRetries = 2;
+
+            while (authAttempts < maxRetries) {
+              try {
+                const response = await apiClient.post('/auth', {
+                  action: 'entra-login',
+                  authProvider: 'entra',
+                  accessToken: tokenResponse.accessToken,
+                });
+
+                if (response.success && response.data) {
+                  const vedUser = (response.data as { user: VedUser }).user;
+
+                  console.log(
+                    'Backend authentication successful for user:',
+                    vedUser.email
+                  );
+
+                  set({
+                    vedUser,
+                    account,
+                    isAuthenticated: true,
+                    authMethod: 'entra',
+                    isLoading: false,
+                    error: null,
+                  });
+
+                  // Set token for API calls
+                  apiClient.setToken(tokenResponse.accessToken);
+                  return; // Success, exit function
+                } else {
+                  throw new Error('Backend authentication response invalid');
+                }
+              } catch (backendError) {
+                authAttempts++;
+                console.error(
+                  `Backend auth attempt ${authAttempts} failed:`,
+                  backendError
+                );
+
+                if (authAttempts >= maxRetries) {
+                  throw backendError;
+                }
+
+                // Brief delay before retry
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+            }
+          } else {
+            console.warn('Token response missing access token');
+            throw new Error('No access token in response');
+          }
+        } catch (tokenError) {
+          console.error(
+            'Token acquisition failed during auth check:',
+            tokenError
+          );
+
+          if (tokenError instanceof InteractionRequiredAuthError) {
+            console.log('Interactive login required');
             set({
-              vedUser,
-              account,
-              isAuthenticated: true,
-              authMethod: 'entra',
+              isAuthenticated: false,
+              authMethod: null,
               isLoading: false,
+              error: 'Please sign in to continue',
             });
-
-            // Set token for API calls
-            apiClient.setToken(tokenResponse.accessToken);
+          } else {
+            console.error('Auth status check failed:', tokenError);
+            set({
+              isAuthenticated: false,
+              authMethod: null,
+              isLoading: false,
+              error:
+                'Authentication verification failed. Please try signing in again.',
+            });
           }
         }
       } else {
-        // No accounts found, check for legacy authentication
-        // This would check for existing tokens in secure storage
-        // and validate them with the backend
+        console.log('No accounts found, user needs to sign in');
         set({
           isAuthenticated: false,
           authMethod: null,
           isLoading: false,
+          error: null,
         });
       }
     } catch (error) {
@@ -405,6 +550,7 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         isAuthenticated: false,
         authMethod: null,
         isLoading: false,
+        error: 'Authentication check failed. Please refresh the page.',
       });
     }
   },

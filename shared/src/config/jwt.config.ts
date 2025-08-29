@@ -31,9 +31,14 @@ export const getJWTConfig = (): JWTConfig => {
 
   // For Entra ID integration
   const entraIssuer = `https://login.microsoftonline.com/${
-    process.env.AZURE_TENANT_ID || 'vedprakashmoutlook.onmicrosoft.com'
+    process.env.AZURE_TENANT_ID || 'vedid.onmicrosoft.com'
   }/v2.0`;
-  const entraAudience = process.env.AZURE_CLIENT_ID || 'c5118183-d391-4a86-ad73-29162678a5f0';
+  const entraAudience = process.env.AZURE_CLIENT_ID;
+
+  // Validate required environment variables for production
+  if (!entraAudience && process.env.NODE_ENV === 'production') {
+    throw new Error('AZURE_CLIENT_ID environment variable is required for production');
+  }
 
   return {
     accessTokenSecret: accessSecret,
@@ -41,7 +46,7 @@ export const getJWTConfig = (): JWTConfig => {
     accessTokenExpiry: process.env.JWT_ACCESS_EXPIRY || '1h',
     refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
     issuer: process.env.JWT_ISSUER || entraIssuer,
-    audience: process.env.JWT_AUDIENCE || entraAudience,
+    audience: process.env.JWT_AUDIENCE || entraAudience || 'carpool-dev',
     algorithm: (process.env.JWT_ALGORITHM as 'HS256' | 'RS256') || 'RS256',
   };
 };

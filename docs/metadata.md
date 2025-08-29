@@ -45,14 +45,14 @@
 
 ---
 
-## 🚀 Current Status & Production Gaps
+## 🚀 Current Status & Critical Authentication Issues
 
 ### ✅ Development Achievements Complete
 
 **All Three Development Priorities (100% Complete)**:
 
 - **Priority 1**: Enhanced notification system with real-time delivery and mobile optimization
-- **Priority 2**: 5-step Tesla STEM onboarding with interactive group discovery (11 failing tests → 0)
+- **Priority 2**: 5-step Tesla STEM onboarding with interactive group discovery
 - **Priority 3**: Advanced features including group lifecycle management and Tesla STEM integration
 
 **Major Components Delivered**:
@@ -69,19 +69,184 @@
 - **Architecture**: Complete TypeScript implementation with shared types
 - **Mobile**: Full responsive design with haptic feedback integration
 
-### ✅ Production Gaps - COMPLETELY RESOLVED
+### ⚠️ CRITICAL: Authentication System Overhaul Required
 
-**All Critical Production Requirements Completed**:
+**Authentication Issues Identified (September 2025)**:
 
-1. ✅ **Configuration Service Enhancement**: Azure Key Vault integration framework with deployment automation
-2. ✅ **Infrastructure Activation**: Complete Bicep template deployment scripts (deploy-infrastructure.sh, validate-infrastructure.sh, update-function-config.sh)
-3. ✅ **Test Environment Optimization**: 619/634 tests passing (97.6% success rate) with comprehensive validation
-4. ✅ **Documentation Alignment**: README.md updated to reflect unified architecture instead of outdated two-tier references
-5. ✅ **Production Security**: Enhanced JWT validation, rate limiting, CORS, and comprehensive middleware
-6. ✅ **Monitoring Infrastructure**: Application Insights with custom KQL queries and alerting thresholds
-7. ✅ **Deployment Automation**: Complete infrastructure deployment and configuration scripts ready
+1. **❌ Microsoft Entra ID Authentication Broken**:
 
-**Production Status**: 100% Complete - All gaps resolved and documentation aligned
+   - MSAL configuration using wrong tenant (`vedprakashmoutlook.onmicrosoft.com` instead of `vedid.onmicrosoft.com`)
+   - Missing environment variables (`NEXT_PUBLIC_ENTRA_CLIENT_ID`, `NEXT_PUBLIC_AZURE_AD_TENANT_ID`)
+   - Incorrect cache configuration breaking SSO across .vedprakash.net domain
+   - JWT backend validation using local secrets instead of JWKS endpoint
+
+2. **❌ Architecture Conflicts**:
+
+   - Multiple competing authentication systems (legacy + MSAL + unified)
+   - Frontend initialization order causing race conditions
+   - Missing proper error handling and fallback mechanisms
+   - No proper authentication state management across app restarts
+
+3. **❌ Domain Integration Missing**:
+   - SSO not working across Vedprakash domain applications
+   - User object not following VedUser interface standard
+   - Token refresh mechanism incomplete
+   - Cross-domain authentication state synchronization missing
+
+**Production Status**: ⚠️ 85% Complete - Authentication system requires complete overhaul for production deployment
+
+## 🛡️ COMPREHENSIVE AUTHENTICATION IMPLEMENTATION PLAN
+
+### Phase 1: Immediate Fixes (Week 1)
+
+**Frontend MSAL Configuration Overhaul**:
+
+1. **Environment Variable Standardization**:
+
+   ```
+   NEXT_PUBLIC_AZURE_AD_CLIENT_ID="[Correct vedid.onmicrosoft.com app ID]"
+   NEXT_PUBLIC_AZURE_AD_TENANT_ID="vedid.onmicrosoft.com"
+   NEXT_PUBLIC_AZURE_AD_AUTHORITY="https://login.microsoftonline.com/vedid.onmicrosoft.com"
+   NEXT_PUBLIC_REDIRECT_URI="https://carpool.vedprakash.net/auth/callback"
+   NEXT_PUBLIC_APP_BASE_URL="https://carpool.vedprakash.net"
+   ```
+
+2. **MSAL Configuration Fix** (`frontend/src/store/entra-auth.store.ts`):
+
+   ```typescript
+   const msalConfig: Configuration = {
+     auth: {
+       clientId: process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID!,
+       authority: process.env.NEXT_PUBLIC_AZURE_AD_AUTHORITY!,
+       redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI!,
+       postLogoutRedirectUri: process.env.NEXT_PUBLIC_APP_BASE_URL!,
+     },
+     cache: {
+       cacheLocation: 'localStorage', // Critical for SSO
+       storeAuthStateInCookie: true, // Required for Safari
+     },
+   };
+   ```
+
+3. **Remove Conflicting Auth Systems**:
+   - Disable legacy auth in `providers.tsx`
+   - Remove `useAuthStore` initialization conflicts
+   - Single source of truth for authentication state
+
+### Phase 2: Backend JWT Validation (Week 2)
+
+**JWKS Integration** (`backend/src/services/auth/jwt.service.ts`):
+
+1. **Replace Local Secret Validation**:
+
+   ```typescript
+   const JWKS_URI = 'https://login.microsoftonline.com/vedid.onmicrosoft.com/discovery/v2.0/keys';
+
+   async validateEntraToken(token: string): Promise<TokenPayload> {
+     const client = jwksClient({ jwksUri: JWKS_URI });
+     const signingKey = await client.getSigningKey(header.kid);
+     // JWKS validation with proper audience/issuer checks
+   }
+   ```
+
+2. **Unified Token Interface**:
+   ```typescript
+   interface VedUser {
+     id: string;
+     email: string;
+     name: string;
+     roles: string[];
+     tenantId: string;
+     upn: string; // User Principal Name for domain integration
+   }
+   ```
+
+### Phase 3: Domain Integration (Week 3)
+
+**Cross-Application SSO**:
+
+1. **Domain Cookie Strategy**:
+
+   - Set authentication cookies for `.vedprakash.net` domain
+   - Enable SSO across all Vedprakash applications
+   - Implement proper token refresh across domain
+
+2. **User Context Synchronization**:
+   - Standardize user object across all domain applications
+   - Implement role-based access control (RBAC)
+   - Cross-application user preferences sync
+
+### Phase 4: Production Hardening (Week 4)
+
+**Security & Reliability**:
+
+1. **Token Management**:
+
+   - Implement secure token storage with encryption
+   - Automatic token refresh with fallback mechanisms
+   - Proper logout with session cleanup
+
+2. **Error Handling**:
+
+   - Graceful degradation for authentication failures
+   - User-friendly error messages
+   - Monitoring and alerting for auth issues
+
+3. **Testing Strategy**:
+   - Unit tests for MSAL configuration
+   - Integration tests for backend JWT validation
+   - E2E tests for complete authentication flow
+
+### Phase 5: Advanced Features (Week 5)
+
+**Enhanced User Experience**:
+
+1. **Silent Authentication**:
+
+   - Background token renewal
+   - Seamless re-authentication on app start
+   - Multi-tab synchronization
+
+2. **Role-Based Navigation**:
+   - Dynamic menu based on user roles
+   - Permission-based component rendering
+   - Administrative access controls
+
+### Success Metrics & Validation
+
+**Technical Validation**:
+
+- [ ] MSAL successfully initializes without browser storage errors
+- [ ] JWT tokens validated using JWKS from Microsoft
+- [ ] SSO works across .vedprakash.net domain
+- [ ] Authentication state persists across browser sessions
+- [ ] Role-based access control functions correctly
+
+**User Experience Validation**:
+
+- [ ] Single sign-on from any Vedprakash application
+- [ ] Seamless authentication flow without redirects
+- [ ] Proper error handling with user-friendly messages
+- [ ] Mobile authentication works with responsive design
+
+**Security Validation**:
+
+- [ ] All tokens validated against Microsoft JWKS endpoint
+- [ ] No local secrets used for production authentication
+- [ ] Proper logout clears all authentication state
+- [ ] Cross-domain security properly configured
+
+### Implementation Timeline
+
+- **Week 1**: Fix immediate MSAL configuration and remove auth conflicts
+- **Week 2**: Implement proper JWKS backend validation
+- **Week 3**: Enable domain-wide SSO integration
+- **Week 4**: Production hardening and comprehensive testing
+- **Week 5**: Advanced features and final validation
+
+**Estimated Completion**: 5 weeks with dedicated focus on authentication overhaul
+
+---
 
 ### 🎯 Production Readiness Checklist
 

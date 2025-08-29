@@ -26,9 +26,12 @@ export class JWTService implements IJWTService {
   constructor(config?: Partial<JWTConfig>) {
     this.config = { ...getJWTConfig(), ...config };
 
-    // Configure JWKS client for Microsoft Entra ID
-    const tenantId = process.env.AZURE_TENANT_ID || 'vedprakashmoutlook.onmicrosoft.com';
+    // CRITICAL FIX: Configure JWKS client for Microsoft Entra ID with correct tenant
+    const tenantId = process.env.AZURE_TENANT_ID || 'vedid.onmicrosoft.com';
     const jwksUri = `https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`;
+
+    console.log(`Configuring JWKS client for tenant: ${tenantId}`);
+    console.log(`JWKS URI: ${jwksUri}`);
 
     this.jwksClient = jwksClient({
       jwksUri,
@@ -110,12 +113,19 @@ export class JWTService implements IJWTService {
         const key = await this.jwksClient.getSigningKey(decodedToken.header.kid);
         const signingKey = key.getPublicKey();
 
-        // Validate Entra ID specific configuration
-        const expectedIssuer = `https://login.microsoftonline.com/${
-          process.env.AZURE_TENANT_ID || 'vedprakashmoutlook.onmicrosoft.com'
-        }/v2.0`;
-        const expectedAudience =
-          process.env.AZURE_CLIENT_ID || 'c5118183-d391-4a86-ad73-29162678a5f0';
+        // CRITICAL FIX: Validate Entra ID specific configuration with correct tenant
+        const tenantId = process.env.AZURE_TENANT_ID || 'vedid.onmicrosoft.com';
+        const expectedIssuer = `https://login.microsoftonline.com/${tenantId}/v2.0`;
+        const expectedAudience = process.env.AZURE_CLIENT_ID;
+
+        if (!expectedAudience) {
+          throw new Error(
+            'AZURE_CLIENT_ID environment variable is required for Entra ID token validation',
+          );
+        }
+
+        console.log(`Validating token with issuer: ${expectedIssuer}`);
+        console.log(`Expected audience: ${expectedAudience}`);
 
         const payload = jwt.verify(token, signingKey, {
           algorithms: ['RS256'],
