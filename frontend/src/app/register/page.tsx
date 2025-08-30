@@ -1,5 +1,40 @@
 'use client';
 
+// EMERGENCY BLOCK: Prevent any MSAL initialization on registration pages
+if (typeof window !== 'undefined') {
+  console.log('🚨 REGISTRATION PAGE: Blocking all MSAL initialization');
+
+  // Override MSAL modules at the global level
+  (window as any).__REGISTRATION_PAGE__ = true;
+  (window as any).__BLOCK_ALL_AUTH__ = true;
+
+  // Override localStorage and sessionStorage for MSAL keys
+  const originalSetItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (key, value) {
+    if (key.includes('msal') || key.includes('login') || key.includes('auth')) {
+      console.log('🚫 BLOCKED: Prevented MSAL storage operation:', key);
+      return;
+    }
+    return originalSetItem.call(this, key, value);
+  };
+
+  // Block any network requests to Microsoft login endpoints
+  if ('fetch' in window) {
+    const originalFetch = window.fetch;
+    window.fetch = function (...args) {
+      const url = args[0]?.toString() || '';
+      if (
+        url.includes('login.microsoftonline.com') ||
+        url.includes('microsoft')
+      ) {
+        console.log('🚫 BLOCKED: Prevented auth network request:', url);
+        return Promise.reject(new Error('Auth blocked on registration page'));
+      }
+      return originalFetch.apply(this, args);
+    };
+  }
+}
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
