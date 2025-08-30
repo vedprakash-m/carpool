@@ -47,7 +47,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       });
     } else {
       console.log(
-        '✅ SKIPPING AUTH - Correctly identified as registration/public page'
+        '✅ SKIPPING AUTH - Correctly identified as registration/public page - PATHNAME:',
+        pathname
       );
     }
   }, [initializeEntra, pathname]);
