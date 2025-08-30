@@ -29,25 +29,9 @@ export const FUNCTION_REGISTRY: FunctionDefinition[] = [
     phase: 'phase1',
   },
   {
-    name: 'auth-login-legacy',
-    implemented: true,
-    sourceDir: 'auth-login-legacy', // Root level of backend directory
-    description: 'Legacy authentication login system',
-    required: true,
-    phase: 'phase1',
-  },
-  {
-    name: 'auth-register-working',
-    implemented: true,
-    sourceDir: 'auth-register-working', // Root level of backend directory
-    description: 'Working user registration system',
-    required: true,
-    phase: 'phase1',
-  },
-  {
     name: 'auth-unified',
     implemented: true,
-    sourceDir: 'src/functions/auth-unified', // TypeScript source in src/functions
+    sourceDir: 'auth-unified', // Root level of backend directory
     description: 'Unified authentication endpoint (login, register, refresh)',
     required: true,
     phase: 'phase1',
