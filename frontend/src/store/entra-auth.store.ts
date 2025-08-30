@@ -43,7 +43,7 @@ interface EntraAuthState {
   account: AccountInfo | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  authMethod: 'entra' | 'legacy' | null;
+  authMethod: 'entra' | null;
   error: string | null;
 }
 
@@ -51,7 +51,6 @@ interface EntraAuthActions {
   initialize: () => Promise<void>;
   handleAuthRedirect: () => Promise<void>;
   loginWithEntra: () => Promise<void>;
-  loginWithLegacy: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   acquireTokenSilently: () => Promise<string | null>;
   checkAuthStatus: () => Promise<void>;
@@ -307,69 +306,14 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
     }
   },
 
-  loginWithLegacy: async (email: string, password: string) => {
-    try {
-      set({ isLoading: true, error: null });
-
-      const response = await apiClient.post<{
-        user: any;
-        token: string;
-        refreshToken: string;
-      }>('/auth-login-simple', {
-        email,
-        password,
-      });
-
-      if (response.success && response.data) {
-        // Convert legacy user to VedUser format
-        const legacyUser = response.data.user;
-        const vedUser: VedUser = {
-          id: legacyUser.id,
-          email: legacyUser.email,
-          name: `${legacyUser.firstName} ${legacyUser.lastName}`,
-          firstName: legacyUser.firstName,
-          lastName: legacyUser.lastName,
-          permissions: [], // Map from legacy role
-          vedProfile: {
-            phoneNumber: legacyUser.phoneNumber,
-            homeAddress: legacyUser.homeAddress,
-            emergencyContact: legacyUser.emergencyContact,
-            role: legacyUser.role,
-            preferences: legacyUser.preferences,
-            isActiveDriver: legacyUser.isActiveDriver,
-            travelSchedule: legacyUser.travelSchedule,
-          },
-        };
-
-        // Set token in API client
-        apiClient.setToken(response.data.token, response.data.refreshToken);
-
-        set({
-          vedUser,
-          isAuthenticated: true,
-          authMethod: 'legacy',
-          isLoading: false,
-        });
-      } else {
-        throw new Error(response.error || 'Legacy login failed');
-      }
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Login failed',
-        isLoading: false,
-      });
-      throw error;
-    }
-  },
-
   logout: async () => {
-    const { msalInstance, authMethod } = get();
+    const { msalInstance } = get();
 
     try {
       set({ isLoading: true });
 
-      // PHASE 3 ENHANCEMENT: Domain-wide logout with proper cleanup
-      if (authMethod === 'entra' && msalInstance) {
+      // Microsoft Entra ID logout with proper cleanup
+      if (msalInstance) {
         // Clear MSAL cache completely
         await msalInstance.clearCache();
 
@@ -380,9 +324,6 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         };
 
         await msalInstance.logoutRedirect(logoutRequest);
-      } else {
-        // Legacy logout
-        apiClient.clearToken();
       }
 
       // Clear domain-wide authentication state
@@ -401,6 +342,9 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
       } catch (cleanupError) {
         console.warn('Cleanup warning (non-blocking):', cleanupError);
       }
+
+      // Clear API client token
+      apiClient.clearToken();
 
       set({
         vedUser: null,

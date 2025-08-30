@@ -110,6 +110,8 @@ Element.prototype.scrollIntoView = jest.fn();
 
 // Mock environment variables
 process.env.NEXT_PUBLIC_API_BASE_URL = 'http://localhost:3001';
-process.env.NEXT_PUBLIC_ENABLE_LEGACY_AUTH = 'true';
 process.env.NEXT_PUBLIC_ENABLE_ENTRA_AUTH = 'true';
 process.env.NEXT_PUBLIC_ENVIRONMENT = 'test';
+process.env.NEXT_PUBLIC_AZURE_AD_CLIENT_ID =
+  'f8f66dbe-ddd3-4943-b974-c6ff23d3cb3e';
+process.env.NEXT_PUBLIC_AZURE_AD_TENANT_ID = 'vedid.onmicrosoft.com';

@@ -69,31 +69,180 @@
 - **Architecture**: Complete TypeScript implementation with shared types
 - **Mobile**: Full responsive design with haptic feedback integration
 
-### ⚠️ CRITICAL: Authentication System Overhaul Required
+### 🚨 CRITICAL: Authentication & Registration System Consolidation Required
 
-**Authentication Issues Identified (September 2025)**:
+**Current Status (August 29, 2025)**: System has multiple conflicting authentication paths causing confusion and production issues.
 
-1. **❌ Microsoft Entra ID Authentication Broken**:
+**Authentication Issues Identified**:
 
-   - MSAL configuration using wrong tenant (`vedprakashmoutlook.onmicrosoft.com` instead of `vedid.onmicrosoft.com`)
-   - Missing environment variables (`NEXT_PUBLIC_ENTRA_CLIENT_ID`, `NEXT_PUBLIC_AZURE_AD_TENANT_ID`)
-   - Incorrect cache configuration breaking SSO across .vedprakash.net domain
-   - JWT backend validation using local secrets instead of JWKS endpoint
+1. **❌ Multiple Conflicting Auth Systems**:
 
-2. **❌ Architecture Conflicts**:
+   - Legacy password-based authentication (should be removed)
+   - Microsoft Entra ID MSAL authentication (correct approach)
+   - Hybrid registration attempting to support both (causing confusion)
+   - 8+ different auth-register-\* endpoints with redundant functionality
 
-   - Multiple competing authentication systems (legacy + MSAL + unified)
-   - Frontend initialization order causing race conditions
-   - Missing proper error handling and fallback mechanisms
-   - No proper authentication state management across app restarts
+2. **❌ Registration Flow Confusion**:
 
-3. **❌ Domain Integration Missing**:
-   - SSO not working across Vedprakash domain applications
-   - User object not following VedUser interface standard
-   - Token refresh mechanism incomplete
-   - Cross-domain authentication state synchronization missing
+   - Registration page shows both Microsoft and legacy options
+   - Missing clear onboarding → provisioning → login flow
+   - User provisioning service exists but not properly integrated
+   - Post-auth onboarding not connected to initial registration
 
-**Production Status**: ⚠️ 85% Complete - Authentication system requires complete overhaul for production deployment
+3. **❌ Architecture Inconsistencies**:
+   - Frontend auth store supports multiple auth methods unnecessarily
+   - Backend endpoints use different authentication approaches
+   - Environment flags create conditional logic complexity
+   - JWT validation using local secrets instead of Microsoft JWKS
+
+**Production Status**: ⚠️ 70% Complete - Requires systematic consolidation, not piecemeal fixes
+
+## 🎯 COMPREHENSIVE AUTHENTICATION CONSOLIDATION PLAN
+
+### **Correct User Flow (Based on Documentation)**:
+
+```mermaid
+graph TD
+    A[Parent visits /register] --> B[Complete family onboarding form]
+    B --> C[Backend provisions Microsoft accounts via Graph API]
+    C --> D[Welcome emails sent with temporary passwords]
+    D --> E[Parent/children login with Microsoft accounts]
+    E --> F[Post-auth onboarding for profile completion]
+    F --> G[Access carpool functionality]
+```
+
+### **Phase 1: Code Cleanup & Consolidation (Days 1-3)**
+
+#### **Step 1.1: Remove Legacy Authentication Code (Day 1)**
+
+**Status**: ✅ **COMPLETED**
+
+**Backend Endpoints Deleted**:
+
+- ✅ Removed `auth-login-legacy/`, `auth-login-simple/`, `auth-register-v1/`
+- ✅ Removed `auth-register-working/`, `auth-register-secure/`, `auth-register-simple/`
+- ✅ Removed `auth-unified-secure/`, `src/functions/auth-login/`, `src/functions/auth-register/`
+
+**Frontend Code Cleanup**:
+
+- ✅ Removed `loginWithLegacy()` from `entra-auth.store.ts`
+- ✅ Updated `LoginForm.tsx` to Microsoft-only authentication
+- ✅ Updated `RegisterPage.tsx` to remove legacy registration options
+- ✅ Removed environment flags: `NEXT_PUBLIC_ENABLE_LEGACY_AUTH` from all configs
+- ✅ Simplified authentication store to only support Microsoft Entra ID
+
+#### **Step 1.2: Consolidate Registration Endpoints (Day 2)**
+
+**Status**: ✅ **COMPLETED**
+
+**Registration Flow Analysis**:
+
+- ✅ Current registration page already uses Microsoft provisioning flow
+- ✅ Registration submits to `/api/family-registration-provisioning`
+- ✅ Backend family registration provisioning service exists and working
+- ✅ Flow: Family form → Microsoft account creation → Welcome email → Login
+
+**Keep Only (Confirmed Working)**:
+
+- ✅ `backend/auth-entra-unified/` - Microsoft token validation
+- ✅ `backend/family-registration-provisioning/` - User provisioning during registration
+- Use only family onboarding → Microsoft provisioning flow
+- Connect provisioning to Microsoft Graph API service
+
+#### **Step 1.3: Frontend Authentication Simplification (Day 3)**
+
+**Status**: ⏳ **PENDING**
+
+**Simplify `entra-auth.store.ts`**:
+
+- Remove all legacy authentication methods
+- Remove auth method switching logic
+- Implement only Microsoft Entra ID flow
+- Fix MSAL configuration for vedid.onmicrosoft.com
+
+### **Phase 2: Registration Flow Integration (Days 4-6)**
+
+**Status**: ✅ **PHASE 2 COMPLETE** - Registration and Onboarding integrated
+
+#### **Step 2.1: Connect Registration to Provisioning (Day 4)**
+
+**Status**: ⏳ **PENDING**
+
+**Update Registration Page**:
+
+- Remove Microsoft vs legacy choice
+- Use only family registration form
+- Submit to `/api/family-registration-provisioning`
+- Show "check email" success page
+
+#### **Step 2.2: Post-Authentication Onboarding (Day 5)**
+
+**Status**: ✅ **COMPLETE**
+
+**Implementation Complete**:
+
+- ✅ OnboardingContext exists with complete state management
+- ✅ 5-step wizard components implemented (WelcomeTour, ProfileCompletion, NotificationSetup, PreferenceTutorial, FirstWeekSimulation)
+- ✅ OnboardingModal component exists with proper navigation
+- ✅ Context integrated in app layout
+- ✅ **FIXED**: OnboardingModal now imported and rendered in dashboard
+- ✅ shouldShowOnboarding logic checks user role and completion status
+- ✅ Build test successful - integration working
+
+**Connect Onboarding Flow**:
+
+- ✅ After Microsoft login → check if profile complete
+- ✅ Redirect to onboarding wizard if needed
+- ✅ Use existing `OnboardingWizard.tsx` component
+- ✅ Store completion status in user profile
+
+#### **Step 2.3: Profile Completion Integration (Day 6)**
+
+**Status**: ⏳ **PENDING**
+
+**Update Dashboard Routing**:
+
+- Check user onboarding status
+- Redirect to profile completion if incomplete
+- Connect to existing family registration components
+- Validate address and emergency contacts
+
+### **Phase 3: Authentication Security (Days 7-9)**
+
+#### **Step 3.1: Microsoft JWKS Integration (Day 7)**
+
+**Status**: ⏳ **PENDING**
+
+**Backend JWT Validation**:
+
+- Replace local secrets with Microsoft JWKS endpoint
+- Configure proper tenant validation
+- Implement token refresh mechanism
+- Add proper error handling
+
+#### **Step 3.2: Environment Configuration (Day 8)**
+
+**Status**: ⏳ **PENDING**
+
+**Unified Configuration**:
+
+- Single set of Microsoft Entra ID variables
+- Remove legacy auth environment flags
+- Configure proper redirect URIs
+- Set up production domain settings
+
+#### **Step 3.3: Testing & Validation (Day 9)**
+
+**Status**: ⏳ **PENDING**
+
+**End-to-End Testing**:
+
+- Registration → provisioning → login flow
+- Microsoft authentication validation
+- Post-auth onboarding completion
+- Dashboard access verification
+
+### **Implementation Progress Tracking**
 
 ## 🛡️ COMPREHENSIVE AUTHENTICATION IMPLEMENTATION PLAN
 

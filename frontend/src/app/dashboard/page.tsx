@@ -4,6 +4,7 @@ import { useEffect, memo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
+import OnboardingModal from '@/components/onboarding/OnboardingModal';
 import { useAuthStore } from '@/store/auth.store';
 import { useTripStore } from '@/store/trip.store';
 import {
@@ -70,6 +71,9 @@ export default memo(function DashboardPage() {
 
   return (
     <DashboardLayout>
+      {/* Onboarding Modal - renders conditionally based on onboarding state */}
+      <OnboardingModal />
+
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">

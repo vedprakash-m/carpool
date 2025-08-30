@@ -40,9 +40,7 @@ const nextConfig = {
         : 'http://localhost:7071/api'),
     NEXT_PUBLIC_ENV: process.env.NODE_ENV,
 
-    // Authentication configuration - explicitly include these
-    NEXT_PUBLIC_ENABLE_LEGACY_AUTH:
-      process.env.NEXT_PUBLIC_ENABLE_LEGACY_AUTH || 'true',
+    // Authentication configuration - Microsoft Entra ID Only
     NEXT_PUBLIC_ENABLE_ENTRA_AUTH:
       process.env.NEXT_PUBLIC_ENABLE_ENTRA_AUTH || 'true',
     NEXT_PUBLIC_BASE_URL:
@@ -52,10 +50,10 @@ const nextConfig = {
       'https://carpool.vedprakash.net/api',
     NEXT_PUBLIC_ENTRA_CLIENT_ID:
       process.env.NEXT_PUBLIC_ENTRA_CLIENT_ID ||
-      'c5118183-d391-4a86-ad73-29162678a5f0',
+      'f8f66dbe-ddd3-4943-b974-c6ff23d3cb3e',
     NEXT_PUBLIC_ENTRA_AUTHORITY:
       process.env.NEXT_PUBLIC_ENTRA_AUTHORITY ||
-      'https://login.microsoftonline.com/vedprakashmoutlook.onmicrosoft.com',
+      'https://login.microsoftonline.com/vedid.onmicrosoft.com',
   },
 
   experimental: {

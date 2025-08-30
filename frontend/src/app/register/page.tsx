@@ -65,11 +65,6 @@ export default function RegisterPage() {
   const register = useAuthStore(state => state.register);
   const isLoading = useAuthStore(state => state.isLoading);
 
-  // Entra ID authentication
-  const { loginWithEntra, isLoading: entraLoading } = useEntraAuthStore();
-  const isEntraEnabled = process.env.NEXT_PUBLIC_ENABLE_ENTRA_AUTH === 'true';
-  const isLegacyEnabled = process.env.NEXT_PUBLIC_ENABLE_LEGACY_AUTH === 'true';
-
   const [currentStep, setCurrentStep] = useState(1);
   const [addressValidated, setAddressValidated] = useState(false);
 
@@ -183,32 +178,52 @@ export default function RegisterPage() {
         return;
       }
 
-      // Note: Address validation is handled by the AddressValidation component
-      // The actual geographic validation happens during the address validation step
-
-      console.log('Submitting registration data:', data);
-      await register(data);
-      toast.success('Account created successfully!');
-      router.push('/dashboard');
+      // Use the new provisioning flow instead of legacy registration
+      await handleProvisioningSignup(data);
     } catch (error: any) {
       console.error('Registration error:', error);
       toast.error(error.message || 'Registration failed. Please try again.');
     }
   };
 
-  const handleEntraSignup = async () => {
+  const handleProvisioningSignup = async (data: RegisterRequest) => {
     try {
-      await loginWithEntra();
-      // Success will be handled by the redirect in the auth store
-    } catch (error: any) {
-      console.error('Microsoft signup error:', error);
+      // Submit family registration for Microsoft account provisioning
+      const response = await fetch('/api/family-registration-provisioning', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          familyName: `${data.parent.firstName} ${data.parent.lastName} Family`,
+          parent: data.parent,
+          homeAddress: data.homeAddress,
+          children: data.children,
+          emergencyContact: {
+            name: 'Emergency Contact', // You might want to collect this
+            phone: data.parent.email, // Placeholder
+            relationship: 'Parent',
+          },
+        }),
+      });
 
-      // Don't show error for interaction_in_progress as it's handled automatically
-      if (error?.errorCode !== 'interaction_in_progress') {
-        toast.error(
-          error.message || 'Microsoft signup failed. Please try again.'
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success(
+          'Account provisioned! Check your email for login instructions.'
         );
+
+        // Show provisioning success page with login instructions
+        router.push(`/registration-complete?familyId=${result.familyId}`);
+      } else {
+        throw new Error(result.message);
       }
+    } catch (error: any) {
+      console.error('Account provisioning error:', error);
+      toast.error(
+        error.message || 'Account provisioning failed. Please try again.'
+      );
     }
   };
 
@@ -223,66 +238,16 @@ export default function RegisterPage() {
             <UsersIcon className="h-12 w-12 text-primary-600" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isEntraEnabled && !isLegacyEnabled
-              ? 'Join Carpool with Microsoft'
-              : 'Join Carpool as a Family'}
+            Join Carpool as a Family
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {isEntraEnabled && !isLegacyEnabled ? (
-              'Use your Microsoft account to get started'
-            ) : (
-              <>
-                Already have an account?{' '}
-                <Link
-                  href="/login"
-                  className="font-medium text-primary-600 hover:text-primary-500"
-                >
-                  Sign in
-                </Link>
-              </>
-            )}
+            Complete your family registration to get Microsoft accounts for
+            carpool access
           </p>
         </div>
 
-        {/* Microsoft Sign Up Button */}
-        {isEntraEnabled && (
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={handleEntraSignup}
-              disabled={entraLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              data-testid="microsoft-signup-button"
-            >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 21 21">
-                <rect x="1" y="1" width="9" height="9" fill="#f25022" />
-                <rect x="12" y="1" width="9" height="9" fill="#00a4ef" />
-                <rect x="1" y="12" width="9" height="9" fill="#7fba00" />
-                <rect x="12" y="12" width="9" height="9" fill="#ffb900" />
-              </svg>
-              {entraLoading ? 'Signing up...' : 'Continue with Microsoft'}
-            </button>
-          </div>
-        )}
-
-        {/* Divider */}
-        {isEntraEnabled && isLegacyEnabled && (
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-50 text-gray-500">
-                  Or create account with email
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Traditional Registration Form */}
-        {isLegacyEnabled && (
+        {/* Family Registration Form */}
+        <div className="mt-8">
           <form
             className="mt-8 space-y-6"
             onSubmit={handleSubmit(onSubmit)}
@@ -676,7 +641,7 @@ export default function RegisterPage() {
               </section>
             )}
           </form>
-        )}
+        </div>
       </div>
     </div>
   );
