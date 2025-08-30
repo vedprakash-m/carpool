@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MSAL Debug Test</title>
+    <script src="https://alcdn.msauth.net/browser/2.41.0/js/msal-browser.min.js"></script>
+  </head>
+  <body>
+    <h1>MSAL Configuration Test</h1>
+    <button onclick="testMSAL()">Test Microsoft Login</button>
+    <div id="output"></div>
+
+    <script>
+      const msalConfig = {
+        auth: {
+          clientId: 'c5118183-d391-4a86-ad73-29162678a5f0',
+          authority: 'https://login.microsoftonline.com/vedid.onmicrosoft.com',
+          redirectUri: window.location.origin + '/debug-msal.html',
+        },
+        cache: {
+          cacheLocation: 'localStorage',
+          storeAuthStateInCookie: true,
+        },
+      };
+
+      const loginRequest = {
+        scopes: ['openid', 'profile', 'email'],
+      };
+
+      let msalInstance;
+
+      async function initializeMSAL() {
+        try {
+          msalInstance = new msal.PublicClientApplication(msalConfig);
+          await msalInstance.initialize();
+          document.getElementById('output').innerHTML +=
+            '<p>✅ MSAL initialized successfully</p>';
+
+          // Check for redirect response
+          const response = await msalInstance.handleRedirectPromise();
+          if (response) {
+            document.getElementById('output').innerHTML +=
+              '<p>✅ Login successful!</p>';
+            document.getElementById('output').innerHTML +=
+              '<pre>' + JSON.stringify(response, null, 2) + '</pre>';
+          }
+        } catch (error) {
+          document.getElementById('output').innerHTML +=
+            '<p>❌ MSAL initialization failed: ' + error.message + '</p>';
+        }
+      }
+
+      async function testMSAL() {
+        try {
+          document.getElementById('output').innerHTML +=
+            '<p>🔐 Starting login redirect...</p>';
+          await msalInstance.loginRedirect(loginRequest);
+        } catch (error) {
+          document.getElementById('output').innerHTML +=
+            '<p>❌ Login failed: ' + error.message + '</p>';
+          console.error('Login error:', error);
+        }
+      }
+
+      // Initialize on page load
+      initializeMSAL();
+    </script>
+  </body>
+</html>

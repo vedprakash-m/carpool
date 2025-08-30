@@ -34,7 +34,7 @@ const msalConfig = {
 };
 
 const loginRequest = {
-  scopes: ['openid', 'profile', 'email'],
+  scopes: ['User.Read'], // Start with just basic Microsoft Graph scope
 };
 
 interface EntraAuthState {
@@ -85,6 +85,11 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
       console.log('Initializing MSAL...');
       console.log('Current URL:', window.location.href);
       console.log('URL hash:', window.location.hash);
+      console.log('MSAL Config:', {
+        clientId: msalConfig.auth.clientId,
+        authority: msalConfig.auth.authority,
+        redirectUri: msalConfig.auth.redirectUri,
+      });
 
       const msalInstance = new PublicClientApplication(msalConfig);
       await msalInstance.initialize();
@@ -251,23 +256,22 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      // Check if interaction is already in progress
-      const inProgress =
-        msalInstance.getActiveAccount() !== null &&
-        msalInstance.getAllAccounts().length > 0;
+      console.log('🔐 Starting Microsoft authentication...');
 
-      if (inProgress) {
-        console.log(
-          'Authentication interaction already in progress, skipping...'
-        );
-        set({ isLoading: false });
-        return;
-      }
-
-      // Check if there's an ongoing interaction
+      // Debug current state
+      const allAccounts = msalInstance.getAllAccounts();
       const activeAccount = msalInstance.getActiveAccount();
-      if (activeAccount) {
-        console.log('Active account found, redirecting to dashboard...');
+      console.log('📊 MSAL State:', {
+        allAccountsCount: allAccounts.length,
+        hasActiveAccount: !!activeAccount,
+        activeAccountId: activeAccount?.localAccountId || 'none',
+      });
+
+      // If user is already authenticated, redirect to dashboard
+      if (activeAccount && allAccounts.length > 0) {
+        console.log(
+          '✅ User already authenticated, redirecting to dashboard...'
+        );
         set({
           account: activeAccount,
           isAuthenticated: true,
@@ -278,41 +282,25 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         return;
       }
 
-      console.log('Starting new authentication flow...');
+      console.log('🚀 Starting Microsoft redirect...');
 
-      // Perform interactive login
+      // Start the login redirect - this should navigate to Microsoft
       await msalInstance.loginRedirect(loginRequest);
 
-      // The redirect will reload the page, so this won't execute
-      // The auth status will be checked on page load via checkAuthStatus
+      console.log(
+        '⚠️ loginRedirect completed - this should not be reached if redirect worked'
+      );
     } catch (error: any) {
-      console.error('Entra login failed:', error);
-
-      // Handle specific MSAL errors
-      if (error?.errorCode === 'interaction_in_progress') {
-        console.log(
-          'Interaction already in progress, clearing state and retrying...'
-        );
-        get().clearInteractionState();
-
-        // Try again after a short delay
-        setTimeout(async () => {
-          try {
-            await msalInstance.loginRedirect(loginRequest);
-          } catch (retryError: any) {
-            console.error('Retry login failed:', retryError);
-            set({
-              error:
-                'Microsoft sign-in failed. Please refresh the page and try again.',
-              isLoading: false,
-            });
-          }
-        }, 1000);
-        return;
-      }
+      console.error('❌ Microsoft login failed:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        errorCode: error.errorCode,
+        errorDesc: error.errorDesc,
+      });
 
       set({
-        error: 'Microsoft sign-in failed. Please try again.',
+        error: `Microsoft sign-in failed: ${error.message || 'Unknown error'}`,
         isLoading: false,
       });
       throw error;
