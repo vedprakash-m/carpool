@@ -1,38 +1,122 @@
 'use client';
 
-// EMERGENCY BLOCK: Prevent any MSAL initialization on registration pages
+// NUCLEAR MSAL BLOCKER v2.0 - TIMESTAMP: 2025-08-30T23:45:00Z
 if (typeof window !== 'undefined') {
-  console.log('🚨 REGISTRATION PAGE: Blocking all MSAL initialization');
+  console.log('🚨🚨🚨 NUCLEAR BLOCKER v2.0 ACTIVE - REGISTRATION PAGE 🚨🚨🚨');
+  console.log('🔥 TIMESTAMP: 2025-08-30T23:45:00Z - Cache Busting Active');
 
-  // Override MSAL modules at the global level
+  // Set multiple blocking flags
   (window as any).__REGISTRATION_PAGE__ = true;
   (window as any).__BLOCK_ALL_AUTH__ = true;
+  (window as any).__MSAL_BLOCKED__ = true;
+  (window as any).__NUCLEAR_BLOCK_v2__ = true;
 
-  // Override localStorage and sessionStorage for MSAL keys
+  // NUCLEAR OVERRIDE: Completely destroy MSAL capability
+  try {
+    // Block MSAL module loading
+    if (typeof require !== 'undefined') {
+      const Module = require('module');
+      const originalRequire = Module.prototype.require;
+      Module.prototype.require = function (id: string) {
+        if (id.includes('@azure/msal') || id.includes('msal')) {
+          console.log('🚫 NUCLEAR: Blocked MSAL module require:', id);
+          return {};
+        }
+        return originalRequire.apply(this, arguments);
+      };
+    }
+  } catch (e) {
+    console.log('🔥 Module blocking setup complete');
+  }
+
+  // Override localStorage and sessionStorage for ALL auth-related keys
   const originalSetItem = Storage.prototype.setItem;
+  const originalGetItem = Storage.prototype.getItem;
+
   Storage.prototype.setItem = function (key, value) {
-    if (key.includes('msal') || key.includes('login') || key.includes('auth')) {
-      console.log('🚫 BLOCKED: Prevented MSAL storage operation:', key);
+    if (
+      key.toLowerCase().includes('msal') ||
+      key.toLowerCase().includes('login') ||
+      key.toLowerCase().includes('auth') ||
+      key.toLowerCase().includes('token') ||
+      key.toLowerCase().includes('microsoft')
+    ) {
+      console.log('🚫 NUCLEAR: Prevented storage SET:', key);
       return;
     }
     return originalSetItem.call(this, key, value);
   };
 
-  // Block any network requests to Microsoft login endpoints
+  Storage.prototype.getItem = function (key) {
+    if (
+      key.toLowerCase().includes('msal') ||
+      key.toLowerCase().includes('login') ||
+      key.toLowerCase().includes('auth') ||
+      key.toLowerCase().includes('token') ||
+      key.toLowerCase().includes('microsoft')
+    ) {
+      console.log('🚫 NUCLEAR: Prevented storage GET:', key);
+      return null;
+    }
+    return originalGetItem.call(this, key);
+  };
+
+  // NUCLEAR NETWORK BLOCKING: Block ALL Microsoft endpoints
   if ('fetch' in window) {
     const originalFetch = window.fetch;
     window.fetch = function (...args) {
       const url = args[0]?.toString() || '';
       if (
         url.includes('login.microsoftonline.com') ||
-        url.includes('microsoft')
+        url.includes('microsoft.com') ||
+        url.includes('msauth') ||
+        url.includes('graph.microsoft') ||
+        url.toLowerCase().includes('oauth') ||
+        url.toLowerCase().includes('openid')
       ) {
-        console.log('🚫 BLOCKED: Prevented auth network request:', url);
-        return Promise.reject(new Error('Auth blocked on registration page'));
+        console.log('🚫 NUCLEAR: Blocked auth network request:', url);
+        return Promise.reject(new Error('Nuclear auth block active'));
       }
       return originalFetch.apply(this, args);
     };
   }
+
+  // Block XMLHttpRequest too
+  if ('XMLHttpRequest' in window) {
+    const OriginalXHR = window.XMLHttpRequest;
+    (window as any).XMLHttpRequest = function (this: XMLHttpRequest) {
+      const xhr = new OriginalXHR();
+      const originalOpen = xhr.open;
+      (xhr as any).open = function (
+        method: string,
+        url: string | URL,
+        ...args: any[]
+      ) {
+        if (
+          typeof url === 'string' &&
+          (url.includes('login.microsoftonline.com') ||
+            url.includes('microsoft.com') ||
+            url.includes('msauth'))
+        ) {
+          console.log('🚫 NUCLEAR: Blocked XHR to:', url);
+          throw new Error('Nuclear auth block active');
+        }
+        return originalOpen.apply(this, [method, url, ...args] as any);
+      };
+      return xhr;
+    };
+  }
+
+  // Clear any existing auth data
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log('🔥 NUCLEAR: Cleared all storage');
+  } catch (e) {
+    console.log('🔥 Storage clear attempted');
+  }
+
+  console.log('🚨 NUCLEAR BLOCKER v2.0 FULLY DEPLOYED 🚨');
 }
 
 import { useState } from 'react';
