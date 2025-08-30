@@ -1,24 +1,37 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useEntraAuthStore } from '@/store/entra-auth.store';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { Toaster } from 'react-hot-toast';
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   // AUTHENTICATION REMEDIATION: Single source of truth - Only Entra Auth
   const initializeEntra = useEntraAuthStore(state => state.initialize);
 
   useEffect(() => {
     console.log('Providers useEffect running...');
-    console.log('Starting Entra ID Authentication initialization...');
 
+    // DON'T initialize auth on registration page - users should see forms first
+    const isRegistrationPage =
+      pathname === '/register' || pathname?.startsWith('/register/');
+    const isPublicPage =
+      pathname === '/login' || pathname === '/forgot-password';
+
+    if (isRegistrationPage || isPublicPage) {
+      console.log(`Skipping auth initialization on ${pathname} - public page`);
+      return;
+    }
+
+    console.log('Starting Entra ID Authentication initialization...');
     // CRITICAL FIX: Only initialize Entra ID authentication to prevent conflicts
     initializeEntra().catch(error => {
       console.error('Failed to initialize Entra authentication:', error);
     });
-  }, [initializeEntra]);
+  }, [initializeEntra, pathname]);
 
   return (
     <ErrorBoundary>

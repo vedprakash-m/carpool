@@ -9,7 +9,6 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { RegisterRequest } from '@/types/shared';
 import { useAuthStore } from '@/store/auth.store';
-import { useEntraAuthStore } from '@/store/entra-auth.store';
 import {
   SchoolSelect,
   GradeSelect,
