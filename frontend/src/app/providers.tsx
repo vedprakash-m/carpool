@@ -14,6 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     console.log('Providers useEffect running...');
+    console.log('Current pathname:', pathname);
 
     // DON'T initialize auth on registration page - users should see forms first
     const isRegistrationPage =
@@ -21,12 +22,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const isPublicPage =
       pathname === '/login' || pathname === '/forgot-password';
 
+    console.log('Is registration page:', isRegistrationPage);
+    console.log('Is public page:', isPublicPage);
+
     if (isRegistrationPage || isPublicPage) {
-      console.log(`Skipping auth initialization on ${pathname} - public page`);
+      console.log(
+        `✅ Skipping auth initialization on ${pathname} - public page`
+      );
       return;
     }
 
-    console.log('Starting Entra ID Authentication initialization...');
+    console.log('🔑 Starting Entra ID Authentication initialization...');
     // CRITICAL FIX: Only initialize Entra ID authentication to prevent conflicts
     initializeEntra().catch(error => {
       console.error('Failed to initialize Entra authentication:', error);
