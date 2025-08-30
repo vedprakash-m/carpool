@@ -7,6 +7,18 @@ import {
 import { VedUser } from '@carpool/shared';
 import { apiClient } from '../lib/api-client';
 
+// EMERGENCY: Block MSAL entirely on registration pages
+if (typeof window !== 'undefined') {
+  const pathname = window.location.pathname;
+  if (pathname === '/register' || pathname.startsWith('/register/')) {
+    console.log(
+      '🚨 EMERGENCY BLOCK: Preventing MSAL module loading on registration page'
+    );
+    // Override the MSAL module to prevent any initialization
+    (window as any).__MSAL_BLOCKED__ = true;
+  }
+}
+
 // MSAL Configuration following Apps_Auth_Requirement.md - CORRECTED
 const msalConfig = {
   auth: {
@@ -73,6 +85,13 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
   // Actions
   initialize: async () => {
     try {
+      // EMERGENCY BLOCK: Respect global MSAL block
+      if ((window as any).__MSAL_BLOCKED__) {
+        console.log('🚨 EMERGENCY: MSAL initialization blocked by global flag');
+        set({ isLoading: false });
+        return;
+      }
+
       // CRITICAL SAFEGUARD: Never initialize auth on registration pages
       if (typeof window !== 'undefined') {
         const pathname = window.location.pathname;
