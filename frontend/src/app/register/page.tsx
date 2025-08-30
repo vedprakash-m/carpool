@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { RegisterRequest } from '@/types/shared';
-import { useAuthStore } from '@/store/auth.store';
+import { apiClient } from '@/lib/api-client';
 import {
   SchoolSelect,
   GradeSelect,
@@ -61,8 +61,8 @@ const registerSchema = z.object({
 
 export default function RegisterPage() {
   const router = useRouter();
-  const register = useAuthStore(state => state.register);
-  const isLoading = useAuthStore(state => state.isLoading);
+  // Direct registration without authentication store dependency
+  const [isLoading, setIsLoading] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [addressValidated, setAddressValidated] = useState(false);

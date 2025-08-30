@@ -13,6 +13,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const initializeEntra = useEntraAuthStore(state => state.initialize);
 
   useEffect(() => {
+    console.log('🔍 DEBUG - Providers useEffect running...');
+    console.log('🔍 DEBUG - Current pathname:', pathname);
+
     // CRITICAL FIX: Completely disable authentication on registration flow
     // Registration pages should show forms, not authentication prompts
     const isRegistrationFlow =
@@ -27,16 +30,27 @@ export function Providers({ children }: { children: React.ReactNode }) {
       pathname === '/' ||
       pathname?.startsWith('/about');
 
+    console.log('🔍 DEBUG - Is registration flow:', isRegistrationFlow);
+    console.log('🔍 DEBUG - Is public page:', isPublicPage);
+
     // Only initialize authentication for authenticated app areas
     const shouldInitializeAuth = !isRegistrationFlow && !isPublicPage;
 
+    console.log('🔍 DEBUG - Should initialize auth:', shouldInitializeAuth);
+
     if (shouldInitializeAuth) {
+      console.log(
+        '🔑 INITIALIZING AUTH - This should NOT happen on registration pages'
+      );
       initializeEntra().catch(error => {
         console.error('Failed to initialize Entra authentication:', error);
       });
+    } else {
+      console.log(
+        '✅ SKIPPING AUTH - Correctly identified as registration/public page'
+      );
     }
   }, [initializeEntra, pathname]);
-
   return (
     <ErrorBoundary>
       <NotificationProvider>
