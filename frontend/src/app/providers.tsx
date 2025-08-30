@@ -13,30 +13,28 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const initializeEntra = useEntraAuthStore(state => state.initialize);
 
   useEffect(() => {
-    console.log('Providers useEffect running...');
-    console.log('Current pathname:', pathname);
+    // CRITICAL FIX: Completely disable authentication on registration flow
+    // Registration pages should show forms, not authentication prompts
+    const isRegistrationFlow =
+      pathname === '/register' ||
+      pathname?.startsWith('/register/') ||
+      pathname === '/registration-complete' ||
+      pathname?.startsWith('/registration-complete');
 
-    // DON'T initialize auth on registration page - users should see forms first
-    const isRegistrationPage =
-      pathname === '/register' || pathname?.startsWith('/register/');
     const isPublicPage =
-      pathname === '/login' || pathname === '/forgot-password';
+      pathname === '/login' ||
+      pathname === '/forgot-password' ||
+      pathname === '/' ||
+      pathname?.startsWith('/about');
 
-    console.log('Is registration page:', isRegistrationPage);
-    console.log('Is public page:', isPublicPage);
+    // Only initialize authentication for authenticated app areas
+    const shouldInitializeAuth = !isRegistrationFlow && !isPublicPage;
 
-    if (isRegistrationPage || isPublicPage) {
-      console.log(
-        `✅ Skipping auth initialization on ${pathname} - public page`
-      );
-      return;
+    if (shouldInitializeAuth) {
+      initializeEntra().catch(error => {
+        console.error('Failed to initialize Entra authentication:', error);
+      });
     }
-
-    console.log('🔑 Starting Entra ID Authentication initialization...');
-    // CRITICAL FIX: Only initialize Entra ID authentication to prevent conflicts
-    initializeEntra().catch(error => {
-      console.error('Failed to initialize Entra authentication:', error);
-    });
   }, [initializeEntra, pathname]);
 
   return (
