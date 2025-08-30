@@ -52,6 +52,8 @@ export class CorsMiddleware {
       'X-Frame-Options': 'DENY',
       'X-XSS-Protection': '1; mode=block',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Content-Security-Policy':
+        "default-src 'self'; connect-src 'self' https://graph.microsoft.com https://login.microsoftonline.com https://*.login.microsoftonline.com https://*.azurewebsites.net https://*.azure.com; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self';",
     };
 
     // Handle origins
