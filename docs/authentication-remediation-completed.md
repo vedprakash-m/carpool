@@ -11,7 +11,7 @@
 
    - Updated `frontend/.env.local` with correct production URLs
    - Fixed tenant from `vedprakashmoutlook.onmicrosoft.com` to `vedid.onmicrosoft.com`
-   - Added production URLs: `https://vimarsh.vedprakash.net`
+   - Added production URLs: `https://carpool.vedprakash.net`
    - Backend API: `https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api`
 
 2. **MSAL Configuration Fix** ✅
@@ -19,7 +19,7 @@
    - Changed cache from `sessionStorage` to `localStorage` for SSO
    - Added `storeAuthStateInCookie: true` for Safari compatibility
    - Fixed authority URL to use correct tenant
-   - Proper redirect URI: `https://vimarsh.vedprakash.net/auth/callback`
+   - Proper redirect URI: `https://carpool.vedprakash.net/auth/callback`
 
 3. **Remove Conflicting Auth Systems** ✅
    - Removed legacy auth imports from `providers.tsx`
@@ -75,7 +75,7 @@
 ### Production URL Configuration
 
 1. **All Production URLs Updated** ✅
-   - Frontend: `https://vimarsh.vedprakash.net`
+   - Frontend: `https://carpool.vedprakash.net`
    - Backend: `https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api`
    - Database: `https://carpool-db-manual.documents.azure.com:443/`
    - CORS origins updated in all configuration files
@@ -89,8 +89,8 @@ NEXT_PUBLIC_API_BASE_URL=https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azu
 NEXT_PUBLIC_AZURE_AD_CLIENT_ID=your-azure-client-id-here
 NEXT_PUBLIC_AZURE_AD_TENANT_ID=vedid.onmicrosoft.com
 NEXT_PUBLIC_AZURE_AD_AUTHORITY=https://login.microsoftonline.com/vedid.onmicrosoft.com
-NEXT_PUBLIC_REDIRECT_URI=https://vimarsh.vedprakash.net/auth/callback
-NEXT_PUBLIC_APP_BASE_URL=https://vimarsh.vedprakash.net
+NEXT_PUBLIC_REDIRECT_URI=https://carpool.vedprakash.net/auth/callback
+NEXT_PUBLIC_APP_BASE_URL=https://carpool.vedprakash.net
 ```
 
 ### Backend Configuration (`backend/.env`)
@@ -98,7 +98,7 @@ NEXT_PUBLIC_APP_BASE_URL=https://vimarsh.vedprakash.net
 ```env
 AZURE_CLIENT_ID=your-azure-client-id-here
 AZURE_TENANT_ID=vedid.onmicrosoft.com
-CORS_ORIGINS=https://vimarsh.vedprakash.net,https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net,http://localhost:3000,http://localhost:7071
+CORS_ORIGINS=https://carpool.vedprakash.net,https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net,http://localhost:3000,http://localhost:7071
 ```
 
 ### Database Configuration (Root `.env`)

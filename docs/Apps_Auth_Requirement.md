@@ -1,4 +1,5 @@
 # Vedprakash Domain Authentication Requirements
+
 ## Microsoft Entra ID Integration Standards
 
 **Document Purpose**: High-level authentication requirements for any Vedprakash domain application.
@@ -29,41 +30,46 @@
 
 The Vedprakash domain currently operates **five independent applications** with **five different authentication systems**:
 
-| Application | Current Auth System | Issues |
-|-------------|-------------------|---------|
-| **Sutra (sutra.vedprakash.net)** | Firebase Authentication | Isolated user base, no cross-app integration |
-| **Vimarsh (vimarsh.vedprakash.net)** | Supabase Authentication | Separate user accounts, manual user management |
-| **Vigor (vigor.vedprakash.net)** | Custom JWT System | Security maintenance overhead, no SSO |
-| **Pathfinder (pathfinder.vedprakash.net)** | Auth0 + Entra ID | Mixed systems, complexity and cost |
-| **Carpool (carpool.vedprakash.net)** | Custom JWT System | Duplicated effort, security concerns |
+| Application                                | Current Auth System     | Issues                                         |
+| ------------------------------------------ | ----------------------- | ---------------------------------------------- |
+| **Sutra (sutra.vedprakash.net)**           | Firebase Authentication | Isolated user base, no cross-app integration   |
+| **Carpool (carpool.vedprakash.net)**       | Supabase Authentication | Separate user accounts, manual user management |
+| **Vigor (vigor.vedprakash.net)**           | Custom JWT System       | Security maintenance overhead, no SSO          |
+| **Pathfinder (pathfinder.vedprakash.net)** | Auth0 + Entra ID        | Mixed systems, complexity and cost             |
+| **Carpool (carpool.vedprakash.net)**       | Custom JWT System       | Duplicated effort, security concerns           |
 
 ### Business Problems We're Solving
 
 #### 1. **Poor User Experience**
+
 - Users must create **separate accounts** for each app
 - **No single sign-on** - users log in repeatedly
 - **Password fatigue** - users struggle with multiple credentials
 - **Account confusion** - users forget which email they used for which app
 
 #### 2. **Operational Complexity**
+
 - **Five different auth systems** to maintain and secure
 - **Fragmented user data** across multiple platforms
 - **Inconsistent security policies** across applications
 - **Higher support burden** - users contact support for password resets across multiple systems
 
 #### 3. **Development Inefficiency**
+
 - **Duplicated authentication code** across teams
 - **Different integration patterns** for each auth system
 - **Inconsistent user objects** and permissions models
 - **Increased development time** for cross-app features
 
 #### 4. **Security and Compliance Risks**
+
 - **Multiple attack surfaces** across different auth providers
 - **Inconsistent security policies** and practices
 - **Audit complexity** with multiple authentication logs
 - **Harder compliance** with data protection regulations
 
 #### 5. **Cost and Scalability**
+
 - **Multiple vendor costs** (Auth0, Firebase, Supabase, custom infrastructure)
 - **Licensing complexity** as user base grows
 - **Operational overhead** managing multiple systems
@@ -72,30 +78,35 @@ The Vedprakash domain currently operates **five independent applications** with 
 ### Business Benefits of Unified Authentication
 
 #### 🚀 **Enhanced User Experience**
+
 - **Single Sign-On**: Login once, access all Vedprakash apps
 - **Unified Profile**: One account, one profile across all services
 - **Seamless Navigation**: Move between apps without re-authentication
 - **Professional Experience**: Enterprise-grade authentication flow
 
 #### 💰 **Cost Optimization**
+
 - **Eliminate Auth0 costs**: Save ~$240-480/month in licensing
 - **Reduce Firebase/Supabase dependency**: Lower operational costs
 - **Free Entra ID tier**: Up to 50,000 users at no cost
 - **Consolidated billing**: Single Microsoft Azure invoice
 
 #### 🔒 **Improved Security Posture**
+
 - **Enterprise-grade security**: Microsoft's battle-tested authentication
 - **Centralized security policies**: Consistent MFA, conditional access
 - **Single audit trail**: All authentication events in one place
 - **Reduced attack surface**: One authentication system to secure
 
 #### ⚡ **Development Efficiency**
+
 - **Consistent authentication patterns** across all apps
 - **Shared user objects** and permissions model
 - **Faster feature development** with unified user context
 - **Reduced maintenance overhead** for authentication code
 
 #### 📈 **Business Growth Enablement**
+
 - **Cross-app analytics**: Unified user journey tracking
 - **Integrated billing**: Single subscription across all apps
 - **Collaborative features**: Users can share data between apps
@@ -104,12 +115,14 @@ The Vedprakash domain currently operates **five independent applications** with 
 ### Technical Benefits
 
 #### 🏗️ **Architectural Consistency**
+
 - **Standardized JWT tokens** across all applications
 - **Consistent user object interface** for all teams
 - **Unified API authentication** patterns
 - **Predictable security model** across the domain
 
 #### 🔄 **Future-Proof Design**
+
 - **Scalable to enterprise customers** who require SSO
 - **Support for advanced features** (MFA, conditional access, B2B collaboration)
 - **Integration ready** for Microsoft ecosystem (Office 365, Teams, etc.)
@@ -118,15 +131,18 @@ The Vedprakash domain currently operates **five independent applications** with 
 ### Migration Impact Assessment
 
 #### ✅ **Low Risk Applications**
+
 - **Pathfinder**: Already partially using Entra ID
 - **Minimal code changes** required
 
 #### ⚠️ **Medium Risk Applications**
+
 - **Vigor & Carpool**: Custom JWT systems need replacement
 - **Database user ID migration** required
 - **Testing required** for existing user workflows
 
 #### 🔧 **Higher Effort Applications**
+
 - **Sutra & Vimarsh**: Third-party auth provider replacement
 - **User migration scripts** needed
 - **Database schema updates** required
@@ -137,16 +153,19 @@ The Vedprakash domain currently operates **five independent applications** with 
 We'll measure success through:
 
 #### User Experience
+
 - **Reduced login friction**: Measure login completion rates
 - **Cross-app usage**: Track users accessing multiple apps
 - **Support ticket reduction**: Fewer password/account issues
 
-#### Technical Performance  
+#### Technical Performance
+
 - **Authentication response times**: <2 seconds for login
 - **SSO success rate**: >95% successful cross-app authentication
 - **System reliability**: 99.9% authentication uptime
 
 #### Business Impact
+
 - **Cost reduction**: Eliminate external auth provider costs
 - **Development velocity**: Faster feature shipping with unified auth
 - **Enterprise readiness**: Support B2B customers requiring SSO
@@ -158,12 +177,14 @@ We'll measure success through:
 All Vedprakash domain applications **MUST** use Microsoft Entra ID as the sole authentication provider. Each app can implement this using their preferred authentication libraries and patterns.
 
 ### Key Benefits
+
 - **Single Sign-On**: Seamless authentication across all `.vedprakash.net` apps
 - **Enterprise Security**: Microsoft Entra ID's enterprise-grade security
 - **Implementation Flexibility**: Use your preferred authentication libraries
 - **Centralized Management**: Unified user management and permissions
 
 ### What This Means for Your App
+
 - Implement Microsoft Entra ID authentication using any compatible library
 - Update your backend to validate Microsoft Entra ID JWT tokens
 - Use the standardized user object interface
@@ -175,26 +196,26 @@ All Vedprakash domain applications **MUST** use Microsoft Entra ID as the sole a
 
 ### Core Standards
 
-| Requirement | Specification |
-|------------|---------------|
-| **Identity Provider** | Microsoft Entra ID (`vedid.onmicrosoft.com`) |
-| **Authentication Method** | OAuth 2.0 / OpenID Connect |
-| **Token Format** | JWT tokens from Microsoft Entra ID |
-| **Session Management** | Stateless authentication via JWT |
-| **Single Sign-On** | Cross-domain SSO across `.vedprakash.net` |
+| Requirement               | Specification                                |
+| ------------------------- | -------------------------------------------- |
+| **Identity Provider**     | Microsoft Entra ID (`vedid.onmicrosoft.com`) |
+| **Authentication Method** | OAuth 2.0 / OpenID Connect                   |
+| **Token Format**          | JWT tokens from Microsoft Entra ID           |
+| **Session Management**    | Stateless authentication via JWT             |
+| **Single Sign-On**        | Cross-domain SSO across `.vedprakash.net`    |
 
 ### Recommended Libraries
 
 Choose the authentication library that works best for your stack:
 
-| Framework | Recommended Library | Alternative |
-|-----------|-------------------|-------------|
-| **React/Next.js** | `@azure/msal-react` | `next-auth` with Azure AD provider |
-| **Vue/Nuxt.js** | `@azure/msal-browser` | `@nuxtjs/auth-next` with Azure AD |
-| **Svelte/SvelteKit** | `@azure/msal-browser` | Custom implementation |
-| **Node.js Backend** | `@azure/msal-node` | `passport-azure-ad` |
-| **Python** | `msal` | `django-auth-adfs` |
-| **C#/.NET** | `Microsoft.AspNetCore.Authentication.AzureAD` | Built-in |
+| Framework            | Recommended Library                           | Alternative                        |
+| -------------------- | --------------------------------------------- | ---------------------------------- |
+| **React/Next.js**    | `@azure/msal-react`                           | `next-auth` with Azure AD provider |
+| **Vue/Nuxt.js**      | `@azure/msal-browser`                         | `@nuxtjs/auth-next` with Azure AD  |
+| **Svelte/SvelteKit** | `@azure/msal-browser`                         | Custom implementation              |
+| **Node.js Backend**  | `@azure/msal-node`                            | `passport-azure-ad`                |
+| **Python**           | `msal`                                        | `django-auth-adfs`                 |
+| **C#/.NET**          | `Microsoft.AspNetCore.Authentication.AzureAD` | Built-in                           |
 
 ### Installation Examples
 
@@ -202,7 +223,7 @@ Choose the authentication library that works best for your stack:
 # React/Next.js
 npm install @azure/msal-react @azure/msal-browser
 
-# Vue/Nuxt.js  
+# Vue/Nuxt.js
 npm install @azure/msal-browser
 
 # Node.js backend
@@ -278,8 +299,8 @@ export default defineNuxtPlugin(async () => {
   await msalInstance.initialize();
   return {
     provide: {
-      msal: msalInstance
-    }
+      msal: msalInstance,
+    },
   };
 });
 ```
@@ -423,12 +444,12 @@ function useApiCall() {
 
   const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     const token = await getAccessToken();
-    
+
     return fetch(endpoint, {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
@@ -440,13 +461,13 @@ function useApiCall() {
 // Usage
 function DataComponent() {
   const { apiCall } = useApiCall();
-  
+
   const fetchData = async () => {
     const response = await apiCall('/api/user-data');
     const data = await response.json();
     // Handle data
   };
-  
+
   return <button onClick={fetchData}>Load Data</button>;
 }
 ```
@@ -478,12 +499,12 @@ export const useApi = () => {
 
   const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     const token = await getAccessToken();
-    
+
     return $fetch(endpoint, {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
   };
@@ -502,7 +523,7 @@ const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
 const client = jwksClient({
-  jwksUri: 'https://login.microsoftonline.com/vedid.onmicrosoft.com/discovery/v2.0/keys'
+  jwksUri: 'https://login.microsoftonline.com/vedid.onmicrosoft.com/discovery/v2.0/keys',
 });
 
 function getKey(header, callback) {
@@ -519,19 +540,24 @@ function validateToken(req, res, next) {
   }
 
   const token = authHeader.substring(7);
-  
-  jwt.verify(token, getKey, {
-    audience: 'your-app-client-id',
-    issuer: 'https://login.microsoftonline.com/vedid.onmicrosoft.com/v2.0',
-    algorithms: ['RS256']
-  }, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-    
-    req.user = decoded;
-    next();
-  });
+
+  jwt.verify(
+    token,
+    getKey,
+    {
+      audience: 'your-app-client-id',
+      issuer: 'https://login.microsoftonline.com/vedid.onmicrosoft.com/v2.0',
+      algorithms: ['RS256'],
+    },
+    (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+
+      req.user = decoded;
+      next();
+    },
+  );
 }
 
 // Apply to protected routes
@@ -557,8 +583,8 @@ function extractUser(tokenClaims) {
       profileId: tokenClaims.ved_profile_id,
       subscriptionTier: tokenClaims.ved_subscription_tier,
       appsEnrolled: tokenClaims.ved_apps_enrolled || [],
-      preferences: JSON.parse(tokenClaims.ved_preferences || '{}')
-    }
+      preferences: JSON.parse(tokenClaims.ved_preferences || '{}'),
+    },
   };
 }
 ```
@@ -583,7 +609,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         jwks = get_jwks()
         token = credentials.credentials
-        
+
         decoded = jwt.decode(
             token,
             jwks,
@@ -591,7 +617,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
             audience="your-app-client-id",
             issuer="https://login.microsoftonline.com/vedid.onmicrosoft.com/v2.0"
         )
-        
+
         return decoded
     except jwt.InvalidTokenError:
         raise HTTPException(
@@ -647,17 +673,17 @@ public class ProtectedController : ControllerBase
 
 ```typescript
 interface VedUser {
-  id: string;           // Entra ID subject claim (primary user identifier)
-  email: string;        // User's email address
-  name: string;         // Full display name
-  givenName: string;    // First name
-  familyName: string;   // Last name
+  id: string; // Entra ID subject claim (primary user identifier)
+  email: string; // User's email address
+  name: string; // Full display name
+  givenName: string; // First name
+  familyName: string; // Last name
   permissions: string[]; // App-specific permissions from JWT claims
   vedProfile: {
-    profileId: string;                           // Vedprakash domain profile ID
+    profileId: string; // Vedprakash domain profile ID
     subscriptionTier: 'free' | 'premium' | 'enterprise';
-    appsEnrolled: string[];                      // List of enrolled apps
-    preferences: Record<string, any>;            // User preferences
+    appsEnrolled: string[]; // List of enrolled apps
+    preferences: Record<string, any>; // User preferences
   };
 }
 ```
@@ -706,12 +732,12 @@ function useApiCall() {
 
   const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     const token = await getAccessToken();
-    
+
     return fetch(endpoint, {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
@@ -723,13 +749,13 @@ function useApiCall() {
 // Usage
 function DataComponent() {
   const { apiCall } = useApiCall();
-  
+
   const fetchData = async () => {
     const response = await apiCall('/api/user-data');
     const data = await response.json();
     // Handle data
   };
-  
+
   return <button onClick={fetchData}>Load Data</button>;
 }
 ```
@@ -761,12 +787,12 @@ export const useApi = () => {
 
   const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     const token = await getAccessToken();
-    
+
     return $fetch(endpoint, {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
   };
@@ -783,19 +809,19 @@ export const useApi = () => {
 // Unauthorized (no token)
 res.status(401).json({
   error: 'Access token required',
-  code: 'AUTH_TOKEN_MISSING'
+  code: 'AUTH_TOKEN_MISSING',
 });
 
 // Invalid token
 res.status(401).json({
   error: 'Invalid or expired token',
-  code: 'AUTH_TOKEN_INVALID'
+  code: 'AUTH_TOKEN_INVALID',
 });
 
 // Insufficient permissions
 res.status(403).json({
   error: 'Insufficient permissions',
-  code: 'AUTH_PERMISSION_DENIED'
+  code: 'AUTH_PERMISSION_DENIED',
 });
 ```
 
@@ -817,20 +843,11 @@ res.status(403).json({
     "https://yourapp.vedprakash.net",
     "https://yourapp.vedprakash.net/auth/callback"
   ],
-  "scopes": [
-    "openid",
-    "profile", 
-    "email",
-    "your-app-specific-scopes"
-  ],
+  "scopes": ["openid", "profile", "email", "your-app-specific-scopes"],
   "tokenConfiguration": {
     "accessTokenAcceptedVersion": 2,
     "optionalClaims": {
-      "accessToken": [
-        {"name": "given_name"},
-        {"name": "family_name"},
-        {"name": "email"}
-      ]
+      "accessToken": [{ "name": "given_name" }, { "name": "family_name" }, { "name": "email" }]
     }
   }
 }
@@ -846,7 +863,7 @@ NEXT_PUBLIC_AZURE_AD_CLIENT_ID=your-app-client-id
 NEXT_PUBLIC_AZURE_AD_TENANT_ID=vedid.onmicrosoft.com
 NEXT_PUBLIC_AZURE_AD_AUTHORITY=https://login.microsoftonline.com/vedid.onmicrosoft.com
 
-# Backend Configuration  
+# Backend Configuration
 AZURE_AD_CLIENT_ID=your-app-client-id
 AZURE_AD_TENANT_ID=vedid.onmicrosoft.com
 AZURE_AD_CLIENT_SECRET=your-app-client-secret
@@ -893,9 +910,9 @@ export default defineNuxtConfig({
         clientId: process.env.AZURE_AD_CLIENT_ID,
         tenantId: process.env.AZURE_AD_TENANT_ID,
         authority: `https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID}`,
-      }
-    }
-  }
+      },
+    },
+  },
 });
 ```
 
@@ -920,6 +937,7 @@ app.use((req, res, next) => {
 ### Implementation Checklist
 
 **Frontend Requirements**:
+
 - [ ] Microsoft Entra ID authentication library installed and configured
 - [ ] App wrapped with authentication provider
 - [ ] Login/logout functionality implemented
@@ -928,6 +946,7 @@ app.use((req, res, next) => {
 - [ ] Token refresh handled automatically
 
 **Backend Requirements**:
+
 - [ ] JWT token validation implemented for Microsoft Entra ID
 - [ ] Protected endpoints verify tokens before processing
 - [ ] User object extracted from token claims using standard interface
@@ -935,6 +954,7 @@ app.use((req, res, next) => {
 - [ ] Security headers configured correctly
 
 **Configuration Requirements**:
+
 - [ ] App registered in Microsoft Entra ID
 - [ ] Environment variables configured
 - [ ] Redirect URIs properly set
@@ -942,6 +962,7 @@ app.use((req, res, next) => {
 - [ ] Optional claims configured for user data
 
 **Testing Requirements**:
+
 - [ ] Login/logout flow works correctly
 - [ ] Protected routes deny access to unauthenticated users
 - [ ] API calls with valid tokens succeed
@@ -967,6 +988,7 @@ Your authentication implementation is complete when:
 ### ⚠️ **IMPORTANT**: These requirements are mandatory for all implementations
 
 #### 1. JWKS Caching (Required)
+
 **Risk**: Fetching JWKS on every request causes performance issues and potential rate limiting.
 
 ```javascript
@@ -977,14 +999,14 @@ const jwksCache = new NodeCache({ stdTTL: 3600 }); // 1 hour cache
 function getKey(header, callback) {
   const cacheKey = `jwks_${header.kid}`;
   let key = jwksCache.get(cacheKey);
-  
+
   if (key) {
     return callback(null, key);
   }
-  
+
   client.getSigningKey(header.kid, (err, key) => {
     if (err) return callback(err);
-    
+
     const signingKey = key.publicKey || key.rsaPublicKey;
     jwksCache.set(cacheKey, signingKey);
     callback(null, signingKey);
@@ -993,6 +1015,7 @@ function getKey(header, callback) {
 ```
 
 #### 2. Standardized User Extraction (Required)
+
 **Risk**: Inconsistent user object creation across apps.
 
 ```javascript
@@ -1002,7 +1025,7 @@ function extractStandardUser(tokenClaims) {
   if (!tokenClaims.sub || !tokenClaims.email) {
     throw new Error('Invalid token: missing required claims');
   }
-  
+
   return {
     id: tokenClaims.sub,
     email: tokenClaims.email,
@@ -1013,24 +1036,25 @@ function extractStandardUser(tokenClaims) {
     vedProfile: {
       profileId: tokenClaims.ved_profile_id || tokenClaims.sub,
       subscriptionTier: tokenClaims.ved_subscription_tier || 'free',
-      appsEnrolled: Array.isArray(tokenClaims.ved_apps_enrolled) 
-        ? tokenClaims.ved_apps_enrolled 
+      appsEnrolled: Array.isArray(tokenClaims.ved_apps_enrolled)
+        ? tokenClaims.ved_apps_enrolled
         : [],
       preferences: (() => {
         try {
-          return typeof tokenClaims.ved_preferences === 'string' 
-            ? JSON.parse(tokenClaims.ved_preferences) 
+          return typeof tokenClaims.ved_preferences === 'string'
+            ? JSON.parse(tokenClaims.ved_preferences)
             : tokenClaims.ved_preferences || {};
         } catch {
           return {};
         }
-      })()
-    }
+      })(),
+    },
   };
 }
 ```
 
 #### 3. Enhanced Error Handling (Required)
+
 **Risk**: Silent authentication failures lead to poor user experience.
 
 ```typescript
@@ -1050,7 +1074,7 @@ const getAccessToken = async () => {
     return response.accessToken;
   } catch (error) {
     console.warn('Silent token acquisition failed, falling back to interactive:', error);
-    
+
     try {
       const response = await instance.acquireTokenRedirect(request);
       return response.accessToken;
@@ -1063,6 +1087,7 @@ const getAccessToken = async () => {
 ```
 
 #### 4. Complete Security Headers (Required)
+
 **Risk**: Missing security headers expose apps to attacks.
 
 ```javascript
@@ -1073,13 +1098,17 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://login.microsoftonline.com; connect-src 'self' https://login.microsoftonline.com https://*.vedprakash.net");
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://login.microsoftonline.com; connect-src 'self' https://login.microsoftonline.com https://*.vedprakash.net",
+  );
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   next();
 });
 ```
 
 #### 5. SSO Domain Configuration (Required)
+
 **Risk**: Improper domain configuration breaks cross-app SSO.
 
 ```javascript
@@ -1092,7 +1121,7 @@ const msalConfig = {
   },
   cache: {
     cacheLocation: 'sessionStorage', // ✅ Required for SSO
-    storeAuthStateInCookie: true,    // ✅ Required for Safari/iOS
+    storeAuthStateInCookie: true, // ✅ Required for Safari/iOS
   },
   system: {
     allowNativeBroker: false, // ✅ Ensures consistent web experience
@@ -1102,13 +1131,14 @@ const msalConfig = {
           console.log(message);
         }
       },
-      piiLoggingEnabled: false
-    }
-  }
+      piiLoggingEnabled: false,
+    },
+  },
 };
 ```
 
 #### 6. Production Monitoring (Required)
+
 **Risk**: No visibility into authentication failures in production.
 
 ```javascript
@@ -1116,59 +1146,65 @@ const msalConfig = {
 function validateToken(req, res, next) {
   const startTime = Date.now();
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     // Log authentication attempt
     console.warn('Authentication failed: No token provided', {
       ip: req.ip,
       userAgent: req.get('User-Agent'),
-      path: req.path
+      path: req.path,
     });
-    
+
     return res.status(401).json({
       error: 'Access token required',
-      code: 'AUTH_TOKEN_MISSING'
+      code: 'AUTH_TOKEN_MISSING',
     });
   }
 
   const token = authHeader.substring(7);
-  
-  jwt.verify(token, getKey, {
-    audience: 'your-app-client-id',
-    issuer: 'https://login.microsoftonline.com/vedid.onmicrosoft.com/v2.0',
-    algorithms: ['RS256']
-  }, (err, decoded) => {
-    const duration = Date.now() - startTime;
-    
-    if (err) {
-      // Log authentication failure
-      console.error('Authentication failed: Invalid token', {
-        error: err.message,
+
+  jwt.verify(
+    token,
+    getKey,
+    {
+      audience: 'your-app-client-id',
+      issuer: 'https://login.microsoftonline.com/vedid.onmicrosoft.com/v2.0',
+      algorithms: ['RS256'],
+    },
+    (err, decoded) => {
+      const duration = Date.now() - startTime;
+
+      if (err) {
+        // Log authentication failure
+        console.error('Authentication failed: Invalid token', {
+          error: err.message,
+          duration,
+          ip: req.ip,
+          path: req.path,
+        });
+
+        return res.status(401).json({
+          error: 'Invalid or expired token',
+          code: 'AUTH_TOKEN_INVALID',
+        });
+      }
+
+      // Log successful authentication
+      console.info('Authentication successful', {
+        userId: decoded.sub,
         duration,
-        ip: req.ip,
-        path: req.path
+        path: req.path,
       });
-      
-      return res.status(401).json({
-        error: 'Invalid or expired token',
-        code: 'AUTH_TOKEN_INVALID'
-      });
-    }
-    
-    // Log successful authentication
-    console.info('Authentication successful', {
-      userId: decoded.sub,
-      duration,
-      path: req.path
-    });
-    
-    req.user = extractStandardUser(decoded);
-    next();
-  });
+
+      req.user = extractStandardUser(decoded);
+      next();
+    },
+  );
 }
 ```
 
 #### 7. Fallback and Resilience (Required)
+
 **Risk**: Authentication service outages break all apps.
 
 ```typescript
@@ -1176,16 +1212,16 @@ function validateToken(req, res, next) {
 const handleAuthError = (error: any) => {
   // Log error for monitoring
   console.error('Authentication error:', error);
-  
+
   // Provide user-friendly message
   if (error.message?.includes('network')) {
     return 'Connection issue. Please check your internet and try again.';
   }
-  
+
   if (error.message?.includes('timeout')) {
     return 'Authentication is taking longer than usual. Please try again.';
   }
-  
+
   return 'Sign-in temporarily unavailable. Please try again in a few minutes.';
 };
 
@@ -1199,7 +1235,7 @@ const checkAuthCircuit = () => {
     setTimeout(() => {
       authFailureCount = 0;
     }, CIRCUIT_RESET_TIME);
-    
+
     throw new Error('Authentication service temporarily unavailable');
   }
 };
@@ -1235,12 +1271,14 @@ const checkAuthCircuit = () => {
 ### Support and Escalation
 
 **For Implementation Issues**:
+
 1. Check this requirements document
 2. Review Microsoft Entra ID documentation
 3. Contact security team for security-related questions
 4. Escalate to architecture team for design decisions
 
 **For Production Issues**:
+
 1. Monitor authentication logs for errors
 2. Check Azure AD service health
 3. Implement graceful degradation

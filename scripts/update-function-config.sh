@@ -65,7 +65,7 @@ echo_info "Function App found: $FUNCTION_APP_NAME"
 case $ENVIRONMENT in
     "dev")
         COSMOS_DB_NAME="carpool-db-dev"
-        CORS_ORIGINS="https://vimarsh.vedprakash.net,http://localhost:3000,https://localhost:3000,https://carpool-web-dev.azurestaticapps.net"
+        CORS_ORIGINS="https://carpool.vedprakash.net,http://localhost:3000,https://localhost:3000,https://carpool-web-dev.azurestaticapps.net"
         KEY_VAULT_URL="https://carpool-kv-dev.vault.azure.net/"
         ;;
     "test")
