@@ -79,7 +79,7 @@ export class UserProvisioningService {
         // Custom attributes for carpool app
         extension_carpool_role: 'parent',
         extension_carpool_familyId: request.familyId,
-      };
+      } as User & Record<string, any>;
 
       const createdUser = await this.graphClient.api('/users').post(newUser);
 
@@ -126,7 +126,7 @@ export class UserProvisioningService {
         // Custom attributes for carpool app
         extension_carpool_role: 'student',
         extension_carpool_familyId: request.familyId,
-      };
+      } as User & Record<string, any>;
 
       const createdUser = await this.graphClient.api('/users').post(newUser);
 
