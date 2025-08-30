@@ -39,6 +39,8 @@
     "@azure/identity": "^4.10.1",
     "@azure/msal-node": "^3.6.1",
     "@azure/service-bus": "^7.9.5",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@microsoft/microsoft-graph-types": "^2.40.0",
     "@azure/web-pubsub": "^1.2.0",
     "@carpool/shared": "1.0.0",
     "@opentelemetry/auto-instrumentations-node": "^0.60.1",
