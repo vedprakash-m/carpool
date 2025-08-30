@@ -82,6 +82,12 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
           pathname === '/registration-complete' ||
           pathname.startsWith('/registration-complete');
 
+        console.log('🛡️ STORE SAFEGUARD - Current pathname:', pathname);
+        console.log(
+          '🛡️ STORE SAFEGUARD - Is registration page:',
+          isRegistrationPage
+        );
+
         if (isRegistrationPage) {
           console.log(
             '🚫 BLOCKED: Auth initialization prevented on registration page:',
@@ -96,6 +102,17 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
 
       // Only initialize MSAL in browser environment
       if (typeof window === 'undefined') {
+        set({ isLoading: false });
+        return;
+      }
+
+      // ADDITIONAL SAFEGUARD: Double-check pathname before MSAL creation
+      const currentPath = window.location.pathname;
+      if (currentPath === '/register' || currentPath.startsWith('/register/')) {
+        console.log(
+          '🚫 DOUBLE-BLOCK: Prevented MSAL initialization on:',
+          currentPath
+        );
         set({ isLoading: false });
         return;
       }

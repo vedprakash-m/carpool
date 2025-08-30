@@ -15,6 +15,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('🔍 DEBUG - Providers useEffect running...');
     console.log('🔍 DEBUG - Current pathname:', pathname);
+    console.log('🔍 DEBUG - Pathname type:', typeof pathname);
+    console.log('🔍 DEBUG - Pathname length:', pathname?.length);
+    console.log(
+      '🔍 DEBUG - Window location:',
+      typeof window !== 'undefined' ? window.location.href : 'SSR'
+    );
 
     // CRITICAL FIX: Completely disable authentication on registration flow
     // Registration pages should show forms, not authentication prompts
@@ -30,6 +36,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
       pathname === '/' ||
       pathname?.startsWith('/about');
 
+    console.log(
+      '🔍 DEBUG - pathname === "/register":',
+      pathname === '/register'
+    );
+    console.log(
+      '🔍 DEBUG - pathname?.startsWith("/register/"):',
+      pathname?.startsWith('/register/')
+    );
     console.log('🔍 DEBUG - Is registration flow:', isRegistrationFlow);
     console.log('🔍 DEBUG - Is public page:', isPublicPage);
 
