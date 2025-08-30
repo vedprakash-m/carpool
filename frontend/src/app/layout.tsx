@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { Providers } from './providers';
+import { ConditionalProviders } from './conditional-providers';
 import { Toaster } from 'react-hot-toast';
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
 import { RBACProvider } from '@/contexts/RBACContext';
@@ -40,7 +40,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <SkipLink targetId="main-content" />
         <RBACProvider>
-          <Providers>
+          <ConditionalProviders>
             <OnboardingProvider>
               <main id="main-content" tabIndex={-1}>
                 {children}
@@ -56,7 +56,7 @@ export default function RootLayout({
                 }}
               />
             </OnboardingProvider>
-          </Providers>
+          </ConditionalProviders>
         </RBACProvider>
       </body>
     </html>
