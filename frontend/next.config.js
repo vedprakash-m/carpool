@@ -33,10 +33,11 @@ const nextConfig = {
   env: {
     BUILD_TIME: new Date().toISOString(),
     // API Configuration based on environment
+    // In production, use relative URL /api which gets proxied by Azure Static Web Apps
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL ||
       (process.env.NODE_ENV === 'production'
-        ? 'https://carpool-api.azurewebsites.net/api'
+        ? '/api'
         : 'http://localhost:7071/api'),
     NEXT_PUBLIC_ENV: process.env.NODE_ENV,
 
