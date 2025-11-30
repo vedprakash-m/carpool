@@ -1,123 +1,17 @@
 'use client';
 
-// NUCLEAR MSAL BLOCKER v2.0 - TIMESTAMP: 2025-08-30T23:45:00Z
-if (typeof window !== 'undefined') {
-  console.log('🚨🚨🚨 NUCLEAR BLOCKER v2.0 ACTIVE - REGISTRATION PAGE 🚨🚨🚨');
-  console.log('🔥 TIMESTAMP: 2025-08-30T23:45:00Z - Cache Busting Active');
-
-  // Set multiple blocking flags
-  (window as any).__REGISTRATION_PAGE__ = true;
-  (window as any).__BLOCK_ALL_AUTH__ = true;
-  (window as any).__MSAL_BLOCKED__ = true;
-  (window as any).__NUCLEAR_BLOCK_v2__ = true;
-
-  // NUCLEAR OVERRIDE: Completely destroy MSAL capability
-  try {
-    // Block MSAL module loading
-    if (typeof require !== 'undefined') {
-      const Module = require('module');
-      const originalRequire = Module.prototype.require;
-      Module.prototype.require = function (id: string) {
-        if (id.includes('@azure/msal') || id.includes('msal')) {
-          console.log('🚫 NUCLEAR: Blocked MSAL module require:', id);
-          return {};
-        }
-        return originalRequire.apply(this, arguments);
-      };
-    }
-  } catch (e) {
-    console.log('🔥 Module blocking setup complete');
-  }
-
-  // Override localStorage and sessionStorage for ALL auth-related keys
-  const originalSetItem = Storage.prototype.setItem;
-  const originalGetItem = Storage.prototype.getItem;
-
-  Storage.prototype.setItem = function (key, value) {
-    if (
-      key.toLowerCase().includes('msal') ||
-      key.toLowerCase().includes('login') ||
-      key.toLowerCase().includes('auth') ||
-      key.toLowerCase().includes('token') ||
-      key.toLowerCase().includes('microsoft')
-    ) {
-      console.log('🚫 NUCLEAR: Prevented storage SET:', key);
-      return;
-    }
-    return originalSetItem.call(this, key, value);
-  };
-
-  Storage.prototype.getItem = function (key) {
-    if (
-      key.toLowerCase().includes('msal') ||
-      key.toLowerCase().includes('login') ||
-      key.toLowerCase().includes('auth') ||
-      key.toLowerCase().includes('token') ||
-      key.toLowerCase().includes('microsoft')
-    ) {
-      console.log('🚫 NUCLEAR: Prevented storage GET:', key);
-      return null;
-    }
-    return originalGetItem.call(this, key);
-  };
-
-  // NUCLEAR NETWORK BLOCKING: Block ALL Microsoft endpoints
-  if ('fetch' in window) {
-    const originalFetch = window.fetch;
-    window.fetch = function (...args) {
-      const url = args[0]?.toString() || '';
-      if (
-        url.includes('login.microsoftonline.com') ||
-        url.includes('microsoft.com') ||
-        url.includes('msauth') ||
-        url.includes('graph.microsoft') ||
-        url.toLowerCase().includes('oauth') ||
-        url.toLowerCase().includes('openid')
-      ) {
-        console.log('🚫 NUCLEAR: Blocked auth network request:', url);
-        return Promise.reject(new Error('Nuclear auth block active'));
-      }
-      return originalFetch.apply(this, args);
-    };
-  }
-
-  // Block XMLHttpRequest too
-  if ('XMLHttpRequest' in window) {
-    const OriginalXHR = window.XMLHttpRequest;
-    (window as any).XMLHttpRequest = function (this: XMLHttpRequest) {
-      const xhr = new OriginalXHR();
-      const originalOpen = xhr.open;
-      (xhr as any).open = function (
-        method: string,
-        url: string | URL,
-        ...args: any[]
-      ) {
-        if (
-          typeof url === 'string' &&
-          (url.includes('login.microsoftonline.com') ||
-            url.includes('microsoft.com') ||
-            url.includes('msauth'))
-        ) {
-          console.log('🚫 NUCLEAR: Blocked XHR to:', url);
-          throw new Error('Nuclear auth block active');
-        }
-        return originalOpen.apply(this, [method, url, ...args] as any);
-      };
-      return xhr;
-    };
-  }
-
-  // Clear any existing auth data
-  try {
-    localStorage.clear();
-    sessionStorage.clear();
-    console.log('🔥 NUCLEAR: Cleared all storage');
-  } catch (e) {
-    console.log('🔥 Storage clear attempted');
-  }
-
-  console.log('🚨 NUCLEAR BLOCKER v2.0 FULLY DEPLOYED 🚨');
-}
+/**
+ * Family Registration Page
+ *
+ * This page handles new family registration for the Carpool application.
+ * It uses a multi-step form to collect family, parent, address, and children information.
+ *
+ * Authentication is NOT required on this page - providers.tsx handles conditional
+ * auth loading based on pathname, and entra-auth.store.ts has safeguards to prevent
+ * MSAL initialization on registration pages.
+ *
+ * Flow: Registration Form → Backend Provisioning → Microsoft Account Creation → Welcome Email
+ */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -305,25 +199,33 @@ export default function RegisterPage() {
   };
 
   const handleProvisioningSignup = async (data: RegisterRequest) => {
+    setIsLoading(true);
     try {
+      // Get API URL from environment or fallback
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7071/api';
+
       // Submit family registration for Microsoft account provisioning
-      const response = await fetch('/api/family-registration-provisioning', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          familyName: `${data.parent.firstName} ${data.parent.lastName} Family`,
-          parent: data.parent,
-          homeAddress: data.homeAddress,
-          children: data.children,
-          emergencyContact: {
-            name: 'Emergency Contact', // You might want to collect this
-            phone: data.parent.email, // Placeholder
-            relationship: 'Parent',
+      const response = await fetch(
+        `${apiUrl}/family-registration-provisioning`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        }),
-      });
+          body: JSON.stringify({
+            familyName: `${data.parent.firstName} ${data.parent.lastName} Family`,
+            parent: data.parent,
+            homeAddress: data.homeAddress,
+            children: data.children,
+            emergencyContact: {
+              name: 'Emergency Contact', // Collected later in onboarding
+              phone: data.parent.email, // Placeholder
+              relationship: 'Parent',
+            },
+          }),
+        }
+      );
 
       const result = await response.json();
 
@@ -333,15 +235,19 @@ export default function RegisterPage() {
         );
 
         // Show provisioning success page with login instructions
-        router.push(`/registration-complete?familyId=${result.familyId}`);
+        router.push(
+          `/parents/registration-complete?familyId=${result.familyId}`
+        );
       } else {
-        throw new Error(result.message);
+        throw new Error(result.message || 'Registration failed');
       }
     } catch (error: any) {
       console.error('Account provisioning error:', error);
       toast.error(
         error.message || 'Account provisioning failed. Please try again.'
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 

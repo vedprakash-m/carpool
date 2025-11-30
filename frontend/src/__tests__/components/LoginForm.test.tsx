@@ -1,329 +1,201 @@
 /**
- * Tests for Login Form functionality
- * Testing the real login page with React Hook Form and Zod validation
+ * Tests for LoginForm Component
+ * Testing Microsoft Entra ID SSO login functionality
  */
 
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import LoginPage from '../../app/login/page';
+import { LoginForm } from '../../components/auth/LoginForm';
 
-// Test constants
-const TEST_ADMIN_PASSWORD = 'test-admin-pass';
+// Mock the Entra auth store
+const mockLoginWithEntra = jest.fn();
+const mockClearError = jest.fn();
 
-// Mock dependencies for login page
-const mockLogin = jest.fn();
-const mockPush = jest.fn();
+let mockEntraAuthStore = {
+  loginWithEntra: mockLoginWithEntra,
+  isLoading: false,
+  error: null as string | null,
+  clearError: mockClearError,
+};
 
-jest.mock('../../store/auth.store', () => ({
-  useAuthStore: (selector: any) =>
-    selector({
-      login: mockLogin,
-      isLoading: false,
-      user: null,
-      isAuthenticated: false,
-    }),
+jest.mock('../../store/entra-auth.store', () => ({
+  useEntraAuthStore: () => mockEntraAuthStore,
 }));
 
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
-
-jest.mock('react-hot-toast', () => ({
-  success: jest.fn(),
-  error: jest.fn(),
-}));
-
-describe('Login Form Component', () => {
+describe('LoginForm Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockEntraAuthStore = {
+      loginWithEntra: mockLoginWithEntra,
+      isLoading: false,
+      error: null,
+      clearError: mockClearError,
+    };
   });
 
   describe('Form Rendering', () => {
-    it('should render all form elements', () => {
-      render(<LoginPage />);
+    it('should render the login form with Microsoft SSO button', () => {
+      render(<LoginForm />);
 
-      // Check for form inputs using placeholders (since labels are screen-reader only)
-      expect(screen.getByPlaceholderText('Email address')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
+      expect(screen.getByText('Sign in to Carpool')).toBeInTheDocument();
       expect(
-        screen.getByRole('button', { name: /sign in/i })
+        screen.getByRole('button', { name: /continue with microsoft/i })
       ).toBeInTheDocument();
     });
 
-    it('should have proper input types and attributes', () => {
-      render(<LoginPage />);
+    it('should render description text', () => {
+      render(<LoginForm />);
 
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
+      expect(
+        screen.getByText(
+          /Use your Microsoft account to access the carpool platform/i
+        )
+      ).toBeInTheDocument();
+    });
 
-      expect(emailInput).toHaveAttribute('type', 'email');
-      expect(emailInput).toHaveAttribute('autoComplete', 'email');
-      expect(passwordInput).toHaveAttribute('type', 'password');
-      expect(passwordInput).toHaveAttribute('autoComplete', 'current-password');
+    it('should render terms and security notice', () => {
+      render(<LoginForm />);
+
+      expect(
+        screen.getByText(/By signing in, you agree to our terms of service/i)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/Microsoft Entra ID/i)).toBeInTheDocument();
     });
   });
 
-  describe('Form Validation', () => {
-    it('should show error for empty email', async () => {
+  describe('Microsoft SSO Login', () => {
+    it('should call loginWithEntra when button is clicked', async () => {
       const user = userEvent.setup();
-      render(<LoginPage />);
+      render(<LoginForm />);
 
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        // React Hook Form + Zod validation messages
-        expect(screen.getByText(/Invalid email/i)).toBeInTheDocument();
+      const ssoButton = screen.getByRole('button', {
+        name: /continue with microsoft/i,
       });
+      await user.click(ssoButton);
+
+      expect(mockClearError).toHaveBeenCalled();
+      expect(mockLoginWithEntra).toHaveBeenCalled();
     });
 
-    it('should show error for invalid email format', async () => {
+    it('should handle login errors gracefully', async () => {
+      const consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockLoginWithEntra.mockRejectedValueOnce(new Error('Login failed'));
+
       const user = userEvent.setup();
-      render(<LoginPage />);
+      render(<LoginForm />);
 
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'invalid-email');
-      await user.click(submitButton);
+      const ssoButton = screen.getByRole('button', {
+        name: /continue with microsoft/i,
+      });
+      await user.click(ssoButton);
 
       await waitFor(() => {
-        // React Hook Form + Zod shows "Invalid email" error
-        const errorElement =
-          screen.queryByText(/Invalid email/i) ||
-          screen.queryByText(/invalid/i);
-        if (errorElement) {
-          expect(errorElement).toBeInTheDocument();
-        } else {
-          // Validation might not trigger immediately - that's OK for this test
-          expect(mockLogin).not.toHaveBeenCalled();
-        }
+        expect(consoleError).toHaveBeenCalledWith(
+          'Microsoft login failed:',
+          expect.any(Error)
+        );
       });
-    });
 
-    it('should show error for empty password', async () => {
-      const user = userEvent.setup();
-      render(<LoginPage />);
-
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'test@example.com');
-      await user.clear(emailInput);
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Password is required/i)).toBeInTheDocument();
-      });
-    });
-
-    it('should show no error for valid input', async () => {
-      const user = userEvent.setup();
-      mockLogin.mockResolvedValue(undefined);
-
-      render(<LoginPage />);
-
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'admin@carpool.com');
-      await user.type(passwordInput, TEST_ADMIN_PASSWORD);
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith({
-          email: 'admin@carpool.com',
-          password: TEST_ADMIN_PASSWORD,
-        });
-      });
-    });
-  });
-
-  describe('Form Submission', () => {
-    it('should submit with valid data', async () => {
-      const user = userEvent.setup();
-      mockLogin.mockResolvedValue(undefined);
-
-      render(<LoginPage />);
-
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'admin@carpool.com');
-      await user.type(passwordInput, TEST_ADMIN_PASSWORD);
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith({
-          email: 'admin@carpool.com',
-          password: TEST_ADMIN_PASSWORD,
-        });
-      });
-    });
-
-    it('should not submit with invalid data', async () => {
-      const user = userEvent.setup();
-      render(<LoginPage />);
-
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-      await user.click(submitButton);
-
-      // Should not call login due to validation errors
-      expect(mockLogin).not.toHaveBeenCalled();
+      consoleError.mockRestore();
     });
   });
 
   describe('Loading States', () => {
-    it.skip('should show loading state when isLoading is true', () => {
-      // Create a new mock for this specific test
-      const loadingAuthStore = {
-        login: mockLogin,
+    it('should show loading state when isLoading is true', () => {
+      mockEntraAuthStore = {
+        ...mockEntraAuthStore,
         isLoading: true,
-        user: null,
-        isAuthenticated: false,
       };
 
-      // Re-mock the auth store for this test
-      jest.doMock('../../store/auth.store', () => ({
-        useAuthStore: (selector: any) => selector(loadingAuthStore),
-      }));
+      render(<LoginForm />);
 
-      render(<LoginPage />);
-
-      const submitButton = screen.getByRole('button', { name: /signing in/i });
-      expect(submitButton).toHaveTextContent('Signing in...');
-      expect(submitButton).toBeDisabled();
+      expect(screen.getByText('Signing in...')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toBeDisabled();
     });
 
     it('should show normal state when not loading', () => {
-      render(<LoginPage />);
+      render(<LoginForm />);
 
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-      expect(submitButton).toHaveTextContent('Sign in');
-      expect(submitButton).not.toBeDisabled();
+      expect(screen.getByText(/Continue with Microsoft/i)).toBeInTheDocument();
+      expect(screen.getByRole('button')).not.toBeDisabled();
     });
   });
 
-  describe('User Interactions', () => {
-    it('should support keyboard navigation', async () => {
-      const user = userEvent.setup();
-      render(<LoginPage />);
+  describe('Error Display', () => {
+    it('should display error message when error exists', () => {
+      mockEntraAuthStore = {
+        ...mockEntraAuthStore,
+        error: 'Authentication failed. Please try again.',
+      };
 
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
+      render(<LoginForm />);
 
-      // Focus the email input directly to test tabbing from form elements
-      emailInput.focus();
-      expect(emailInput).toHaveFocus();
-
-      await user.tab();
-      expect(passwordInput).toHaveFocus();
-
-      // Tab to next focusable element (could be forgot password link or submit button)
-      await user.tab();
-      const forgotPasswordLink = screen.getByText(/forgot your password/i);
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      // Either forgot password link or submit button should have focus
+      expect(screen.getByText('Sign in failed')).toBeInTheDocument();
       expect(
-        forgotPasswordLink.matches(':focus') || submitButton.matches(':focus')
-      ).toBe(true);
+        screen.getByText('Authentication failed. Please try again.')
+      ).toBeInTheDocument();
     });
 
-    it('should submit form on Enter key press', async () => {
-      const user = userEvent.setup();
-      mockLogin.mockResolvedValue(undefined);
+    it('should not display error when error is null', () => {
+      render(<LoginForm />);
 
-      render(<LoginPage />);
-
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-
-      await user.type(emailInput, 'admin@carpool.com');
-      await user.type(passwordInput, TEST_ADMIN_PASSWORD);
-      await user.keyboard('{Enter}');
-
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalled();
-      });
+      expect(screen.queryByText('Sign in failed')).not.toBeInTheDocument();
     });
   });
 
   describe('Accessibility', () => {
-    it('should have proper form structure', () => {
-      render(<LoginPage />);
+    it('should have proper button structure', () => {
+      render(<LoginForm />);
 
-      // The form doesn't have an explicit role="form", but check it exists as a form element
-      const form = document.querySelector('form');
-      expect(form).toBeInTheDocument();
-    });
-
-    it('should have accessible input elements', () => {
-      render(<LoginPage />);
-
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-
-      // Inputs should have proper attributes for accessibility
-      expect(emailInput).toHaveAttribute('type', 'email');
-      expect(passwordInput).toHaveAttribute('type', 'password');
-    });
-
-    it('should show validation errors when form is submitted empty', async () => {
-      const user = userEvent.setup();
-      render(<LoginPage />);
-
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-      await user.click(submitButton);
-
-      // Check that validation errors appear (React Hook Form + Zod validation)
-      await waitFor(() => {
-        const errorMessages = screen.getAllByText(
-          /Invalid email|Password is required/i
-        );
-        expect(errorMessages.length).toBeGreaterThan(0);
+      const button = screen.getByRole('button', {
+        name: /continue with microsoft/i,
       });
+      expect(button).toBeInTheDocument();
+      // Button is clickable and properly styled
+      expect(button).toHaveClass('bg-blue-600');
+    });
+
+    it('should have semantic heading', () => {
+      render(<LoginForm />);
+
+      const heading = screen.getByRole('heading', {
+        name: /sign in to carpool/i,
+      });
+      expect(heading).toBeInTheDocument();
+    });
+
+    it('should disable button when loading to prevent multiple clicks', () => {
+      mockEntraAuthStore = {
+        ...mockEntraAuthStore,
+        isLoading: true,
+      };
+
+      render(<LoginForm />);
+
+      const button = screen.getByRole('button');
+      expect(button).toBeDisabled();
     });
   });
 
   describe('Security Considerations', () => {
-    it('should use password input type', () => {
-      render(<LoginPage />);
+    it('should use enterprise SSO instead of password-based auth', () => {
+      render(<LoginForm />);
 
-      const passwordInput = screen.getByPlaceholderText('Password');
-      expect(passwordInput).toHaveAttribute('type', 'password');
+      // Verify no password input exists - Microsoft SSO only
+      expect(
+        screen.queryByPlaceholderText(/password/i)
+      ).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText(/email/i)).not.toBeInTheDocument();
     });
 
-    it('should have proper autoComplete attributes', () => {
-      render(<LoginPage />);
+    it('should display Microsoft Entra ID branding for trust', () => {
+      render(<LoginForm />);
 
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-
-      expect(emailInput).toHaveAttribute('autoComplete', 'email');
-      expect(passwordInput).toHaveAttribute('autoComplete', 'current-password');
-    });
-  });
-
-  describe('Navigation and Links', () => {
-    it('should render registration link', () => {
-      render(<LoginPage />);
-
-      const registerLink = screen.getByText('create a new account');
-      expect(registerLink).toBeInTheDocument();
-    });
-
-    it('should render forgot password link', () => {
-      render(<LoginPage />);
-
-      const forgotPasswordLink = screen.getByText('Forgot your password?');
-      expect(forgotPasswordLink).toBeInTheDocument();
+      expect(screen.getByText(/Microsoft Entra ID/i)).toBeInTheDocument();
     });
   });
 });

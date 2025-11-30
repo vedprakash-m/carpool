@@ -7,63 +7,34 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { Toaster } from 'react-hot-toast';
 
+/**
+ * Root Providers Component
+ *
+ * Handles conditional authentication initialization based on route.
+ * Public routes (registration, login, landing) skip auth initialization
+ * to allow unauthenticated access to those pages.
+ */
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // AUTHENTICATION REMEDIATION: Single source of truth - Only Entra Auth
   const initializeEntra = useEntraAuthStore(state => state.initialize);
 
   useEffect(() => {
-    console.log('🔍 DEBUG - Providers useEffect running...');
-    console.log('🔍 DEBUG - Current pathname:', pathname);
-    console.log('🔍 DEBUG - Pathname type:', typeof pathname);
-    console.log('🔍 DEBUG - Pathname length:', pathname?.length);
-    console.log(
-      '🔍 DEBUG - Window location:',
-      typeof window !== 'undefined' ? window.location.href : 'SSR'
-    );
-
-    // CRITICAL FIX: Completely disable authentication on registration flow
-    // Registration pages should show forms, not authentication prompts
-    const isRegistrationFlow =
+    // Define public routes that don't require authentication
+    const isPublicRoute =
+      pathname === '/' ||
+      pathname === '/login' ||
       pathname === '/register' ||
       pathname?.startsWith('/register/') ||
       pathname === '/registration-complete' ||
-      pathname?.startsWith('/registration-complete');
-
-    const isPublicPage =
-      pathname === '/login' ||
+      pathname?.startsWith('/registration-complete') ||
       pathname === '/forgot-password' ||
-      pathname === '/' ||
       pathname?.startsWith('/about');
 
-    console.log(
-      '🔍 DEBUG - pathname === "/register":',
-      pathname === '/register'
-    );
-    console.log(
-      '🔍 DEBUG - pathname?.startsWith("/register/"):',
-      pathname?.startsWith('/register/')
-    );
-    console.log('🔍 DEBUG - Is registration flow:', isRegistrationFlow);
-    console.log('🔍 DEBUG - Is public page:', isPublicPage);
-
-    // Only initialize authentication for authenticated app areas
-    const shouldInitializeAuth = !isRegistrationFlow && !isPublicPage;
-
-    console.log('🔍 DEBUG - Should initialize auth:', shouldInitializeAuth);
-
-    if (shouldInitializeAuth) {
-      console.log(
-        '🔑 INITIALIZING AUTH - This should NOT happen on registration pages'
-      );
+    // Only initialize authentication for protected routes
+    if (!isPublicRoute) {
       initializeEntra().catch(error => {
         console.error('Failed to initialize Entra authentication:', error);
       });
-    } else {
-      console.log(
-        '✅ SKIPPING AUTH - Correctly identified as registration/public page - PATHNAME:',
-        pathname
-      );
     }
   }, [initializeEntra, pathname]);
   return (

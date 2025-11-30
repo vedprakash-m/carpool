@@ -1,12 +1,11 @@
 /**
  * Integration tests for Login Page
- * Tests real implementation with React Hook Form, Zod validation, and auth store
+ * Tests Microsoft Entra ID SSO implementation
  *
- * Updated to align with User_Experience.md requirements:
- * - Progressive Parent Onboarding flow support
- * - Enhanced Family Unit Registration integration
- * - Post-login routing to appropriate onboarding steps
- * - Role-based dashboard navigation
+ * Updated to align with current implementation:
+ * - Microsoft Entra ID single sign-on (SSO) only
+ * - No email/password form (uses Microsoft authentication)
+ * - Role-based dashboard navigation after auth
  */
 
 import React from 'react';
@@ -15,25 +14,28 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import LoginPage from '../../app/login/page';
 
-// Test constants
-const TEST_PASSWORDS = {
-  ADMIN: 'test-admin-pass',
-  USER: 'test-user-pass',
-  FAMILY: 'test-family-pass',
-  SECURE: 'test-secure-pass',
-};
-
-// Mock the auth store
-const mockLogin = jest.fn();
-const mockAuthStore = {
-  login: mockLogin,
+// Mock the Entra auth store
+const mockLoginWithEntra = jest.fn();
+const mockClearError = jest.fn();
+const mockEntraAuthStore: {
+  loginWithEntra: jest.Mock;
+  isLoading: boolean;
+  error: string | null;
+  clearError: jest.Mock;
+  vedUser: null;
+  isAuthenticated: boolean;
+} = {
+  loginWithEntra: mockLoginWithEntra,
   isLoading: false,
-  user: null,
+  error: null,
+  clearError: mockClearError,
+  vedUser: null,
   isAuthenticated: false,
 };
 
-jest.mock('../../store/auth.store', () => ({
-  useAuthStore: (selector: any) => selector(mockAuthStore),
+jest.mock('../../store/entra-auth.store', () => ({
+  useEntraAuthStore: (selector?: any) =>
+    selector ? selector(mockEntraAuthStore) : mockEntraAuthStore,
 }));
 
 // Mock Next.js router
@@ -44,350 +46,128 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-// Mock react-hot-toast
-jest.mock('react-hot-toast', () => ({
-  __esModule: true,
-  default: {
-    success: jest.fn(),
-    error: jest.fn(),
-  },
-}));
-
-// Mock onboarding context for Progressive Parent Onboarding
-const mockOnboardingState = {
-  isOnboardingActive: false,
-  currentStepIndex: 0,
-  steps: [],
-  userProgress: {
-    profileCompleted: false,
-    notificationsSetup: false,
-    preferencesTourCompleted: false,
-    firstWeekSimulated: false,
-  },
-  showTooltips: true,
-  canSkip: true,
-};
-
-const mockStartOnboarding = jest.fn();
-
-jest.mock('../../contexts/OnboardingContext', () => ({
-  useOnboarding: () => ({
-    onboardingState: mockOnboardingState,
-    startOnboarding: mockStartOnboarding,
-  }),
-}));
-
-describe('Login Page - UX Requirements Alignment', () => {
+describe('Login Page - Microsoft Entra ID SSO', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockAuthStore.isLoading = false;
-    mockAuthStore.isAuthenticated = false;
-    mockAuthStore.user = null;
-    mockOnboardingState.isOnboardingActive = false;
+    mockEntraAuthStore.isLoading = false;
+    mockEntraAuthStore.isAuthenticated = false;
+    mockEntraAuthStore.error = null;
+    mockEntraAuthStore.vedUser = null;
   });
 
-  describe('Progressive Parent Onboarding Integration', () => {
-    it('should render login form with onboarding-aware messaging', () => {
+  describe('Page Rendering', () => {
+    it('should render login page with Microsoft SSO button', () => {
       render(<LoginPage />);
 
-      // Check for heading that aligns with Progressive Parent Onboarding
-      expect(screen.getByText('Sign in to your account')).toBeInTheDocument();
+      // Check for heading
+      expect(screen.getByText('Sign in to Carpool')).toBeInTheDocument();
 
-      // Check for form inputs (by placeholder since labels are screen-reader only)
-      expect(screen.getByPlaceholderText('Email address')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
-
-      // Check for submit button
+      // Check for Microsoft login button
       expect(
-        screen.getByRole('button', { name: /sign in/i })
+        screen.getByRole('button', { name: /continue with microsoft/i })
       ).toBeInTheDocument();
 
-      // Check for registration link that supports family registration flow
-      expect(screen.getByText('create a new account')).toBeInTheDocument();
+      // Check for descriptive text
+      expect(
+        screen.getByText(/use your microsoft account to access/i)
+      ).toBeInTheDocument();
     });
 
-    it('should have proper input types and attributes for family-oriented login', () => {
+    it('should render navigation with sign up link', () => {
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
+      // Check for navigation
+      expect(screen.getByText('Carpool')).toBeInTheDocument();
 
-      expect(emailInput).toHaveAttribute('type', 'email');
-      expect(emailInput).toHaveAttribute('autoComplete', 'email');
-      expect(passwordInput).toHaveAttribute('type', 'password');
-      expect(passwordInput).toHaveAttribute('autoComplete', 'current-password');
+      // Check for sign up link
+      const signUpLink = screen.getByRole('link', { name: /sign up/i });
+      expect(signUpLink).toBeInTheDocument();
+      expect(signUpLink).toHaveAttribute('href', '/register');
     });
 
-    it('should handle login for new parent requiring Progressive Onboarding', async () => {
-      const user = userEvent.setup();
-
-      // Mock a new parent user who needs onboarding
-      const newParentUser = {
-        id: 'new-parent-123',
-        email: 'newparent@school.edu',
-        firstName: 'Sarah',
-        lastName: 'Johnson',
-        role: 'parent',
-        familyId: null, // No family registered yet
-        onboardingCompleted: false,
-      };
-
-      mockLogin.mockResolvedValue(newParentUser);
-
+    it('should have proper accessibility attributes', () => {
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'newparent@school.edu');
-      await user.type(passwordInput, TEST_PASSWORDS.USER);
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith({
-          email: 'newparent@school.edu',
-          password: TEST_PASSWORDS.USER,
-        });
+      const loginButton = screen.getByRole('button', {
+        name: /continue with microsoft/i,
       });
-    });
-
-    it('should handle login for returning parent with existing family', async () => {
-      const user = userEvent.setup();
-
-      // Mock an existing parent with completed family registration
-      const existingParentUser = {
-        id: 'parent-456',
-        email: 'parent@school.edu',
-        firstName: 'Michael',
-        lastName: 'Smith',
-        role: 'parent',
-        familyId: 'family-123',
-        onboardingCompleted: true,
-      };
-
-      mockLogin.mockResolvedValue(existingParentUser);
-
-      render(<LoginPage />);
-
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'parent@school.edu');
-      await user.type(passwordInput, TEST_PASSWORDS.SECURE);
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith({
-          email: 'parent@school.edu',
-          password: TEST_PASSWORDS.SECURE,
-        });
-      });
+      expect(loginButton).toBeVisible();
+      expect(loginButton).toBeEnabled();
     });
   });
 
-  describe('Form Submission - Family-Aware Login', () => {
-    it('should submit form with valid credentials and handle role-based routing', async () => {
+  describe('Microsoft SSO Login Flow', () => {
+    it('should call loginWithEntra when Microsoft button is clicked', async () => {
       const user = userEvent.setup();
-      const familyParentUser = {
-        id: 'parent-789',
-        email: 'parent@family.edu',
-        firstName: 'Lisa',
-        lastName: 'Chen',
-        role: 'parent',
-        familyId: 'family-456',
-        onboardingCompleted: true,
-      };
-
-      mockLogin.mockResolvedValue(familyParentUser);
+      mockLoginWithEntra.mockResolvedValue(undefined);
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'parent@family.edu');
-      await user.type(passwordInput, TEST_PASSWORDS.FAMILY);
-      await user.click(submitButton);
+      const loginButton = screen.getByRole('button', {
+        name: /continue with microsoft/i,
+      });
+      await user.click(loginButton);
 
       await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith({
-          email: 'parent@family.edu',
-          password: TEST_PASSWORDS.FAMILY,
-        });
+        expect(mockClearError).toHaveBeenCalled();
+        expect(mockLoginWithEntra).toHaveBeenCalled();
       });
     });
 
-    it('should handle admin login with system-wide access', async () => {
-      const user = userEvent.setup();
-      const adminUser = {
-        id: 'admin-001',
-        email: 'admin@school.edu',
-        firstName: 'Admin',
-        lastName: 'User',
-        role: 'admin',
-        familyId: null, // Admins don't belong to families
-        onboardingCompleted: true,
-      };
-
-      mockLogin.mockResolvedValue(adminUser);
+    it('should show loading state while authenticating', () => {
+      mockEntraAuthStore.isLoading = true;
 
       render(<LoginPage />);
 
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'admin@school.edu');
-      await user.type(passwordInput, TEST_PASSWORDS.ADMIN);
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalledWith({
-          email: 'admin@school.edu',
-          password: TEST_PASSWORDS.ADMIN,
-        });
-      });
+      const loginButton = screen.getByRole('button', { name: /signing in/i });
+      expect(loginButton).toBeDisabled();
     });
 
-    it('should handle empty form submission with proper validation', async () => {
-      const user = userEvent.setup();
+    it('should display error message when login fails', () => {
+      mockEntraAuthStore.error = 'Authentication failed. Please try again.';
 
       render(<LoginPage />);
 
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-      await user.click(submitButton);
-
-      // Should not call login with empty form (form validation should prevent it)
-      expect(mockLogin).not.toHaveBeenCalled();
-    });
-
-    it('should handle login errors gracefully', async () => {
-      const user = userEvent.setup();
-      mockLogin.mockRejectedValue(new Error('Invalid credentials'));
-
-      render(<LoginPage />);
-
-      const emailInput = screen.getByPlaceholderText('Email address');
-      const passwordInput = screen.getByPlaceholderText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      await user.type(emailInput, 'invalid@email.com');
-      await user.type(passwordInput, 'wrongpassword');
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockLogin).toHaveBeenCalled();
-      });
-
-      // Error should be handled gracefully without breaking the form
-      expect(screen.getByPlaceholderText('Email address')).toBeInTheDocument();
+      expect(screen.getByText('Sign in failed')).toBeInTheDocument();
+      expect(
+        screen.getByText('Authentication failed. Please try again.')
+      ).toBeInTheDocument();
     });
   });
 
-  describe('Loading States - UX-Optimized Feedback', () => {
-    it('should show progressive loading state during authentication', () => {
-      mockAuthStore.isLoading = true;
-
+  describe('Navigation and Links', () => {
+    it('should have working navigation to home', () => {
       render(<LoginPage />);
 
-      const submitButton = screen.getByTestId('submit-login-button');
-      expect(submitButton).toHaveTextContent('Signing in...');
-      expect(submitButton).toBeDisabled();
-
-      // Loading state should be accessible and clear
-      expect(submitButton).toBeDisabled();
+      const homeLink = screen.getByRole('link', { name: /carpool/i });
+      expect(homeLink).toHaveAttribute('href', '/');
     });
 
-    it('should show ready state for family login flow', () => {
+    it('should have working navigation to registration', () => {
       render(<LoginPage />);
 
-      const submitButton = screen.getByTestId('submit-login-button');
-      expect(submitButton).toHaveTextContent('Sign in');
-      expect(submitButton).not.toBeDisabled();
-      expect(submitButton).not.toHaveAttribute('aria-disabled');
-    });
-
-    it('should handle loading state transitions properly', async () => {
-      const user = userEvent.setup();
-
-      // Start with loading false
-      mockAuthStore.isLoading = false;
-      const { rerender } = render(<LoginPage />);
-
-      let submitButton = screen.getByTestId('submit-login-button');
-      expect(submitButton).toHaveTextContent('Sign in');
-      expect(submitButton).not.toBeDisabled();
-
-      // Simulate loading state change
-      mockAuthStore.isLoading = true;
-      rerender(<LoginPage />);
-
-      submitButton = screen.getByTestId('submit-login-button');
-      expect(submitButton).toHaveTextContent('Signing in...');
-      expect(submitButton).toBeDisabled();
+      const signUpLink = screen.getByRole('link', { name: /sign up/i });
+      expect(signUpLink).toHaveAttribute('href', '/register');
     });
   });
 
-  describe('Navigation Links - Family Registration Flow', () => {
-    it('should have registration link that supports Enhanced Family Unit Registration', () => {
+  describe('Security and Compliance', () => {
+    it('should display Microsoft Entra ID security notice', () => {
       render(<LoginPage />);
 
-      const registerLink = screen.getByRole('link', {
-        name: /create a new account/i,
-      });
-      expect(registerLink).toHaveAttribute('href', '/register');
-
-      // Registration link should be prominent for new families
-      expect(registerLink).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /secure authentication provided by microsoft entra id/i
+        )
+      ).toBeInTheDocument();
     });
 
-    it('should have accessible forgot password functionality', () => {
+    it('should display terms of service notice', () => {
       render(<LoginPage />);
 
-      const forgotPasswordLink = screen.getByRole('link', {
-        name: /forgot your password/i,
-      });
-      expect(forgotPasswordLink).toHaveAttribute('href', '/forgot-password');
-
-      // Should be accessible for family members who may have forgotten credentials
-      expect(forgotPasswordLink).toBeInTheDocument();
-    });
-
-    it('should have proper accessibility attributes for navigation', () => {
-      render(<LoginPage />);
-
-      const registerLink = screen.getByRole('link', {
-        name: /create a new account/i,
-      });
-      const forgotPasswordLink = screen.getByRole('link', {
-        name: /forgot your password/i,
-      });
-
-      // Links should have proper ARIA attributes for screen readers
-      expect(registerLink).toHaveAttribute('href', '/register');
-      expect(forgotPasswordLink).toHaveAttribute('href', '/forgot-password');
-
-      // Both links should be keyboard navigable
-      expect(registerLink).toBeVisible();
-      expect(forgotPasswordLink).toBeVisible();
-    });
-
-    it('should support family onboarding entry points', () => {
-      render(<LoginPage />);
-
-      // The registration link should clearly indicate family registration capability
-      const registerLink = screen.getByRole('link', {
-        name: /create a new account/i,
-      });
-
-      expect(registerLink).toBeInTheDocument();
-      expect(registerLink).toHaveAttribute('href', '/register');
-
-      // Should be styled appropriately to encourage new family registration
-      // (styling verification would be in integration/e2e tests)
+      expect(
+        screen.getByText(/by signing in, you agree to our terms of service/i)
+      ).toBeInTheDocument();
     });
   });
 });

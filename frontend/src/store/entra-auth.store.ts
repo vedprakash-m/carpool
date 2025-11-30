@@ -7,16 +7,23 @@ import {
 import { VedUser } from '@carpool/shared';
 import { apiClient } from '../lib/api-client';
 
-// EMERGENCY: Block MSAL entirely on registration pages
-if (typeof window !== 'undefined') {
+/**
+ * Helper function to check if current route is a public/registration route
+ * Used to prevent MSAL initialization on pages that don't require auth
+ */
+function isPublicRoute(): boolean {
+  if (typeof window === 'undefined') return false;
   const pathname = window.location.pathname;
-  if (pathname === '/register' || pathname.startsWith('/register/')) {
-    console.log(
-      '🚨 EMERGENCY BLOCK: Preventing MSAL module loading on registration page'
-    );
-    // Override the MSAL module to prevent any initialization
-    (window as any).__MSAL_BLOCKED__ = true;
-  }
+  return (
+    pathname === '/' ||
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname.startsWith('/register/') ||
+    pathname === '/registration-complete' ||
+    pathname.startsWith('/registration-complete') ||
+    pathname === '/forgot-password' ||
+    pathname.startsWith('/about')
+  );
 }
 
 // MSAL Configuration following Apps_Auth_Requirement.md - CORRECTED
@@ -85,36 +92,10 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
   // Actions
   initialize: async () => {
     try {
-      // EMERGENCY BLOCK: Respect global MSAL block
-      if ((window as any).__MSAL_BLOCKED__) {
-        console.log('🚨 EMERGENCY: MSAL initialization blocked by global flag');
+      // Don't initialize auth on public routes
+      if (isPublicRoute()) {
         set({ isLoading: false });
         return;
-      }
-
-      // CRITICAL SAFEGUARD: Never initialize auth on registration pages
-      if (typeof window !== 'undefined') {
-        const pathname = window.location.pathname;
-        const isRegistrationPage =
-          pathname === '/register' ||
-          pathname.startsWith('/register/') ||
-          pathname === '/registration-complete' ||
-          pathname.startsWith('/registration-complete');
-
-        console.log('🛡️ STORE SAFEGUARD - Current pathname:', pathname);
-        console.log(
-          '🛡️ STORE SAFEGUARD - Is registration page:',
-          isRegistrationPage
-        );
-
-        if (isRegistrationPage) {
-          console.log(
-            '🚫 BLOCKED: Auth initialization prevented on registration page:',
-            pathname
-          );
-          set({ isLoading: false });
-          return;
-        }
       }
 
       set({ isLoading: true, error: null });
@@ -125,20 +106,7 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         return;
       }
 
-      // ADDITIONAL SAFEGUARD: Double-check pathname before MSAL creation
-      const currentPath = window.location.pathname;
-      if (currentPath === '/register' || currentPath.startsWith('/register/')) {
-        console.log(
-          '🚫 DOUBLE-BLOCK: Prevented MSAL initialization on:',
-          currentPath
-        );
-        set({ isLoading: false });
-        return;
-      }
-
       console.log('Initializing MSAL...');
-      console.log('Current URL:', window.location.href);
-      console.log('URL hash:', window.location.hash);
       console.log('MSAL Config:', {
         clientId: msalConfig.auth.clientId,
         authority: msalConfig.auth.authority,

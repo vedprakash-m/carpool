@@ -569,5 +569,281 @@ describe('DatabaseService', () => {
         expect(databaseService.getDefaultContainer()).toBeUndefined();
       });
     });
+
+    describe('getAvailableContainers', () => {
+      it('should return list of container names', () => {
+        databaseService = DatabaseService.getInstance();
+        const containers = databaseService.getAvailableContainers();
+
+        expect(containers).toContain('users');
+        expect(containers).toContain('trips');
+        expect(containers).toContain('groups');
+        expect(containers).toContain('schedules');
+        expect(containers).toContain('swapRequests');
+      });
+    });
+
+    describe('getContainer', () => {
+      it('should return undefined when using in-memory storage', () => {
+        databaseService = DatabaseService.getInstance();
+        expect(databaseService.getContainer('users')).toBeUndefined();
+      });
+    });
+  });
+
+  describe('Group Management - In-Memory Mode', () => {
+    beforeEach(() => {
+      mockConfigService.shouldUseRealDatabase.mockReturnValue(false);
+      (DatabaseService as any).instance = undefined;
+      databaseService = DatabaseService.getInstance();
+    });
+
+    describe('createGroup', () => {
+      it('should create a group in memory', async () => {
+        // Use any since we're testing in-memory storage which is more permissive
+        const groupData = {
+          id: 'group-1',
+          name: 'Morning Carpool',
+          schoolId: 'school-1',
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any;
+
+        const group = await databaseService.createGroup(groupData);
+
+        expect(group).toEqual(groupData);
+      });
+    });
+
+    describe('getGroupById', () => {
+      it('should return group when found', async () => {
+        const groupData = {
+          id: 'group-2',
+          name: 'Test Carpool',
+          schoolId: 'school-1',
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any;
+
+        await databaseService.createGroup(groupData);
+
+        const group = await databaseService.getGroupById('group-2');
+        expect(group).toEqual(groupData);
+      });
+
+      it('should return null when group not found', async () => {
+        const group = await databaseService.getGroupById('nonexistent-group');
+        expect(group).toBeNull();
+      });
+    });
+
+    describe('getGroupsBySchool', () => {
+      it('should return groups for specific school', async () => {
+        const group1 = {
+          id: 'group-3',
+          name: 'School A Carpool',
+          schoolId: 'school-a',
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any;
+
+        const group2 = {
+          id: 'group-4',
+          name: 'School B Carpool',
+          schoolId: 'school-b',
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any;
+
+        await databaseService.createGroup(group1);
+        await databaseService.createGroup(group2);
+
+        const groups = await databaseService.getGroupsBySchool('school-a');
+        expect(groups.length).toBe(1);
+        expect(groups[0].id).toBe('group-3');
+      });
+
+      it('should return all groups when no school specified', async () => {
+        const groups = await databaseService.getGroupsBySchool();
+        expect(Array.isArray(groups)).toBe(true);
+      });
+    });
+
+    describe('updateGroup', () => {
+      it('should update existing group', async () => {
+        const groupData = {
+          id: 'group-5',
+          name: 'Original Name',
+          schoolId: 'school-1',
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any;
+
+        await databaseService.createGroup(groupData);
+
+        const updated = await databaseService.updateGroup('group-5', { name: 'Updated Name' });
+        expect(updated?.name).toBe('Updated Name');
+      });
+
+      it('should return null when group not found', async () => {
+        const result = await databaseService.updateGroup('nonexistent', { name: 'Test' });
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('createJoinRequest', () => {
+      it('should create a join request in memory', async () => {
+        const joinRequest = {
+          id: 'request-1',
+          groupId: 'group-1',
+          userId: 'user-1',
+          status: 'pending',
+          createdAt: new Date(),
+        };
+
+        const result = await databaseService.createJoinRequest(joinRequest);
+        expect(result).toEqual(joinRequest);
+      });
+    });
+
+    describe('getJoinRequestById', () => {
+      it('should return join request when found', async () => {
+        const joinRequest = {
+          id: 'request-2',
+          groupId: 'group-1',
+          userId: 'user-1',
+          status: 'pending',
+          createdAt: new Date(),
+        };
+
+        await databaseService.createJoinRequest(joinRequest);
+
+        const result = await databaseService.getJoinRequestById('request-2');
+        expect(result).toEqual(joinRequest);
+      });
+
+      it('should return null when join request not found', async () => {
+        const result = await databaseService.getJoinRequestById('nonexistent');
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('updateJoinRequestStatus', () => {
+      it('should update join request status', async () => {
+        const joinRequest = {
+          id: 'request-3',
+          groupId: 'group-1',
+          userId: 'user-1',
+          status: 'pending',
+          createdAt: new Date(),
+        };
+
+        await databaseService.createJoinRequest(joinRequest);
+        await databaseService.updateJoinRequestStatus('request-3', 'approved');
+
+        const updated = await databaseService.getJoinRequestById('request-3');
+        expect(updated?.status).toBe('approved');
+      });
+
+      it('should handle non-existent join request gracefully', async () => {
+        // Should not throw error
+        await expect(
+          databaseService.updateJoinRequestStatus('nonexistent', 'approved'),
+        ).resolves.toBeUndefined();
+      });
+    });
+
+    describe('getSchools', () => {
+      it('should return list of schools', async () => {
+        const schools = await databaseService.getSchools();
+
+        expect(Array.isArray(schools)).toBe(true);
+        expect(schools.length).toBeGreaterThan(0);
+        expect(schools[0]).toHaveProperty('id');
+        expect(schools[0]).toHaveProperty('name');
+      });
+    });
+  });
+
+  describe('getUserById - In-Memory Mode', () => {
+    beforeEach(() => {
+      mockConfigService.shouldUseRealDatabase.mockReturnValue(false);
+      (DatabaseService as any).instance = undefined;
+      databaseService = DatabaseService.getInstance();
+    });
+
+    it('should return user by ID when found', async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      const user = await databaseService.getUserByEmail('admin@carpool.com');
+      expect(user).toBeTruthy();
+
+      if (user) {
+        const foundUser = await databaseService.getUserById(user.id);
+        expect(foundUser).toBeTruthy();
+        expect(foundUser?.email).toBe('admin@carpool.com');
+      }
+    });
+
+    it('should return null when user ID not found', async () => {
+      const user = await databaseService.getUserById('nonexistent-id');
+      expect(user).toBeNull();
+    });
+  });
+
+  describe('getUserByEntraId - In-Memory Mode', () => {
+    beforeEach(() => {
+      mockConfigService.shouldUseRealDatabase.mockReturnValue(false);
+      (DatabaseService as any).instance = undefined;
+      databaseService = DatabaseService.getInstance();
+    });
+
+    it('should return user by Entra ID when found', async () => {
+      const userData = createTestUserData({
+        email: 'entra-user@test.com',
+        entraObjectId: 'entra-obj-123',
+      } as any);
+
+      await databaseService.createUser(userData);
+
+      const user = await databaseService.getUserByEntraId('entra-obj-123');
+      expect(user).toBeTruthy();
+      expect(user?.email).toBe('entra-user@test.com');
+    });
+
+    it('should return null when Entra ID not found', async () => {
+      const user = await databaseService.getUserByEntraId('nonexistent-entra-id');
+      expect(user).toBeNull();
+    });
+  });
+
+  describe('updateUserById - In-Memory Mode', () => {
+    beforeEach(() => {
+      mockConfigService.shouldUseRealDatabase.mockReturnValue(false);
+      (DatabaseService as any).instance = undefined;
+      databaseService = DatabaseService.getInstance();
+    });
+
+    it('should update user by ID', async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      const user = await databaseService.getUserByEmail('admin@carpool.com');
+      expect(user).toBeTruthy();
+
+      if (user) {
+        const updated = await databaseService.updateUserById(user.id, { firstName: 'UpdatedName' });
+        expect(updated?.firstName).toBe('UpdatedName');
+      }
+    });
+
+    it('should return null when user ID not found', async () => {
+      const result = await databaseService.updateUserById('nonexistent-id', { firstName: 'Test' });
+      expect(result).toBeNull();
+    });
   });
 });
