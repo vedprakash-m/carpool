@@ -92,9 +92,8 @@ export class ApiClient {
       }
     }
 
-    // Temporarily enable mock mode for registration until backend is fixed
-    // This allows users to test the complete registration flow
-    this.enableMockMode();
+    // Note: Mock mode is disabled by default. Enable it explicitly via localStorage or enableMockMode()
+    // for development/testing purposes only.
 
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
@@ -466,14 +465,21 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     // Check for mock mode and auth endpoints
     if (this.isMockMode) {
-      if (url === '/api/auth' && data && data.action === 'login') {
+      // Support both query param format and old body format for backwards compatibility
+      if (
+        url.includes('/auth?action=login') ||
+        (url === '/api/auth' && data && data.action === 'login')
+      ) {
         return this.mockLogin(data) as Promise<ApiResponse<T>>;
       }
-      if (url === '/api/auth' && data && data.action === 'register') {
+      if (
+        url.includes('/auth?action=register') ||
+        (url === '/api/auth' && data && data.action === 'register')
+      ) {
         return this.mockRegister(data) as Promise<ApiResponse<T>>;
       }
-      // For other endpoints in mock mode, return success
-      if (url.startsWith('/api/auth')) {
+      // For other auth endpoints in mock mode, return success
+      if (url.startsWith('/api/auth') || url.startsWith('/auth')) {
         return Promise.resolve({
           success: true,
           data: {} as T,
@@ -585,21 +591,25 @@ export class ApiClient {
 }
 
 // Create singleton instance
-// Use relative URLs for Azure Static Web Apps proxy support
+// Production backend URL
+const PRODUCTION_API_URL =
+  'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api';
+
 const getApiUrl = () => {
   // In browser environment, check the hostname
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     console.log('getApiUrl called, hostname:', hostname);
 
-    // In production (Azure Static Web Apps or custom domain), use relative URL that gets proxied
+    // In production (Azure Static Web Apps or custom domain), call backend directly
+    // Note: Azure SWA doesn't support external URL rewrites, so we call the backend directly
     if (
       hostname.includes('azurestaticapps.net') ||
       hostname.includes('carpool.vedprakash.net') ||
       hostname.includes('.azurewebsites.net')
     ) {
-      console.log('Using relative API URL for production: /api');
-      return '/api';
+      console.log('Using production API URL:', PRODUCTION_API_URL);
+      return PRODUCTION_API_URL;
     }
   }
 

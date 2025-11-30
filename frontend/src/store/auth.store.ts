@@ -59,8 +59,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const response = await apiClient.post<AuthResult>('/api/auth', {
-        action: 'login',
+      // Note: action must be passed as query parameter, not in body
+      const response = await apiClient.post<AuthResult>('/auth?action=login', {
         ...credentials,
       });
 
@@ -97,10 +97,13 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const response = await apiClient.post<AuthResult>('/api/auth', {
-        action: 'register',
-        ...userData,
-      });
+      // Note: action must be passed as query parameter, not in body
+      const response = await apiClient.post<AuthResult>(
+        '/auth?action=register',
+        {
+          ...userData,
+        }
+      );
 
       if (response.success && response.data) {
         const { user, accessToken, refreshToken } = response.data;
@@ -133,7 +136,8 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
 
   logout: () => {
     // Call the unified logout endpoint for proper server-side cleanup
-    apiClient.post('/api/auth', { action: 'logout' }).catch(console.error);
+    // Note: action must be passed as query parameter
+    apiClient.post('/auth?action=logout', {}).catch(console.error);
 
     // Clear tokens from secure storage instead of localStorage
     clearTokens();
@@ -240,11 +244,14 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
     try {
       set({ loading: true, error: null });
 
-      const response = await apiClient.post<boolean>('/api/auth', {
-        action: 'change-password',
-        currentPassword,
-        newPassword,
-      });
+      // Note: action must be passed as query parameter, not in body
+      const response = await apiClient.post<boolean>(
+        '/auth?action=change-password',
+        {
+          currentPassword,
+          newPassword,
+        }
+      );
 
       if (response.success && response.data) {
         set({

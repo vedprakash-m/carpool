@@ -178,8 +178,8 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
         console.log('Access token length:', response.accessToken.length);
 
         // Successful login redirect - exchange token with backend using unified auth endpoint
-        const apiResponse = await apiClient.post('/auth', {
-          action: 'entra-login',
+        // Note: action must be passed as query parameter, not in body
+        const apiResponse = await apiClient.post('/auth?action=entra-login', {
           authProvider: 'entra',
           accessToken: response.accessToken,
         });
@@ -487,11 +487,14 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
 
             while (authAttempts < maxRetries) {
               try {
-                const response = await apiClient.post('/auth', {
-                  action: 'entra-login',
-                  authProvider: 'entra',
-                  accessToken: tokenResponse.accessToken,
-                });
+                // Note: action must be passed as query parameter, not in body
+                const response = await apiClient.post(
+                  '/auth?action=entra-login',
+                  {
+                    authProvider: 'entra',
+                    accessToken: tokenResponse.accessToken,
+                  }
+                );
 
                 if (response.success && response.data) {
                   const vedUser = (response.data as { user: VedUser }).user;
