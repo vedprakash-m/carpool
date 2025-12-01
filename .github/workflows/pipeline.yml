@@ -165,11 +165,12 @@ jobs:
             --query "properties.apiKey" \
             --output tsv)
 
-          # Deploy frontend
+          # Deploy frontend to production environment
           npx @azure/static-web-apps-cli deploy \
             --app-location "." \
             --output-location "out" \
-            --deployment-token "$DEPLOYMENT_TOKEN"
+            --deployment-token "$DEPLOYMENT_TOKEN" \
+            --env production
 
   # =============================================================================
   # STAGE 3: HEALTH CHECK

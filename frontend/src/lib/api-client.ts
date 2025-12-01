@@ -1,3 +1,9 @@
+/**
+ * API Client for Carpool Application
+ *
+ * Updated: 2025-11-30 - Fixed production API URL and removed mock mode auto-enable
+ * Production URL: carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net
+ */
 import axios, {
   AxiosInstance,
   AxiosRequestConfig,
