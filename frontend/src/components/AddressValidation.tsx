@@ -9,16 +9,25 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 
-// Get API base URL - use direct backend URL for production
+// Get API base URL - check hostname at runtime for static export compatibility
 const getApiUrl = () => {
-  // In production, use the direct backend URL since Azure SWA doesn't support external rewrites
-  if (process.env.NODE_ENV === 'production' || typeof window !== 'undefined') {
-    return (
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
-    );
+  // Must check window.location at runtime since Next.js static export bakes in env vars at build time
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    console.log('getApiUrl called, hostname:', hostname);
+    // Production domains - use direct backend URL
+    if (
+      hostname === 'carpool.vedprakash.net' ||
+      hostname.includes('azurestaticapps.net')
+    ) {
+      const url =
+        'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api';
+      console.log('Using production API URL:', url);
+      return url;
+    }
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7071/api';
+  // Local development
+  return 'http://localhost:7071/api';
 };
 
 interface AddressValidationProps {
