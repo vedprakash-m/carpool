@@ -9,6 +9,18 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 
+// Get API base URL - use direct backend URL for production
+const getApiUrl = () => {
+  // In production, use the direct backend URL since Azure SWA doesn't support external rewrites
+  if (process.env.NODE_ENV === 'production' || typeof window !== 'undefined') {
+    return (
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api'
+    );
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7071/api';
+};
+
 interface AddressValidationProps {
   onValidationComplete?: (verified: boolean) => void;
   required?: boolean;
@@ -66,8 +78,9 @@ export default function AddressValidation({
     setLoading(true);
     try {
       const token = localStorage.getItem('carpool_token');
+      const apiUrl = getApiUrl();
       const response = await fetch(
-        '/api/address-validation-secure?action=status',
+        `${apiUrl}/address-validation-secure?action=status`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -107,8 +120,9 @@ export default function AddressValidation({
 
     try {
       const token = localStorage.getItem('carpool_token');
+      const apiUrl = getApiUrl();
       const response = await fetch(
-        '/api/address-validation-secure?action=validate',
+        `${apiUrl}/address-validation-secure?action=validate`,
         {
           method: 'POST',
           headers: {

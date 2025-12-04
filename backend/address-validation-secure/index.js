@@ -1,4 +1,15 @@
-const { v4: uuidv4 } = require("uuid");
+let uuidv4;
+try {
+  uuidv4 = require('uuid').v4;
+} catch (e) {
+  // Fallback if uuid import fails
+  uuidv4 = () =>
+    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+}
 
 // Simplified response handler for this function
 class ResponseHandler {
@@ -17,10 +28,10 @@ class ResponseHandler {
     context.res = {
       status: 200,
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
       body: JSON.stringify(response),
     };
@@ -44,10 +55,10 @@ class ResponseHandler {
     context.res = {
       status: statusCode,
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
       body: JSON.stringify(response),
     };
@@ -57,33 +68,27 @@ class ResponseHandler {
     context.res = {
       status: 200,
       headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
-      body: JSON.stringify({ message: "CORS preflight" }),
+      body: JSON.stringify({ message: 'CORS preflight' }),
     };
   }
 
   static validationError(context, message, details = null) {
-    return this.error(context, "VALIDATION_ERROR", message, 400, details);
+    return this.error(context, 'VALIDATION_ERROR', message, 400, details);
   }
 
   static internalError(context, message, details = null) {
-    return this.error(context, "INTERNAL_ERROR", message, 500, details);
+    return this.error(context, 'INTERNAL_ERROR', message, 500, details);
   }
 
   static handleException(context, error) {
-    return this.error(
-      context,
-      "EXCEPTION",
-      "An unexpected error occurred",
-      500,
-      {
-        message: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
-      }
-    );
+    return this.error(context, 'EXCEPTION', 'An unexpected error occurred', 500, {
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+    });
   }
 
   static successResponse(context, data, meta = {}) {
@@ -91,10 +96,10 @@ class ResponseHandler {
     context.res = {
       status: 200,
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
       body: JSON.stringify(response),
     };
@@ -103,8 +108,8 @@ class ResponseHandler {
 
 // Tesla Stem High School location (Redmond, WA)
 const TESLA_STEM_HIGH_SCHOOL = {
-  name: "Tesla Stem High School",
-  address: "2301 West Lake Sammamish Pkwy NE, Redmond, WA 98052",
+  name: 'Tesla Stem High School',
+  address: '2301 West Lake Sammamish Pkwy NE, Redmond, WA 98052',
   coordinates: { latitude: 47.674, longitude: -122.1215 },
 };
 
@@ -113,19 +118,19 @@ const SERVICE_AREA_RADIUS_MILES = 25;
 // Mock users for testing - in production, this would be in a database
 let mockUsers = [
   {
-    id: "parent-123",
-    email: "john.parent@example.com",
-    homeAddress: "",
+    id: 'parent-123',
+    email: 'john.parent@example.com',
+    homeAddress: '',
     homeAddressVerified: false,
     homeLocation: null,
   },
 ];
 
 module.exports = async function (context, req) {
-  context.log("Secure Address Validation API called");
+  context.log('Secure Address Validation API called');
 
   // Handle preflight requests
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return ResponseHandler.preflight(context);
   }
 
@@ -135,40 +140,35 @@ module.exports = async function (context, req) {
 
     // Get authorization token
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return ResponseHandler.error(
         context,
-        "UNAUTHORIZED",
-        "Missing or invalid authorization token",
-        401
+        'UNAUTHORIZED',
+        'Missing or invalid authorization token',
+        401,
       );
     }
 
     // Extract user ID from token (mock - in production, decode JWT)
-    const token = authHeader.split(" ")[1];
-    const userId = "parent-123"; // In production, extract from JWT
+    const token = authHeader.split(' ')[1];
+    const userId = 'parent-123'; // In production, extract from JWT
 
     // Route based on method and action
-    if (method === "POST" && action === "validate") {
+    if (method === 'POST' && action === 'validate') {
       return await validateAddress(userId, req.body, context);
     }
 
-    if (method === "POST" && action === "geocode") {
+    if (method === 'POST' && action === 'geocode') {
       return await geocodeAddress(req.body, context);
     }
 
-    if (method === "GET" && action === "status") {
+    if (method === 'GET' && action === 'status') {
       return await getAddressStatus(userId, context);
     }
 
-    return ResponseHandler.error(
-      context,
-      "METHOD_NOT_ALLOWED",
-      "Method not allowed",
-      405
-    );
+    return ResponseHandler.error(context, 'METHOD_NOT_ALLOWED', 'Method not allowed', 405);
   } catch (error) {
-    context.log.error("Address Validation API error:", error);
+    context.log.error('Address Validation API error:', error);
     return ResponseHandler.handleException(context, error);
   }
 };
@@ -181,11 +181,11 @@ async function validateAddress(userId, requestData, context) {
     if (!address || address.trim().length < 5) {
       return ResponseHandler.validationError(
         context,
-        "Please provide a complete home address (at least 5 characters)"
+        'Please provide a complete home address (at least 5 characters)',
       );
     }
 
-    context.log("Validating address:", address);
+    context.log('Validating address:', address);
 
     // Use real geocoding service (Google Maps, Azure Maps, etc.)
     const geocodingResult = await realGeocode(address, context);
@@ -193,57 +193,54 @@ async function validateAddress(userId, requestData, context) {
     if (!geocodingResult.isValid) {
       const errorMessage =
         geocodingResult.suggestions && geocodingResult.suggestions.length > 0
-          ? "Unable to verify this address. Please check the spelling and format, or try one of the suggestions below."
+          ? 'Unable to verify this address. Please check the spelling and format, or try one of the suggestions below.'
           : "Unable to verify this address. Please check that you've entered a complete address with street number, street name, city, state, and zip code.";
 
       return ResponseHandler.validationError(context, errorMessage, {
         suggestions: geocodingResult.suggestions || [
-          "Example: 123 Main St, Redmond, WA 98052",
-          "Example: 456 NE 85th St, Bellevue, WA 98004",
-          "Example: 789 Central Way, Kirkland, WA 98033",
+          'Example: 123 Main St, Redmond, WA 98052',
+          'Example: 456 NE 85th St, Bellevue, WA 98004',
+          'Example: 789 Central Way, Kirkland, WA 98033',
         ],
-        errorCode: "INVALID_ADDRESS",
+        errorCode: 'INVALID_ADDRESS',
         tips: [
-          "Include street number and name",
-          "Include city and state (Washington/WA)",
-          "Include 5-digit zip code if known",
-          "Use standard abbreviations (St, Ave, Blvd, etc.)",
+          'Include street number and name',
+          'Include city and state (Washington/WA)',
+          'Include 5-digit zip code if known',
+          'Use standard abbreviations (St, Ave, Blvd, etc.)',
         ],
       });
     }
 
-    context.log(
-      "Address geocoded successfully:",
-      geocodingResult.formattedAddress
-    );
+    context.log('Address geocoded successfully:', geocodingResult.formattedAddress);
 
     // Check if address is within service area (25 miles of Tesla Stem High School)
     const distanceToSchool = calculateDistance(
       geocodingResult.coordinates.latitude,
       geocodingResult.coordinates.longitude,
       TESLA_STEM_HIGH_SCHOOL.coordinates.latitude,
-      TESLA_STEM_HIGH_SCHOOL.coordinates.longitude
+      TESLA_STEM_HIGH_SCHOOL.coordinates.longitude,
     );
 
-    context.log("Distance to school:", distanceToSchool, "miles");
+    context.log('Distance to school:', distanceToSchool, 'miles');
 
     if (distanceToSchool > SERVICE_AREA_RADIUS_MILES) {
       return ResponseHandler.validationError(
         context,
         `This address is ${distanceToSchool.toFixed(
-          1
+          1,
         )} miles from Tesla Stem High School. Our current service area is within ${SERVICE_AREA_RADIUS_MILES} miles of the school for safety and efficiency reasons.`,
         {
-          errorCode: "OUTSIDE_SERVICE_AREA",
+          errorCode: 'OUTSIDE_SERVICE_AREA',
           distanceToSchool: distanceToSchool,
           maxDistance: SERVICE_AREA_RADIUS_MILES,
           schoolLocation: TESLA_STEM_HIGH_SCHOOL,
           suggestions: [
-            "Verify the address is correct",
-            "Contact support if you believe this is an error",
-            "Consider carpooling from a closer location",
+            'Verify the address is correct',
+            'Contact support if you believe this is an error',
+            'Consider carpooling from a closer location',
           ],
-        }
+        },
       );
     }
 
@@ -258,29 +255,25 @@ async function validateAddress(userId, requestData, context) {
       };
     }
 
-    context.log("Address validation successful");
+    context.log('Address validation successful');
 
-    return ResponseHandler.success(
-      context,
-      "Home address verified successfully",
-      {
-        address: geocodingResult.formattedAddress,
-        coordinates: geocodingResult.coordinates,
-        distanceToSchool: distanceToSchool,
-        serviceArea: {
-          school: TESLA_STEM_HIGH_SCHOOL.name,
-          maxDistance: SERVICE_AREA_RADIUS_MILES,
-        },
-        verified: true,
-        verifiedAt: new Date().toISOString(),
-      }
-    );
+    return ResponseHandler.success(context, 'Home address verified successfully', {
+      address: geocodingResult.formattedAddress,
+      coordinates: geocodingResult.coordinates,
+      distanceToSchool: distanceToSchool,
+      serviceArea: {
+        school: TESLA_STEM_HIGH_SCHOOL.name,
+        maxDistance: SERVICE_AREA_RADIUS_MILES,
+      },
+      verified: true,
+      verifiedAt: new Date().toISOString(),
+    });
   } catch (error) {
-    context.log.error("Validate address error:", error);
+    context.log.error('Validate address error:', error);
 
     return ResponseHandler.internalError(
       context,
-      "An error occurred while validating your address. Please try again, or contact support if the problem persists."
+      'An error occurred while validating your address. Please try again, or contact support if the problem persists.',
     );
   }
 }
@@ -291,19 +284,19 @@ async function geocodeAddress(requestData, context) {
     const { address } = requestData;
 
     if (!address) {
-      return ResponseHandler.validationError(context, "Address is required");
+      return ResponseHandler.validationError(context, 'Address is required');
     }
 
     const geocodingResult = await realGeocode(address, context);
 
-    return ResponseHandler.success(context, "Address geocoded successfully", {
+    return ResponseHandler.success(context, 'Address geocoded successfully', {
       isValid: geocodingResult.isValid,
       coordinates: geocodingResult.coordinates,
       formattedAddress: geocodingResult.formattedAddress,
       suggestions: geocodingResult.suggestions || [],
     });
   } catch (error) {
-    context.log.error("Geocode address error:", error);
+    context.log.error('Geocode address error:', error);
     throw error;
   }
 }
@@ -313,29 +306,20 @@ async function getAddressStatus(userId, context) {
   try {
     const user = mockUsers.find((u) => u.id === userId);
     if (!user) {
-      return ResponseHandler.error(
-        context,
-        "USER_NOT_FOUND",
-        "User not found",
-        404
-      );
+      return ResponseHandler.error(context, 'USER_NOT_FOUND', 'User not found', 404);
     }
 
-    return ResponseHandler.success(
-      context,
-      "Address status retrieved successfully",
-      {
-        homeAddress: user.homeAddress,
-        verified: user.homeAddressVerified || false,
-        homeLocation: user.homeLocation,
-        serviceArea: {
-          school: TESLA_STEM_HIGH_SCHOOL.name,
-          maxDistance: SERVICE_AREA_RADIUS_MILES,
-        },
-      }
-    );
+    return ResponseHandler.success(context, 'Address status retrieved successfully', {
+      homeAddress: user.homeAddress,
+      verified: user.homeAddressVerified || false,
+      homeLocation: user.homeLocation,
+      serviceArea: {
+        school: TESLA_STEM_HIGH_SCHOOL.name,
+        maxDistance: SERVICE_AREA_RADIUS_MILES,
+      },
+    });
   } catch (error) {
-    context.log.error("Get address status error:", error);
+    context.log.error('Get address status error:', error);
     throw error;
   }
 }
@@ -343,7 +327,7 @@ async function getAddressStatus(userId, context) {
 // Real geocoding function using external service
 async function realGeocode(address, context) {
   try {
-    context.log("Geocoding address:", address);
+    context.log('Geocoding address:', address);
 
     // Check if we have environment variables for geocoding service
     const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -355,32 +339,29 @@ async function realGeocode(address, context) {
       return await geocodeWithAzureMaps(address, azureMapsKey, context);
     } else {
       // Fallback to a more comprehensive mock for development
-      context.log(
-        "No geocoding API keys found. Using enhanced mock geocoding for development."
-      );
+      context.log('No geocoding API keys found. Using enhanced mock geocoding for development.');
       return await enhancedMockGeocode(address, context);
     }
   } catch (error) {
-    context.log.error("Geocoding error:", error);
+    context.log.error('Geocoding error:', error);
 
     // Fallback to enhanced mock if real geocoding fails
-    context.log("Falling back to enhanced mock geocoding");
+    context.log('Falling back to enhanced mock geocoding');
     return await enhancedMockGeocode(address, context);
   }
 }
 
 // Google Maps Geocoding API implementation
 async function geocodeWithGoogleMaps(address, apiKey, context) {
-  const fetch = require("node-fetch");
-
+  // Using native fetch (Node.js 18+ has global fetch built-in)
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-    address
+    address,
   )}&key=${apiKey}`;
 
   const response = await fetch(url);
   const data = await response.json();
 
-  if (data.status === "OK" && data.results && data.results.length > 0) {
+  if (data.status === 'OK' && data.results && data.results.length > 0) {
     const result = data.results[0];
 
     return {
@@ -393,11 +374,7 @@ async function geocodeWithGoogleMaps(address, apiKey, context) {
       components: result.address_components,
     };
   } else {
-    context.log.warn(
-      "Google Maps geocoding failed:",
-      data.status,
-      data.error_message
-    );
+    context.log.warn('Google Maps geocoding failed:', data.status, data.error_message);
 
     // Return suggestions if available
     const suggestions = data.results
@@ -415,10 +392,9 @@ async function geocodeWithGoogleMaps(address, apiKey, context) {
 
 // Azure Maps Geocoding API implementation
 async function geocodeWithAzureMaps(address, subscriptionKey, context) {
-  const fetch = require("node-fetch");
-
+  // Using native fetch (Node.js 18+ has global fetch built-in)
   const url = `https://atlas.microsoft.com/search/address/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${encodeURIComponent(
-    address
+    address,
   )}`;
 
   const response = await fetch(url);
@@ -437,7 +413,7 @@ async function geocodeWithAzureMaps(address, subscriptionKey, context) {
       components: result.address,
     };
   } else {
-    context.log.warn("Azure Maps geocoding failed");
+    context.log.warn('Azure Maps geocoding failed');
 
     // Return suggestions if available
     const suggestions = data.results
@@ -464,133 +440,133 @@ async function enhancedMockGeocode(address, context) {
   const enhancedAddressDatabase = [
     // Redmond area (close to Tesla STEM)
     {
-      address: "123 Main St, Redmond, WA 98052",
+      address: '123 Main St, Redmond, WA 98052',
       coordinates: { latitude: 47.674, longitude: -122.1195 },
-      city: "Redmond",
-      state: "WA",
-      zipCode: "98052",
+      city: 'Redmond',
+      state: 'WA',
+      zipCode: '98052',
     },
     {
-      address: "456 NE 85th St, Redmond, WA 98052",
+      address: '456 NE 85th St, Redmond, WA 98052',
       coordinates: { latitude: 47.6769, longitude: -122.1215 },
-      city: "Redmond",
-      state: "WA",
-      zipCode: "98052",
+      city: 'Redmond',
+      state: 'WA',
+      zipCode: '98052',
     },
     {
-      address: "15225 NE 24th St, Redmond, WA 98052",
+      address: '15225 NE 24th St, Redmond, WA 98052',
       coordinates: { latitude: 47.674, longitude: -122.1215 },
-      city: "Redmond",
-      state: "WA",
-      zipCode: "98052",
+      city: 'Redmond',
+      state: 'WA',
+      zipCode: '98052',
     },
     // Bellevue area (within range)
     {
-      address: "789 Bellevue Way NE, Bellevue, WA 98004",
+      address: '789 Bellevue Way NE, Bellevue, WA 98004',
       coordinates: { latitude: 47.6062, longitude: -122.2024 },
-      city: "Bellevue",
-      state: "WA",
-      zipCode: "98004",
+      city: 'Bellevue',
+      state: 'WA',
+      zipCode: '98004',
     },
     {
-      address: "321 Main St, Bellevue, WA 98004",
+      address: '321 Main St, Bellevue, WA 98004',
       coordinates: { latitude: 47.6101, longitude: -122.2015 },
-      city: "Bellevue",
-      state: "WA",
-      zipCode: "98004",
+      city: 'Bellevue',
+      state: 'WA',
+      zipCode: '98004',
     },
     {
-      address: "123 Main St, Bellevue, WA 98004",
+      address: '123 Main St, Bellevue, WA 98004',
       coordinates: { latitude: 47.6101, longitude: -122.2015 },
-      city: "Bellevue",
-      state: "WA",
-      zipCode: "98004",
+      city: 'Bellevue',
+      state: 'WA',
+      zipCode: '98004',
     },
     // Kirkland area (within range)
     {
-      address: "654 Central Way, Kirkland, WA 98033",
+      address: '654 Central Way, Kirkland, WA 98033',
       coordinates: { latitude: 47.6769, longitude: -122.2059 },
-      city: "Kirkland",
-      state: "WA",
-      zipCode: "98033",
+      city: 'Kirkland',
+      state: 'WA',
+      zipCode: '98033',
     },
     {
-      address: "456 Lake Washington Blvd, Kirkland, WA 98033",
+      address: '456 Lake Washington Blvd, Kirkland, WA 98033',
       coordinates: { latitude: 47.6816, longitude: -122.2087 },
-      city: "Kirkland",
-      state: "WA",
-      zipCode: "98033",
+      city: 'Kirkland',
+      state: 'WA',
+      zipCode: '98033',
     },
     // Sammamish area (close to school)
     {
-      address: "987 228th Ave NE, Sammamish, WA 98074",
+      address: '987 228th Ave NE, Sammamish, WA 98074',
       coordinates: { latitude: 47.6162, longitude: -122.0355 },
-      city: "Sammamish",
-      state: "WA",
-      zipCode: "98074",
+      city: 'Sammamish',
+      state: 'WA',
+      zipCode: '98074',
     },
     // Seattle (outside 25-mile radius)
     {
-      address: "1234 Pike St, Seattle, WA 98101",
+      address: '1234 Pike St, Seattle, WA 98101',
       coordinates: { latitude: 47.6062, longitude: -122.3321 },
-      city: "Seattle",
-      state: "WA",
-      zipCode: "98101",
+      city: 'Seattle',
+      state: 'WA',
+      zipCode: '98101',
     },
     {
-      address: "321 Oak St, Seattle, WA 98101",
+      address: '321 Oak St, Seattle, WA 98101',
       coordinates: { latitude: 47.6062, longitude: -122.3321 },
-      city: "Seattle",
-      state: "WA",
-      zipCode: "98101",
+      city: 'Seattle',
+      state: 'WA',
+      zipCode: '98101',
     },
     // Issaquah (within range)
     {
-      address: "567 Front St S, Issaquah, WA 98027",
+      address: '567 Front St S, Issaquah, WA 98027',
       coordinates: { latitude: 47.5301, longitude: -122.0326 },
-      city: "Issaquah",
-      state: "WA",
-      zipCode: "98027",
+      city: 'Issaquah',
+      state: 'WA',
+      zipCode: '98027',
     },
     // Woodinville (within range)
     {
-      address: "789 NE 175th St, Woodinville, WA 98072",
+      address: '789 NE 175th St, Woodinville, WA 98072',
       coordinates: { latitude: 47.7279, longitude: -122.1632 },
-      city: "Woodinville",
-      state: "WA",
-      zipCode: "98072",
+      city: 'Woodinville',
+      state: 'WA',
+      zipCode: '98072',
     },
     // Bothell (within range)
     {
-      address: "456 Main St, Bothell, WA 98011",
+      address: '456 Main St, Bothell, WA 98011',
       coordinates: { latitude: 47.7623, longitude: -122.2054 },
-      city: "Bothell",
-      state: "WA",
-      zipCode: "98011",
+      city: 'Bothell',
+      state: 'WA',
+      zipCode: '98011',
     },
     // Mill Creek (within range)
     {
-      address: "123 164th St SW, Mill Creek, WA 98012",
+      address: '123 164th St SW, Mill Creek, WA 98012',
       coordinates: { latitude: 47.8601, longitude: -122.2054 },
-      city: "Mill Creek",
-      state: "WA",
-      zipCode: "98012",
+      city: 'Mill Creek',
+      state: 'WA',
+      zipCode: '98012',
     },
     // Duvall (within range)
     {
-      address: "321 Main St, Duvall, WA 98019",
+      address: '321 Main St, Duvall, WA 98019',
       coordinates: { latitude: 47.7423, longitude: -121.9851 },
-      city: "Duvall",
-      state: "WA",
-      zipCode: "98019",
+      city: 'Duvall',
+      state: 'WA',
+      zipCode: '98019',
     },
     // Spokane (outside range - for testing)
     {
-      address: "123 Far Street, Spokane, WA 99201",
+      address: '123 Far Street, Spokane, WA 99201',
       coordinates: { latitude: 47.6587, longitude: -117.426 },
-      city: "Spokane",
-      state: "WA",
-      zipCode: "99201",
+      city: 'Spokane',
+      state: 'WA',
+      zipCode: '99201',
     },
   ];
 
@@ -609,23 +585,14 @@ async function enhancedMockGeocode(address, context) {
   }
 
   // First try pattern-based matching for common address formats
-  const patternMatch = tryPatternMatching(
-    normalizedInput,
-    enhancedAddressDatabase,
-    context
-  );
+  const patternMatch = tryPatternMatching(normalizedInput, enhancedAddressDatabase, context);
   if (patternMatch) {
     return patternMatch;
   }
 
   // If we have a good match (score > 0.6), return it as valid
   if (bestMatch && matchScore > 0.6) {
-    context.log(
-      "Found address match:",
-      bestMatch.address,
-      "Score:",
-      matchScore
-    );
+    context.log('Found address match:', bestMatch.address, 'Score:', matchScore);
 
     return {
       isValid: true,
@@ -641,16 +608,12 @@ async function enhancedMockGeocode(address, context) {
   if (bestMatch && matchScore > 0.2) {
     const suggestions = enhancedAddressDatabase
       .filter(
-        (addr) =>
-          calculateAddressMatchScore(
-            normalizedInput,
-            addr.address.toLowerCase()
-          ) > 0.15
+        (addr) => calculateAddressMatchScore(normalizedInput, addr.address.toLowerCase()) > 0.15,
       )
       .slice(0, 5)
       .map((addr) => addr.address);
 
-    context.log("Providing address suggestions for:", address);
+    context.log('Providing address suggestions for:', address);
 
     return {
       isValid: false,
@@ -667,18 +630,18 @@ async function enhancedMockGeocode(address, context) {
   }
 
   // No good matches found
-  context.log("No address matches found for:", address);
+  context.log('No address matches found for:', address);
 
   return {
     isValid: false,
     coordinates: null,
     formattedAddress: null,
     suggestions: [
-      "123 Main St, Redmond, WA 98052",
-      "456 NE 85th St, Redmond, WA 98052",
-      "789 Bellevue Way NE, Bellevue, WA 98004",
-      "321 Main St, Bellevue, WA 98004",
-      "654 Central Way, Kirkland, WA 98033",
+      '123 Main St, Redmond, WA 98052',
+      '456 NE 85th St, Redmond, WA 98052',
+      '789 Bellevue Way NE, Bellevue, WA 98004',
+      '321 Main St, Bellevue, WA 98004',
+      '654 Central Way, Kirkland, WA 98033',
     ],
   };
 }
@@ -704,16 +667,11 @@ function tryPatternMatching(normalizedInput, addressDatabase, context) {
       const cityMatch = addressDatabase.find(
         (addr) =>
           addr.city.toLowerCase().includes(city.toLowerCase()) ||
-          city.toLowerCase().includes(addr.city.toLowerCase())
+          city.toLowerCase().includes(addr.city.toLowerCase()),
       );
 
       if (cityMatch) {
-        context.log(
-          "Pattern matched address for city:",
-          city,
-          "->",
-          cityMatch.city
-        );
+        context.log('Pattern matched address for city:', city, '->', cityMatch.city);
 
         // Generate coordinates near the matched city
         const coordinateVariation = (Math.random() - 0.5) * 0.01; // Small random variation
@@ -723,18 +681,18 @@ function tryPatternMatching(normalizedInput, addressDatabase, context) {
         };
 
         const formattedAddress = `${streetNumber} ${
-          direction ? direction.toUpperCase() + " " : ""
+          direction ? direction.toUpperCase() + ' ' : ''
         }${streetName
-          .split(" ")
+          .split(' ')
           .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ")}, ${cityMatch.city}, WA ${cityMatch.zipCode}`;
+          .join(' ')}, ${cityMatch.city}, WA ${cityMatch.zipCode}`;
 
         return {
           isValid: true,
           coordinates: generatedCoordinates,
           formattedAddress: formattedAddress,
           city: cityMatch.city,
-          state: "WA",
+          state: 'WA',
           zipCode: cityMatch.zipCode,
         };
       }
@@ -750,12 +708,12 @@ function tryGenerateSyntheticAddress(normalizedInput, context) {
   const hasNumber = /\d+/.test(normalizedInput);
   const hasStreetKeyword =
     /(st|ave|avenue|way|blvd|boulevard|dr|drive|ln|lane|rd|road|ct|court|street)/.test(
-      normalizedInput
+      normalizedInput,
     );
   const hasWashington = /(wa|washington)/.test(normalizedInput);
 
   if (hasNumber && (hasStreetKeyword || hasWashington)) {
-    context.log("Generating synthetic address for pattern:", normalizedInput);
+    context.log('Generating synthetic address for pattern:', normalizedInput);
 
     // Default to Redmond area (close to Tesla STEM)
     const baseCoordinates = { latitude: 47.674, longitude: -122.1215 };
@@ -768,19 +726,19 @@ function tryGenerateSyntheticAddress(normalizedInput, context) {
 
     // Extract or generate address components
     const numberMatch = normalizedInput.match(/(\d+)/);
-    const streetNumber = numberMatch ? numberMatch[1] : "123";
+    const streetNumber = numberMatch ? numberMatch[1] : '123';
 
     let formattedAddress = `${streetNumber} ${extractOrGenerateStreetName(
-      normalizedInput
+      normalizedInput,
     )}, Redmond, WA 98052`;
 
     return {
       isValid: true,
       coordinates: generatedCoordinates,
       formattedAddress: formattedAddress,
-      city: "Redmond",
-      state: "WA",
-      zipCode: "98052",
+      city: 'Redmond',
+      state: 'WA',
+      zipCode: '98052',
     };
   }
 
@@ -790,46 +748,39 @@ function tryGenerateSyntheticAddress(normalizedInput, context) {
 // Extract or generate a reasonable street name from input
 function extractOrGenerateStreetName(input) {
   // Try to extract street name from input
-  const streetMatch = input.match(
-    /\d+\s+([a-z\s]+?)(?:\s*,|\s+(wa|washington))/i
-  );
+  const streetMatch = input.match(/\d+\s+([a-z\s]+?)(?:\s*,|\s+(wa|washington))/i);
   if (streetMatch && streetMatch[1]) {
     let streetName = streetMatch[1].trim();
 
     // Add street type if missing
     if (
       !/\b(st|ave|avenue|way|blvd|boulevard|dr|drive|ln|lane|rd|road|ct|court|street)\b/i.test(
-        streetName
+        streetName,
       )
     ) {
-      streetName += " St";
+      streetName += ' St';
     }
 
     // Capitalize properly
     return streetName
-      .split(" ")
+      .split(' ')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+      .join(' ');
   }
 
   // Default street name
-  return "Main St";
+  return 'Main St';
 }
 
 // Calculate match score between two address strings
 function calculateAddressMatchScore(input, candidate) {
   const inputWords = input.split(/\s+/).filter((word) => word.length > 2);
-  const candidateWords = candidate
-    .split(/\s+/)
-    .filter((word) => word.length > 2);
+  const candidateWords = candidate.split(/\s+/).filter((word) => word.length > 2);
 
   let matches = 0;
   for (const inputWord of inputWords) {
     for (const candidateWord of candidateWords) {
-      if (
-        candidateWord.includes(inputWord) ||
-        inputWord.includes(candidateWord)
-      ) {
+      if (candidateWord.includes(inputWord) || inputWord.includes(candidateWord)) {
         matches++;
         break;
       }
