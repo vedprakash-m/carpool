@@ -411,4 +411,44 @@ describe('Error Handler', () => {
       });
     });
   });
+
+  describe('Error sanitization', () => {
+    it('should handle AppError with details in response', () => {
+      const details = { field: 'username', reason: 'too short' };
+      const error = new AppError('Validation error', 400, 'VALIDATION_ERROR', true, details);
+
+      const response = handleError(error, mockRequest, mockLogger);
+
+      expect(response.status).toBe(400);
+      expect(response.jsonBody.error.code).toBe('VALIDATION_ERROR');
+      expect(response.jsonBody.details).toEqual(details);
+    });
+
+    it('should handle complex nested error objects', () => {
+      const nestedError = {
+        message: 'Nested error',
+        nested: {
+          level1: {
+            level2: 'deep value',
+          },
+        },
+      };
+
+      handleError(nestedError, mockLogger);
+
+      expect(mockLogger.error).toHaveBeenCalledWith('Nested error', expect.any(Object));
+    });
+
+    it('should handle errors with circular references gracefully', () => {
+      interface CircularError {
+        message: string;
+        self?: CircularError;
+      }
+      const circularError: CircularError = { message: 'Circular' };
+      circularError.self = circularError;
+
+      // Should not throw
+      expect(() => handleError(circularError, mockLogger)).not.toThrow();
+    });
+  });
 });

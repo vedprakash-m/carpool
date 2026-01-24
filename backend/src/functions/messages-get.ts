@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { containers } from '../config/database';
+import { containers } from '../services/database.service';
 import { MessagingService } from '../services/messaging.service';
 import {
   MessageRepository,

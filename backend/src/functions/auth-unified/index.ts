@@ -152,10 +152,14 @@ export async function authUnified(
 }
 
 /**
- * Handle user login
+ * Handle user login (password-based)
+ *
+ * @deprecated Password-based authentication is deprecated.
+ * Use Entra ID login via the 'entra-login' action instead.
+ * This endpoint will be removed in a future version.
  */
 async function handleLogin(body: any, context: InvocationContext): Promise<AuthResult> {
-  context.log('Processing login request');
+  context.log('DEPRECATED: Processing password login request - use entra-login action instead');
 
   if (!body.email || !body.password) {
     return {
@@ -173,10 +177,14 @@ async function handleLogin(body: any, context: InvocationContext): Promise<AuthR
 }
 
 /**
- * Handle user registration
+ * Handle user registration (password-based)
+ *
+ * @deprecated Password-based registration is deprecated.
+ * Use Entra ID authentication instead.
+ * This endpoint will be removed in a future version.
  */
 async function handleRegister(body: any, context: InvocationContext): Promise<AuthResult> {
-  context.log('Processing registration request');
+  context.log('DEPRECATED: Processing password registration request - use Entra ID instead');
 
   const requiredFields = ['email', 'firstName', 'lastName', 'role', 'password'];
   for (const field of requiredFields) {
@@ -239,9 +247,15 @@ async function handleLogout(body: any, context: InvocationContext): Promise<Auth
 
 /**
  * Handle forgot password request
+ *
+ * @deprecated Password-based authentication is deprecated.
+ * Users should reset passwords via Microsoft account settings.
+ * This endpoint will be removed in a future version.
  */
 async function handleForgotPassword(body: any, context: InvocationContext): Promise<AuthResult> {
-  context.log('Processing forgot password request');
+  context.log(
+    'DEPRECATED: Processing forgot password request - consider using Microsoft account password reset',
+  );
 
   if (!body.email) {
     return {
@@ -255,9 +269,15 @@ async function handleForgotPassword(body: any, context: InvocationContext): Prom
 
 /**
  * Handle password reset confirmation
+ *
+ * @deprecated Password-based authentication is deprecated.
+ * Users should reset passwords via Microsoft account settings.
+ * This endpoint will be removed in a future version.
  */
 async function handleResetPassword(body: any, context: InvocationContext): Promise<AuthResult> {
-  context.log('Processing password reset request');
+  context.log(
+    'DEPRECATED: Processing password reset request - consider using Microsoft account password reset',
+  );
 
   if (!body.token || !body.newPassword) {
     return {
@@ -271,13 +291,19 @@ async function handleResetPassword(body: any, context: InvocationContext): Promi
 
 /**
  * Handle password change
+ *
+ * @deprecated Password-based authentication is deprecated.
+ * Users should change passwords via Microsoft account settings at https://account.live.com/password/Change
+ * This endpoint will be removed in a future version.
  */
 async function handleChangePassword(
   body: any,
   request: HttpRequest,
   context: InvocationContext,
 ): Promise<AuthResult> {
-  context.log('Processing password change request');
+  context.log(
+    'DEPRECATED: Processing password change request - consider using Microsoft account password management',
+  );
 
   if (!body.currentPassword || !body.newPassword) {
     return {

@@ -86,6 +86,7 @@ export default function RegisterPage() {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<RegisterRequest>({
     resolver: zodResolver(registerSchema),
     mode: 'onChange',
@@ -420,6 +421,13 @@ export default function RegisterPage() {
                   <AddressValidation
                     onValidationComplete={(verified: boolean) => {
                       setAddressValidated(verified);
+                    }}
+                    onAddressData={addressData => {
+                      // Populate the form with validated address data
+                      setValue('homeAddress.street', addressData.street);
+                      setValue('homeAddress.city', addressData.city);
+                      setValue('homeAddress.state', addressData.state);
+                      setValue('homeAddress.zipCode', addressData.zipCode);
                     }}
                     required={true}
                   />

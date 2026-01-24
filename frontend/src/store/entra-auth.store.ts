@@ -6,6 +6,7 @@ import {
 } from '@azure/msal-browser';
 import { VedUser } from '@carpool/shared';
 import { apiClient } from '../lib/api-client';
+import { User, UpdateUserRequest } from '../types/shared';
 
 /**
  * Helper function to check if current route is a public/registration route
@@ -64,6 +65,10 @@ interface EntraAuthState {
   isAuthenticated: boolean;
   authMethod: 'entra' | null;
   error: string | null;
+  // Compatibility with legacy auth.store.ts
+  user: User | null;
+  loading: boolean;
+  token: string | null;
 }
 
 interface EntraAuthActions {
@@ -75,6 +80,18 @@ interface EntraAuthActions {
   checkAuthStatus: () => Promise<void>;
   clearError: () => void;
   clearInteractionState: () => void;
+  // Compatibility with legacy auth.store.ts
+  updateUser: (updates: Partial<User>) => Promise<void>;
+  updateProfile: (updates: UpdateUserRequest) => Promise<boolean>;
+  refreshAuth: () => Promise<void>;
+  /**
+   * @deprecated Password-based auth is deprecated. Use Entra ID for authentication.
+   * This method exists only for backward compatibility.
+   */
+  changePassword: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<boolean>;
 }
 
 type EntraAuthStore = EntraAuthState & EntraAuthActions;
@@ -88,6 +105,10 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
   isAuthenticated: false,
   authMethod: null,
   error: null,
+  // Compatibility with legacy auth.store.ts
+  user: null,
+  loading: false,
+  token: null,
 
   // Actions
   initialize: async () => {
@@ -191,10 +212,12 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
 
           set({
             vedUser,
+            user: vedUser as unknown as User, // Compatibility with legacy auth.store
             account: response.account,
             isAuthenticated: true,
             authMethod: 'entra',
             isLoading: false,
+            token: response.accessToken,
           });
 
           // Set token for API calls
@@ -506,11 +529,13 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
 
                   set({
                     vedUser,
+                    user: vedUser as unknown as User, // Compatibility with legacy auth.store
                     account,
                     isAuthenticated: true,
                     authMethod: 'entra',
                     isLoading: false,
                     error: null,
+                    token: tokenResponse.accessToken,
                   });
 
                   // Set token for API calls
@@ -603,7 +628,130 @@ export const useEntraAuthStore = create<EntraAuthStore>()((set, get) => ({
     }
     set({ isLoading: false, error: null });
   },
+
+  // ========================================
+  // Compatibility methods from legacy auth.store.ts
+  // These allow gradual migration of components
+  // ========================================
+
+  updateUser: async (updates: Partial<User>) => {
+    try {
+      const response = await apiClient.put<User>('/v1/users/me', updates);
+
+      if (response.success && response.data) {
+        set({
+          user: response.data,
+          vedUser: response.data as unknown as VedUser,
+        });
+      } else {
+        throw new Error(response.error || 'Update failed');
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  updateProfile: async (updates: UpdateUserRequest) => {
+    try {
+      set({ loading: true, error: null });
+
+      const response = await apiClient.put<User>('/v1/users/me', updates);
+
+      if (response.success && response.data) {
+        set({
+          user: response.data,
+          vedUser: response.data as unknown as VedUser,
+          loading: false,
+        });
+        return true;
+      } else {
+        set({
+          error: response.error || 'Update failed',
+          loading: false,
+        });
+        return false;
+      }
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Update failed',
+        loading: false,
+      });
+      return false;
+    }
+  },
+
+  refreshAuth: async () => {
+    try {
+      set({ loading: true });
+
+      // Use the existing acquireTokenSilently method
+      const token = await get().acquireTokenSilently();
+
+      if (token) {
+        // Get the current user info to verify our session
+        const userResponse = await apiClient.get<User>('/v1/users/me');
+
+        if (userResponse.success && userResponse.data) {
+          set({
+            user: userResponse.data,
+            vedUser: userResponse.data as unknown as VedUser,
+            token,
+            isAuthenticated: true,
+            loading: false,
+            error: null,
+          });
+          return;
+        }
+      }
+
+      throw new Error('Failed to refresh authentication');
+    } catch (error) {
+      console.error('Error refreshing auth:', error);
+
+      // Clear all auth data on refresh failure
+      apiClient.clearToken();
+      set({
+        user: null,
+        vedUser: null,
+        token: null,
+        isAuthenticated: false,
+        loading: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Authentication refresh failed',
+      });
+    }
+  },
+
+  /**
+   * @deprecated Password-based auth is deprecated. Use Entra ID for authentication.
+   * This method exists only for backward compatibility and shows a deprecation warning.
+   */
+  changePassword: async (
+    _currentPassword: string,
+    _newPassword: string
+  ): Promise<boolean> => {
+    console.warn(
+      'DEPRECATED: changePassword is no longer supported. ' +
+        'Password authentication has been replaced with Microsoft Entra ID. ' +
+        'To change your password, visit https://account.live.com/password/Change'
+    );
+    set({
+      error:
+        'Password change is not supported. Please use Microsoft account settings to manage your password.',
+      loading: false,
+    });
+    return false;
+  },
 }));
 
 // Export the MSAL instance for use in components
 export { msalConfig, loginRequest };
+
+/**
+ * Compatibility alias for legacy auth.store.ts
+ * Use this to gradually migrate components from useAuthStore to useEntraAuthStore
+ * @deprecated Use useEntraAuthStore directly
+ */
+export const useAuthStore = useEntraAuthStore;

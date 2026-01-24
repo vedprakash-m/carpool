@@ -436,4 +436,130 @@ describe('ConfigService', () => {
       expect(configInstance.getConfig().geocoding.fallbackToMock).toBe(false);
     });
   });
+
+  describe('getConnectionString', () => {
+    beforeEach(() => {
+      process.env.COSMOS_DB_KEY = 'test-cosmos-key';
+      process.env.AzureWebJobsStorage = 'test-storage-connection';
+      process.env.APPLICATIONINSIGHTS_CONNECTION_STRING = 'test-appinsights-connection';
+      (ConfigService as any).instance = undefined;
+      configInstance = ConfigService.getInstance();
+    });
+
+    it('should return Cosmos DB key for cosmosdb service', () => {
+      const connectionString = configInstance.getConnectionString('cosmosdb');
+      expect(connectionString).toBe('test-cosmos-key');
+    });
+
+    it('should return storage connection string for storage service', () => {
+      const connectionString = configInstance.getConnectionString('storage');
+      expect(connectionString).toBe('test-storage-connection');
+    });
+
+    it('should return Application Insights connection string', () => {
+      const connectionString = configInstance.getConnectionString('applicationinsights');
+      expect(connectionString).toBe('test-appinsights-connection');
+    });
+
+    it('should return empty string for unknown service', () => {
+      const connectionString = configInstance.getConnectionString('unknown' as any);
+      expect(connectionString).toBe('');
+    });
+
+    it('should return empty string when storage connection not set', () => {
+      (ConfigService as any).instance = undefined;
+      delete process.env.AzureWebJobsStorage;
+      configInstance = ConfigService.getInstance();
+
+      const connectionString = configInstance.getConnectionString('storage');
+      expect(connectionString).toBe('');
+    });
+
+    it('should return empty string when appinsights connection not set', () => {
+      (ConfigService as any).instance = undefined;
+      delete process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
+      configInstance = ConfigService.getInstance();
+
+      const connectionString = configInstance.getConnectionString('applicationinsights');
+      expect(connectionString).toBe('');
+    });
+  });
+
+  describe('getDeploymentSettings', () => {
+    beforeEach(() => {
+      process.env.COSMOS_DB_ENDPOINT = 'https://test.cosmosdb.azure.com/';
+      process.env.COSMOS_DB_KEY = 'test-key';
+      process.env.COSMOS_DB_DATABASE = 'testdb';
+      process.env.JWT_EXPIRES_IN = '24h';
+      process.env.BCRYPT_ROUNDS = '12';
+      process.env.MAX_LOGIN_ATTEMPTS = '5';
+      process.env.LOCKOUT_DURATION = '15';
+      process.env.GEOCODING_PROVIDER = 'mock';
+      process.env.FALLBACK_TO_MOCK = 'true';
+      process.env.CORS_ORIGINS = 'http://localhost:3000';
+      process.env.MAX_DISTANCE_KM = '50';
+      process.env.DEFAULT_SERVICE_RADIUS = '25';
+      (ConfigService as any).instance = undefined;
+      configInstance = ConfigService.getInstance();
+    });
+
+    it('should return deployment settings object', () => {
+      const settings = configInstance.getDeploymentSettings();
+
+      expect(settings.NODE_ENV).toBe('development');
+      expect(settings.COSMOS_DB_ENDPOINT).toBe('https://test.cosmosdb.azure.com/');
+      expect(settings.COSMOS_DB_DATABASE).toBe('testdb');
+      expect(settings.JWT_EXPIRES_IN).toBe('24h');
+      expect(settings.BCRYPT_ROUNDS).toBe('12');
+      expect(settings.MAX_LOGIN_ATTEMPTS).toBe('5');
+      expect(settings.LOCKOUT_DURATION).toBe('15');
+      expect(settings.GEOCODING_PROVIDER).toBe('mock');
+      expect(settings.FALLBACK_TO_MOCK).toBe('true');
+      expect(settings.CORS_ORIGINS).toBe('http://localhost:3000');
+      expect(settings.MAX_DISTANCE_KM).toBe('50');
+      expect(settings.DEFAULT_SERVICE_RADIUS).toBe('25');
+    });
+
+    it('should include Azure tenant and client IDs when set', () => {
+      (ConfigService as any).instance = undefined;
+      process.env.AZURE_TENANT_ID = 'test-tenant-id';
+      process.env.AZURE_CLIENT_ID = 'test-client-id';
+      configInstance = ConfigService.getInstance();
+
+      const settings = configInstance.getDeploymentSettings();
+
+      expect(settings.AZURE_TENANT_ID).toBe('test-tenant-id');
+      expect(settings.AZURE_CLIENT_ID).toBe('test-client-id');
+    });
+
+    it('should not include Azure IDs when not set', () => {
+      (ConfigService as any).instance = undefined;
+      delete process.env.AZURE_TENANT_ID;
+      delete process.env.AZURE_CLIENT_ID;
+      configInstance = ConfigService.getInstance();
+
+      const settings = configInstance.getDeploymentSettings();
+
+      expect(settings.AZURE_TENANT_ID).toBeUndefined();
+      expect(settings.AZURE_CLIENT_ID).toBeUndefined();
+    });
+  });
+
+  describe('hasApplicationInsights', () => {
+    it('should return true when App Insights is configured', () => {
+      (ConfigService as any).instance = undefined;
+      process.env.APPLICATIONINSIGHTS_CONNECTION_STRING = 'test-connection-string';
+      configInstance = ConfigService.getInstance();
+
+      expect(configInstance.hasApplicationInsights()).toBe(true);
+    });
+
+    it('should return false when App Insights is not configured', () => {
+      (ConfigService as any).instance = undefined;
+      delete process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
+      configInstance = ConfigService.getInstance();
+
+      expect(configInstance.hasApplicationInsights()).toBe(false);
+    });
+  });
 });

@@ -25,11 +25,17 @@ export interface AppConfig {
     preferredProvider: 'google' | 'azure' | 'mock';
     fallbackToMock: boolean;
   };
+  push: {
+    vapidPublicKey?: string;
+    vapidPrivateKey?: string;
+    vapidSubject: string;
+  };
   app: {
     environment: 'development' | 'staging' | 'production';
     corsOrigins: string[];
     maxDistanceKm: number;
     defaultServiceRadius: number;
+    version: string;
   };
   azure: {
     keyVaultUrl?: string;
@@ -83,12 +89,18 @@ class ConfigService {
           (process.env.GEOCODING_PROVIDER as 'google' | 'azure' | 'mock') || 'mock',
         fallbackToMock: process.env.FALLBACK_TO_MOCK === 'true',
       },
+      push: {
+        vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
+        vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
+        vapidSubject: process.env.VAPID_SUBJECT || 'mailto:support@carpool.com',
+      },
       app: {
         environment:
           (process.env.NODE_ENV as 'development' | 'staging' | 'production') || 'development',
         corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
         maxDistanceKm: parseInt(process.env.MAX_DISTANCE_KM || '50'),
         defaultServiceRadius: parseInt(process.env.DEFAULT_SERVICE_RADIUS || '25'),
+        version: process.env.npm_package_version || '1.0.0',
       },
       azure: {
         keyVaultUrl: process.env.AZURE_KEY_VAULT_URL,

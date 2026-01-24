@@ -1,5 +1,6 @@
 import { injectable } from 'tsyringe';
 import { CosmosClient } from '@azure/cosmos';
+import { configService } from '../services/config.service';
 
 // Preference data model – will be duplicated in shared types soon
 export interface WeeklyPreference {
@@ -18,13 +19,15 @@ export class PreferenceRepository {
   private readonly container;
 
   constructor() {
-    // NOTE: In-memory fallback until Cosmos connection wired in DatabaseService
-    if (process.env.COSMOSDB_CONNECTION_STRING) {
-      const client = new CosmosClient(process.env.COSMOSDB_CONNECTION_STRING);
-      const database = client.database(process.env.COSMOSDB_DATABASE || 'carpool');
-      this.container = database.container(
-        process.env.COSMOSDB_PREFERENCES_CONTAINER || 'preferences',
-      );
+    // Use ConfigService for consistent configuration across the app
+    const config = configService.getConfig();
+    if (configService.shouldUseRealDatabase()) {
+      const client = new CosmosClient({
+        endpoint: config.cosmosDb.endpoint,
+        key: config.cosmosDb.key,
+      });
+      const database = client.database(config.cosmosDb.databaseName);
+      this.container = database.container('preferences');
     } else {
       this.container = null;
     }

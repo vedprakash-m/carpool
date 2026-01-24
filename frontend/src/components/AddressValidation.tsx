@@ -21,7 +21,7 @@ const getApiUrl = () => {
       hostname.includes('azurestaticapps.net')
     ) {
       const url =
-        'https://carpool-backend-g9eqf0efgxe4hbae.eastus2-01.azurewebsites.net/api';
+        'https://carpool-api-amhdgvc3bjg6ejhq.westus2-01.azurewebsites.net/api';
       console.log('Using production API URL:', url);
       return url;
     }
@@ -32,6 +32,12 @@ const getApiUrl = () => {
 
 interface AddressValidationProps {
   onValidationComplete?: (verified: boolean) => void;
+  onAddressData?: (addressData: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  }) => void;
   required?: boolean;
 }
 
@@ -45,6 +51,45 @@ interface AddressStatus {
   serviceArea: {
     school: string;
     maxDistance: number;
+  };
+}
+
+// Helper function to parse a full address string into components
+function parseAddress(fullAddress: string): {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+} {
+  // Try to parse address like "123 Main St, Redmond, WA 98052"
+  const parts = fullAddress.split(',').map(p => p.trim());
+
+  if (parts.length >= 3) {
+    const street = parts[0];
+    const city = parts[1];
+    // Last part typically contains state and zip: "WA 98052"
+    const stateZipPart = parts[parts.length - 1];
+    const stateZipMatch = stateZipPart.match(/([A-Z]{2})\s*(\d{5}(-\d{4})?)?/);
+
+    if (stateZipMatch) {
+      return {
+        street,
+        city,
+        state: stateZipMatch[1],
+        zipCode: stateZipMatch[2] || '',
+      };
+    }
+  }
+
+  // Fallback: try to extract what we can
+  const zipMatch = fullAddress.match(/\d{5}(-\d{4})?/);
+  const stateMatch = fullAddress.match(/\b([A-Z]{2})\s*\d{5}/);
+
+  return {
+    street: parts[0] || fullAddress,
+    city: parts[1] || '',
+    state: stateMatch ? stateMatch[1] : '',
+    zipCode: zipMatch ? zipMatch[0] : '',
   };
 }
 
@@ -65,6 +110,7 @@ interface ValidationResult {
 
 export default function AddressValidation({
   onValidationComplete,
+  onAddressData,
   required = false,
 }: AddressValidationProps) {
   const { user } = useAuthStore();
@@ -153,6 +199,13 @@ export default function AddressValidation({
           }: ${result.distanceToSchool.toFixed(1)} miles`,
         });
         await loadAddressStatus();
+
+        // Parse the validated address and pass it back to parent form
+        if (onAddressData) {
+          const addressParts = parseAddress(address);
+          onAddressData(addressParts);
+        }
+
         if (onValidationComplete) {
           onValidationComplete(true);
         }
@@ -258,8 +311,8 @@ export default function AddressValidation({
             message.type === 'success'
               ? 'bg-green-50 border border-green-200 text-green-800'
               : message.type === 'error'
-              ? 'bg-red-50 border border-red-200 text-red-800'
-              : 'bg-blue-50 border border-blue-200 text-blue-800'
+                ? 'bg-red-50 border border-red-200 text-red-800'
+                : 'bg-blue-50 border border-blue-200 text-blue-800'
           }`}
         >
           {message.text}

@@ -21,14 +21,6 @@ export interface FunctionDefinition {
 export const FUNCTION_REGISTRY: FunctionDefinition[] = [
   // Phase 1: Core Functions (Authentication & Basic Operations)
   {
-    name: 'hello',
-    implemented: true,
-    sourceDir: 'hello', // Root level of backend directory
-    description: 'Health check and basic connectivity test',
-    required: true,
-    phase: 'phase1',
-  },
-  {
     name: 'auth-unified',
     implemented: true,
     sourceDir: 'auth-unified', // Root level of backend directory
@@ -37,26 +29,10 @@ export const FUNCTION_REGISTRY: FunctionDefinition[] = [
     phase: 'phase1',
   },
   {
-    name: 'trips-stats',
+    name: 'address-validation-secure',
     implemented: true,
-    sourceDir: 'trips-stats', // Root level of backend directory
-    description: 'Trip statistics and analytics',
-    required: true,
-    phase: 'phase1',
-  },
-  {
-    name: 'users-me',
-    implemented: true,
-    sourceDir: 'users-me', // Root level of backend directory
-    description: 'User profile information endpoint',
-    required: true,
-    phase: 'phase1',
-  },
-  {
-    name: 'users-change-password',
-    implemented: true,
-    sourceDir: 'users-change-password', // Root level of backend directory
-    description: 'User password change functionality',
+    sourceDir: 'address-validation-secure', // Root level of backend directory
+    description: 'Secure address validation with authentication',
     required: true,
     phase: 'phase1',
   },

@@ -94,19 +94,19 @@ export class DatabaseService {
   private async initializeAllContainers(): Promise<void> {
     if (!this.database) return;
 
-    // Create all containers
+    // Create all containers - partition keys MUST match Bicep infrastructure (infra/database.bicep)
     const containerConfigs = [
-      { id: CONTAINER_NAMES.users, partitionKey: '/email' },
-      { id: CONTAINER_NAMES.groups, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.trips, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.schedules, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.swapRequests, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.emailTemplates, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.messages, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.chats, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.chatParticipants, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.notifications, partitionKey: '/id' },
-      { id: CONTAINER_NAMES.weeklyPreferences, partitionKey: '/id' },
+      { id: CONTAINER_NAMES.users, partitionKey: '/email' }, // Bicep: /email (was /id - FIXED)
+      { id: CONTAINER_NAMES.groups, partitionKey: '/id' }, // Bicep: /id
+      { id: CONTAINER_NAMES.trips, partitionKey: '/driverId' }, // Bicep: /driverId
+      { id: CONTAINER_NAMES.schedules, partitionKey: '/userId' }, // Bicep: /userId
+      { id: CONTAINER_NAMES.swapRequests, partitionKey: '/requesterId' }, // Bicep: /requesterId
+      { id: CONTAINER_NAMES.emailTemplates, partitionKey: '/id' }, // Bicep: /id
+      { id: CONTAINER_NAMES.messages, partitionKey: '/id' }, // Bicep: /id
+      { id: CONTAINER_NAMES.chats, partitionKey: '/id' }, // Bicep: /id
+      { id: CONTAINER_NAMES.chatParticipants, partitionKey: '/id' }, // Bicep: /id
+      { id: CONTAINER_NAMES.notifications, partitionKey: '/id' }, // Bicep: /id
+      { id: CONTAINER_NAMES.weeklyPreferences, partitionKey: '/driverParentId' }, // Bicep: /driverParentId
     ];
 
     for (const containerConfig of containerConfigs) {
@@ -126,14 +126,16 @@ export class DatabaseService {
   private async initializeAdditionalContainers(): Promise<void> {
     if (!this.database) return;
 
+    // Container configurations matching Bicep infrastructure (database.bicep)
+    // IMPORTANT: Partition keys must match the Bicep template
     const containerConfigs = [
-      { id: 'trips', partitionKey: '/driverId' },
-      { id: 'schedules', partitionKey: '/userId' },
-      { id: 'swapRequests', partitionKey: '/requesterId' },
-      { id: 'groups', partitionKey: '/id' },
-      { id: 'notifications', partitionKey: '/userId' },
-      { id: 'messages', partitionKey: '/groupId' },
-      { id: 'weeklyPreferences', partitionKey: '/userId' },
+      { id: 'trips', partitionKey: '/driverId' }, // Matches Bicep: trips by driver
+      { id: 'schedules', partitionKey: '/userId' }, // Matches Bicep: schedules by user
+      { id: 'swapRequests', partitionKey: '/requesterId' }, // Matches Bicep: swaps by requester
+      { id: 'groups', partitionKey: '/id' }, // Matches Bicep: groups by id
+      { id: 'notifications', partitionKey: '/id' }, // Matches Bicep: notifications by id
+      { id: 'messages', partitionKey: '/id' }, // Matches Bicep: messages by id
+      { id: 'weeklyPreferences', partitionKey: '/driverParentId' }, // Matches Bicep: prefs by driver
     ];
 
     for (const config of containerConfigs) {
@@ -712,3 +714,44 @@ export class DatabaseService {
 
 export const databaseService = DatabaseService.getInstance();
 export default databaseService;
+
+/**
+ * Backward-compatible containers export
+ * Provides lazy access to containers through the unified DatabaseService
+ * @deprecated Use databaseService.getContainer(name) instead
+ */
+export const containers = {
+  get users() {
+    return databaseService.getContainer('users');
+  },
+  get trips() {
+    return databaseService.getContainer('trips');
+  },
+  get schedules() {
+    return databaseService.getContainer('schedules');
+  },
+  get swapRequests() {
+    return databaseService.getContainer('swapRequests');
+  },
+  get emailTemplates() {
+    return databaseService.getContainer('email-templates');
+  },
+  get messages() {
+    return databaseService.getContainer('messages');
+  },
+  get chats() {
+    return databaseService.getContainer('chats');
+  },
+  get chatParticipants() {
+    return databaseService.getContainer('chatParticipants');
+  },
+  get notifications() {
+    return databaseService.getContainer('notifications');
+  },
+  get weeklyPreferences() {
+    return databaseService.getContainer('weeklyPreferences');
+  },
+  get groups() {
+    return databaseService.getContainer('groups');
+  },
+};

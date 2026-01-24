@@ -7,7 +7,7 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "build": "npm run clean && tsc && npm run setup-functions && npm run ensure-functions",
+    "build": "npm run clean && tsc --build --force && npm run setup-functions && npm run ensure-functions",
     "dev": "tsc --watch",
     "start": "func start",
     "deploy": "npm run build && func azure functionapp publish",

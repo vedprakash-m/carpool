@@ -28,7 +28,7 @@ param keyVaultName string = '${appName}-kv-${environmentName}'
 param cosmosDbAccountName string = 'carpool-db'
 
 @description('Storage Account name from database resource group - Static naming')
-param storageAccountName string = 'carpoolsa'
+param storageAccountName string = 'carpoolsaprod'
 
 // Tags for all resources
 var tags = {
@@ -38,19 +38,29 @@ var tags = {
   resourceType: 'compute'
 }
 
-// Application Service Plan
-resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
+// Reference existing storage account
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing = {
+  name: storageAccountName
+}
+
+// Reference existing Cosmos DB account
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' existing = {
+  name: cosmosDbAccountName
+}
+
+// Application Service Plan - Using Flex Consumption
+resource hostingPlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: 'carpool-plan'
   location: location
   tags: tags
+  kind: 'functionapp'
   sku: {
-    name: 'Y1'
-    tier: 'Dynamic'
-    size: 'Y1'
-    family: 'Y'
-    capacity: 0
+    name: 'FC1'
+    tier: 'FlexConsumption'
   }
-  properties: {}
+  properties: {
+    reserved: true
+  }
 }
 
 // Application Insights
@@ -68,7 +78,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 // Azure Static Web App (moved before Function App to avoid circular dependency)
 resource staticWebApp 'Microsoft.Web/staticSites@2021-03-01' = {
   name: staticWebAppName
-  location: 'East US 2' // Static Web Apps are limited to certain regions
+  location: 'West US 2' // Static Web Apps are limited to certain regions
   tags: tags
   sku: {
     name: 'Free'
@@ -100,11 +110,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=PLACEHOLDER'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=PLACEHOLDER'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
@@ -132,15 +142,15 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'COSMOS_DB_CONNECTION_STRING'
-          value: 'AccountEndpoint=https://${cosmosDbAccountName}.documents.azure.com:443/;AccountKey=PLACEHOLDER;'
+          value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
         }
         {
           name: 'COSMOS_DB_ENDPOINT'
-          value: 'https://${cosmosDbAccountName}.documents.azure.com:443/'
+          value: cosmosDbAccount.properties.documentEndpoint
         }
         {
           name: 'COSMOS_DB_KEY'
-          value: 'PLACEHOLDER'
+          value: cosmosDbAccount.listKeys().primaryMasterKey
         }
         {
           name: 'ENVIRONMENT'

@@ -23,6 +23,9 @@ Confidential/.env.*
 .env.staging
 .env.test
 .env.*
+# Allow example/template files for documentation
+!.env.*.example
+!.env.production.template
 
 # Secret management system backups and temp files
 .env.backup.*

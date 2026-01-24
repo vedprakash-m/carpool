@@ -532,5 +532,37 @@ describe('JWTService', () => {
         'Entra ID token validation failed',
       );
     });
+
+    it('should throw error when AZURE_CLIENT_ID is missing for Entra token', async () => {
+      // Clear AZURE_CLIENT_ID to test the validation error path
+      const originalClientId = process.env.AZURE_CLIENT_ID;
+      delete process.env.AZURE_CLIENT_ID;
+
+      // Create new instance with missing client ID
+      const testJwtService = new JWTService();
+
+      const header = Buffer.from(JSON.stringify({ alg: 'RS256', kid: 'valid-kid' })).toString(
+        'base64url',
+      );
+      const payload = Buffer.from(
+        JSON.stringify({
+          sub: 'user-123',
+          email: 'test@vedprakash.net',
+          iss: 'https://login.microsoftonline.com/test-tenant/v2.0',
+          aud: 'test-client-id',
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + 3600,
+        }),
+      ).toString('base64url');
+      const signature = 'fake-signature';
+      const entraToken = `${header}.${payload}.${signature}`;
+
+      await expect(testJwtService.validateAccessToken(entraToken)).rejects.toThrow(
+        'AZURE_CLIENT_ID environment variable is required',
+      );
+
+      // Restore
+      process.env.AZURE_CLIENT_ID = originalClientId;
+    });
   });
 });

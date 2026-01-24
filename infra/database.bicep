@@ -55,7 +55,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
     databaseAccountOfferType: 'Standard'
     locations: [
       {
-        locationName: 'East US 2'  // Cosmos DB region (different from resource location)
+        locationName: 'West US 2'  // Cosmos DB region
         failoverPriority: 0
         isZoneRedundant: false
       }
@@ -106,6 +106,8 @@ resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021
 param skipContainerCreation bool = false
 
 // Cosmos DB Containers - only create if not skipping
+// FIXED: Users container partition key changed from /id to /email
+// This matches query patterns (getUserByEmail is the primary lookup)
 resource usersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = if (!skipContainerCreation) {
   parent: cosmosDatabase
   name: 'users'
@@ -113,7 +115,7 @@ resource usersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/cont
     resource: {
       id: 'users'
       partitionKey: {
-        paths: ['/id']
+        paths: ['/email']  // ✅ FIXED: Match query patterns (was /id)
         kind: 'Hash'
       }
       indexingPolicy: {
@@ -128,6 +130,20 @@ resource usersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/cont
           {
             path: '/"_etag"/?'
           }
+        ]
+        compositeIndexes: [
+          [
+            { path: '/email', order: 'ascending' }
+            { path: '/isActive', order: 'ascending' }
+          ]
+          [
+            { path: '/role', order: 'ascending' }
+            { path: '/createdAt', order: 'descending' }
+          ]
+          [
+            { path: '/familyId', order: 'ascending' }
+            { path: '/email', order: 'ascending' }
+          ]
         ]
       }
     }
@@ -144,6 +160,30 @@ resource tripsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/cont
         paths: ['/driverId']
         kind: 'Hash'
       }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          { path: '/*' }
+        ]
+        excludedPaths: [
+          { path: '/"_etag"/?' }
+        ]
+        compositeIndexes: [
+          [
+            { path: '/driverId', order: 'ascending' }
+            { path: '/date', order: 'descending' }
+          ]
+          [
+            { path: '/status', order: 'ascending' }
+            { path: '/date', order: 'descending' }
+          ]
+          [
+            { path: '/groupId', order: 'ascending' }
+            { path: '/date', order: 'descending' }
+          ]
+        ]
+      }
     }
   }
 }
@@ -158,6 +198,26 @@ resource groupsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/con
         paths: ['/id']
         kind: 'Hash'
       }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          { path: '/*' }
+        ]
+        excludedPaths: [
+          { path: '/"_etag"/?' }
+        ]
+        compositeIndexes: [
+          [
+            { path: '/schoolId', order: 'ascending' }
+            { path: '/isActive', order: 'ascending' }
+          ]
+          [
+            { path: '/adminId', order: 'ascending' }
+            { path: '/createdAt', order: 'descending' }
+          ]
+        ]
+      }
     }
   }
 }
@@ -171,6 +231,22 @@ resource preferencesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabase
       partitionKey: {
         paths: ['/parentId']
         kind: 'Hash'
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          { path: '/*' }
+        ]
+        excludedPaths: [
+          { path: '/"_etag"/?' }
+        ]
+        compositeIndexes: [
+          [
+            { path: '/parentId', order: 'ascending' }
+            { path: '/weekOf', order: 'descending' }
+          ]
+        ]
       }
     }
   }
@@ -199,6 +275,26 @@ resource schedulesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
       partitionKey: {
         paths: ['/userId']
         kind: 'Hash'
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          { path: '/*' }
+        ]
+        excludedPaths: [
+          { path: '/"_etag"/?' }
+        ]
+        compositeIndexes: [
+          [
+            { path: '/userId', order: 'ascending' }
+            { path: '/weekOf', order: 'descending' }
+          ]
+          [
+            { path: '/groupId', order: 'ascending' }
+            { path: '/weekOf', order: 'descending' }
+          ]
+        ]
       }
     }
   }

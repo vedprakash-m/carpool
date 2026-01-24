@@ -5,6 +5,7 @@
 
 import { InvocationContext } from '@azure/functions';
 import { v4 as uuidv4 } from 'uuid';
+import { configService } from './config.service';
 
 interface HealthCheckResult {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -179,7 +180,7 @@ export class MonitoringService {
       timestamp: new Date().toISOString(),
       duration: Date.now() - startTime,
       checks,
-      version: process.env.npm_package_version || '1.0.0',
+      version: configService.getConfig().app.version,
       uptime: process.uptime(),
     };
 

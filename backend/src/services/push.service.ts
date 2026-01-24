@@ -1,15 +1,18 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const webpush = require('web-push');
+import { configService } from './config.service';
+
 type PushSubscription = any;
 
 export class PushService {
   private vapidSet = false;
 
   constructor() {
-    const publicKey = process.env.VAPID_PUBLIC_KEY;
-    const privateKey = process.env.VAPID_PRIVATE_KEY;
+    const config = configService.getConfig();
+    const publicKey = config.push.vapidPublicKey;
+    const privateKey = config.push.vapidPrivateKey;
     if (publicKey && privateKey) {
-      webpush.setVapidDetails('mailto:support@carpool.com', publicKey, privateKey);
+      webpush.setVapidDetails(config.push.vapidSubject, publicKey, privateKey);
       this.vapidSet = true;
     }
   }
